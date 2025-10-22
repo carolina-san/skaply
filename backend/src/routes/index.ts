@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import userRoutes from './users';
 import authRoutes from './auth';
+import furnitureRoutes from './furniture';
 import pool from '@config/database';
 
 const router = Router();
@@ -13,24 +14,10 @@ router.get('/health', (_req, res) => {
   });
 });
 
-router.get('/mueble', async (_req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM public.mueble ORDER BY id ASC LIMIT 100');
-    res.status(200).json({
-      success: true,
-      data: result.rows
-    });
-  } catch (error) {
-    console.error('Error fetching muebles:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching muebles'
-    });
-  }
-});
 
 // Feature routes
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/furnitures',furnitureRoutes);
 
 export default router;
