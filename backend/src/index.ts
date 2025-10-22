@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { errorHandler } from '@middleware/errorHandler';
 import { notFound } from '@middleware/notFound';
 import apiRoutes from '@/routes';
+import { connectDB } from '@/config/database';
 
 dotenv.config();
 
@@ -27,7 +28,8 @@ app.use('/api', apiRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  await connectDB();
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });
 
