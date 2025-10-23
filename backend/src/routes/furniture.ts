@@ -5,7 +5,7 @@ import { FurnitureController } from '../controllers/furnitureController';
 const router = Router();
 const furnitureController = new FurnitureController();
 
-router.get('/',furnitureController.Furnitures);
-
+router.get('/',furnitureController.getFurnitures);
+router.get('/:id',furnitureController.getFurnitureById);
 
 export default router;

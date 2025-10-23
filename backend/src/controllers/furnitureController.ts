@@ -4,18 +4,41 @@ import {FurnitureService} from '../services/furnitureService'
 /*import { UserService } from '../services/UserService';*/
 
 export class FurnitureController {
-  Furnitures = async (req: Request, res: Response): Promise<void> => {
+  private furnitureService: FurnitureService;
+
+  constructor(furnitureService?: FurnitureService) {
+    this.furnitureService = furnitureService || new FurnitureService();
+  }
+
+  getFurnitures = async (req: Request, res: Response): Promise<void> => {
     try {
       // Example database query
-      const result = await new FurnitureService().getAllFurnitures()
+      const result = await this.furnitureService.getAllFurnitures()
       res.status(200).json({ 
         message: 'Database connected successfully',
         data: result.rows
       });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch users' });
+      res.status(500).json({ error: 'Failed to fetch furnitures' });
     }
   };
+
+  getFurnitureById = async(req:Request, res:Response): Promise<void> =>{
+    try{
+        const id = parseInt(req.params.id || '0');
+        if (isNaN(id)) {
+            res.status(400).json({error: 'Invalid furniture ID'});
+            return;
+        }
+        const result = await this.furnitureService.getFurniture(id);
+        res.status(200).json({
+            message: 'Furniture fetched',
+            data: result.rows
+        });
+    }catch (error){
+        res.status(500).json({error: 'Failed to fetch this furniture'})
+    }
+  }
 
  
 }
