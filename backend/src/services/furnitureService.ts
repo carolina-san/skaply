@@ -2,7 +2,7 @@ import pool from '@config/database';
 export class FurnitureService {
   async getAllFurnitures() {
     try{
-        const result = await pool.query('SELECT * FROM public.mueble');
+        const result = await pool.query('SELECT * FROM public.furniture');
         return result
     }catch(error){
         throw new Error('Method not implemented');
@@ -12,7 +12,7 @@ export class FurnitureService {
 
   async getFurniture(id:number){
     try{
-        const result = await pool.query('SELECT * FROM public.mueble WHERE ref = $1',[id])
+        const result = await pool.query('SELECT * FROM public.furniture WHERE ref = $1',[id])
         return result
     }catch(error){
         throw new Error('Method not implemented');
