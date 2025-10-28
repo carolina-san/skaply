@@ -1,2 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Añade esta regla para eliminar el margen predeterminado del navegador */
+body {
+  margin: 0;
+  padding: 0;
+}
+@theme {
+    --color-marron-oscuro: #573129;
+    --color-azul-claro: #AFCAD5;
+}
