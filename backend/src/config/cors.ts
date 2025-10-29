@@ -9,7 +9,7 @@ const allowedOrigins =
       ]
     : [
         "http://localhost:3000", // backend
-        "http://localhot:4200" // angular
+        "http://localhost:4200" // angular
       ];
 
 export const corsOptions: cors.CorsOptions = {
