@@ -4,7 +4,6 @@
 
   <main class="h-full pt-16 pb-24 relative flex flex-col lg:flex-row items-center w-full ">
 
-
     <div class="lg:flex lg:flex-col lg:items-start lg:justify-start lg:w-1/2 lg:h-full lg:relative">
       <h1
         class="text-azul-claro text-5xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-left p-[4.5rem] leading-normal">
@@ -12,11 +11,10 @@
       </h1>
       <img src="assets/imgs/sofa3d.png" alt="modelo 3d de un sofa"
         class=" absolute top-30 right-0 h-120 w-80 object-cover object-left z-0 lg:left-0 lg:h-full lg:w-full ">
-      
     </div>
 
     <div class="flex flex-col items-center w-full max-w-xs space-y-3 mb-8 mt-45 z-20">
-      <button class="btn-primary">
+      <button class="btn-primary" routerLink="./res-scanner">
         <span>Tengo un QR</span>
         <span class="material-symbols-rounded">photo_camera</span>
       </button>
@@ -34,8 +32,7 @@
       </button>
     </div>
 
+    <app-chatbot></app-chatbot>
 
-
-<app-chatbot></app-chatbot>
   </main>
 </div>
