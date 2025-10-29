@@ -8,6 +8,7 @@ import { errorHandler } from '@middleware/errorHandler';
 import { notFound } from '@middleware/notFound';
 import apiRoutes from '@/routes';
 import { connectDB } from '@/config/database';
+import corsMiddleware from './config/cors';
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(corsMiddleware);
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
