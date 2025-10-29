@@ -1,26 +1,44 @@
-<div class="fixed bottom-0 left-0 w-full z-50  sm:rounded-t-xl"
-     [ngClass]="{
+<div class="fixed bottom-0 left-0 w-full z-50 sm:rounded-t-xl" [ngClass]="{
          'h-[90vh] sm:w-96': chatVisible, 
          'h-20': !chatVisible
-     }"
-     [style.height.px]="chatVisible ? chatHeight : 90">
+     }" [style.height.px]="chatVisible ? chatHeight : 90">
 
-    <button *ngIf="!chatVisible" 
-            class="absolute bottom-4 right-4 bg-marron-oscuro text-white p-4 rounded-full shadow-lg" 
-            (click)="toggleChat()">
+    <button *ngIf="!chatVisible"
+        class="absolute bottom-4 right-4 bg-marron-oscuro text-white p-4 rounded-full shadow-lg" (click)="toggleChat()">
         <span class="material-symbols-rounded">chat</span>
     </button>
-    
-    <div *ngIf="chatVisible" 
-         class="bg-beige rounded-t-3xl overflow-hidden shadow-2xl flex flex-col h-full w-full">
-         
+
+    <div *ngIf="chatVisible" class="bg-beige rounded-t-3xl overflow-hidden shadow-2xl flex flex-col h-full w-full">
+
         <header class="bg-beige text-marron-oscuro p-4 flex justify-between items-center cursor-pointer"
-                (mousedown)="startDrag($event)">
+            (mousedown)="startDrag($event)">
             <div class="flex items-center space-x-2">
-                <span class="text-xl font-bold" >Allen</span>
+                <span class="text-xl font-bold">Allen</span>
             </div>
-            <span class="material-symbols-rounded" (click)="toggleChat()" >expand_more</span>
+            <span class="material-symbols-rounded" (click)="toggleChat()">expand_more</span>
         </header>
-        
+
+        <!-- Área de mensajes -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <!-- Aquí irán los mensajes del chat -->
         </div>
+
+        <div class="p-4 fixed bottom-[5rem] right-0">
+            <button
+                class="btn-azul-chatbot">
+                <span class="material-symbols-rounded ">exclamation</span>
+            </button>
+        </div>
+
+        <div class="bg-beige border-t border-marron-oscuro/20 p-4">
+            <div class="flex items-center space-x-2">
+                <input type="text" placeholder="Mensaje"
+                    class="flex-1 bg-white border border-marron-oscuro/30 rounded-[25px] px-4 py-2 focus:outline-none focus:border-marron-oscuro">
+                <button
+                    class="btn-azul-chatbot">
+                    <span class="material-symbols-rounded w-9">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

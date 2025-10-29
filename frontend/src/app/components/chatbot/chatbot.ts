@@ -1,10 +1,11 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-chatbot',
     standalone: true, 
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './chatbot.html',
     styleUrls: ['./chatbot.css']
 })
