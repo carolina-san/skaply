@@ -53,3 +53,10 @@ p,span,a,li,div{
   rounded-full hover:bg-marron-oscuro/90 
   transition-colors
 }
+
+.btn-primary-2 {
+  @apply flex items-center justify-between w-full p-3 
+  pl-6 pr-6  bg-marron-oscuro text-beige font-semibold 
+  rounded-[25px] shadow-md transition-colors 
+  duration-200 hover:bg-azul-claro hover:text-marron-oscuro;
+}
