@@ -1,1 +1,29 @@
-<p>menu works!</p>
+<div class="lg:hidden">
+    <span (click)="abrir()" class="text-azul-claro material-symbols-rounded cursor-pointer text-3xl">menu</span>
+
+    <nav class="fixed top-0 right-0 w-64 h-full bg-beige shadow-xl transform transition-transform duration-300 z-50 p-6"
+        [ngClass]="{ 
+            'translate-x-0': menuAbierto, 
+            'translate-x-full': !menuAbierto 
+        }">
+
+        <button class="absolute top-4 right-4 text-marron-oscuro text-3xl cursor-pointer" (click)="cerrar()">
+            &times;
+        </button>
+
+        <ul class="pt-10 space-y-4 text-marron-oscuro">
+            <li><a href="#" class="hover:text-azul-claro">Inicio</a></li>
+            <li><a href="#" class="hover:text-azul-claro">Servicios</a></li>
+            <li><a href="#" class="hover:text-azul-claro">Nosotros</a></li>
+            <li><a href="#" class="hover:text-azul-claro">Contacto</a></li>
+        </ul>
+    </nav>
+</div>
+
+
+<nav class="hidden lg:flex lg:items-center lg:space-x-8 lg:text-xl">
+    <a href="#" class="text-azul-claro hover:text-azul-claro font-medium">Inicio</a>
+    <a href="#" class="text-azul-claro hover:text-azul-claro font-medium">Servicios</a>
+    <a href="#" class="text-azul-claro hover:text-azul-claro font-medium">Nosotros</a>
+    <a href="#" class="text-azul-claro hover:text-azul-claro font-medium">Contacto</a>
+</nav>
