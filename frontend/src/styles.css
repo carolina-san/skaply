@@ -1,15 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-/* Añade esta regla para eliminar el margen predeterminado del navegador */
+@font-face {
+  font-family: 'Agrandir';
+  src: url('assets/fonts/agrandir-bold.ttf') format('truetype');
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('assets/fonts/inter.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
 body {
   margin: 0;
   padding: 0;
 }
+
+h1{
+  font-family: 'Agrandir', sans-serif;
+}
+p,span,a,li,div{
+  font-family: 'Inter', sans-serif;
+}
 @theme {
     --color-marron-oscuro: #452621;
     --color-azul-claro: #BAD5E3;
+    --color-beige: #EAE3DB;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =================================
+   CLASES COMPONENTES PERSONALIZADAS
+   =================================
+*/
+
+/* Botón principal */
+.btn-primary {
+  @apply flex items-center justify-between w-full p-3 
+  pl-6 pr-6  bg-beige text-marron-oscuro font-semibold 
+  rounded-[25px] shadow-md transition-colors 
+  duration-200 hover:bg-azul-claro;
 }
