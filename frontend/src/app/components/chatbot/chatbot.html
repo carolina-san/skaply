@@ -1,0 +1,26 @@
+<div class="fixed bottom-0 left-0 w-full z-50  sm:rounded-t-xl"
+     [ngClass]="{
+         'h-[90vh] sm:w-96': chatVisible, 
+         'h-20': !chatVisible
+     }"
+     [style.height.px]="chatVisible ? chatHeight : 90">
+
+    <button *ngIf="!chatVisible" 
+            class="absolute bottom-4 right-4 bg-marron-oscuro text-white p-4 rounded-full shadow-lg" 
+            (click)="toggleChat()">
+        <span class="material-symbols-rounded">chat</span>
+    </button>
+    
+    <div *ngIf="chatVisible" 
+         class="bg-beige rounded-t-3xl overflow-hidden shadow-2xl flex flex-col h-full w-full">
+         
+        <header class="bg-beige text-marron-oscuro p-4 flex justify-between items-center cursor-pointer"
+                (mousedown)="startDrag($event)">
+            <div class="flex items-center space-x-2">
+                <span class="text-xl font-bold" >Allen</span>
+            </div>
+            <span class="material-symbols-rounded" (click)="toggleChat()" >expand_more</span>
+        </header>
+        
+        </div>
+</div>
