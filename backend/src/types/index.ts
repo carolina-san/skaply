@@ -1,18 +1,8 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Export all furniture-related types
+export * from './furniture.types';
 
-export interface AuthRequest extends Request {
-  user?: User;
-}
+// Export all user-related types
+export * from './user.types';
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
+// Export all common types (API responses, auth, etc.)
+export * from './common.types';

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import pool from '@config/database';
 import {FurnitureService} from '../services/furnitureService'
+import { createGunzip } from 'zlib';
 /*import { UserService } from '../services/UserService';*/
 
 export class FurnitureController {
@@ -56,5 +57,18 @@ export class FurnitureController {
     }
   }
 
+  getFurnitureByReference =  async(req:Request,res:Response): Promise <void> =>{
+    try{
+      const ref = req.params.ref || '';
+      const result = await this.furnitureService.getFurnitureByReference(ref)
+      res.status(200).json(
+        {
+          data: result.rows
+        }
+      )
+    }catch(error){
+      res.status(500).json({error: 'Unkwown reference number'});
+    }
+  }
  
 }
