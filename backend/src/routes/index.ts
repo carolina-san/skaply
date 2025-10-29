@@ -2,7 +2,7 @@ import { Router } from 'express';
 import userRoutes from './users';
 import authRoutes from './auth';
 import furnitureRoutes from './furniture';
-import pool from '@config/database';
+import categoryRoutes from './categories';
 
 const router = Router();
 
@@ -19,5 +19,5 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/furnitures',furnitureRoutes);
-
+router.use('/categories',categoryRoutes);
 export default router;

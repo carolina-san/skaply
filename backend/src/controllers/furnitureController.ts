@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import pool from '@config/database';
 import {FurnitureService} from '../services/furnitureService'
-import { createGunzip } from 'zlib';
 /*import { UserService } from '../services/UserService';*/
 
 export class FurnitureController {
