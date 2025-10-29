@@ -7,5 +7,6 @@ const furnitureController = new FurnitureController();
 
 router.get('/',furnitureController.getFurnitures);
 router.get('/:id',furnitureController.getFurnitureById);
-
+router.get('/category/:cat',furnitureController.getFurnitureByCategory);
+router.get('/ref/:ref',furnitureController.getFurnitureByReference);
 export default router;
