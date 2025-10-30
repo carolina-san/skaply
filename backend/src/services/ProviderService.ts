@@ -1,21 +1,22 @@
 import pool from '@config/database';
-export class UserService {
-  async getAllUsers() {
+
+export class ProviderService {
+  async getAllProviders() {
     // Get all users logic here
     throw new Error('Method not implemented');
   }
 
-  async getUserById(id: string) {
+  async getProviderById(id: string) {
     // Get user by ID logic here
     throw new Error('Method not implemented');
   }
 
-  async updateUser(id: string, userData: any) {
+  async updateProvider(id: string, userData: any) {
     // Update user logic here
     throw new Error('Method not implemented');
   }
 
-  async deleteUser(id: string) {
+  async deleteProvider(id: string) {
     // Delete user logic here
     throw new Error('Method not implemented');
   }

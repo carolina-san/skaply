@@ -68,5 +68,19 @@ export class FurnitureController {
       res.status(500).json({error: 'Unkwown reference number'});
     }
   }
+
+  getFurnitureByProvider =  async(req:Request,res:Response): Promise <void> =>{
+    try{
+      const prov = parseInt(req.params.prov || '0');
+      const result = await this.furnitureService.getFurnitureByProvider(prov)
+      res.status(200).json(
+        {
+          data: result.rows
+        }
+      )
+    }catch(error){
+      res.status(500).json({error: 'Failed to fetch furnitures from this provider'});
+    }
+  }
  
 }

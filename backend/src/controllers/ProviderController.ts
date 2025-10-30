@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import pool from '@config/database';
-/*import { UserService } from '../services/UserService';*/
+import { ProviderService } from '../services/ProviderService';
 
-export class UserController {
+export class ProviderController {
 
-  getUsers = async (req: Request, res: Response): Promise<void> => {
+  getProviders = async (req: Request, res: Response): Promise<void> => {
     try {
       // Example database query
       const result = await pool.query('SELECT NOW() as current_time');
@@ -17,7 +17,7 @@ export class UserController {
     }
   };
 
-  getUserById = async (req: Request, res: Response): Promise<void> => {
+  getProviderById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       // Implementation here
@@ -27,7 +27,7 @@ export class UserController {
     }
   };
 
-  updateUser = async (req: Request, res: Response): Promise<void> => {
+  updateProvider = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       // Implementation here
@@ -37,7 +37,7 @@ export class UserController {
     }
   };
 
-  deleteUser = async (req: Request, res: Response): Promise<void> => {
+  deleteProvider = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       // Implementation here

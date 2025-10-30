@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import userRoutes from './users';
+import providerRoutes from './provider';
 import authRoutes from './auth';
 import furnitureRoutes from './furniture';
 import categoryRoutes from './categories';
@@ -17,7 +17,7 @@ router.get('/health', (_req, res) => {
 
 // Feature routes
 router.use('/auth', authRoutes);
-router.use('/users', userRoutes);
+router.use('/providers', providerRoutes);
 router.use('/furnitures',furnitureRoutes);
 router.use('/categories',categoryRoutes);
 export default router;
