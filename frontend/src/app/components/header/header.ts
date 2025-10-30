@@ -4,7 +4,7 @@ import { Menu } from '../menu/menu';
 
 @Component({
   selector: 'app-header',
-  standalone: true, // 👈 añádelo si quieres usar imports directamente
+  standalone: true,
   imports: [Menu],
   templateUrl: './header.html',
   styleUrls: ['./header.css']
@@ -15,7 +15,7 @@ export class Header {
   constructor(private router: Router) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.menuAbierto = false; // 👈 cierra el menú al navegar
+        this.menuAbierto = false;
       }
     });
   }
