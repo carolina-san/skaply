@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {CategoryService} from '../services/CategoryService'
+import {CategoryService} from '../services/categoryService'
 
 export class CategoryController{
     private categoryService: CategoryService
