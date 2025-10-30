@@ -56,4 +56,22 @@ export class FurnitureService {
         throw new Error('Unable to fetch the furniture included in the provided');
     }
   }
+ 
+  async getFurnitureWithParts(id:number){
+    try{
+      const result = await pool.query(`
+        SELECT *
+      FROM 
+        furniture_part fp
+      JOIN
+        part p ON fp.part = p.id
+      WHERE
+        fp.furniture = $1`
+      ,[id]);
+
+      return result;
+    }catch(error){
+      throw new Error('Error fetching furniture parts')
+    }
+  }
 }

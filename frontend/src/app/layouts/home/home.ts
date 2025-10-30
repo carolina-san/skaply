@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {Header } from '../../components/header/header';
+import { Header } from '../../components/header/header';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';

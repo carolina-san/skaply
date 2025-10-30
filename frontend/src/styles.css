@@ -60,3 +60,9 @@ p,span,a,li,div{
   rounded-[25px] shadow-md transition-colors 
   duration-200 hover:bg-azul-claro hover:text-marron-oscuro cursor-pointer;
 }
+
+.btn-vista-mueble{
+  @apply flex flex-col items-center justify-center 
+  flex-1 h-full hover:bg-beige 
+  transition-colors;
+}

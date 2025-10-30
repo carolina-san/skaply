@@ -1,77 +1,28 @@
 <div class="h-screen font-sans relative bg-beige">
 
-    
-
     <main class="relative">
-        <!-- Fondo curvo superior como las otras páginas -->
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[100%] h-[35vh] rounded-b-[80%] bg-marron-oscuro"></div>
-        
-        <!-- Contenedor del visor 3D -->
-        <div class="relative z-10 flex flex-col items-center justify-start h-screen pt-20">
-            
-            <!-- Título -->
+        <div class="relative z-10 flex flex-col items-center justify-start h-screen pt-20 top-10">
             <div class="text-center mb-6">
-                <h1 class="text-beige text-4xl lg:text-5xl font-bold mb-2">Visor 3D</h1>
-                <p class="text-beige text-sm opacity-80">Explora modelos en tres dimensiones</p>
+                <h1 class="text-marron-oscuro text-2xl lg:text-5xl font-bold mb-2">Mueble de madera</h1>
             </div>
 
-            <!-- Canvas del visor 3D -->
-            <div class="w-full max-w-4xl h-64 lg:h-80 mx-4 mb-6 relative bg-white rounded-2xl shadow-lg overflow-hidden">
-                <canvas #canvas class="w-full h-full"></canvas>
-                
-                <!-- Loading overlay -->
-                <div class="loading-overlay" *ngIf="isLoading">
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p class="text-marron-oscuro mt-4">Cargando modelo 3D...</p>
-                    </div>
-                </div>
-                
-                <!-- Panel de información de controles -->
-                <div class="absolute bottom-2 left-2 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-2 text-xs">
-                    <div class="flex items-center gap-1 text-marron-oscuro">
-                        <span class="material-symbols-rounded text-sm">mouse</span>
-                        <span>Clic + arrastrar para rotar | Rueda para zoom</span>
-                    </div>
-                </div>
-            </div>
+            <app-furniture-viewer></app-furniture-viewer>
 
-            <!-- Botones de control -->
             <div class="flex flex-col lg:flex-row gap-3 w-full max-w-md px-4 mb-8">
-                <button 
-                    (click)="resetCamera()" 
-                    class="btn-primary-2">
+                <button (click)="resetCamera()" class="btn-primary-2">
                     <span>Resetear Vista</span>
                     <span class="material-symbols-rounded">3d_rotation</span>
                 </button>
-                
-                <button 
-                    (click)="toggleWireframe()" 
-                    class="btn-primary-2">
+
+                <button (click)="toggleWireframe()" class="btn-primary-2">
                     <span>Wireframe</span>
                     <span class="material-symbols-rounded">grid_view</span>
                 </button>
             </div>
-
-            <!-- Botones de navegación -->
-            <div class="flex flex-col gap-3 w-full max-w-md px-4">
-                <button 
-                    class="btn-primary" 
-                    routerLink="/">
-                    <span>Volver al Inicio</span>
-                    <span class="material-symbols-rounded">home</span>
-                </button>
-                
-                <button 
-                    class="btn-primary"
-                    (click)="loadDifferentModel()">
-                    <span>Cargar Otro Modelo</span>
-                    <span class="material-symbols-rounded">refresh</span>
-                </button>
-            </div>
         </div>
 
-        <!-- Chatbot -->
         <app-chatbot></app-chatbot>
+
+        <app-menu-viewer></app-menu-viewer>
     </main>
 </div>
