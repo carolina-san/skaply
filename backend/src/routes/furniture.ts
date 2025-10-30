@@ -10,4 +10,5 @@ router.get('/:id',furnitureController.getFurnitureById);
 router.get('/category/:cat',furnitureController.getFurnitureByCategory);
 router.get('/ref/:ref',furnitureController.getFurnitureByReference);
 router.get('/provider/:prov',furnitureController.getFurnitureByProvider);
+router.get('/parts/:id',furnitureController.getFurnitureWithParts)
 export default router;

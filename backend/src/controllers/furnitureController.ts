@@ -82,5 +82,22 @@ export class FurnitureController {
       res.status(500).json({error: 'Failed to fetch furnitures from this provider'});
     }
   }
+
+  getFurnitureWithParts = async(req:Request,res:Response): Promise <void> =>{
+    try{
+      const id = parseInt(req.params.id || '0');
+      if(isNaN(id)) {
+          res.status(400).json({error: 'Invalid furniture category'});
+          return;
+      }
+      const parts = await this.furnitureService.getFurnitureWithParts(id);
+ 
+      res.status(200).json({
+        data: parts.rows
+      });
+    }catch(error){
+      res.status(500).json({error: 'Unable to fetch the parts of the furniture'})
+    }
+  }
  
 }
