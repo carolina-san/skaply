@@ -3,7 +3,7 @@ export class FurnitureService {
   async getAllFurnitures() {
     try{
         const result = await pool.query('SELECT * FROM public.furniture');
-        return result
+        return result;
     }catch(error){
         throw new Error('Method not implemented');
     }
@@ -12,8 +12,8 @@ export class FurnitureService {
 
   async getFurniture(id:number){
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE ref = $1',[id])
-        return result
+        const result = await pool.query('SELECT * FROM public.furniture WHERE ref = $1',[id]);
+        return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the parameters');
     }
@@ -21,10 +21,10 @@ export class FurnitureService {
 
   async getFurnitureByCategory(cat:number){
     try{
-      const result = await pool.query('SELECT * FROM public.furniture WHERE category = $1',[cat])
-      return result
+      const result = await pool.query('SELECT * FROM public.furniture WHERE category = $1',[cat]);
+      return result;
     }catch(error){
-      throw new Error('Unable to fetch furnitures included in this category')
+      throw new Error('Unable to fetch furnitures included in this category');
     }
   }
 
@@ -37,11 +37,19 @@ export class FurnitureService {
     }
   }
 
-  // getFurnitureByProvider
-  async getFurnitureByProvider(id:number) {
+  async getFurnitureByProvider(prov:number) {
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider = $1',[id])
-        return result
+        const result = await pool.query('SELECT * FROM public.furniture WHERE provider = $1', [prov]);
+        return result;
+    }catch(error){
+        throw new Error('Unable to fetch the furniture included in the provided');
+    }
+  }
+
+  async getFurnitureByProviderAndCategory(prov:number, cat:number) {
+    try{
+        const result = await pool.query('SELECT * FROM public.furniture WHERE provider = $1 and category = $2', [prov, cat]);
+        return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the provided');
     }
