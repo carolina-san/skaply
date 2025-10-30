@@ -1,5 +1,7 @@
 import pool from '@config/database';
+
 export class FurnitureService {
+  
   async getAllFurnitures() {
     try{
         const result = await pool.query('SELECT * FROM public.furniture');
