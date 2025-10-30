@@ -15,4 +15,5 @@ import { ResScanner } from './layouts/res-scanner/res-scanner';
 })
 export class App {
   protected readonly title = signal('frontend');
+  
 }

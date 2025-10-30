@@ -2,10 +2,11 @@
     <img src="assets/skaply_azul.svg" alt="logo skaply" class="w-30 lg:w-50"> 
 
     
-    <app-menu 
-        [menuAbierto]="menuAbierto" 
-        (cerrarMenu)="toggleMenu()"
-        (abrirMenu)="toggleMenu()"> </app-menu>
+      <app-menu
+    [menuAbierto]="menuAbierto"
+    (cerrarMenu)="menuAbierto = false"
+    (abrirMenu)="menuAbierto = true">
+  </app-menu>
 </header>
 
 
