@@ -68,5 +68,62 @@ export class FurnitureController {
       res.status(500).json({error: 'Unkwown reference number'});
     }
   }
- 
+
+  getFurnitureByProvider =  async(req:Request,res:Response): Promise <void> =>{
+    try{
+      const prov = parseInt(req.params.prov || '0');
+      if (isNaN(prov)) {
+          res.status(400).json({error: 'Invalid furniture provider'});
+          return;
+      }
+      const result = await this.furnitureService.getFurnitureByProvider(prov)
+      res.status(200).json(
+        {
+          data: result.rows
+        }
+      )
+    }catch(error){
+      res.status(500).json({error: 'Failed to fetch furnitures from this provider'});
+    }
+  }
+
+    getFurnitureByProviderAndCategory =  async(req:Request,res:Response): Promise <void> =>{
+      try{
+        const prov = parseInt(req.params.prov || '0');
+        if (isNaN(prov)) {
+          res.status(400).json({error: 'Invalid furniture provider'});
+          return;
+        }
+        const cat = parseInt(req.params.cat || '0');
+        if (isNaN(cat)) {
+          res.status(400).json({error: 'Invalid furniture category'});
+          return;
+        }
+        const result = await this.furnitureService.getFurnitureByProviderAndCategory(prov, cat);
+        res.status(200).json(
+          {
+            data: result.rows
+          }
+        )
+      }catch(error){
+        res.status(500).json({error: 'Failed to fetch furnitures from this provider with the category provided'});
+      }
+    }
+
+    getFurnitureWithParts = async(req:Request,res:Response): Promise <void> =>{
+      try{
+        const id = parseInt(req.params.id || '0');
+        if(isNaN(id)) {
+            res.status(400).json({error: 'Invalid furniture ID'});
+            return;
+        }
+        const parts = await this.furnitureService.getFurnitureWithParts(id);
+   
+        res.status(200).json({
+          data: parts.rows
+        });
+      }catch(error){
+        res.status(500).json({error: 'Unable to fetch the parts of the furniture'})
+      }
+    }
 }
