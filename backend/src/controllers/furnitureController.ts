@@ -12,7 +12,7 @@ export class FurnitureController {
   getFurnitures = async (req: Request, res: Response): Promise<void> => {
     try {
       // Example database query
-      const result = await this.furnitureService.getAllFurnitures();
+      const result = await this.furnitureService.getAllFurniture();
       res.status(200).json({ 
         message: 'Database connected successfully',
         data: result.rows
@@ -29,7 +29,7 @@ export class FurnitureController {
             res.status(400).json({error: 'Invalid furniture ID'});
             return;
         }
-        const result = await this.furnitureService.getFurniture(id);
+        const result = await this.furnitureService.getFurnitureById(id);
         res.status(200).json({
             message: 'Furniture fetched',
             data: result.rows

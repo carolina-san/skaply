@@ -11,7 +11,7 @@ export class FurnitureService {
     return result.rows.length > 0;
   }
   
-  async getAllFurnitures() {
+  async getAllFurniture() {
     try{
         const result = await pool.query('SELECT * FROM public.furniture');
         return result;
@@ -20,9 +20,11 @@ export class FurnitureService {
     }
   }
 
-  async getFurniture(id:number){
+  async getFurnitureById(id:number){
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE id = $1',[id]);
+        const result = await pool.query(`
+          SELECT * FROM public.furniture WHERE id = $1`,
+          [id]);
         return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the parameters');
@@ -83,9 +85,6 @@ export class FurnitureService {
     }
   }
 
-  //getAssemblyStepID
-  //dado un id del mueble y el número del paso (paso1, paso2...), que devuelva el id de ese paso.
-
-  //getSubSteps
-  //dado un step id, devolver el id de los steps anteriores de los que depende.
+  // devolvemos el numero total de pasos en getFurnitureById?
+  // no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal
 }

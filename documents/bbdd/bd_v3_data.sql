@@ -139,16 +139,16 @@ INSERT INTO AssemblyStep_Part (assembly_step_id, part_id, quantity) VALUES
 (1,1,1),(1,2,1),                    -- mueble 1
 (2,1,1),(2,2,1),(3,3,1),            -- mueble 2   
 (4,1,1),(4,2,1),(5,1,1),(5,2,1),    -- mueble 3
-(7,1,1),(7,2,1);                    -- mueble 4
+(7,1,2),(7,2,2);                    -- mueble 4
 
 -- ============================
 -- 10. Asignar herramientas a pasos
 -- ============================
 INSERT INTO AssemblyStep_Tool (assembly_step_id, tool_id) VALUES
-(1,1),(1,2),                 -- mueble 1
+(1,1),(1,2),                -- mueble 1
 (2,1),(2,4),(3,5),          -- mueble 2
 (4,2),(5,3),(6,4),(6,5),    -- mueble 3
-(7,3);                     -- mueble 4
+(7,3);                      -- mueble 4
 
 -- ============================
 -- 11. Insertar issues
