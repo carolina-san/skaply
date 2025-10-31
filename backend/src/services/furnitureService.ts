@@ -2,6 +2,15 @@ import pool from '@config/database';
 
 export class FurnitureService {
   
+  // Checks if the furniture id is valid
+  async furnitureExists(id: number): Promise<boolean> {
+    const result = await pool.query(
+      'SELECT 1 FROM public.furniture WHERE id = $1 LIMIT 1',
+      [id]
+    );
+    return result.rows.length > 0;
+  }
+  
   async getAllFurnitures() {
     try{
         const result = await pool.query('SELECT * FROM public.furniture');
@@ -9,12 +18,11 @@ export class FurnitureService {
     }catch(error){
         throw new Error('Method not implemented');
     }
-    
   }
 
   async getFurniture(id:number){
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE ref = $1',[id]);
+        const result = await pool.query('SELECT * FROM public.furniture WHERE id = $1',[id]);
         return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the parameters');
@@ -23,7 +31,7 @@ export class FurnitureService {
 
   async getFurnitureByCategory(cat:number){
     try{
-      const result = await pool.query('SELECT * FROM public.furniture WHERE category = $1',[cat]);
+      const result = await pool.query('SELECT * FROM public.furniture WHERE category_id = $1',[cat]);
       return result;
     }catch(error){
       throw new Error('Unable to fetch furnitures included in this category');
@@ -41,7 +49,7 @@ export class FurnitureService {
 
   async getFurnitureByProvider(prov:number) {
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider = $1', [prov]);
+        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1', [prov]);
         return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the provided');
@@ -50,23 +58,23 @@ export class FurnitureService {
 
   async getFurnitureByProviderAndCategory(prov:number, cat:number) {
     try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider = $1 and category = $2', [prov, cat]);
+        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1 and category_id = $2', [prov, cat]);
         return result;
     }catch(error){
         throw new Error('Unable to fetch the furniture included in the provided');
     }
   }
  
-  async getFurnitureWithParts(id:number){
+  async getFurnitureParts(id:number){
     try{
       const result = await pool.query(`
-        SELECT *
+      SELECT *
       FROM 
         furniture_part fp
       JOIN
-        part p ON fp.part = p.id
+        part p ON fp.part_id = p.id
       WHERE
-        fp.furniture = $1`
+        fp.furniture_id = $1`
       ,[id]);
 
       return result;
@@ -74,4 +82,10 @@ export class FurnitureService {
       throw new Error('Error fetching furniture parts')
     }
   }
+
+  //getAssemblyStepID
+  //dado un id del mueble y el número del paso (paso1, paso2...), que devuelva el id de ese paso.
+
+  //getSubSteps
+  //dado un step id, devolver el id de los steps anteriores de los que depende.
 }

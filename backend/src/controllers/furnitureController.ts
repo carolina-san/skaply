@@ -110,19 +110,32 @@ export class FurnitureController {
       }
     }
 
-    getFurnitureWithParts = async(req:Request,res:Response): Promise <void> =>{
+    getFurnitureParts = async(req:Request,res:Response): Promise <void> =>{
       try{
         const id = parseInt(req.params.id || '0');
+        // Validate request parameter
         if(isNaN(id)) {
             res.status(400).json({error: 'Invalid furniture ID'});
             return;
         }
-        const parts = await this.furnitureService.getFurnitureWithParts(id);
-   
+        // Check if the furniture exists in the database
+        const exists = await this.furnitureService.furnitureExists(id);
+        if (!exists) {
+          res.status(404).json({ error: 'Furniture not found' });
+          return;
+        }
+        const parts = await this.furnitureService.getFurnitureParts(id);
+        // Handle case where no parts are associated
+        if (parts.rows.length === 0) {
+          res.status(404).json({ error: 'No parts found for this furniture' });
+          return;
+        }
+        // Success response
         res.status(200).json({
           data: parts.rows
         });
       }catch(error){
+        // Catch unexpected errors
         res.status(500).json({error: 'Unable to fetch the parts of the furniture'})
       }
     }

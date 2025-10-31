@@ -18,6 +18,6 @@ router.get('/health', (_req, res) => {
 // Feature routes
 router.use('/auth', authRoutes);
 router.use('/providers', providerRoutes);
-router.use('/furnitures',furnitureRoutes);
+router.use('/furniture',furnitureRoutes);
 router.use('/categories',categoryRoutes);
 export default router;
