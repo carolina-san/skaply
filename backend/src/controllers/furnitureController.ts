@@ -139,4 +139,41 @@ export class FurnitureController {
         res.status(500).json({error: 'Unable to fetch the parts of the furniture'})
       }
     }
+
+    getFurnitureStepParts = async(req:Request,res:Response): Promise <void> =>{
+      try{
+        const idFurniture = parseInt(req.params.id || '0');
+        const stepNumber = parseInt(req.params.stepId || '0');
+        // Validate request parameter
+        if(isNaN(idFurniture) || isNaN(stepNumber)) {
+            res.status(400).json({error: 'Invalid parameters type'});
+            return;
+        }
+        // Check if the furniture exists in the database
+        const existsFurniture = await this.furnitureService.furnitureExists(idFurniture);
+        if (!existsFurniture) {
+          res.status(404).json({ error: 'Furniture not found' });
+          return;
+        }
+        // Check if the furniture has the step number
+        const existsStepNumber = await this.furnitureService.stepExists(idFurniture, stepNumber);
+        if (!existsStepNumber) {
+          res.status(404).json({ error: 'Step within the furniture not found' });
+          return;
+        }
+        const parts = await this.furnitureService.getFurnitureStepParts(idFurniture, stepNumber);
+        // Handle case where no parts are associated
+        if (parts.rows.length === 0) {
+          res.status(404).json({ error: `No parts found for this furniture´s step` });
+          return;
+        }
+        // Success response
+        res.status(200).json({
+          data: parts.rows
+        });
+      }catch(error){
+        // Catch unexpected errors
+        res.status(500).json({error: `Unable to fetch the parts of the furniture's step`})
+      }
+    }
 }

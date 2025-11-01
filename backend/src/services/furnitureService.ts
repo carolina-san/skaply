@@ -10,7 +10,19 @@ export class FurnitureService {
     );
     return result.rows.length > 0;
   }
-  
+
+  // Checks if the furniture step number is valid
+  // DUDA: mover al service step? hacer un archivo que sea checkers?
+  async stepExists(idFurniture: number, stepNumber: number): Promise<boolean> {
+    const result = await pool.query(
+      `SELECT 1 FROM public.Assemblystep 
+      WHERE id = $1 AND step_number = $2
+      LIMIT 1`,
+      [idFurniture, stepNumber]
+    );
+    return result.rows.length > 0;
+  }
+
   async getAllFurniture() {
     try{
         const result = await pool.query('SELECT * FROM public.furniture');
@@ -92,5 +104,25 @@ export class FurnitureService {
     }
   }
 
-  // no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal
+  // DUDA: no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal, no?
+
+  // ERROR: falla cuando el stepNumber está formado por otro step
+  async getFurnitureStepParts(idFurniture:number, stepNumber:number){
+    try{
+      const result = await pool.query(`
+      SELECT p.id, quantity, file_uri, color, reference_number
+      FROM 
+        assemblystep_Part sp
+      JOIN
+        Part p ON sp.part_id = p.id
+	    JOIN
+        assemblystep s ON s.id = sp.assembly_step_id
+      WHERE
+        s.furniture_id = $1 AND s.step_number = $2`,
+      [idFurniture, stepNumber]);
+      return result;
+    }catch(error){
+      throw new Error('Error fetching furniture parts')
+    }
+  }
 }
