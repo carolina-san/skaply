@@ -20,10 +20,15 @@ export class FurnitureService {
     }
   }
 
+  // DUDA: Incluye el número de steps, ¿hacemos que tambien se devuelva el nombre de la categoria y el nombre del provider?
   async getFurnitureById(id:number){
     try{
         const result = await pool.query(`
-          SELECT * FROM public.furniture WHERE id = $1`,
+          SELECT f.*, count(*) as total_steps
+		      FROM public.furniture f 
+          INNER JOIN Assemblystep s ON s.furniture_id = f.id 
+          WHERE f.id = $1
+		      GROUP BY f.id, f.name, f.file_uri, f.color, f.reference_number, f.category_id, f.provider_id`,
           [id]);
         return result;
     }catch(error){
@@ -31,6 +36,7 @@ export class FurnitureService {
     }
   }
 
+  // DUDA: tiene más sentido que le pasemos por parámtro el nombre de la categoria?
   async getFurnitureByCategory(cat:number){
     try{
       const result = await pool.query('SELECT * FROM public.furniture WHERE category_id = $1',[cat]);
@@ -49,6 +55,7 @@ export class FurnitureService {
     }
   }
 
+  // DUDA: tiene más sentido que le pasemos por parámtro el nombre del provider?
   async getFurnitureByProvider(prov:number) {
     try{
         const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1', [prov]);
@@ -85,6 +92,5 @@ export class FurnitureService {
     }
   }
 
-  // devolvemos el numero total de pasos en getFurnitureById?
   // no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal
 }
