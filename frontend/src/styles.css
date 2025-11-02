@@ -18,18 +18,22 @@ body {
   padding: 0;
 }
 
-h1{
+h1 {
   font-family: 'Agrandir', sans-serif;
 }
 
-p,span,a,li,div{
+p,
+span,
+a,
+li,
+div {
   font-family: 'Inter', sans-serif;
 }
 
 @theme {
-    --color-marron-oscuro: #452621;
-    --color-azul-claro: #BAD5E3;
-    --color-beige: #EAE3DB;
+  --color-marron-oscuro: #452621;
+  --color-azul-claro: #BAD5E3;
+  --color-beige: #EAE3DB;
 }
 
 @tailwind base;
@@ -42,27 +46,48 @@ p,span,a,li,div{
 */
 
 .btn-primary {
-  @apply flex items-center justify-between w-full p-3 
-  pl-6 pr-6  bg-beige text-marron-oscuro font-semibold 
-  rounded-[25px] shadow-md transition-colors 
-  duration-200 hover:bg-azul-claro cursor-pointer;
+  @apply flex items-center justify-between w-full 
+  p-3 pl-6 pr-6 bg-beige text-marron-oscuro font-semibold 
+  rounded-[25px] shadow-md transition-colors duration-200 
+  hover:bg-azul-claro cursor-pointer;
 }
 
-.btn-azul-chatbot{
-  @apply bg-azul-claro text-marron-oscuro p-2 h-12 w-12 
-  rounded-full hover:bg-marron-oscuro/90 
+.btn-azul-chatbot {
+  @apply bg-azul-claro text-marron-oscuro 
+  p-2 h-12 w-12 rounded-full hover:bg-marron-oscuro/90 
   transition-colors cursor-pointer;
 }
 
 .btn-primary-2 {
-  @apply flex items-center justify-between w-full p-3 
-  pl-6 pr-6  bg-marron-oscuro text-beige font-semibold 
-  rounded-[25px] shadow-md transition-colors 
-  duration-200 hover:bg-azul-claro hover:text-marron-oscuro cursor-pointer;
+  @apply flex items-center justify-between 
+  w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige 
+  font-semibold rounded-[25px] shadow-md transition-colors 
+  duration-200 hover:bg-azul-claro hover:text-marron-oscuro 
+  cursor-pointer;
 }
 
-.btn-vista-mueble{
-  @apply flex flex-col items-center justify-center 
-  flex-1 h-full hover:bg-beige 
+.btn-vista-mueble {
+  @apply flex flex-col items-center 
+  justify-center flex-1 h-full hover:bg-beige 
   transition-colors;
+}
+
+
+.btn-opciones-mueble {
+  @apply flex flex-col items-center px-7 py-1 rounded-3xl text-marron-oscuro transition-colors;
+}
+
+.btn-opciones-mueble:hover {
+  @apply bg-azul-claro text-white;
+}
+
+.btn-opciones-mueble.active {
+  @apply bg-azul-claro text-marron-oscuro;
+}
+
+.btn-canvas {
+  @apply flex flex-col items-center 
+  justify-center gap-0.5 px-2 py-2 bg-beige 
+  text-marron-oscuro rounded-lg shadow-md 
+  hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
 }

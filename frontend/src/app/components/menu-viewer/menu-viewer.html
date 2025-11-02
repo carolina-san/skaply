@@ -1,16 +1,25 @@
-<nav class="fixed bottom-0 left-0 right-0 bg-marron-oscuro text-beige shadow-lg">
-    <div class="flex items-center justify-around h-20">
+<footer class="fixed bottom-0 left-0 right-0 mx-3 mb-6 bg-beige flex justify-around items-center py-2 rounded-4xl shadow-lg">
+  <button 
+    class="btn-opciones-mueble" 
+    [class.active]="opcionActiva === 'mueble'"
+    (click)="seleccionarOpcion('mueble')">
+    <span class="material-symbols-rounded">chair</span>
+    <span class="text-xs">Mueble</span>
+  </button>
 
-        <button class="btn-vista-mueble">
-            <span class="text-sm font-medium">Mueble</span>
-        </button>
+  <button 
+    class="btn-opciones-mueble"
+    [class.active]="opcionActiva === 'paso-a-paso'"
+    (click)="seleccionarOpcion('paso-a-paso')">
+    <span class="material-symbols-rounded">crossword</span>
+    <span class="text-xs">Paso a paso</span>
+  </button>
 
-        <button class="btn-vista-mueble">
-            <span class="text-sm font-medium">Guía paso a paso</span>
-        </button>
-
-        <button class="btn-vista-mueble">
-            <span class="text-sm font-medium">Vídeo</span>
-        </button>
-    </div>
-</nav>
+  <button 
+    class="btn-opciones-mueble"
+    [class.active]="opcionActiva === 'video'"
+    (click)="seleccionarOpcion('video')">
+    <span class="material-symbols-rounded">video_library</span>
+    <span class="text-xs">Vídeo</span>
+  </button>
+</footer>

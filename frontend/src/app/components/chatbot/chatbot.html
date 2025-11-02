@@ -3,8 +3,9 @@
          'h-20': !chatVisible
      }" [style.height.px]="chatVisible ? chatHeight : 90">
 
+    <!-- Botón para abrir el chat, aquí pondremos el icono-->
     <button *ngIf="!chatVisible"
-        class="absolute bottom-4 right-4 bg-marron-oscuro text-white p-4 rounded-full shadow-lg" (click)="toggleChat()">
+        class="absolute bottom-28 right-6 bg-beige text-marron-oscuro p-4 rounded-full shadow-lg hover:scale-110 transition-transform" (click)="toggleChat()">
         <span class="material-symbols-rounded">chat</span>
     </button>
 
@@ -24,9 +25,8 @@
         </div>
 
         <div class="p-4 fixed bottom-[5rem] right-0">
-            <button
-                class="btn-azul-chatbot">
-                <span class="material-symbols-rounded ">exclamation</span>
+            <button class="btn-azul-chatbot">
+                <span class="material-symbols-rounded">exclamation</span>
             </button>
         </div>
 
@@ -34,8 +34,7 @@
             <div class="flex items-center space-x-2">
                 <input type="text" placeholder="Mensaje"
                     class="flex-1 bg-white border border-marron-oscuro/30 rounded-[25px] px-4 py-2 focus:outline-none focus:border-marron-oscuro">
-                <button
-                    class="btn-azul-chatbot">
+                <button class="btn-azul-chatbot">
                     <span class="material-symbols-rounded w-9">send</span>
                 </button>
             </div>

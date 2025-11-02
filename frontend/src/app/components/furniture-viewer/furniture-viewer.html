@@ -1,19 +1,11 @@
-<div class="w-full max-w-4xl h-64 lg:h-80 mx-4 mb-6 relative bg-white rounded-2xl shadow-lg overflow-hidden">
-    <canvas #canvas class="w-full h-full"></canvas>
+<div class="w-full max-w-4xl h-64 lg:h-80 mx-4 mb-6 relative rounded-2xl overflow-hidden">
+    <canvas #canvas class="w-full h-full block"></canvas>
 
-    <!-- Loading overlay -->
-    <div class="loading-overlay" *ngIf="isLoading">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p class="text-marron-oscuro mt-4">Cargando modelo 3D...</p>
-        </div>
-    </div>
-
-    <!-- Panel de información de controles -->
-    <div class="absolute bottom-2 left-2 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-2 text-xs">
-        <div class="flex items-center gap-1 text-marron-oscuro">
-            <span class="material-symbols-rounded text-sm">mouse</span>
-            <span>Clic + arrastrar para rotar | Rueda para zoom</span>
+    <!-- Cargando -->
+    <div *ngIf="isLoading" class="absolute inset-0 flex items-center justify-center z-20 rounded-2xl animate-fade-in">
+        <div class="text-center">
+            <div class="w-10 h-10 md:w-8 md:h-8 border-3 border-azul-claro border-t-transparent rounded-full mx-auto animate-spin"></div>
+            <p class="text-beige mt-4">Cargando modelo 3D...</p>
         </div>
     </div>
 </div>

@@ -45,9 +45,9 @@ export class FurnitureViewer implements AfterViewInit, OnDestroy {
   private initThreeJS(): void {
     const canvas = this.canvasRef.nativeElement;
     
-    // Scene
+    // Scene con fondo transparente
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf8f9fa);
+    this.scene.background = null; //null para fondo transparente
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(
@@ -58,12 +58,13 @@ export class FurnitureViewer implements AfterViewInit, OnDestroy {
     );
     this.camera.position.set(0, 0, 5);
 
-    // Renderer
+    // Renderer con alpha true para transparencia
     this.renderer = new THREE.WebGLRenderer({ 
       canvas: canvas,
       antialias: true,
-      alpha: true
+      alpha: true //fondo transparente
     });
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
