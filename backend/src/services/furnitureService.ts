@@ -112,11 +112,11 @@ export class FurnitureService {
       const result = await pool.query(`
       SELECT p.id, quantity, file_uri, color, reference_number
       FROM 
-        assemblystep_Part sp
+        Step_Part sp
       JOIN
         Part p ON sp.part_id = p.id
 	    JOIN
-        assemblystep s ON s.id = sp.assembly_step_id
+        Step s ON s.id = sp.stepId
       WHERE
         s.furniture_id = $1 AND s.step_number = $2`,
       [idFurniture, stepNumber]);

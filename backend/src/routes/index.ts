@@ -20,6 +20,6 @@ router.use('/auth', authRoutes);
 router.use('/providers', providerRoutes);
 router.use('/categories',categoryRoutes);
 router.use('/furniture',furnitureRoutes);
-router.use('/furniture/:id/steps',stepRoutes);
+router.use('/furniture/:id/steps',stepRoutes); //DUDA: hará falta?
 
 export default router;
