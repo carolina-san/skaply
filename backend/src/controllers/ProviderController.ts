@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ProviderService } from '../services/providerService';
+import { ProviderService } from '../services/ProviderService';
 
 export class ProviderController {
 
