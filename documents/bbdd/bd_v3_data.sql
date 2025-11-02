@@ -30,11 +30,11 @@
 -- ============================
 -- 1. Vaciar la base de datos
 -- ============================
-TRUNCATE TABLE AssemblyStep_Tool, AssemblyStep_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool, AssemblyStep, File, "User" CASCADE;
+TRUNCATE TABLE Step_Tool, Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool, Step, File, "User" CASCADE;
 --RESTART IDENTITY;
 
 ALTER SEQUENCE "User_id_seq" RESTART WITH 1;
-ALTER SEQUENCE assemblystep_id_seq RESTART WITH 1;
+ALTER SEQUENCE step_id_seq RESTART WITH 1;
 ALTER SEQUENCE category_id_seq RESTART WITH 1;
 ALTER SEQUENCE furniture_id_seq RESTART WITH 1;
 ALTER SEQUENCE issue_id_seq RESTART WITH 1;
@@ -85,11 +85,11 @@ INSERT INTO Tool (name) VALUES
 -- ============================
 -- 6. Insertar muebles
 -- ============================
-INSERT INTO Furniture (file_uri, name, color, reference_number, category_id, provider_id) VALUES
-('furniture1.stl', 'Silla de madera', 'rojo', 'F001', 1, 4),
-('furniture2.stl', 'Mesa de comedor', 'verde','F003',2,5),
-('furniture3.stl', 'Sofa gris', 'gris','F006',3,5),
-('furniture4.stl', 'Lámpara de comedor', 'gris','F007',4,4);
+INSERT INTO Furniture (file_uri, name, color, reference_number, category_id, provider_id,difficulty) VALUES
+('furniture1.stl', 'Silla de madera', 'rojo', 'F001', 1, 4,'low'),
+('furniture2.stl', 'Mesa de comedor', 'verde','F003',2,5,'high'),
+('furniture3.stl', 'Sofa gris', 'gris','F006',3,5,'medium'),
+('furniture4.stl', 'Lámpara de comedor', 'gris','F007',4,4,'low');
 
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
@@ -126,7 +126,7 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity) VALUES
 -- ============================
 -- 8. Insertar pasos de ensamblaje
 -- ============================
-INSERT INTO AssemblyStep (furniture_id, step_number, used_in_step_with_id) VALUES -- step_depency es el id del step (hay que contar desde 1)
+INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES -- step_depency es el id del step (hay que contar desde 1)
 (1,1,NULL),                     -- mueble 1
 (2,1,3),(2,2,NULL),             -- mueble 2: el paso1 se usa en el paso2 (id3)    
 (3,1,6),(3,2,6),(3,3,NULL),     -- mueble 3: el paso1 y el paso2 se usan en el paso3 (id6)
@@ -135,7 +135,7 @@ INSERT INTO AssemblyStep (furniture_id, step_number, used_in_step_with_id) VALUE
 -- ============================
 -- 9. Asignar piezas a los pasos
 -- ============================
-INSERT INTO AssemblyStep_Part (assembly_step_id, part_id, quantity) VALUES
+INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (1,1,1),(1,2,1),                    -- mueble 1
 (2,1,1),(2,2,1),(3,3,1),            -- mueble 2   
 (4,1,1),(4,2,1),(5,1,1),(5,2,1),    -- mueble 3
@@ -144,7 +144,7 @@ INSERT INTO AssemblyStep_Part (assembly_step_id, part_id, quantity) VALUES
 -- ============================
 -- 10. Asignar herramientas a pasos
 -- ============================
-INSERT INTO AssemblyStep_Tool (assembly_step_id, tool_id) VALUES
+INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (1,1),(1,2),                -- mueble 1
 (2,1),(2,4),(3,5),          -- mueble 2
 (4,2),(5,3),(6,4),(6,5),    -- mueble 3

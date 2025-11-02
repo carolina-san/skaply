@@ -8,13 +8,14 @@
 -- ============================
 -- Drop existing tables and types (only for reset purposes)
 -- ============================
-DROP TABLE IF EXISTS AssemblyStep_Tool, AssemblyStep_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool, AssemblyStep, File, "User" CASCADE;
+DROP TABLE IF EXISTS  Step_Tool,Asemblystep, Asemblystep_part,Asemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User" CASCADE;
 DROP TYPE IF EXISTS user_role;
 
 -- ============================
 -- ENUM: user_role
 -- ============================
 CREATE TYPE user_role AS ENUM ('admin', 'user', 'provider');
+CREATE TYPE diff AS ENUM ('low','medium','high');
 
 -- ============================
 -- TABLE: User
@@ -49,7 +50,8 @@ CREATE TABLE Furniture (
     color VARCHAR(50) NOT NULL,
     reference_number VARCHAR(100),
     category_id INTEGER REFERENCES Category(id) ON DELETE SET NULL,
-    provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL
+    provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL,
+    difficulty diff NOT NULL
 );
 
 -- ============================
@@ -81,32 +83,32 @@ CREATE TABLE Furniture_Part (
 );
 
 -- ============================
--- TABLE: AssemblyStep
+-- TABLE:  Step
 -- ============================
-CREATE TABLE AssemblyStep (
+CREATE TABLE  Step (
     id SERIAL PRIMARY KEY,
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     step_number INTEGER NOT NULL,
-    used_in_step_with_id INTEGER REFERENCES AssemblyStep(id) ON DELETE SET NULL
+    used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL
 );
 
 -- ============================
--- Junction table for AssemblyStep <-> Part (many-to-many with quantity)
+-- Junction table for  Step <-> Part (many-to-many with quantity)
 -- ============================
-CREATE TABLE AssemblyStep_Part (
-    assembly_step_id INTEGER REFERENCES AssemblyStep(id) ON DELETE CASCADE,
+CREATE TABLE  Step_Part (
+      stepId INTEGER REFERENCES  Step(id) ON DELETE CASCADE,
     part_id INTEGER REFERENCES Part(id) ON DELETE CASCADE,
     quantity INTEGER CHECK (quantity >= 0),
-    PRIMARY KEY (assembly_step_id, part_id)
+    PRIMARY KEY (  stepId, part_id)
 );
 
 -- ============================
--- Junction table for AssemblyStep <-> Tool (many-to-many)
+-- Junction table for  Step <-> Tool (many-to-many)
 -- ============================
-CREATE TABLE AssemblyStep_Tool (
-    assembly_step_id INTEGER REFERENCES AssemblyStep(id) ON DELETE CASCADE,
+CREATE TABLE  Step_Tool (
+      stepId INTEGER REFERENCES  Step(id) ON DELETE CASCADE,
     tool_id INTEGER REFERENCES Tool(id) ON DELETE CASCADE,
-    PRIMARY KEY (assembly_step_id, tool_id)
+    PRIMARY KEY (  stepId, tool_id)
 );
 
 -- ============================
