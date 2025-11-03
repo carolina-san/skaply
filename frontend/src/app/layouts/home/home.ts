@@ -3,10 +3,11 @@ import { Header } from '../../components/header/header';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink],
+  imports: [Header, Chatbot, RouterLink, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })

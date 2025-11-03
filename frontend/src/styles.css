@@ -91,3 +91,11 @@ div {
   text-marron-oscuro rounded-lg shadow-md 
   hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
 }
+
+.btn-filtros-home {
+  @apply bg-beige text-marron-oscuro 
+  px-4 py-2 rounded-full whitespace-nowrap 
+  font-medium shadow-md
+  hover:bg-azul-claro hover:text-marron-oscuro 
+  active:bg-azul-claro focus:bg-azul-claro;
+}
