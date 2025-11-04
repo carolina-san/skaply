@@ -13,6 +13,7 @@ const reviewServiceInstance = new ReviewService();
 const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
 router.get('/',furnitureController.getFurnitures);
+router.post("/filter", furnitureController.filterFurniture);
 router.get('/:id',furnitureController.getFurnitureById);
 router.get('/category/:cat',furnitureController.getFurnitureByCategory);
 router.get('/ref/:ref',furnitureController.getFurnitureByReference);

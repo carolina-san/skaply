@@ -176,4 +176,27 @@ export class FurnitureController {
         res.status(500).json({error: `Unable to fetch the parts of the furniture's step`})
       }
     }
+
+  // POR CORREGIR
+  filterFurniture = async (req: Request, res: Response): Promise <void> =>{
+  try{
+    const { colors, difficulties, provider_ids, category_ids } = req.body;
+
+    const result = await this.furnitureService.getFilteredFurniture({
+      colors,
+      difficulties,
+      provider_ids,
+      category_ids
+    });
+    res.status(200).json({
+      message: 'Furniture fetched',
+      data: result.rows
+    });
+    
+  }catch(error){
+      // Catch unexpected errors
+      res.status(500).json({error: `Unable to fetch the parts of the furniture's step`})
+    }
+  }
+
 }
