@@ -9,6 +9,4 @@ export class StepController {
   constructor(stepService?: StepService) {
     this.stepService = stepService || new StepService();
   }
-
-  
 }

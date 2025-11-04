@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {CategoryService} from '../services/categoryService'
+import {CategoryService} from '../services/CategoryService'
 
 export class CategoryController{
     private categoryService: CategoryService
@@ -7,7 +7,6 @@ export class CategoryController{
     constructor(categoryService?: CategoryService) {
         this.categoryService = categoryService || new CategoryService();
     }
-
 
     getCategories =  async(req:Request,res:Response):Promise <void> =>{
         try{

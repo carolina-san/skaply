@@ -12,6 +12,11 @@ export class ApiService {
 
   //Obtener muebles
   getFurnitures(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/furnitures`);
+    return this.http.get(`${this.apiUrl}/furniture`);
+  }
+
+  //Obtener categorias
+  getCategories(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories`);
   }
 }

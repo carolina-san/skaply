@@ -16,5 +16,4 @@ import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
 })
 export class App {
   protected readonly title = signal('frontend');
-  
 }
