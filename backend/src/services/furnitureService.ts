@@ -126,7 +126,7 @@ export class FurnitureService {
     }
   }
 
-  // POR CORREGIR: sacar categoria de este filtro
+
   async getFilteredFurniture(filters: {
     colors?: string[];
     difficulties?: ('low' | 'medium' | 'high')[];

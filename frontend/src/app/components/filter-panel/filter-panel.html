@@ -1,0 +1,90 @@
+<!-- Fondo oscuro semitransparente -->
+<div
+  *ngIf="isOpen"
+  class="fixed inset-0 bg-black/40 z-40 transition-opacity"
+  (click)="close()"
+></div>
+
+<!-- Panel lateral deslizante -->
+<div
+  class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300"
+  [class.translate-x-full]="!isOpen"
+>
+  <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <h2 class="text-xl font-semibold">Filtros</h2>
+    <button
+      class="text-gray-500 hover:text-gray-800 transition"
+      (click)="close()"
+    >
+      ✕
+    </button>
+  </div>
+
+  <div class="p-4 space-y-6 overflow-y-auto h-[calc(100%-4rem)]">
+    <!-- Colores -->
+    <div>
+      <h3 class="font-medium mb-2 text-gray-700">Colores</h3>
+      <div class="flex flex-wrap gap-2">
+        <label
+          *ngFor="let color of availableColors"
+          class="flex items-center gap-2 text-sm cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            [value]="color"
+            class="rounded text-blue-600 focus:ring-blue-500"
+            (change)="toggleFilter('colors', color, $event)"
+          />
+          {{ color }}
+        </label>
+      </div>
+    </div>
+
+    <!-- Dificultades -->
+    <div>
+      <h3 class="font-medium mb-2 text-gray-700">Dificultad</h3>
+      <div class="flex flex-col gap-2">
+        <label
+          *ngFor="let d of availableDifficulties"
+          class="flex items-center gap-2 text-sm cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            [value]="d"
+            class="rounded text-blue-600 focus:ring-blue-500"
+            (change)="toggleFilter('difficulties', d, $event)"
+          />
+          {{ d }}
+        </label>
+      </div>
+    </div>
+
+    <!-- Proveedores -->
+    <div>
+      <h3 class="font-medium mb-2 text-gray-700">Proveedores</h3>
+      <div class="flex flex-col gap-2">
+        <label
+          *ngFor="let p of availableProviders"
+          class="flex items-center gap-2 text-sm cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            [value]="p.id"
+            class="rounded text-blue-600 focus:ring-blue-500"
+            (change)="toggleFilter('provider_ids', p.id, $event)"
+          />
+          {{ p.name }}
+        </label>
+      </div>
+    </div>
+
+    <div class="pt-4">
+      <button
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
+        (click)="applyFilters()"
+      >
+        Aplicar filtros
+      </button>
+    </div>
+  </div>
+</div>

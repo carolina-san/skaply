@@ -177,7 +177,6 @@ export class FurnitureController {
       }
     }
 
-  // POR CORREGIR
   filterFurniture = async (req: Request, res: Response): Promise <void> =>{
   try{
     const { colors, difficulties, provider_ids, category_ids } = req.body;
