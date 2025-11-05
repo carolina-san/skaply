@@ -4,6 +4,7 @@ import authRoutes from './auth';
 import furnitureRoutes from './furniture';
 import stepRoutes from './step';
 import categoryRoutes from './categories';
+import chatbotRoutes from './chatbot'
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use('/providers', providerRoutes);
 router.use('/categories',categoryRoutes);
 router.use('/furniture',furnitureRoutes);
 router.use('/furniture/:id/steps',stepRoutes); //DUDA: hará falta?
+router.use('/chatbot',chatbotRoutes);
 
 export default router;
