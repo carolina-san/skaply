@@ -72,9 +72,9 @@ div {
   transition-colors;
 }
 
-
 .btn-opciones-mueble {
-  @apply flex flex-col items-center px-7 py-1 rounded-3xl text-marron-oscuro transition-colors;
+  @apply flex flex-col items-center px-7 py-1 
+  rounded-3xl text-marron-oscuro transition-colors;
 }
 
 .btn-opciones-mueble:hover {
@@ -89,12 +89,13 @@ div {
   @apply flex flex-col items-center 
   justify-center gap-0.5 px-2 py-2 bg-beige 
   text-marron-oscuro rounded-lg shadow-md 
-  hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
+  hover:shadow-lg hover:scale-105 transition-all 
+  duration-300 w-full;
 }
 
 .btn-filtros-home {
   @apply bg-beige text-marron-oscuro 
-  px-4 py-2 rounded-full whitespace-nowrap 
+  px-3 py-1 rounded-full whitespace-nowrap 
   font-medium shadow-md
   hover:bg-azul-claro hover:text-marron-oscuro 
   active:bg-azul-claro focus:bg-azul-claro;
