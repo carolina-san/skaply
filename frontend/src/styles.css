@@ -58,6 +58,12 @@ div {
   transition-colors cursor-pointer;
 }
 
+.btn-escaneo {
+  @apply fixed bottom-10 right-6 h-12 w-12 
+  bg-azul-claro p-3 rounded-full shadow-2xl 
+  hover:scale-110 transition-transform z-50;
+}
+
 .btn-primary-2 {
   @apply flex items-center justify-between 
   w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige 

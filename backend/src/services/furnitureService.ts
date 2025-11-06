@@ -44,7 +44,8 @@ export class FurnitureService {
           INNER JOIN Color cl ON f.color_id = cl.id`);
         return result;
     }catch(error){
-        throw new Error('Method not implemented');
+      console.error('getAllFurniture error:', error);
+      throw error;
     }
   }
 
