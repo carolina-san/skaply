@@ -1,86 +1,56 @@
-<div class="h-screen flex flex-col bg-marron-oscuro">
-  <main class="flex-1 flex flex-col pt-22 overflow-hidden">
+<main class="flex flex-col pt-6">
 
-    <!-- Barra de búsqueda y filtros -->
-    <div class="w-full mx-auto mb-6 flex gap-3 items-center flex-shrink-0 px-4">
-      <div class="relative flex-1">
-        <span
-          class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl">search</span>
-        <input type="text" placeholder="Buscar"
-          class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
-      </div>
+  <!-- Barra de búsqueda y filtros -->
+  <div class="w-full mx-auto mb-6 flex gap-3 items-center flex-shrink-0 px-4">
+    <div class="relative flex-1">
+      <span
+        class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl">search</span>
+      <input type="text" placeholder="Buscar"
+        class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
+    </div>
 
-      <!-- <button class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
+    <!-- <button class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
         <span class="material-symbols-rounded text-xl">tune</span>
         <span
           class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">2</span>
       </button> -->
-      <button 
-        (click)="openFilterModal()"
-        class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
-        <span class="material-symbols-rounded text-xl">tune</span>
-        <span
-          *ngIf="activeFiltersCount > 0"
-          class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
-          {{ activeFiltersCount }}
-        </span>
-      </button>
-    </div>
-
-    <!-- Filtros de categorías -->
-    <div class="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-4 pb-0">
-      <button class="btn-filtros-home">
-        Ver todo
-      </button>
-      <button *ngFor="let category of categories" class="btn-filtros-home">
-        {{ category.name }}
-      </button>
-    </div>
-
-    <!-- Grid de muebles + Footer (con scroll) -->
-    <div class="flex-1 overflow-y-auto">
-      <div class="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 px-4">
-
-        <!-- Card de mueble dinámica -->
-         <!-- furniture.file_uri || esto lo pongo en img [src] -->
-        <div *ngFor="let furniture of furnitures" class="bg-beige rounded-3xl overflow-hidden shadow-lg">
-          <div class="aspect-square bg-gradient-to-br from-beige to-[#E5D5C3] flex items-center justify-center p-8">
-            <img [src]="'assets/imgs/estanteria3d.png'" [alt]="furniture.name"
-              class="w-full h-full object-contain">
-          </div>
-          <div class="p-4">
-            <h3 class="text-marron-oscuro font-bold text-lg mb-1">{{ furniture.name }}</h3>
-            <p class="text-marron-oscuro/70 text-sm mb-2">REF: {{ furniture.reference_number }}</p>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center text-marron-oscuro/70 text-sm">
-                <span class="material-symbols-rounded text-sm mr-1">palette</span>
-                <span>{{ furniture.color_name }}</span>
-              </div>
-              <div class="flex items-center text-marron-oscuro/70 text-sm">
-                <span>Dificultad: </span>
-                <span> {{ furniture.difficulty }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <app-footer></app-footer>
-    </div>
-
-    <!-- Botón flotante de escaneo QR -->
-    <button
-      class="btn-escaneo">
-      <span class="material-symbols-rounded text-3xl text-marron-oscuro">qr_code_scanner</span>
+    <button (click)="openFilterModal()"
+      class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
+      <span class="material-symbols-rounded text-xl">tune</span>
+      <span *ngIf="activeFiltersCount > 0"
+        class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
+        {{ activeFiltersCount }}
+      </span>
     </button>
+  </div>
 
-    <!-- Filter Panel -->
-    <app-filter-panel
-      [isOpen]="isFilterModalOpen"
-      [providers]="providers"
-      [colors]="colors"
-      (close)="closeFilterModal()"
-      (applyFilter)="onApplyFilters($event)">
-    </app-filter-panel>
+  <!-- Filtros de categorías -->
+  <div class="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-4 pb-0">
+    <button class="btn-filtros-home">
+      Ver todo
+    </button>
+    <button *ngFor="let category of categories" class="btn-filtros-home">
+      {{ category.name }}
+    </button>
+  </div>
 
-  </main>
-</div>
+  <!-- Grid de muebles + Footer (con scroll) -->
+   <!-- furniture.file_uri en img [src] -->
+  <div class="flex-1 overflow-y-auto">
+    <app-card-furniture [furnitures]="furnitures"></app-card-furniture>
+    <app-footer></app-footer>
+  </div>
+
+
+
+  <!-- Botón flotante de escaneo QR -->
+  <button class="btn-escaneo">
+    <span class="material-symbols-rounded text-3xl text-marron-oscuro">qr_code_scanner</span>
+  </button>
+
+  <!-- Filter Panel -->
+  <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors" (close)="closeFilterModal()"
+    (applyFilter)="onApplyFilters($event)">
+  </app-filter-panel>
+
+</main>

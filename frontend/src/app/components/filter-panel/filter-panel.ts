@@ -43,7 +43,6 @@ export class FilterPanelComponent {
   ];
 
   ngOnChanges() {
-    console.log("ha cambiado ng");
     if (this.isOpen) {
       setTimeout(() => this.isAnimating = true, 10);
     } else {
