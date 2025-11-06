@@ -69,9 +69,9 @@
             <div class="flex items-center gap-2">
               <span class="text-lg font-semibold text-marron-oscuro">Color</span>
               <span 
-                *ngIf="selectedFilters.colors.length > 0"
+                *ngIf="selectedFilters.color_ids.length > 0"
                 class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ selectedFilters.colors.length }}
+                {{ selectedFilters.color_ids.length }}
               </span>
             </div>
             <span class="material-symbols-rounded text-marron-oscuro transition-transform"
@@ -84,17 +84,17 @@
             *ngIf="openSection === 'color'"
             class="grid grid-cols-2 gap-3 mt-2">
             <button
-              *ngFor="let color of availableColors"
-              (click)="toggleColor(color.value)"
+              *ngFor="let color of colors"
+              (click)="toggleColor(color.id)"
               class="flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all"
-              [class.border-azul-claro]="selectedFilters.colors.includes(color.value)"
-              [class.bg-blue-50]="selectedFilters.colors.includes(color.value)"
-              [class.border-gray-200]="!selectedFilters.colors.includes(color.value)">
+              [class.border-azul-claro]="selectedFilters.color_ids.includes(color.id)"
+              [class.bg-blue-50]="selectedFilters.color_ids.includes(color.id)"
+              [class.border-gray-200]="!selectedFilters.color_ids.includes(color.id)">
               <div 
                 class="w-6 h-6 rounded"
                 [style.background-color]="color.hex">
               </div>
-              <span class="text-sm text-marron-oscuro">{{ color.label }}</span>
+              <span class="text-sm text-marron-oscuro">{{ color.name }}</span>
             </button>
           </div>
         </div>

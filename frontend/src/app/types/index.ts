@@ -6,3 +6,6 @@ export * from './furniture.types';
 
 // Filter types
 export * from './filter.types';
+
+// Color types
+export * from './color.types';

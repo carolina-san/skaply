@@ -107,21 +107,21 @@ export class FurnitureService {
 
 
   async getFilteredFurniture(filters: {
-    colors?: string[];
     difficulties?: ('low' | 'medium' | 'high')[];
     provider_ids?: number[];
     category_ids?: number[];
+    color_ids: number[];
   }) {
     try{
-      const { colors, difficulties, provider_ids, category_ids } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids } = filters;
 
       let sql = "SELECT * FROM public.furniture WHERE 1=1";
       const params: any[] = [];
       let paramIndex = 1; // Shows the number of parameters used
 
-      if (colors && colors.length > 0) {
-        sql += ` AND color_id = ANY($${paramIndex}::text[])`;
-        params.push(colors);
+      if (color_ids && color_ids.length > 0) {
+        sql += ` AND color_id = ANY($${paramIndex}::int[])`;
+        params.push(color_ids);
         paramIndex++;
       }
 

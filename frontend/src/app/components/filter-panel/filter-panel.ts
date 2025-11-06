@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common'; // para *ngIf
-import { FilterOptions, ProviderBasic } from '../../types';
+import { FilterOptions, ProviderBasic, Color } from '../../types';
 
 @Component({
   selector: 'app-filter-panel',
@@ -11,7 +11,7 @@ import { FilterOptions, ProviderBasic } from '../../types';
 export class FilterPanelComponent {
   @Input() isOpen = false;
   @Input() providers: ProviderBasic[] = [];
-  // @Input() color: Color[] = []; // habrá que coger los colores de la BD, de momento son valores predefinidos.
+  @Input() colors: Color[] = [];
   // la dificultad no sé si se deberia de coger de la BD.
 
   @Output() close = new EventEmitter<void>();
@@ -21,10 +21,10 @@ export class FilterPanelComponent {
   openSection: 'provider' | 'color' | 'difficulty' | null = null;
 
   selectedFilters: FilterOptions = {
-    colors: [],
     difficulties: [],
     provider_ids: [],
-    category_ids: []
+    category_ids: [],
+    color_ids: []
   };
 
   availableColors = [ // se deberán coger de la bd
@@ -64,12 +64,12 @@ export class FilterPanelComponent {
     }
   }
 
-  toggleColor(color: string) {
-    const index = this.selectedFilters.colors.indexOf(color);
+  toggleColor(id: number) {
+    const index = this.selectedFilters.color_ids.indexOf(id);
     if (index > -1) {
-      this.selectedFilters.colors.splice(index, 1);
+      this.selectedFilters.color_ids.splice(index, 1);
     } else {
-      this.selectedFilters.colors.push(color);
+      this.selectedFilters.color_ids.push(id);
     }
   }
 
@@ -84,10 +84,10 @@ export class FilterPanelComponent {
 
   clearFilters() {
     this.selectedFilters = {
-      colors: [],
       difficulties: [],
       provider_ids: [],
-      category_ids: []
+      category_ids: [],
+      color_ids: []
     };
   }
 

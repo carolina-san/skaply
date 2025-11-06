@@ -5,8 +5,8 @@ import { Chatbot } from '../../components/chatbot/chatbot';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Footer } from '../../components/footer/footer';
-import { FilterPanelComponent } from '../../components/filter-panel/filter-panel'; // filter
-import { FilterOptions, ProviderBasic, FurnitureBasic } from '../../types'; // filter
+import { FilterPanelComponent } from '../../components/filter-panel/filter-panel';
+import { FilterOptions, ProviderBasic, Color } from '../../types'; // tipos
 
 @Component({
   selector: 'app-home',
@@ -17,7 +17,8 @@ import { FilterOptions, ProviderBasic, FurnitureBasic } from '../../types'; // f
 export class Home implements OnInit {
   categories: any[] = [];
   furnitures: any[] = [];
-  providers: ProviderBasic[] = []; // filter
+  providers: ProviderBasic[] = [];
+  colors: Color[] = [];
 
   isFilterModalOpen = false; // filter
   activeFiltersCount = 0; // filter
@@ -28,6 +29,7 @@ export class Home implements OnInit {
     this.obtenerCategorias();
     this.obtenerCatalogo();
     this.loadProviders(); // filter
+    this.loadColors(); // filter
   }
 
   obtenerCatalogo() {
@@ -52,8 +54,19 @@ export class Home implements OnInit {
   loadProviders() {
     this.apiService.getProviders().subscribe({
       next: (response) => {
-        this.providers = Object.values(response.data); // probando
+        this.providers = Object.values(response.data);
         //this.providers = response.data;
+      },
+      error: (error) => {
+        console.error('Error al cargar proveedores:', error);
+      }
+    });
+  }
+
+  loadColors() {
+    this.apiService.getColors().subscribe({
+      next: (response) => {
+        this.colors = Object.values(response.data);
       },
       error: (error) => {
         console.error('Error al cargar proveedores:', error);
@@ -84,10 +97,9 @@ export class Home implements OnInit {
 
   calculateActiveFilters(filters: FilterOptions) {
     this.activeFiltersCount = 
-      (filters.colors?.length || 0) + 
+      (filters.color_ids?.length || 0) + 
       (filters.difficulties?.length || 0) + 
       (filters.provider_ids?.length || 0);
   }
-
   // FIN LÓGICA PARA FILTROS
 }

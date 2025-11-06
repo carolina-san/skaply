@@ -31,4 +31,8 @@ export class ApiService {
   getProviders(): Observable<any> {
     return this.http.get(`${this.apiUrl}/providers`);
   }
+
+  getColors(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/colors`);
+  }
 }
