@@ -10,27 +10,26 @@ import { Location, CommonModule } from '@angular/common';
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
-export class Header implements OnInit {
+export class Header {
   menuAbierto = false;
   showBackButton = true;
+  currentRoute: string = '';
 
   constructor(private router: Router, private location: Location) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.menuAbierto = false;
-        this.updateBackButtonVisibility();
+        
       }
+    });
+
+     this.router.events.subscribe(() => {
+      this.currentRoute = this.router.url;
     });
   }
 
-  ngOnInit(): void {
-    this.updateBackButtonVisibility();
-  }
-
-  private updateBackButtonVisibility(): void {
-    const currentUrl = this.router.url;
-    this.showBackButton = currentUrl !== '/' && currentUrl !== '/home';
-  }
+ 
+ 
 
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
