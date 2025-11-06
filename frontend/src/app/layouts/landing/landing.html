@@ -1,15 +1,27 @@
-<main class="h-screen  bg-marron-oscuro p-10">
-    <section class="flex flex-row justify-between">
-        <div class="flex flex-col w-[100%] items-start justify-center gap-10">
-            <h1 class="text-8xl font-bold text-azul-claro">Bienvenido a Skäply</h1>
-            <h2 class="text-4xl text-white ">Tu asistente 3D para montar muebles</h2>
-            <button class="flex btn-azul text-xl items-center ">Probar ahora  <span class="material-symbols-rounded ml-2">
-play_arrow
-</span></button>
-        </div>
-        <div class="flex w-[100%] pr-20 pt-4 items-end justify-end">
-            <img class="w-60" src="assets/imgs/movil.png">
-        </div>
-        
-    </section>
+<main class="h-screen bg-marron-oscuro p-10">
+  <section class="flex flex-col justify-center items-center lg:flex-row lg:justify-between lg:items-center">
+    
+    <!-- Texto -->
+    <div class="flex flex-col lg:w-[50%] items-center lg:items-start justify-center gap-10 text-center lg:text-left">
+      <h1 class="text-4xl sm:text-6xl lg:text-8xl font-bold text-azul-claro">
+        Bienvenido a Skäply
+      </h1>
+      <h2 class="text-2xl sm:text-3xl text-white">
+        Tu asistente 3D para montar muebles
+      </h2>
+      <button
+        (click)="acceder()"
+        class="flex btn-azul text-xl items-center justify-center"
+      >
+        Probar ahora
+        <span class="material-symbols-rounded ml-2">play_arrow</span>
+      </button>
+    </div>
+
+    <!-- Imagen -->
+    <div class="flex w-full pt-10 lg:pt-0 lg:w-[45%] justify-center items-center ">
+      <img class="w-60" src="assets/imgs/movil.png" alt="Móvil Skäply" />
+    </div>
+
+  </section>
 </main>

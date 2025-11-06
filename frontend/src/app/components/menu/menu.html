@@ -1,5 +1,6 @@
 <div class="lg:hidden">
-    <span (click)="abrir()" class="text-azul-claro material-symbols-rounded cursor-pointer text-3xl absolute right-0 mr-3 mt-1">menu</span>
+    <span (click)="abrir()"
+        class="text-azul-claro material-symbols-rounded cursor-pointer text-3xl absolute right-0 mr-3 mt-1">menu</span>
 
     <nav class="fixed top-0 right-0 w-64 h-full bg-beige shadow-xl transform transition-transform duration-300  z-[60] p-6"
         [ngClass]="{ 
@@ -16,17 +17,17 @@
             <li><a routerLink="/" class="hover:text-azul-claro">Características</a></li>
             <li><a routerLink="/" class="hover:text-azul-claro">Cómo funciona</a></li>
             <li><a href="https://skaply.ovh/lynk/blog" class="hover:text-azul-claro">Noticias</a></li>
-            <li><a routerLink="/" class="hover:text-azul-claro">Acceder a Skäply</a></li>
-            
+            <li><a routerLink="/catalogo" class="hover:text-azul-claro">Acceder a Skäply</a></li>
+
         </ul>
     </nav>
 </div>
 
 
 <nav class="hidden lg:flex lg:items-center lg:space-x-8 lg:text-xl absolute right-0 mr-5 mt-4">
-     <a href="https://skaply.ovh/lynk" class="text-azul-claro">Web Lynk</a>
-            <a routerLink="/" class="text-azul-claro">Características</a>
-            <a routerLink="/" class="text-azul-claro">Cómo funciona</a>
-            <a href="https://skaply.ovh/lynk/blog" class="text-azul-claro">Noticias</a>
-            <a routerLink="/" class="text-azul-claro">Acceder a Skäply</a>
+    <a href="https://skaply.ovh/lynk" class="text-azul-claro">Web Lynk</a>
+    <a routerLink="/" class="text-azul-claro">Características</a>
+    <a routerLink="/" class="text-azul-claro">Cómo funciona</a>
+    <a href="https://skaply.ovh/lynk/blog" class="text-azul-claro">Noticias</a>
+    <a routerLink="/catalogo" class="text-azul-claro">Acceder a Skäply</a>
 </nav>
