@@ -12,7 +12,6 @@ export class FurnitureService {
   }
 
   // Checks if the furniture step number is valid
-  // DUDA: mover al service step? hacer un archivo que sea checkers?
   async stepExists(idFurniture: number, stepNumber: number): Promise<boolean> {
     const result = await pool.query(
       `SELECT 1 FROM public.Assemblystep 
@@ -25,7 +24,24 @@ export class FurnitureService {
 
   async getAllFurniture() {
     try{
-        const result = await pool.query('SELECT * FROM public.furniture');
+        const result = await pool.query(`
+          SELECT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name,
+              f.difficulty
+          FROM public.furniture f
+          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id`);
         return result;
     }catch(error){
         throw new Error('Method not implemented');
@@ -36,11 +52,36 @@ export class FurnitureService {
   async getFurnitureById(id:number){
     try{
         const result = await pool.query(`
-          SELECT f.*, count(*) as total_steps
-		      FROM public.furniture f 
-          INNER JOIN Assemblystep s ON s.furniture_id = f.id 
+          SELECT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name, 
+              f.difficulty,
+              COUNT(*) AS total_steps
+          FROM public.furniture f
+          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id
           WHERE f.id = $1
-		      GROUP BY f.id, f.name, f.file_uri, f.reference_number, f.category_id, f.provider_id, f.color_id`,
+          GROUP BY 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name, 
+              f.provider_id, 
+              p.company_name, 
+              f.color_id, 
+              cl.name;`,
           [id]);
         return result;
     }catch(error){
