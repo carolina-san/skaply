@@ -1,0 +1,29 @@
+<section class=" mx-auto flex flex-wrap gap-4 pb-4 px-4 justify-between">
+
+    <!-- Card -->
+    <article *ngFor="let furniture of furnitures" class="bg-beige rounded-3xl w-40 shadow-lg">
+
+        <!-- Imagen -->
+        <figure class="aspect-square bg-gradient-to-br flex items-center justify-center p-2">
+            <img [src]="'assets/imgs/estanteria3d.png'" [alt]="furniture.name" class="w-full h-full object-contain">
+        </figure>
+
+        <!-- Contenido -->
+        <section class="p-4 justify-center">
+            <h3 class="text-marron-oscuro font-bold text-lg mb-1">{{ furniture.name }}</h3>
+            <p class="text-marron-oscuro/70 text-sm mb-2">REF: {{ furniture.reference_number }}</p>
+
+            <!-- color y dificultad -->
+            <footer class=" items-center justify-center">
+                <span class="flex items-center text-marron-oscuro/70 text-sm">
+                    <span class="material-symbols-rounded text-sm mr-1">palette</span>
+                    {{ furniture.color_name }}
+                </span>
+
+                <span class="flex items-center text-marron-oscuro/70 text-sm">
+                    Dificultad: {{ furniture.difficulty }}
+                </span>
+            </footer>
+        </section>
+    </article>
+</section>

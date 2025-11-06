@@ -7,10 +7,11 @@ import { ApiService } from '../../services/api.service';
 import { Footer } from '../../components/footer/footer';
 import { FilterPanelComponent } from '../../components/filter-panel/filter-panel';
 import { FilterOptions, ProviderBasic, Color } from '../../types'; // tipos
+import { CardFurniture } from '../../components/card-furniture/card-furniture';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FilterPanelComponent],
+  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FilterPanelComponent, CardFurniture],
   templateUrl: './home.html',
   //styleUrl: './home.css'
 })
