@@ -16,7 +16,7 @@ import { FilterOptions, ProviderBasic, Color } from '../../types'; // tipos
 })
 export class Home implements OnInit {
   categories: any[] = [];
-  furnitures: any[] = [];
+  furnitures: any[] = []; //crear tipo para "furniture"
   providers: ProviderBasic[] = [];
   colors: Color[] = [];
 

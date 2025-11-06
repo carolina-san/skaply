@@ -156,7 +156,25 @@ export class FurnitureService {
     try{
       const { difficulties, provider_ids, category_ids, color_ids } = filters;
 
-      let sql = "SELECT * FROM public.furniture WHERE 1=1";
+      let sql = `
+        SELECT 
+            f.id, 
+            f.name, 
+            f.file_uri, 
+            f.reference_number, 
+            f.category_id, 
+            c.name AS category_name, 
+            f.provider_id, 
+            p.company_name as provider_name, 
+            f.color_id, 
+            cl.name AS color_name,
+            f.difficulty
+        FROM public.furniture f
+        INNER JOIN Assemblystep s ON s.furniture_id = f.id
+        INNER JOIN Category c ON f.category_id = c.id
+        INNER JOIN "User" p ON f.provider_id = p.id
+        INNER JOIN Color cl ON f.color_id = cl.id
+        WHERE 1=1`;
       const params: any[] = [];
       let paramIndex = 1; // Shows the number of parameters used
 
