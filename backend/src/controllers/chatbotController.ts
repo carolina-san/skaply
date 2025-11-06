@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ProviderService } from '@/services/ProviderService';
+import { ProviderService } from '@/services/providerService';
 
 export class ChatbotController{
     private providerService: ProviderService

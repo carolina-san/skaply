@@ -5,7 +5,7 @@ import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
 import { Landing } from './layouts/landing/landing';
 
 export const routes: Routes = [
-    {path: '', component: Landing},
+    {path: '', component: Home},
     {path: 'res-scanner', component: ResScanner},
     {path: 'viewer-3d', component: Viewer3D}
 ];
