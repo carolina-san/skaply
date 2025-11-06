@@ -27,7 +27,8 @@ CREATE TABLE "User" (
     company_name VARCHAR(100),
     professional_code VARCHAR(50),
     tax_address VARCHAR(200),
-    role user_role NOT NULL
+    role user_role NOT NULL,
+    image_url TEXT
 );
 
 -- ============================
