@@ -7,7 +7,7 @@
 -- ============================
 -- Drop existing tables and types (only for reset purposes)
 -- ============================
-DROP TABLE IF EXISTS  Step_Tool,Asemblystep, Asemblystep_part,Asemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
+DROP TABLE IF EXISTS  Step_Tool,Assemblystep, Assemblystep_part,Assemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
 DROP TYPE IF EXISTS user_role, diff;
 
 -- ============================

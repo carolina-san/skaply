@@ -14,7 +14,7 @@ export class FurnitureService {
   // Checks if the furniture step number is valid
   async stepExists(idFurniture: number, stepNumber: number): Promise<boolean> {
     const result = await pool.query(
-      `SELECT 1 FROM public.Assemblystep 
+      `SELECT 1 FROM public.Step 
       WHERE id = $1 AND step_number = $2
       LIMIT 1`,
       [idFurniture, stepNumber]
@@ -38,7 +38,7 @@ export class FurnitureService {
               cl.name AS color_name,
               f.difficulty
           FROM public.furniture f
-          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`);
@@ -67,7 +67,7 @@ export class FurnitureService {
               f.difficulty,
               COUNT(*) AS total_steps
           FROM public.furniture f
-          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id
@@ -171,7 +171,7 @@ export class FurnitureService {
             cl.name AS color_name,
             f.difficulty
         FROM public.furniture f
-        INNER JOIN Assemblystep s ON s.furniture_id = f.id
+        INNER JOIN Step s ON s.furniture_id = f.id
         INNER JOIN Category c ON f.category_id = c.id
         INNER JOIN "User" p ON f.provider_id = p.id
         INNER JOIN Color cl ON f.color_id = cl.id
