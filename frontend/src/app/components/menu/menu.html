@@ -2,6 +2,7 @@
     <span (click)="abrir()"
         class="text-azul-claro material-symbols-rounded cursor-pointer text-3xl absolute right-0 mr-3 mt-1">menu</span>
 
+    <!-- menu lateral -->
     <nav class="fixed top-0 right-0 w-64 h-full bg-beige shadow-xl transform transition-transform duration-300  z-[60] p-6"
         [ngClass]="{ 
             'translate-x-0': menuAbierto, 
@@ -23,11 +24,36 @@
     </nav>
 </div>
 
+<!-- menu desplegado -->
+<!-- Menú principal -->
+<nav
+  class="hidden lg:flex items-center space-x-6 text-lg absolute right-0 mr-8 mt-3 bg-marron-oscuro/60 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-white/10"
+>
+  <a
+    href="https://skaply.ovh/lynk"
+    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
+  >
+    Web Lynk
+  </a>
 
-<nav class="hidden lg:flex lg:items-center lg:space-x-8 lg:text-xl absolute right-0 mr-5 mt-4">
-    <a href="https://skaply.ovh/lynk" class="text-azul-claro">Web Lynk</a>
-    <a routerLink="/" class="text-azul-claro">Características</a>
-    <a routerLink="/" class="text-azul-claro">Cómo funciona</a>
-    <a href="https://skaply.ovh/lynk/blog" class="text-azul-claro">Noticias</a>
-    <a routerLink="/catalogo" class="text-azul-claro">Acceder a Skäply</a>
+  <a
+    routerLink="/"
+    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
+  >
+    Características
+  </a>
+
+  <a
+    routerLink="/"
+    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
+  >
+    Cómo funciona
+  </a>
+
+  <a
+    routerLink="/catalogo"
+    class="ml-3 bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full font-semibold hover:bg-azul-medio transition-all duration-300 shadow-md hover:shadow-xl"
+  >
+    Acceder a Skäply
+  </a>
 </nav>
