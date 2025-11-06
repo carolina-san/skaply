@@ -12,7 +12,6 @@ export class FurnitureService {
   }
 
   // Checks if the furniture step number is valid
-  // DUDA: mover al service step? hacer un archivo que sea checkers?
   async stepExists(idFurniture: number, stepNumber: number): Promise<boolean> {
     const result = await pool.query(
       `SELECT 1 FROM public.Assemblystep 
@@ -25,7 +24,24 @@ export class FurnitureService {
 
   async getAllFurniture() {
     try{
-        const result = await pool.query('SELECT * FROM public.furniture');
+        const result = await pool.query(`
+          SELECT DISTINCT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name,
+              f.difficulty
+          FROM public.furniture f
+          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id`);
         return result;
     }catch(error){
         throw new Error('Method not implemented');
@@ -36,11 +52,36 @@ export class FurnitureService {
   async getFurnitureById(id:number){
     try{
         const result = await pool.query(`
-          SELECT f.*, count(*) as total_steps
-		      FROM public.furniture f 
-          INNER JOIN Assemblystep s ON s.furniture_id = f.id 
+          SELECT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name, 
+              f.difficulty,
+              COUNT(*) AS total_steps
+          FROM public.furniture f
+          INNER JOIN Assemblystep s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id
           WHERE f.id = $1
-		      GROUP BY f.id, f.name, f.file_uri, f.color, f.reference_number, f.category_id, f.provider_id`,
+          GROUP BY 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.reference_number, 
+              f.category_id, 
+              c.name, 
+              f.provider_id, 
+              p.company_name, 
+              f.color_id, 
+              cl.name;`,
           [id]);
         return result;
     }catch(error){
@@ -66,25 +107,6 @@ export class FurnitureService {
       throw new Error('Unable to fetch the furniture included in the reference number');
     }
   }
-
-  // DUDA: tiene más sentido que le pasemos por parámtro el nombre del provider?
-  async getFurnitureByProvider(prov:number) {
-    try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1', [prov]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the provided');
-    }
-  }
-
-  async getFurnitureByProviderAndCategory(prov:number, cat:number) {
-    try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1 and category_id = $2', [prov, cat]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the provided');
-    }
-  }
  
   async getFurnitureParts(id:number){
     try{
@@ -104,13 +126,11 @@ export class FurnitureService {
     }
   }
 
-  // DUDA: no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal, no?
-
   // ERROR: falla cuando el stepNumber está formado por otro step
   async getFurnitureStepParts(idFurniture:number, stepNumber:number){
     try{
       const result = await pool.query(`
-      SELECT p.id, quantity, file_uri, color, reference_number
+      SELECT p.id, quantity, file_uri, reference_number, color_id
       FROM 
         Step_Part sp
       JOIN
@@ -126,23 +146,41 @@ export class FurnitureService {
     }
   }
 
-  // POR CORREGIR: sacar categoria de este filtro
+
   async getFilteredFurniture(filters: {
-    colors?: string[];
     difficulties?: ('low' | 'medium' | 'high')[];
     provider_ids?: number[];
     category_ids?: number[];
+    color_ids: number[];
   }) {
     try{
-      const { colors, difficulties, provider_ids, category_ids } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids } = filters;
 
-      let sql = "SELECT * FROM public.furniture WHERE 1=1";
+      let sql = `
+        SELECT DISTINCT 
+            f.id, 
+            f.name, 
+            f.file_uri, 
+            f.reference_number, 
+            f.category_id, 
+            c.name AS category_name, 
+            f.provider_id, 
+            p.company_name as provider_name, 
+            f.color_id, 
+            cl.name AS color_name,
+            f.difficulty
+        FROM public.furniture f
+        INNER JOIN Assemblystep s ON s.furniture_id = f.id
+        INNER JOIN Category c ON f.category_id = c.id
+        INNER JOIN "User" p ON f.provider_id = p.id
+        INNER JOIN Color cl ON f.color_id = cl.id
+        WHERE 1=1`;
       const params: any[] = [];
       let paramIndex = 1; // Shows the number of parameters used
 
-      if (colors && colors.length > 0) {
-        sql += ` AND color = ANY($${paramIndex}::text[])`;
-        params.push(colors);
+      if (color_ids && color_ids.length > 0) {
+        sql += ` AND color_id = ANY($${paramIndex}::int[])`;
+        params.push(color_ids);
         paramIndex++;
       }
 

@@ -10,10 +10,20 @@
           class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
       </div>
 
-      <button class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
+      <!-- <button class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
         <span class="material-symbols-rounded text-xl">tune</span>
         <span
           class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">2</span>
+      </button> -->
+      <button 
+        (click)="openFilterModal()"
+        class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
+        <span class="material-symbols-rounded text-xl">tune</span>
+        <span
+          *ngIf="activeFiltersCount > 0"
+          class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
+          {{ activeFiltersCount }}
+        </span>
       </button>
     </div>
 
@@ -44,7 +54,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center text-marron-oscuro/70 text-sm">
                 <span class="material-symbols-rounded text-sm mr-1">palette</span>
-                <span>{{ furniture.color }}</span>
+                <span>{{ furniture.color_name }}</span>
               </div>
               <div class="flex items-center text-marron-oscuro/70 text-sm">
                 <span>Dificultad: </span>
@@ -63,6 +73,15 @@
       class="fixed bottom-6 right-6 bg-azul-claro text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform z-50">
       <span class="material-symbols-rounded text-3xl">qr_code_scanner</span>
     </button>
+
+    <!-- Filter Panel -->
+    <app-filter-panel
+      [isOpen]="isFilterModalOpen"
+      [providers]="providers"
+      [colors]="colors"
+      (close)="closeFilterModal()"
+      (applyFilter)="onApplyFilters($event)">
+    </app-filter-panel>
 
   </main>
 </div>

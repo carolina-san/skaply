@@ -17,8 +17,6 @@ router.post("/filter", furnitureController.filterFurniture);
 router.get('/:id',furnitureController.getFurnitureById);
 router.get('/category/:cat',furnitureController.getFurnitureByCategory);
 router.get('/ref/:ref',furnitureController.getFurnitureByReference);
-router.get('/provider/:prov/category/:cat',furnitureController.getFurnitureByProviderAndCategory);
-router.get('/provider/:prov',furnitureController.getFurnitureByProvider);
 router.get('/:id/parts',furnitureController.getFurnitureParts);
 router.get('/:id/step/:stepId/parts',furnitureController.getFurnitureStepParts);
 router.get('/:id/issues',issueControllerInstance.getFurnitureIssues);

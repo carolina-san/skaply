@@ -69,46 +69,6 @@ export class FurnitureController {
     }
   }
 
-  getFurnitureByProvider =  async(req:Request,res:Response): Promise <void> =>{
-    try{
-      const prov = parseInt(req.params.prov || '0');
-      if (isNaN(prov)) {
-          res.status(400).json({error: 'Invalid furniture provider'});
-          return;
-      }
-      const result = await this.furnitureService.getFurnitureByProvider(prov)
-      res.status(200).json(
-        {
-          data: result.rows
-        }
-      )
-    }catch(error){
-      res.status(500).json({error: 'Failed to fetch furnitures from this provider'});
-    }
-  }
-
-    getFurnitureByProviderAndCategory =  async(req:Request,res:Response): Promise <void> =>{
-      try{
-        const prov = parseInt(req.params.prov || '0');
-        if (isNaN(prov)) {
-          res.status(400).json({error: 'Invalid furniture provider'});
-          return;
-        }
-        const cat = parseInt(req.params.cat || '0');
-        if (isNaN(cat)) {
-          res.status(400).json({error: 'Invalid furniture category'});
-          return;
-        }
-        const result = await this.furnitureService.getFurnitureByProviderAndCategory(prov, cat);
-        res.status(200).json(
-          {
-            data: result.rows
-          }
-        )
-      }catch(error){
-        res.status(500).json({error: 'Failed to fetch furnitures from this provider with the category provided'});
-      }
-    }
 
     getFurnitureParts = async(req:Request,res:Response): Promise <void> =>{
       try{
@@ -177,16 +137,15 @@ export class FurnitureController {
       }
     }
 
-  // POR CORREGIR
   filterFurniture = async (req: Request, res: Response): Promise <void> =>{
   try{
-    const { colors, difficulties, provider_ids, category_ids } = req.body;
+    const { difficulties, provider_ids, category_ids, color_ids } = req.body;
 
     const result = await this.furnitureService.getFilteredFurniture({
-      colors,
       difficulties,
       provider_ids,
-      category_ids
+      category_ids,
+      color_ids
     });
     res.status(200).json({
       message: 'Furniture fetched',

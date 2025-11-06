@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ProviderService } from '../services/ProviderService';
+import { ProviderService } from '../services/providerService';
 
 export class ProviderController {
 
@@ -15,7 +15,7 @@ export class ProviderController {
       const result = await this.providerService.getAllProviders();
       res.status(200).json({ 
         message: 'Database connected successfully',
-        data: result.rows[0]
+        data: result.rows
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch providers' });
