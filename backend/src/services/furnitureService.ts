@@ -25,7 +25,7 @@ export class FurnitureService {
   async getAllFurniture() {
     try{
         const result = await pool.query(`
-          SELECT 
+          SELECT DISTINCT 
               f.id, 
               f.name, 
               f.file_uri, 
@@ -157,7 +157,7 @@ export class FurnitureService {
       const { difficulties, provider_ids, category_ids, color_ids } = filters;
 
       let sql = `
-        SELECT 
+        SELECT DISTINCT 
             f.id, 
             f.name, 
             f.file_uri, 
