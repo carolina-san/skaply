@@ -22,6 +22,16 @@ export class ProviderService {
     }
   }
 
+  async getAllProvidersChatbot(){
+    try{
+      const result = await pool.query(`SELECT id, company_name, email, cif, tax_address, name,image_url
+                                      FROM public."User" where role = 'provider'`);
+      return result;                                
+    }catch(error){
+      throw new Error('Unable to fetch providers for chatbot')
+    }
+  }
+
   // async updateProvider(id: string, userData: any) {
   //   // Update user logic here
   //   throw new Error('Method not implemented');
