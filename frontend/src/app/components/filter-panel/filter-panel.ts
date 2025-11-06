@@ -5,7 +5,7 @@ import { FilterOptions, ProviderBasic } from '../../types';
 @Component({
   selector: 'app-filter-panel',
   imports: [CommonModule],
-  templateUrl: './filter-panel2.html',
+  templateUrl: './filter-panel.html',
 })
 
 export class FilterPanelComponent {
@@ -27,7 +27,7 @@ export class FilterPanelComponent {
     category_ids: []
   };
 
-  availableColors = [
+  availableColors = [ // se deberán coger de la bd
     { value: 'Beige', label: 'Beige', hex: '#F5E6D3' },
     { value: 'Verde', label: 'Verde', hex: '#4CAF50' },
     { value: 'Azul', label: 'Azul', hex: '#2196F3' },
@@ -36,13 +36,14 @@ export class FilterPanelComponent {
     { value: 'Negro', label: 'Negro', hex: '#212121' }
   ];
 
-  availableDifficulties = [
+  availableDifficulties = [ // se deberán coger de la bd
     { value: 'low' as const, label: 'Baja', icon: 'sentiment_satisfied', color: '#4CAF50' },
     { value: 'medium' as const, label: 'Media', icon: 'sentiment_neutral', color: '#FF9800' },
     { value: 'high' as const, label: 'Alta', icon: 'sentiment_dissatisfied', color: '#F44336' }
   ];
 
   ngOnChanges() {
+    console.log("ha cambiado ng");
     if (this.isOpen) {
       setTimeout(() => this.isAnimating = true, 10);
     } else {
