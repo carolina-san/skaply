@@ -40,7 +40,7 @@ export class FurnitureService {
 		      FROM public.furniture f 
           INNER JOIN Assemblystep s ON s.furniture_id = f.id 
           WHERE f.id = $1
-		      GROUP BY f.id, f.name, f.file_uri, f.color, f.reference_number, f.category_id, f.provider_id`,
+		      GROUP BY f.id, f.name, f.file_uri, f.reference_number, f.category_id, f.provider_id, f.color_id`,
           [id]);
         return result;
     }catch(error){
@@ -66,25 +66,6 @@ export class FurnitureService {
       throw new Error('Unable to fetch the furniture included in the reference number');
     }
   }
-
-  // DUDA: tiene más sentido que le pasemos por parámtro el nombre del provider?
-  async getFurnitureByProvider(prov:number) {
-    try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1', [prov]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the provided');
-    }
-  }
-
-  async getFurnitureByProviderAndCategory(prov:number, cat:number) {
-    try{
-        const result = await pool.query('SELECT * FROM public.furniture WHERE provider_id = $1 and category_id = $2', [prov, cat]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the provided');
-    }
-  }
  
   async getFurnitureParts(id:number){
     try{
@@ -104,13 +85,11 @@ export class FurnitureService {
     }
   }
 
-  // DUDA: no tiene sentido hacer getFurnitureSteps porque no hay info relevante del step como tal, no?
-
   // ERROR: falla cuando el stepNumber está formado por otro step
   async getFurnitureStepParts(idFurniture:number, stepNumber:number){
     try{
       const result = await pool.query(`
-      SELECT p.id, quantity, file_uri, color, reference_number
+      SELECT p.id, quantity, file_uri, reference_number, color_id
       FROM 
         Step_Part sp
       JOIN
@@ -141,7 +120,7 @@ export class FurnitureService {
       let paramIndex = 1; // Shows the number of parameters used
 
       if (colors && colors.length > 0) {
-        sql += ` AND color = ANY($${paramIndex}::text[])`;
+        sql += ` AND color_id = ANY($${paramIndex}::text[])`;
         params.push(colors);
         paramIndex++;
       }
