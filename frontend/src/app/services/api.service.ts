@@ -18,6 +18,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture`);
   }
 
+  getFurnitureById(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/${id}`);
+  }
+
   // Obtener muebles filtrados
   getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);

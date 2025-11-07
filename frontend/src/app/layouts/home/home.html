@@ -41,12 +41,7 @@
     <app-footer></app-footer>
   </div>
 
-
-
-  <!-- Botón flotante de escaneo QR -->
-  <button class="btn-escaneo">
-    <span class="material-symbols-rounded text-3xl text-marron-oscuro">qr_code_scanner</span>
-  </button>
+  <app-scanner></app-scanner>
 
   <!-- Filter Panel -->
   <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors" (close)="closeFilterModal()"

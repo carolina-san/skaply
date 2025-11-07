@@ -8,10 +8,11 @@ import { Footer } from '../../components/footer/footer';
 import { FilterPanelComponent } from '../../components/filter-panel/filter-panel';
 import { FilterOptions, ProviderBasic, Color } from '../../types'; // tipos
 import { CardFurniture } from '../../components/card-furniture/card-furniture';
+import { Scanner } from '../../components/scanner/scanner';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FilterPanelComponent, CardFurniture],
+  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FilterPanelComponent, CardFurniture, Scanner],
   templateUrl: './home.html',
   //styleUrl: './home.css'
 })
@@ -23,6 +24,7 @@ export class Home implements OnInit {
 
   isFilterModalOpen = false; // filter
   activeFiltersCount = 0; // filter
+   isQrScannerOpen = false;
 
   constructor(private apiService: ApiService) { }
 
@@ -42,6 +44,7 @@ export class Home implements OnInit {
     });
   }
 
+
   obtenerCategorias() {
     this.apiService.getCategories().subscribe(data => {
       console.log('Categorías:', data);
@@ -51,7 +54,6 @@ export class Home implements OnInit {
     });
   }
 
-  // INICIO LOGICA PARA FILTROS
   loadProviders() {
     this.apiService.getProviders().subscribe({
       next: (response) => {
@@ -102,5 +104,39 @@ export class Home implements OnInit {
       (filters.difficulties?.length || 0) + 
       (filters.provider_ids?.length || 0);
   }
-  // FIN LÓGICA PARA FILTROS
+
+  onQrScanned(code: string) {
+    console.log('Código QR escaneado:', code);
+    
+    // Aquí implementas tu lógica según el tipo de QR
+    // Ejemplo 1: Si el QR contiene un ID de mueble
+    if (code.includes('furniture')) {
+      const furnitureId = code.split('/').pop();
+      this.apiService.getFurnitureById(furnitureId!).subscribe({
+        next: (response) => {
+          const furniture = response.data;
+          alert(`Mueble escaneado: ${furniture.name}`);
+          // Aquí podrías navegar a la página del mueble o mostrar más detalles
+        }
+        ,error: (error) => {
+          console.error('Error al obtener el mueble escaneado:', error);
+        }
+      });
+    } 
+    // Ejemplo 2: Si es una clave de configuración
+    else if (code.startsWith('CONFIG:')) {
+      const configKey = code.replace('CONFIG:', '');
+      this.processConfiguration(configKey);
+    }
+    // Ejemplo 3: Mostrar el código
+    else {
+      alert(`Código escaneado: ${code}`);
+    }
+  }
+
+  processConfiguration(configKey: string) {
+    // Implementa tu lógica de configuración
+    console.log('Procesando configuración:', configKey);
+    // Ejemplo: this.apiService.applyConfiguration(configKey).subscribe(...)
+  }
 }
