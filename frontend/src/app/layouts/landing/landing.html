@@ -1,6 +1,5 @@
-<main class="h-screen bg-marron-oscuro p-10">
-  <section class="flex flex-col justify-center items-center lg:flex-row lg:justify-between lg:items-center">
-    
+<main class="h-screen bg-marron-oscuro">
+  <section class="p-10 flex flex-col justify-center items-center lg:flex-row lg:justify-between lg:items-center">
     <!-- Texto -->
     <div class="flex flex-col lg:w-[50%] items-center lg:items-start justify-center gap-10 text-center lg:text-left">
       <h1 class="text-4xl sm:text-6xl lg:text-8xl font-bold text-azul-claro">
@@ -9,10 +8,7 @@
       <h2 class="text-2xl sm:text-3xl text-white">
         Tu asistente 3D para montar muebles
       </h2>
-      <button
-        (click)="acceder()"
-        class="flex btn-azul text-xl items-center justify-center"
-      >
+      <button (click)="acceder()" class="flex btn-azul text-xl items-center justify-center">
         Probar ahora
         <span class="material-symbols-rounded ml-2">play_arrow</span>
       </button>
@@ -24,4 +20,57 @@
     </div>
 
   </section>
+
+  <!--texto-->
+  <section class="text-center mt-20 p-5">
+    <p class="text-beige text-center text-xl">
+      Olvídate de los manuales complicados.
+    </p>
+    <p class="text-beige mt-5 text-xl">
+      Con Skäply, puedes montar cualquier mueble viendo cada pieza en 3D y recibiendo instrucciones personalizadas del
+      asistente virtual.
+    </p>
+  </section>
+
+  <!--secciones juntas-->
+  <div class="grid grid-cols-1 md:grid-cols-2 w-screen mt-20">
+    <!--visor-3d-->
+    <section class="flex bg-azul-claro items-center justify-between p-5 h-50 order-1 md:order-1">
+      <div>
+        <h2 class="text-2xl ml-10 text-marron-oscuro">Visor 3D</h2>
+        <p class="text-xl ml-10 text-marron-oscuro">Gira, acerca y explora el mueble desde cualquier ángulo.</p>
+      </div>
+      <span class="material-symbols-rounded text-marron-oscuro">view_in_ar</span>
+    </section>
+
+    <!--asistente-->
+    <section class="flex bg-beige items-center justify-between p-5 h-50 order-2 md:order-2">
+      <span class="material-symbols-rounded text-marron-oscuro">chat</span>
+      <div class="text-right mr-5">
+        <h2 class="text-2xl ml-10 text-marron-oscuro">Asistente Virtual</h2>
+        <p class="text-xl ml-10 text-marron-oscuro">Chatbot que responde tus dudas y te guía paso a paso.</p>
+      </div>
+    </section>
+
+    <!--montaje-->
+    <section class="flex bg-beige items-center justify-between p-5 h-50 order-4 md:order-3">
+      <span class="material-symbols-rounded text-marron-oscuro">crossword</span>
+      <div class="text-right mr-5">
+        <h2 class="text-2xl ml-10 text-marron-oscuro">Montaje sencillo</h2>
+        <p class="text-xl ml-10 text-marron-oscuro">Instrucciones claras y visuales sin lenguaje técnico.</p>
+      </div>
+    </section>
+
+    <!--qr-->
+    <section class="flex bg-azul-claro items-center justify-between p-5 h-50 order-3 md:order-4">
+      <div>
+        <h2 class="text-2xl ml-10 text-marron-oscuro">Accesible desde la web</h2>
+        <p class="text-xl ml-10 text-marron-oscuro">No necesitas instalar nada, funciona desde cualquier dispositivo.
+        </p>
+      </div>
+      <span class="material-symbols-rounded text-marron-oscuro">qr_code</span>
+    </section>
+  </div>
+
+
 </main>
