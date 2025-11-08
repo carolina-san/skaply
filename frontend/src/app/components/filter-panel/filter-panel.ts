@@ -67,33 +67,6 @@ export class FilterPanelComponent {
     this.toggleArrayItem<'low' | 'medium' | 'high'>('difficulties', difficulty);
   }
 
-  // toggleProvider(id: number) {
-  //   const index = this.selectedFilters.provider_ids.indexOf(id);
-  //   if (index > -1) {
-  //     this.selectedFilters.provider_ids.splice(index, 1);
-  //   } else {
-  //     this.selectedFilters.provider_ids.push(id);
-  //   }
-  // }
-
-  // toggleColor(id: number) {
-  //   const index = this.selectedFilters.color_ids.indexOf(id);
-  //   if (index > -1) {
-  //     this.selectedFilters.color_ids.splice(index, 1);
-  //   } else {
-  //     this.selectedFilters.color_ids.push(id);
-  //   }
-  // }
-
-  // toggleDifficulty(difficulty: 'low' | 'medium' | 'high') {
-  //   const index = this.selectedFilters.difficulties.indexOf(difficulty);
-  //   if (index > -1) {
-  //     this.selectedFilters.difficulties.splice(index, 1);
-  //   } else {
-  //     this.selectedFilters.difficulties.push(difficulty);
-  //   }
-  // }
-
   clearFilters() {
     this.selectedFilters = {
       difficulties: [],
@@ -101,6 +74,8 @@ export class FilterPanelComponent {
       category_ids: [],
       color_ids: []
     };
+    this.applyFilter.emit(this.selectedFilters);
+    //this.closeModal();
   }
 
   applyFilters() {

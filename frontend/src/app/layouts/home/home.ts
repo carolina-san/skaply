@@ -90,15 +90,7 @@ export class Home implements OnInit {
   }
 
   onApplyFilters(filters: FilterOptions) {
-    this.apiService.getFilteredFurniture(filters).subscribe({
-      next: (response) => {
-        this.furnitures = response.data;
-        this.calculateActiveFilters(filters);
-      },
-      error: (error) => {
-        console.error('Error al filtrar muebles:', error);
-      }
-    });
+    this.applyFiltersWithCategory(filters);
   }
 
   calculateActiveFilters(filters: FilterOptions) {
@@ -123,12 +115,21 @@ export class Home implements OnInit {
     const filters: FilterOptions = {
       category_ids: [categoryId]
     };
-    this.apiService.getFilteredFurniture(filters).subscribe({
+    this.applyFiltersWithCategory(filters);
+  }
+
+  private applyFiltersWithCategory(filters: FilterOptions) {
+    const completeFilters: FilterOptions = {
+      ...filters,
+      category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : filters.category_ids
+    };
+    this.apiService.getFilteredFurniture(completeFilters).subscribe({
       next: (response) => {
         this.furnitures = response.data;
+        this.calculateActiveFilters(filters); // without counting category
       },
       error: (error) => {
-        console.error('Error al filtrar por categoría:', error);
+        console.error('Error al filtrar muebles:', error);
       }
     });
   }
