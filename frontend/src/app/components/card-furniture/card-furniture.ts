@@ -9,5 +9,5 @@ import { CommonModule } from '@angular/common';
   styleUrl: './card-furniture.css'
 })
 export class CardFurniture {
-   @Input() furnitures: any[] = [];
+   @Input() furniture: any = {};
 }

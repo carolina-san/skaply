@@ -35,12 +35,14 @@
   </div>
 
   <!-- Grid de muebles + Footer (con scroll) -->
-   <!-- furniture.file_uri en img [src] -->
-  <div class="flex-1 overflow-y-auto">
-    <app-card-furniture [furnitures]="furnitures"></app-card-furniture>
-    <app-footer></app-footer>
-  </div>
+  <!-- furniture.file_uri en img [src] -->
+  <section class=" m-0 flex flex-col justify-between">
+    <div class="grid p-7 gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+      <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
+    </div>
 
+    <app-footer class="m-0"></app-footer>
+  </section>
   <app-scanner></app-scanner>
 
   <!-- Filter Panel -->
