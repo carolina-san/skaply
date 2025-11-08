@@ -1,13 +1,18 @@
+import { Difficulty } from "./common.types";
+
 // Interfaz básica - Para cards del catálogo
-export interface FurnitureBasic {
+export interface Furniture {
     id: number;
     name: string;
     reference_number: string;
-    color: string;
-    difficulty: 'low' | 'medium' | 'high';
+    color_name: string;
+    color_hex: string
+    difficulty: Difficulty;
     file_uri?: string;
-    //   provider_id: number;
-    //   category_id: number;
+    // provider_id: number;
+    // provider_name: number;
+    // category_id: number;
+    // category_name: number;
 }
 
 
@@ -16,7 +21,7 @@ export interface FurnitureBasic {
 // Ejemplos de posibles interfaces de Furniture:
 
 // // Interfaz para listado admin
-// export interface Furniture extends FurnitureBasic {
+// export interface FurnitureAdmin extends Furniture {
 //   provider_id: number;
 //   category_id: number;
 //   created_at?: Date;

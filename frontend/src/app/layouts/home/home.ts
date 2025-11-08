@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Footer } from '../../components/footer/footer';
 import { FilterPanelComponent } from '../../components/filter-panel/filter-panel';
-import { FilterOptions, ProviderBasic, Color } from '../../types'; // tipos
+import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types'; // tipos
 import { CardFurniture } from '../../components/card-furniture/card-furniture';
 import { Scanner } from '../../components/scanner/scanner';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
@@ -19,13 +19,14 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
 })
 export class Home implements OnInit {
   categories: any[] = [];
-  furnitures: any[] = []; //crear tipo para "furniture"
+  // furnitures: any[] = []; //crear tipo para "furniture"
+  furnitures: Furniture[] = [];
   providers: ProviderBasic[] = [];
   colors: Color[] = [];
 
   isFilterModalOpen = false; // filter
   activeFiltersCount = 0; // filter
-   isQrScannerOpen = false;
+  isQrScannerOpen = false;
   difficultyLabels = DifficultyLabels;
 
   constructor(private apiService: ApiService) { }

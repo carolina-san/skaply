@@ -29,12 +29,6 @@ export class FilterPanelComponent {
     color_ids: []
   };
 
-  // availableDifficulties = [ // se deberán coger de la bd
-  //   { value: 'low' as const, label: 'Baja', icon: 'sentiment_satisfied', color: '#4CAF50' },
-  //   { value: 'medium' as const, label: 'Media', icon: 'sentiment_neutral', color: '#FF9800' },
-  //   { value: 'high' as const, label: 'Alta', icon: 'sentiment_dissatisfied', color: '#F44336' }
-  // ];
-
   ngOnChanges() {
     if (this.isOpen) {
       setTimeout(() => this.isAnimating = true, 10);

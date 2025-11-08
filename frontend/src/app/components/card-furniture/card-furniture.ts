@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DifficultyLabels } from '../../utils/difficulty-labels';
+import { Furniture } from '../../types';
 
 @Component({
   selector: 'app-card-furniture',
@@ -9,5 +11,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './card-furniture.css'
 })
 export class CardFurniture {
-   @Input() furniture: any = {};
+  // @Input() furniture: any = {};
+  @Input() furniture!: Furniture;
+  
+  difficultyLabels = DifficultyLabels;
 }
