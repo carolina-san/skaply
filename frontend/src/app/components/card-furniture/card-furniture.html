@@ -1,28 +1,31 @@
+<!-- Card Profesional con Imagen de Fondo y Degradado -->
+<article class="relative h-80 bg-beige rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 w-full max-w-sm">
 
+  <!-- Imagen de fondo -->
+  <img 
+    [src]="'assets/imgs/estanteria3d.png'" 
+    [alt]="furniture.name" 
+    class="w-full h-full object-cover"
+  >
 
-    <!-- Card -->
-    <article  class="bg-beige rounded-3xl shadow-lg">
+  <!-- Overlay degradado -->
+  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
-        <!-- Imagen -->
-        <figure class="aspect-square bg-gradient-to-br flex items-center justify-center p-2">
-            <img [src]="'assets/imgs/estanteria3d.png'" [alt]="furniture.name" class="w-full h-full object-contain">
-        </figure>
+  <!-- Contenido sobre el degradado -->
+  <section class="absolute bottom-0 w-full p-5 flex flex-col gap-1 text-beige">
+    <h3 class="font-extrabold text-xl truncate">{{ furniture.name }}</h3>
+    <p class="text-beige text-sm">REF: {{ furniture.reference_number }}</p>
 
-        <!-- Contenido -->
-        <section class="p-4 justify-center">
-            <h3 class="text-marron-oscuro font-bold text-lg mb-1">{{ furniture.name }}</h3>
-            <p class="text-marron-oscuro/70 text-sm mb-2">REF: {{ furniture.reference_number }}</p>
+    <div class="flex justify-between items-center mt-2 text-sm text-beige">
+      <!-- Color -->
+      <span class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded-full border border-beige" [ngStyle]="{'background-color': furniture.color_hex}"></span>
+        {{ furniture.color_name }}
+      </span>
 
-            <!-- color y dificultad -->
-            <footer class=" items-center justify-center">
-                <span class="flex items-center text-marron-oscuro/70 text-sm">
-                    <span class="material-symbols-rounded text-sm mr-1">palette</span>
-                    {{ furniture.color_name }}
-                </span>
+      <!-- Dificultad -->
+      <span class="font-semibold">Dificultad: {{ furniture.difficulty }}</span>
+    </div>
+  </section>
 
-                <span class="flex items-center text-marron-oscuro/70 text-sm">
-                    Dificultad: {{ furniture.difficulty }}
-                </span>
-            </footer>
-        </section>
-    </article>
+</article>
