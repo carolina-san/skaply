@@ -155,9 +155,10 @@ export class FurnitureService {
     provider_ids?: number[];
     category_ids?: number[];
     color_ids: number[];
+    search?: string;
   }) {
     try{
-      const { difficulties, provider_ids, category_ids, color_ids } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
 
       let sql = `
         SELECT DISTINCT 
@@ -202,6 +203,12 @@ export class FurnitureService {
       if (category_ids && category_ids.length > 0) {
         sql += ` AND category_id = ANY($${paramIndex}::int[])`;
         params.push(category_ids);
+        paramIndex++;
+      }
+
+      if (search && search.trim() !== '') {
+        sql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
+        params.push(`%${search}%`);
         paramIndex++;
       }
 
