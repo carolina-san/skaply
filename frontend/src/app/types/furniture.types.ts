@@ -10,6 +10,7 @@ export interface FurnitureBasic {
     //   category_id: number;
 }
 
+
 // Se pueden hacer todas las interfaces necesarias según el nivel de información que se necesite del recurso.
 
 // Ejemplos de posibles interfaces de Furniture:

@@ -128,9 +128,6 @@
               [class.border-azul-claro]="selectedFilters.difficulties.includes(diff.value)"
               [class.bg-blue-50]="selectedFilters.difficulties.includes(diff.value)"
               [class.border-gray-200]="!selectedFilters.difficulties.includes(diff.value)">
-              <span class="material-symbols-rounded" [style.color]="diff.color">
-                {{ diff.icon }}
-              </span>
               <span class="text-marron-oscuro">{{ diff.label }}</span>
             </button>
           </div>

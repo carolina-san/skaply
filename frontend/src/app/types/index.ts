@@ -1,3 +1,6 @@
+// Common types
+export * from './common.types';
+
 // Provider types
 export * from './provider.types';
 

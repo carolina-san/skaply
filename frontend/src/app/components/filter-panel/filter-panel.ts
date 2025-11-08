@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common'; // para *ngIf
 import { FilterOptions, ProviderBasic, Color } from '../../types';
+import { DifficultyOptions } from '../../utils/difficulty-labels';
 
 @Component({
   selector: 'app-filter-panel',
@@ -19,6 +20,7 @@ export class FilterPanelComponent {
 
   isAnimating = false;
   openSection: 'provider' | 'color' | 'difficulty' | null = null;
+  availableDifficulties  = DifficultyOptions;
 
   selectedFilters: FilterOptions = {
     difficulties: [],
@@ -27,20 +29,11 @@ export class FilterPanelComponent {
     color_ids: []
   };
 
-  availableColors = [ // se deberán coger de la bd
-    { value: 'Beige', label: 'Beige', hex: '#F5E6D3' },
-    { value: 'Verde', label: 'Verde', hex: '#4CAF50' },
-    { value: 'Azul', label: 'Azul', hex: '#2196F3' },
-    { value: 'Gris', label: 'Gris', hex: '#9E9E9E' },
-    { value: 'Marrón', label: 'Marrón', hex: '#795548' },
-    { value: 'Negro', label: 'Negro', hex: '#212121' }
-  ];
-
-  availableDifficulties = [ // se deberán coger de la bd
-    { value: 'low' as const, label: 'Baja', icon: 'sentiment_satisfied', color: '#4CAF50' },
-    { value: 'medium' as const, label: 'Media', icon: 'sentiment_neutral', color: '#FF9800' },
-    { value: 'high' as const, label: 'Alta', icon: 'sentiment_dissatisfied', color: '#F44336' }
-  ];
+  // availableDifficulties = [ // se deberán coger de la bd
+  //   { value: 'low' as const, label: 'Baja', icon: 'sentiment_satisfied', color: '#4CAF50' },
+  //   { value: 'medium' as const, label: 'Media', icon: 'sentiment_neutral', color: '#FF9800' },
+  //   { value: 'high' as const, label: 'Alta', icon: 'sentiment_dissatisfied', color: '#F44336' }
+  // ];
 
   ngOnChanges() {
     if (this.isOpen) {
