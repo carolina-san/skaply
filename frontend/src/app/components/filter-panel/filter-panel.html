@@ -34,9 +34,9 @@
             <div class="flex items-center gap-2">
               <span class="text-lg font-semibold text-marron-oscuro">Proveedor</span>
               <span 
-                *ngIf="selectedFilters.provider_ids.length > 0"
+                *ngIf="getProviderIdsLength() > 0"
                 class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ selectedFilters.provider_ids.length }}
+                {{ getProviderIdsLength() }}
               </span>
             </div>
             <span class="material-symbols-rounded text-marron-oscuro transition-transform" 
@@ -53,7 +53,7 @@
               class="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded px-2">
               <input 
                 type="checkbox"
-                [checked]="selectedFilters.provider_ids.includes(provider.id)"
+                [checked]="isProviderSelected(provider.id)"
                 (change)="toggleProvider(provider.id)"
                 class="w-5 h-5 text-azul-claro rounded focus:ring-azul-claro focus:ring-2">
               <span class="text-marron-oscuro">{{ provider.company_name }}</span>
@@ -69,9 +69,9 @@
             <div class="flex items-center gap-2">
               <span class="text-lg font-semibold text-marron-oscuro">Color</span>
               <span 
-                *ngIf="selectedFilters.color_ids.length > 0"
+                *ngIf="getColorIdsLength() > 0"
                 class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ selectedFilters.color_ids.length }}
+                {{ getColorIdsLength() }}
               </span>
             </div>
             <span class="material-symbols-rounded text-marron-oscuro transition-transform"
@@ -87,9 +87,9 @@
               *ngFor="let color of colors"
               (click)="toggleColor(color.id)"
               class="flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all"
-              [class.border-azul-claro]="selectedFilters.color_ids.includes(color.id)"
-              [class.bg-blue-50]="selectedFilters.color_ids.includes(color.id)"
-              [class.border-gray-200]="!selectedFilters.color_ids.includes(color.id)">
+              [class.border-azul-claro]="isColorSelected(color.id)"
+              [class.bg-blue-50]="isColorSelected(color.id)"
+              [class.border-gray-200]="!isColorSelected(color.id)">
               <div 
                 class="w-6 h-6 rounded"
                 [style.background-color]="color.hex">
@@ -107,9 +107,9 @@
             <div class="flex items-center gap-2">
               <span class="text-lg font-semibold text-marron-oscuro">Dificultad</span>
               <span 
-                *ngIf="selectedFilters.difficulties.length > 0"
+                *ngIf="getDifficultiesLength() > 0"
                 class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ selectedFilters.difficulties.length }}
+                 {{ getDifficultiesLength() }}
               </span>
             </div>
             <span class="material-symbols-rounded text-marron-oscuro transition-transform"
@@ -125,9 +125,9 @@
               *ngFor="let diff of availableDifficulties"
               (click)="toggleDifficulty(diff.value)"
               class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border-2 transition-all"
-              [class.border-azul-claro]="selectedFilters.difficulties.includes(diff.value)"
-              [class.bg-blue-50]="selectedFilters.difficulties.includes(diff.value)"
-              [class.border-gray-200]="!selectedFilters.difficulties.includes(diff.value)">
+              [class.border-azul-claro]="isDifficultySelected(diff.value)"
+              [class.bg-blue-50]="isDifficultySelected(diff.value)"
+              [class.border-gray-200]="!isDifficultySelected(diff.value)">
               <span class="text-marron-oscuro">{{ diff.label }}</span>
             </button>
           </div>

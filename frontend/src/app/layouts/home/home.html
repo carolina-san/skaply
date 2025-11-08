@@ -8,12 +8,6 @@
       <input type="text" placeholder="Buscar"
         class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
     </div>
-
-    <!-- <button class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
-        <span class="material-symbols-rounded text-xl">tune</span>
-        <span
-          class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">2</span>
-      </button> -->
     <button (click)="openFilterModal()"
       class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0">
       <span class="material-symbols-rounded text-xl">tune</span>
@@ -26,10 +20,19 @@
 
   <!-- Filtros de categorías -->
   <div class="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-4 pb-0">
-    <button class="btn-filtros-home">
+    <button       
+      (click)="filterByCategory(null)" 
+      class="btn-filtros-home"
+      [class.bg-azul-claro]="selectedCategoryId === null"
+      [class.text-white]="selectedCategoryId === null">
       Ver todo
     </button>
-    <button *ngFor="let category of categories" class="btn-filtros-home">
+    <button 
+      *ngFor="let category of categories" 
+      (click)="filterByCategory(category.id)" 
+      class="btn-filtros-home"
+      [class.bg-azul-claro]="selectedCategoryId === category.id"
+      [class.text-white]="selectedCategoryId === category.id">
       {{ category.name }}
     </button>
   </div>

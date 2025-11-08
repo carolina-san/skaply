@@ -24,18 +24,19 @@ export class Home implements OnInit {
   providers: ProviderBasic[] = [];
   colors: Color[] = [];
 
-  isFilterModalOpen = false; // filter
-  activeFiltersCount = 0; // filter
+  isFilterModalOpen = false;
+  activeFiltersCount = 0;
   isQrScannerOpen = false;
   difficultyLabels = DifficultyLabels;
+  selectedCategoryId: number | null = null;
 
   constructor(private apiService: ApiService) { }
 
   ngOnInit() {
     this.obtenerCategorias();
     this.obtenerCatalogo();
-    this.loadProviders(); // filter
-    this.loadColors(); // filter
+    this.loadProviders();
+    this.loadColors();
   }
 
   obtenerCatalogo() {
@@ -46,7 +47,6 @@ export class Home implements OnInit {
       console.error('Error al obtener el catálogo de muebles:', error);
     });
   }
-
 
   obtenerCategorias() {
     this.apiService.getCategories().subscribe(data => {
@@ -106,6 +106,31 @@ export class Home implements OnInit {
       (filters.color_ids?.length || 0) + 
       (filters.difficulties?.length || 0) + 
       (filters.provider_ids?.length || 0);
+  }
+
+  filterByCategory(categoryId: number | null) {
+    // Same category selected
+    if (this.selectedCategoryId === categoryId) {
+      return;
+    }
+    this.selectedCategoryId = categoryId;
+    // "Ver todo"
+    if (categoryId === null) {
+      this.obtenerCatalogo();
+      return;
+    }
+    // Filter by category
+    const filters: FilterOptions = {
+      category_ids: [categoryId]
+    };
+    this.apiService.getFilteredFurniture(filters).subscribe({
+      next: (response) => {
+        this.furnitures = response.data;
+      },
+      error: (error) => {
+        console.error('Error al filtrar por categoría:', error);
+      }
+    });
   }
 
   onQrScanned(code: string) {
