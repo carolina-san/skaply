@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Header } from '../../components/header/header';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { RouterLink } from '@angular/router';
@@ -13,7 +14,7 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FilterPanelComponent, CardFurniture, Scanner],
+  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Scanner],
   templateUrl: './home.html',
   //styleUrl: './home.css'
 })
@@ -29,6 +30,9 @@ export class Home implements OnInit {
   isQrScannerOpen = false;
   difficultyLabels = DifficultyLabels;
   selectedCategoryId: number | null = null;
+  searchText: string = '';
+  previousSearchText: string = '';
+  hasSearched: boolean = false;
 
   constructor(private apiService: ApiService) { }
 
@@ -61,7 +65,6 @@ export class Home implements OnInit {
     this.apiService.getProviders().subscribe({
       next: (response) => {
         this.providers = Object.values(response.data);
-        //this.providers = response.data;
       },
       error: (error) => {
         console.error('Error al cargar proveedores:', error);
@@ -78,6 +81,48 @@ export class Home implements OnInit {
         console.error('Error al cargar proveedores:', error);
       }
     });
+  }
+
+  onSearch() {
+    const searchTerm = this.searchText.trim();
+    if (searchTerm === '') {
+      this.obtenerCatalogo();
+      this.selectedCategoryId = null;
+      this.hasSearched = false;
+      return;
+    }
+
+    // Filter by text
+    const filters: FilterOptions = {
+      search: searchTerm
+    };
+    this.apiService.getFilteredFurniture(filters).subscribe({
+      next: (response) => {
+        this.furnitures = response.data;
+        this.selectedCategoryId = null;
+        this.hasSearched = true;
+        this.previousSearchText = searchTerm;
+      },
+      error: (error) => {
+        console.error('Error al buscar muebles:', error);
+      }
+    });
+  }
+
+  onSearchKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.onSearch();
+    }
+  }
+
+  onSearchBlur() {
+    setTimeout(() => {  
+      if (!this.hasSearched) {
+        this.searchText = '';
+      } else if (this.searchText.trim() !== this.previousSearchText) {
+        this.searchText = this.previousSearchText;
+      }
+    }, 100);
   }
 
   openFilterModal() {

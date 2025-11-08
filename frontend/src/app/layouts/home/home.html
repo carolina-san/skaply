@@ -4,8 +4,14 @@
   <div class="w-full mx-auto mb-6 flex gap-3 items-center flex-shrink-0 px-4">
     <div class="relative flex-1">
       <span
+        (mousedown)="onSearch()"
         class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:text-amber-900 transition-colors">search</span>
-      <input type="text" placeholder="Buscar"
+      <input 
+        type="text" 
+        placeholder="Buscar"
+        [(ngModel)]="searchText"
+        (keypress)="onSearchKeyPress($event)"
+        (blur)="onSearchBlur()"
         class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
     </div>
     <button (click)="openFilterModal()"
