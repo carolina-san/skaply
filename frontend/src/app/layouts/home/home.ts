@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Header } from '../../components/header/header';
@@ -19,6 +19,8 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
   //styleUrl: './home.css'
 })
 export class Home implements OnInit {
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+
   categories: any[] = [];
   // furnitures: any[] = []; //crear tipo para "furniture"
   furnitures: Furniture[] = [];
@@ -85,6 +87,7 @@ export class Home implements OnInit {
 
   onSearch() {
     const searchTerm = this.searchText.trim();
+    this.searchInput.nativeElement.blur();
     if (searchTerm === '') {
       this.obtenerCatalogo();
       this.selectedCategoryId = null;
@@ -101,7 +104,7 @@ export class Home implements OnInit {
         this.furnitures = response.data;
         this.selectedCategoryId = null;
         this.hasSearched = true;
-        this.previousSearchText = searchTerm;
+        this.previousSearchText = searchTerm;        
       },
       error: (error) => {
         console.error('Error al buscar muebles:', error);

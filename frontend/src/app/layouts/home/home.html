@@ -7,6 +7,7 @@
         (mousedown)="onSearch()"
         class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:text-amber-900 transition-colors">search</span>
       <input 
+        #searchInput
         type="text" 
         placeholder="Buscar"
         [(ngModel)]="searchText"
