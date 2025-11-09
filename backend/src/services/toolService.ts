@@ -4,7 +4,7 @@ export class ToolService{
     async getFurnitureTools(ref: string){
         try{
             if(ref != null && ref != ''){
-                const result = await pool.query(`SELECT DISTINCT t.id, t.name
+                const result = await pool.query(`SELECT DISTINCT t.id, t.name, t.image_url
                                                 FROM Furniture f
                                                 JOIN Step s ON f.id = s.furniture_id
                                                 JOIN Step_Tool st ON s.id = st.stepId

@@ -48,7 +48,7 @@ export class ChatbotController{
             }
         } else if(intentName === 'funcionalidad.herramientas.necesarias'){
             try{
-                const ref_number = req.body.queryResult.parameters['ref'];
+                const ref_number = req.body.queryResult.parameters['furniture_ref'];
 
                 if(ref_number != null && ref_number != ''){
                     const result = await this.toolService.getFurnitureTools(ref_number);
