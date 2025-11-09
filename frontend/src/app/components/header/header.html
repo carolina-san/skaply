@@ -1,5 +1,5 @@
 <header class="fixed flex justify-center lg:justify-start items-start py-2 px-6 w-full z-30 ">
-  <button *ngIf="currentRoute !== '/'" (click)="goBack()" class="absolute left-7 top-5 text-beige">
+  <button *ngIf="currentRoute !== '/'" (click)="goBack()" class="absolute left-10 top-6 text-beige">
     <span class="material-symbols-rounded">arrow_back_ios</span>
   </button>
 
@@ -12,7 +12,7 @@
   rounded-full p-2 shadow-md border border-white/10 
   transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
 />
-  <img *ngIf="currentRoute !== '/'"  src="assets/skaply_azul.svg" alt="logo skaply" class="w-30 lg:w-50 lg:ml-3">
+  <img *ngIf="currentRoute !== '/'"  src="assets/skaply_azul.svg" alt="logo skaply" class="w-30 mt-2 lg:w-50 lg:ml-15 lg:mt-0">
 
   <!-- Menú si está en la landing -->
   <app-menu *ngIf="currentRoute == '/'" [menuAbierto]="menuAbierto" (abrirMenu)="menuAbierto = true"

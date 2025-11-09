@@ -1,25 +1,24 @@
 <!-- Card Profesional con Imagen de Fondo y Degradado -->
-<article class="relative h-80 bg-beige rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 w-full max-w-sm">
+<article
+  class="relative h-80 bg-beige rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 w-full max-w-sm">
 
   <!-- Imagen de fondo -->
-  <img 
-    [src]="'assets/imgs/estanteria3d.png'" 
-    [alt]="furniture.name" 
-    class="w-full h-full object-cover"
-  >
+  <img [src]="'assets/imgs/estanteria3d.png'" [alt]="furniture.name" class="w-full h-full object-cover">
 
   <!-- Overlay degradado -->
   <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
   <!-- Contenido sobre el degradado -->
   <section class="absolute bottom-0 w-full p-5 flex flex-col gap-1 text-beige">
-    <h3 class="font-extrabold text-xl truncate">{{ furniture.name }}</h3>
+    <h3 class="font-extrabold text-xl line-clamp-2">{{ furniture.name }}</h3>
     <p class="text-beige text-sm">REF: {{ furniture.reference_number }}</p>
 
-    <div class="flex justify-between items-center mt-2 text-sm text-beige">
+    <div
+      class="flex flex-col lg:flex-row justify-between items-start lg:items-center mt-2 text-sm text-beige gap-1 lg:gap-0">
       <!-- Color -->
       <span class="flex items-center gap-2">
-        <span class="w-4 h-4 rounded-full border border-beige" [ngStyle]="{'background-color': furniture.color_hex}"></span>
+        <span class="w-4 h-4 rounded-full border border-beige"
+          [ngStyle]="{'background-color': furniture.color_hex}"></span>
         {{ furniture.color_name }}
       </span>
 
