@@ -19,3 +19,7 @@
   hover:shadow-2xl transition-shadow 
   duration-300 text-left;
 }
+
+.icon{
+  @apply text-5xl;
+}
