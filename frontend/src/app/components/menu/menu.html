@@ -1,59 +1,42 @@
-<div class="lg:hidden">
-    <span (click)="abrir()"
-        class="text-azul-claro material-symbols-rounded cursor-pointer text-3xl absolute right-0 mr-3 mt-1">menu</span>
+<div class="lg:hidden relative items-center ">
+  <!-- Botón hamburguesa -->
+  <span (click)="abrir()"
+      class="fixed text-azul-claro material-symbols-rounded cursor-pointer text-3xl right-5 top-5">
+    menu
+  </span>
 
-    <!-- menu lateral -->
-    <nav class="fixed top-0 right-0 w-64 h-full bg-beige shadow-xl transform transition-transform duration-300  z-[60] p-6"
-        [ngClass]="{ 
-            'translate-x-0': menuAbierto, 
-            'translate-x-full': !menuAbierto 
-        }">
+  <!-- Menú lateral -->
+  <nav class="fixed items-center top-0 right-0 w-50  bg-beige shadow-xl transform transition-transform duration-300 z-50 p-6"
+     [ngClass]="{ 'translate-x-0': menuAbierto, 'translate-x-full': !menuAbierto }">
 
-        <button class="absolute top-4 right-4 text-marron-oscuro text-3xl cursor-pointer" (click)="cerrar()">
-            &times;
-        </button>
+      <button class="fixed items-center top-2 right-5 text-marron-oscuro text-3xl cursor-pointer" (click)="cerrar()">
+          &times;
+      </button>
 
-        <ul class="pt-10 space-y-4 text-marron-oscuro">
-            <li><a href="https://skaply.ovh/lynk" class="hover:text-azul-claro">Web Lynk</a></li>
-            <li><a routerLink="/" class="hover:text-azul-claro">Características</a></li>
-            <li><a routerLink="/" class="hover:text-azul-claro">Cómo funciona</a></li>
-            <li><a href="https://skaply.ovh/lynk/blog" class="hover:text-azul-claro">Noticias</a></li>
-            <li><a routerLink="/catalogo" class="hover:text-azul-claro">Acceder a Skäply</a></li>
-
-        </ul>
-    </nav>
+      <ul class="pt-10 space-y-4 text-marron-oscuro">
+          <li><a href="https://skaply.ovh/lynk" class="hover:text-azul-claro">Conoce al Equipo</a></li>
+          <li><a routerLink="/catalogo" class="hover:text-azul-claro">Accede a Skäply</a></li>
+      </ul>
+  </nav>
 </div>
+
 
 <!-- menu desplegado -->
 <!-- Menú principal -->
 <nav
-  class="hidden lg:flex items-center space-x-6 text-lg absolute right-0 mr-8 mt-3 bg-marron-oscuro/60 backdrop-blur-md rounded-full px-6 py-3 shadow-lg border border-white/10"
+  class="hidden lg:flex items-center space-x-5 text-lg relative  "
 >
-  <a
+ <a
     href="https://skaply.ovh/lynk"
-    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
+    class="bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 shadow-md hover:shadow-xl"
   >
-    Web Lynk
+    Conoce al equipo
   </a>
-
-  <a
-    routerLink="/"
-    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
-  >
-    Características
-  </a>
-
-  <a
-    routerLink="/"
-    class="text-azul-claro/80 hover:text-azul-claro transition-colors duration-200 font-medium"
-  >
-    Cómo funciona
-  </a>
-
   <a
     routerLink="/catalogo"
-    class="ml-3 bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full font-semibold hover:bg-azul-medio transition-all duration-300 shadow-md hover:shadow-xl"
+    class="btn-azul"
   >
-    Acceder a Skäply
+    Accede a Skäply
   </a>
+
 </nav>
