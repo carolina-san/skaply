@@ -24,7 +24,6 @@ export class Home implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   categories: any[] = [];
-  // furnitures: any[] = []; //crear tipo para "furniture"
   furnitures: Furniture[] = [];
   providers: ProviderBasic[] = [];
   colors: Color[] = [];
@@ -38,6 +37,7 @@ export class Home implements OnInit {
   previousSearchText: string = '';
   hasSearched: boolean = false;
   activeFilters: FilterOptions = {};
+  resetFilterToggle: boolean = false;
 
   constructor(private apiService: ApiService) { }
 
@@ -92,8 +92,9 @@ export class Home implements OnInit {
     const searchTerm = this.searchText.trim();
     this.searchInput.nativeElement.blur();
     if (searchTerm === '') {
-      this.obtenerCatalogo();
       this.selectedCategoryId = null;
+      this.resetFiltersPanel();
+      this.obtenerCatalogo();
       this.hasSearched = false;
       return;
     }
@@ -119,8 +120,9 @@ export class Home implements OnInit {
     this.previousSearchText = '';
     this.hasSearched = false;
     this.selectedCategoryId = null;
-    this.activeFilters = {};
-    this.activeFiltersCount = 0;
+    //this.activeFilters = {};
+    //this.activeFiltersCount = 0;
+    this.resetFiltersPanel();
     this.obtenerCatalogo();
   }
 
@@ -149,19 +151,25 @@ export class Home implements OnInit {
     this.isFilterModalOpen = false;
   }
 
-  // onApplyFilters(filters: FilterOptions) {
-  //   this.searchText = '';
-  //   this.previousSearchText = '';
-  //   this.hasSearched = false;
-  //   this.applyFiltersWithCategory(filters);
-  // }
-
   onApplyFilters(filters: FilterOptions) {
-  if (this.hasSearched && this.previousSearchText.trim() !== '') {
-    filters.search = this.previousSearchText.trim();
+    if (this.hasSearched && this.previousSearchText.trim() !== '') {
+      filters.search = this.previousSearchText.trim();
+    }
+    this.activeFilters = { ...filters };
+    this.applyFiltersWithCategory(filters);
   }
-  this.activeFilters = { ...filters };
-  this.applyFiltersWithCategory(filters);
+
+  resetFiltersPanel() {
+    this.activeFilters = {
+      color_ids: [],
+      difficulties: [],
+      provider_ids: [],
+      category_ids: []
+    };
+    this.activeFiltersCount = 0;
+    this.isFilterModalOpen = false;
+    this.resetFilterToggle = true;
+    setTimeout(() => this.resetFilterToggle = false, 10);
   }
 
   calculateActiveFilters(filters: FilterOptions) {
@@ -279,32 +287,22 @@ export class Home implements OnInit {
   }
 
   private updateFiltersAfterRemoval() {
-    // Recalcula el contador de filtros
     this.calculateActiveFilters(this.activeFilters);
-
-    // Si no queda ningún filtro activo y no hay búsqueda, recarga todo
     const hasAnyFilter = 
       (this.activeFilters.color_ids?.length || 0) > 0 ||
       (this.activeFilters.difficulties?.length || 0) > 0 ||
       (this.activeFilters.provider_ids?.length || 0) > 0;
-
     if (!hasAnyFilter && !this.hasSearched) {
       this.obtenerCatalogo();
       return;
     }
-
-    // Mantén la búsqueda activa si la hay
     if (this.hasSearched && this.previousSearchText.trim() !== '') {
       this.activeFilters.search = this.previousSearchText.trim();
     }
-
-    // Mantén la categoría activa si la hay
     const completeFilters: FilterOptions = {
       ...this.activeFilters,
       category_ids: this.selectedCategoryId ? [this.selectedCategoryId] : []
     };
-
-    // Llama al backend con los filtros actualizados
     this.apiService.getFilteredFurniture(completeFilters).subscribe({
       next: (response) => {
         this.furnitures = response.data;

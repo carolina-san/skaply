@@ -13,6 +13,13 @@ export class FilterPanelComponent {
   @Input() isOpen = false;
   @Input() providers: ProviderBasic[] = [];
   @Input() colors: Color[] = [];
+  @Input() activeFilters: FilterOptions = {
+  difficulties: [],
+  provider_ids: [],
+  category_ids: [],
+  color_ids: []
+};
+  @Input() resetToggle: boolean = false;
   @Output() close = new EventEmitter<void>();
   @Output() applyFilter = new EventEmitter<FilterOptions>();
 
@@ -28,6 +35,12 @@ export class FilterPanelComponent {
   };
 
   ngOnChanges() {
+    if (this.activeFilters) {
+      this.selectedFilters = { ...this.activeFilters };
+    }
+    if (this.resetToggle) {
+      this.clearFilters();
+    }
     if (this.isOpen) {
       setTimeout(() => this.isAnimating = true, 10);
     } else {
@@ -74,6 +87,7 @@ export class FilterPanelComponent {
       category_ids: [],
       color_ids: []
     };
+    this.openSection = null; 
     this.applyFilter.emit(this.selectedFilters);
     //this.closeModal();
   }

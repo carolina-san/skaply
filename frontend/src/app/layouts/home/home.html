@@ -53,7 +53,7 @@
           <span class="text-azul-claro">{{ getCategoryName(selectedCategoryId) }}</span>
         </p>
         <span
-          (click)="filterByCategory(null)"
+          (click)="clearSearch()"
           class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
           close
         </span>
@@ -134,7 +134,13 @@
   <app-scanner></app-scanner>
 
   <!-- Filter Panel -->
-  <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors" (close)="closeFilterModal()"
+  <app-filter-panel 
+    [isOpen]="isFilterModalOpen" 
+    [providers]="providers" 
+    [colors]="colors" 
+    [activeFilters]="activeFilters"
+    [resetToggle]="resetFilterToggle"
+    (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
 
