@@ -14,6 +14,7 @@
         (keypress)="onSearchKeyPress($event)"
         (blur)="onSearchBlur()"
         class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
+      
     </div>
     <button (click)="openFilterModal()"
       class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0 cursor-pointer hover:bg-azul-claro transition-colors">
@@ -25,23 +26,35 @@
     </button>
   </div>
 
-  <!-- Filtros de categorías -->
-  <div class="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide px-4 pb-0">
-    <button       
-      (click)="filterByCategory(null)" 
-      class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-      [class.!bg-azul-claro]="selectedCategoryId === null" >
-      <!-- [class.!text-white]="selectedCategoryId === null" > -->
-      Ver todo
-    </button>
-    <button 
-      *ngFor="let category of categories" 
-      (click)="filterByCategory(category.id)" 
-      class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-      [class.!bg-azul-claro]="selectedCategoryId === category.id" >
-      <!-- [class.!text-white]="selectedCategoryId === category.id"> -->
-      {{ category.name }}
-    </button>
+  
+  <div class="mb-6 px-4">
+    <!-- Búsqueda activa -->
+    <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-3">
+      <p class="text-beige text-lg font-semibold leading-none">
+        Resultado de la búsqueda: <span class="text-azul-claro">{{ previousSearchText }}</span>
+      </p>
+      <span
+        (click)="clearSearch()"
+        class="material-symbols-rounded text-beige text-lg cursor-pointer hover:text-azul-claro transition-colors shrink-0">close</span>
+    </div>
+    <!-- Filtros de categorías -->
+    <div *ngIf="!hasSearched || !previousSearchText" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <button       
+        (click)="filterByCategory(null)" 
+        class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
+        [class.!bg-azul-claro]="selectedCategoryId === null" >
+        <!-- [class.!text-white]="selectedCategoryId === null" > -->
+        Ver todo
+      </button>
+      <button 
+        *ngFor="let category of categories" 
+        (click)="filterByCategory(category.id)" 
+        class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
+        [class.!bg-azul-claro]="selectedCategoryId === category.id" >
+        <!-- [class.!text-white]="selectedCategoryId === category.id"> -->
+        {{ category.name }}
+      </button>
+    </div>
   </div>
 
   <!-- Grid de muebles + Footer (con scroll) -->

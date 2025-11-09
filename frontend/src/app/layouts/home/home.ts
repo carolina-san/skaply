@@ -94,7 +94,6 @@ export class Home implements OnInit {
       this.hasSearched = false;
       return;
     }
-
     // Filter by text
     const filters: FilterOptions = {
       search: searchTerm
@@ -110,6 +109,14 @@ export class Home implements OnInit {
         console.error('Error al buscar muebles:', error);
       }
     });
+  }
+
+  clearSearch() {
+    this.searchText = '';
+    this.previousSearchText = '';
+    this.hasSearched = false;
+    this.selectedCategoryId = null;
+    this.obtenerCatalogo();
   }
 
   onSearchKeyPress(event: KeyboardEvent) {
