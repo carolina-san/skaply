@@ -10,15 +10,9 @@ import { RouterModule } from '@angular/router';
   styleUrl: './menu.css'
 })
 export class Menu {
- @Input() menuAbierto: boolean = false;
-    @Output() cerrarMenu = new EventEmitter<void>();
-    @Output() abrirMenu = new EventEmitter<void>(); 
-
-    abrir() {
-        this.abrirMenu.emit();
-    }
+  menuAbierto: boolean = false;
     
-    cerrar() {
-        this.cerrarMenu.emit();
-    }
+  toggleMenu() {
+    this.menuAbierto = !this.menuAbierto;
+  }
 }

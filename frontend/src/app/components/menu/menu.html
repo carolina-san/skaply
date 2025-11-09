@@ -1,34 +1,37 @@
-<div class="lg:hidden relative items-center ">
-  <!-- Botón hamburguesa -->
-  <span (click)="abrir()"
-      class="fixed text-azul-claro material-symbols-rounded cursor-pointer text-3xl right-5 top-5">
-    menu
+<!-- MEJORA PARA EL FUTURO: que las 3 rayas se conviertan en la x (animación)-->
+<div class="lg:hidden relative">
+  <!-- Botón hamburguesa / X -->
+  <span (click)="toggleMenu()"
+        class="fixed text-azul-claro material-symbols-rounded cursor-pointer text-3xl right-5 top-5 z-50">
+    {{ menuAbierto ? 'close' : 'menu' }}
   </span>
 
-  <!-- Menú lateral -->
-  <nav class="fixed items-center top-0 right-0 w-50  bg-beige shadow-xl transform transition-transform duration-300 z-50 p-6"
-     [ngClass]="{ 'translate-x-0': menuAbierto, 'translate-x-full': !menuAbierto }">
-
-      <button class="fixed items-center top-2 right-5 text-marron-oscuro text-3xl cursor-pointer" (click)="cerrar()">
-          &times;
-      </button>
-
-      <ul class="pt-10 space-y-4 text-marron-oscuro">
-          <li><a href="https://skaply.ovh/lynk" class="hover:text-azul-claro">Conoce al Equipo</a></li>
-          <li><a routerLink="/catalogo" class="hover:text-azul-claro">Accede a Skäply</a></li>
-      </ul>
-  </nav>
+   <!-- Bocadillo animado desde el botón -->
+  <div class="fixed top-12 right-5 z-40">
+    <div
+      class="origin-top-right bg-white shadow-2xl rounded-3xl p-4 flex flex-col gap-2
+             transform transition-all duration-300 scale-95 opacity-0 invisible"
+      [ngClass]="{
+        'scale-100 opacity-100 visible translate-y-0': menuAbierto,
+        'scale-95 opacity-0 invisible -translate-y-2': !menuAbierto
+      }"
+    >
+      <a href="https://skaply.ovh/lynk" class="hover:bg-beige-oscuro transition-colors
+      duration-200 bg-beige px-3 py-1 rounded-full text-marron-oscuro font-semibold">Conoce al Equipo</a>
+      <a routerLink="/catalogo" class="hover:bg-azul-medio transition-colors
+      duration-200 bg-azul-claro px-3 py-1 rounded-full text-marron-oscuro font-semibold">Accede a Skäply</a>
+    </div>
+  </div>
 </div>
 
 
-<!-- menu desplegado -->
-<!-- Menú principal -->
+<!-- Menú principal de la landing en portátiles -->
 <nav
   class="hidden lg:flex items-center space-x-5 text-lg relative  "
 >
  <a
     href="https://skaply.ovh/lynk"
-    class="bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 shadow-md hover:shadow-xl"
+    class="bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-beige-oscuro transition-all duration-300 shadow-md hover:shadow-xl"
   >
     Conoce al equipo
   </a>
@@ -38,5 +41,6 @@
   >
     Accede a Skäply
   </a>
+<!-- Añadir acceso para proveedores -->
 
 </nav>
