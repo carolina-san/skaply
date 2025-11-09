@@ -1,15 +1,17 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Header } from '../../components/header/header';
-import { Chatbot } from '../../components/chatbot/chatbot';
 import { RouterLink } from '@angular/router';
+import {
+  Header,
+  Chatbot,
+  Footer,
+  FilterPanelComponent,
+  CardFurniture,
+  Scanner
+} from '../../components';
 import { ApiService } from '../../services/api.service';
-import { Footer } from '../../components/footer/footer';
-import { FilterPanelComponent } from '../../components/filter-panel/filter-panel';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types'; // tipos
-import { CardFurniture } from '../../components/card-furniture/card-furniture';
-import { Scanner } from '../../components/scanner/scanner';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
 
 @Component({
@@ -35,6 +37,7 @@ export class Home implements OnInit {
   searchText: string = '';
   previousSearchText: string = '';
   hasSearched: boolean = false;
+  activeFilters: FilterOptions = {};
 
   constructor(private apiService: ApiService) { }
 
@@ -116,6 +119,8 @@ export class Home implements OnInit {
     this.previousSearchText = '';
     this.hasSearched = false;
     this.selectedCategoryId = null;
+    this.activeFilters = {};
+    this.activeFiltersCount = 0;
     this.obtenerCatalogo();
   }
 
@@ -144,8 +149,19 @@ export class Home implements OnInit {
     this.isFilterModalOpen = false;
   }
 
+  // onApplyFilters(filters: FilterOptions) {
+  //   this.searchText = '';
+  //   this.previousSearchText = '';
+  //   this.hasSearched = false;
+  //   this.applyFiltersWithCategory(filters);
+  // }
+
   onApplyFilters(filters: FilterOptions) {
-    this.applyFiltersWithCategory(filters);
+  if (this.hasSearched && this.previousSearchText.trim() !== '') {
+    filters.search = this.previousSearchText.trim();
+  }
+  this.activeFilters = { ...filters };
+  this.applyFiltersWithCategory(filters);
   }
 
   calculateActiveFilters(filters: FilterOptions) {
@@ -182,6 +198,7 @@ export class Home implements OnInit {
       next: (response) => {
         this.furnitures = response.data;
         this.calculateActiveFilters(filters); // without counting category
+        this.activeFilters = filters;
       },
       error: (error) => {
         console.error('Error al filtrar muebles:', error);
@@ -222,5 +239,74 @@ export class Home implements OnInit {
     // Implementa tu lógica de configuración
     console.log('Procesando configuración:', configKey);
     // Ejemplo: this.apiService.applyConfiguration(configKey).subscribe(...)
+  }
+
+
+
+  getColorName(id: number): string {
+    return this.colors.find(c => c.id === id)?.name || 'Color';
+  }
+
+  getProviderName(id: number): string {
+    return this.providers.find(p => p.id === id)?.company_name || 'Proveedor';
+  }
+
+  getDifficultyLabel(value: 'low' | 'medium' | 'high'): string {
+    return this.difficultyLabels[value] || 'Dificultad';
+  }
+
+  removeColorFilter(colorId: number) {
+    if (!this.activeFilters.color_ids) return;
+    this.activeFilters.color_ids = this.activeFilters.color_ids.filter(id => id !== colorId);
+    this.updateFiltersAfterRemoval();
+  }
+
+  removeProviderFilter(providerId: number) {
+    if (!this.activeFilters.provider_ids) return;
+    this.activeFilters.provider_ids = this.activeFilters.provider_ids.filter(id => id !== providerId);
+    this.updateFiltersAfterRemoval();
+  }
+
+  removeDifficultyFilter(difficulty: 'low' | 'medium' | 'high') {
+    if (!this.activeFilters.difficulties) return;
+    this.activeFilters.difficulties = this.activeFilters.difficulties.filter(d => d !== difficulty);
+    this.updateFiltersAfterRemoval();
+  }
+
+  private updateFiltersAfterRemoval() {
+    // Recalcula el contador de filtros
+    this.calculateActiveFilters(this.activeFilters);
+
+    // Si no queda ningún filtro activo y no hay búsqueda, recarga todo
+    const hasAnyFilter = 
+      (this.activeFilters.color_ids?.length || 0) > 0 ||
+      (this.activeFilters.difficulties?.length || 0) > 0 ||
+      (this.activeFilters.provider_ids?.length || 0) > 0;
+
+    if (!hasAnyFilter && !this.hasSearched) {
+      this.obtenerCatalogo();
+      return;
+    }
+
+    // Mantén la búsqueda activa si la hay
+    if (this.hasSearched && this.previousSearchText.trim() !== '') {
+      this.activeFilters.search = this.previousSearchText.trim();
+    }
+
+    // Mantén la categoría activa si la hay
+    const completeFilters: FilterOptions = {
+      ...this.activeFilters,
+      category_ids: this.selectedCategoryId ? [this.selectedCategoryId] : []
+    };
+
+    // Llama al backend con los filtros actualizados
+    this.apiService.getFilteredFurniture(completeFilters).subscribe({
+      next: (response) => {
+        this.furnitures = response.data;
+      },
+      error: (error) => {
+        console.error('Error al actualizar muebles tras quitar filtro:', error);
+      }
+    });
   }
 }

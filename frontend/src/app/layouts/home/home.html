@@ -14,8 +14,9 @@
         (keypress)="onSearchKeyPress($event)"
         (blur)="onSearchBlur()"
         class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
-      
     </div>
+
+    <!-- Botón de filtros -->
     <button (click)="openFilterModal()"
       class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0 cursor-pointer hover:bg-azul-claro transition-colors">
       <span class="material-symbols-rounded text-xl">tune</span>
@@ -27,17 +28,66 @@
   </div>
 
   
+  <!-- Resultados de búsqueda y filtros activos -->
   <div class="mb-6 px-4">
+    
     <!-- Búsqueda activa -->
-    <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-3">
-      <p class="text-beige text-lg font-semibold leading-none">
-        Resultado de la búsqueda: <span class="text-azul-claro">{{ previousSearchText }}</span>
-      </p>
-      <span
-        (click)="clearSearch()"
-        class="material-symbols-rounded text-beige text-lg cursor-pointer hover:text-azul-claro transition-colors shrink-0">close</span>
+    <div *ngIf="hasSearched && previousSearchText" class="mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <p class="text-beige text-lg font-semibold">
+          Resultado de la búsqueda: 
+          <span class="text-azul-claro">{{ previousSearchText }}</span>
+        </p>
+        <span
+          (click)="clearSearch()"
+          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+          close
+        </span>
+      </div>
+
+      <!-- Filtros activos -->
+      <div class="flex flex-wrap gap-2">
+
+        <!-- Filtros de color -->
+        <div *ngFor="let colorId of activeFilters.color_ids" 
+             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+          <span class="text-marron-oscuro text-sm font-medium">
+            {{ getColorName(colorId) }}
+          </span>
+          <span (click)="removeColorFilter(colorId)" 
+                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
+            close
+          </span>
+        </div>
+
+        <!-- Filtros de dificultad -->
+        <div *ngFor="let difficulty of activeFilters.difficulties" 
+             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+          <span class="text-marron-oscuro text-sm font-medium">
+            {{ getDifficultyLabel(difficulty) }}
+          </span>
+          <span (click)="removeDifficultyFilter(difficulty)" 
+                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
+            close
+          </span>
+        </div>
+
+        <!-- Filtros de proveedor -->
+        <div *ngFor="let providerId of activeFilters.provider_ids" 
+             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+          <span class="text-marron-oscuro text-sm font-medium">
+            {{ getProviderName(providerId) }}
+          </span>
+          <span (click)="removeProviderFilter(providerId)" 
+                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
+            close
+          </span>
+        </div>
+
+      </div>
     </div>
-    <!-- Filtros de categorías -->
+
+    <!-- Carrusel de filtros de categorías -->
     <div *ngIf="!hasSearched || !previousSearchText" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
       <button       
         (click)="filterByCategory(null)" 
