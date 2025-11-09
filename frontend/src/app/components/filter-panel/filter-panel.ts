@@ -93,13 +93,16 @@ export class FilterPanelComponent {
   }
 
   applyFilters() {
-    this.applyFilter.emit(this.selectedFilters);
-    this.closeModal();
+    //this.isAnimating = false;
+    setTimeout(() => {
+      this.applyFilter.emit(this.selectedFilters);
+      this.closeModal();
+    }, 200);
   }
 
   closeModal() {
     this.isAnimating = false;
-    setTimeout(() => this.close.emit(), 300);
+    setTimeout(() => this.close.emit(), 500);
   }
 
   // Getters and helpers (to avoid "undefined")

@@ -67,6 +67,7 @@ export class Home implements OnInit {
   }
 
   loadProviders() {
+    console.log('Llamo a loadProviders');
     this.apiService.getProviders().subscribe({
       next: (response) => {
         this.providers = Object.values(response.data);
@@ -78,6 +79,7 @@ export class Home implements OnInit {
   }
 
   loadColors() {
+    console.log('Llamo a loadColors');
     this.apiService.getColors().subscribe({
       next: (response) => {
         this.colors = Object.values(response.data);
@@ -89,7 +91,9 @@ export class Home implements OnInit {
   }
 
   onSearch() {
+    
     const searchTerm = this.searchText.trim();
+    console.log('Llamo a onSearch conpreviousSearchText: ' + searchTerm);
     this.searchInput.nativeElement.blur();
     if (searchTerm === '') {
       this.selectedCategoryId = null;
@@ -107,7 +111,10 @@ export class Home implements OnInit {
         this.furnitures = response.data;
         this.selectedCategoryId = null;
         this.hasSearched = true;
-        this.previousSearchText = searchTerm;        
+        this.previousSearchText = searchTerm;  
+        console.log('Temrino de llamar a onSearch conpreviousSearchText: ' + searchTerm);
+
+
       },
       error: (error) => {
         console.error('Error al buscar muebles:', error);
@@ -116,6 +123,8 @@ export class Home implements OnInit {
   }
 
   clearSearch() {
+    console.log('Llamo a clearSearch');
+
     this.searchText = '';
     this.previousSearchText = '';
     this.hasSearched = false;
@@ -133,6 +142,7 @@ export class Home implements OnInit {
   }
 
   onSearchBlur() {
+    console.log('Llamo a onSearchBlur con preiousSearchText = ' + this.previousSearchText);
     setTimeout(() => {  
       if (!this.hasSearched) {
         this.searchText = '';
@@ -143,15 +153,19 @@ export class Home implements OnInit {
   }
 
   openFilterModal() {
-    console.log('Botón de filtro clickeado');
+    console.log('Llamo a openFilterModal');
     this.isFilterModalOpen = true;
   }
 
   closeFilterModal() {
+    console.log('Llamo a closeFilterModal');
+
     this.isFilterModalOpen = false;
   }
 
   onApplyFilters(filters: FilterOptions) {
+    console.log('Llamo a onApplyFilters');
+
     if (this.hasSearched && this.previousSearchText.trim() !== '') {
       filters.search = this.previousSearchText.trim();
     }
@@ -160,6 +174,8 @@ export class Home implements OnInit {
   }
 
   resetFiltersPanel() {
+    console.log('Llamo a resetFiltersPanel');
+
     this.activeFilters = {
       color_ids: [],
       difficulties: [],
@@ -173,6 +189,8 @@ export class Home implements OnInit {
   }
 
   calculateActiveFilters(filters: FilterOptions) {
+    console.log('Llamo a calculateActiveFilters');
+
     this.activeFiltersCount = 
       (filters.color_ids?.length || 0) + 
       (filters.difficulties?.length || 0) + 
@@ -180,6 +198,8 @@ export class Home implements OnInit {
   }
 
   filterByCategory(categoryId: number | null) {
+    console.log('Llamo a filterByCategory');
+
     // Same category selected
     if (this.selectedCategoryId === categoryId) {
       return;
@@ -198,6 +218,8 @@ export class Home implements OnInit {
   }
 
   private applyFiltersWithCategory(filters: FilterOptions) {
+    console.log('Llamo a applyFiltersWithCategory');
+
     const completeFilters: FilterOptions = {
       ...filters,
       category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : filters.category_ids
@@ -269,24 +291,32 @@ export class Home implements OnInit {
   }
 
   removeColorFilter(colorId: number) {
+    console.log('Llamo a removeColorFilter');
+
     if (!this.activeFilters.color_ids) return;
     this.activeFilters.color_ids = this.activeFilters.color_ids.filter(id => id !== colorId);
     this.updateFiltersAfterRemoval();
   }
 
   removeProviderFilter(providerId: number) {
+    console.log('Llamo a removeProviderFilter');
+
     if (!this.activeFilters.provider_ids) return;
     this.activeFilters.provider_ids = this.activeFilters.provider_ids.filter(id => id !== providerId);
     this.updateFiltersAfterRemoval();
   }
 
   removeDifficultyFilter(difficulty: 'low' | 'medium' | 'high') {
+    console.log('Llamo a removeDifficultyFilter');
+
     if (!this.activeFilters.difficulties) return;
     this.activeFilters.difficulties = this.activeFilters.difficulties.filter(d => d !== difficulty);
     this.updateFiltersAfterRemoval();
   }
 
   private updateFiltersAfterRemoval() {
+    console.log('Llamo a updateFiltersAfterRemoval');
+
     this.calculateActiveFilters(this.activeFilters);
     const hasAnyFilter = 
       (this.activeFilters.color_ids?.length || 0) > 0 ||
