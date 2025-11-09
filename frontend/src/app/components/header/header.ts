@@ -38,4 +38,8 @@ export class Header {
   goBack(): void {
     this.location.back();
   }
+  scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
 }
