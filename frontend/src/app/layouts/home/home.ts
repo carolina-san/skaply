@@ -251,6 +251,11 @@ export class Home implements OnInit {
     return this.providers.find(p => p.id === id)?.company_name || 'Proveedor';
   }
 
+  getCategoryName(id: number): string {
+    return this.categories.find(c => c.id === id)?.name || 'Categoría';
+  }
+
+
   getDifficultyLabel(value: 'low' | 'medium' | 'high'): string {
     return this.difficultyLabels[value] || 'Dificultad';
   }

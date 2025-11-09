@@ -32,8 +32,10 @@
   <div class="mb-6 px-4">
     
     <!-- Búsqueda activa -->
-    <div *ngIf="hasSearched && previousSearchText" class="mb-4">
-      <div class="flex items-center gap-2 mb-3">
+
+    <!-- <div *ngIf="hasSearched && previousSearchText" class="mb-4"> -->
+      
+      <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2 mb-3">
         <p class="text-beige text-lg font-semibold">
           Resultado de la búsqueda: 
           <span class="text-azul-claro">{{ previousSearchText }}</span>
@@ -45,8 +47,20 @@
         </span>
       </div>
 
+      <div *ngIf="!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0" class="flex items-center gap-2 mb-3">
+        <p class="text-beige text-lg font-semibold">
+          Categoría seleccionada: 
+          <span class="text-azul-claro">{{ getCategoryName(selectedCategoryId) }}</span>
+        </p>
+        <span
+          (click)="filterByCategory(null)"
+          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+          close
+        </span>
+      </div>
+
       <!-- Filtros activos -->
-      <div class="flex flex-wrap gap-2">
+      <div *ngIf="(hasSearched && previousSearchText) || (!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0)" class="flex flex-wrap gap-2">
 
         <!-- Filtros de color -->
         <div *ngFor="let colorId of activeFilters.color_ids" 
@@ -85,10 +99,11 @@
         </div>
 
       </div>
-    </div>
+
+    <!-- </div> -->
 
     <!-- Carrusel de filtros de categorías -->
-    <div *ngIf="!hasSearched || !previousSearchText" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div *ngIf="!hasSearched && (selectedCategoryId === null || activeFiltersCount === 0)" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
       <button       
         (click)="filterByCategory(null)" 
         class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
