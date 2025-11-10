@@ -1,11 +1,11 @@
-<main class="flex flex-col page-main mt-6 min-h-screen">
+<main class="flex flex-col page-main mt-6 ">
   <!-- Barra de búsqueda y filtros -->
-  <div class="w-full  mb-6 flex gap-3 items-center flex-shrink-0 ">
+  <section class="w-full  mb-6 flex gap-3 items-center flex-shrink-0 ">
     <div class="relative flex-1">
       <span
-        class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:text-amber-900 transition-colors">search</span>
+        class="material-symbols-rounded absolute left-1 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:bg-azul-claro rounded-full p-1 transition-colors">search</span>
       <input type="text" placeholder="Buscar"
-        class="w-full bg-beige rounded-full pl-10  py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
+        class="w-full bg-beige rounded-full pl-10  py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro transition-shadow">
     </div>
     <button (click)="openFilterModal()"
       class="bg-beige  text-marron-oscuro p-2 h-10 w-10 rounded-full shadow-lg relative flex-shrink-0 cursor-pointer hover:bg-azul-claro transition-colors">
@@ -15,26 +15,28 @@
         {{ activeFiltersCount }}
       </span>
     </button>
-  </div>
+  </section>
 
   <!-- Filtros de categorías -->
   <div class="mb-6  flex gap-2 overflow-x-auto  scrollbar-hide  pb-0">
     <button (click)="filterByCategory(null)"
-      class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-      [class.!bg-azul-claro]="selectedCategoryId === null">
+      class="btn-filtros-home cursor-pointer  transition-colors"
+      [class.btn-filtros-activo]="selectedCategoryId === null">
       Ver todo
     </button>
     <button *ngFor="let category of categories" (click)="filterByCategory(category.id)"
-      class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-      [class.!bg-azul-claro]="selectedCategoryId === category.id">
+      class="btn-filtros-home cursor-pointer transition-colors"
+      [class.btn-filtros-activo]="selectedCategoryId === category.id">
       {{ category.name }}
     </button>
   </div>
 
   <!-- Grid de muebles-->
-  <section class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 divide-x  divide-marron-secundario bg-marron-secundario">
-    <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
-  </section>
+  <section class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-0.1">
+  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
+  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
+</section>
+
 
 
   <app-scanner></app-scanner>
