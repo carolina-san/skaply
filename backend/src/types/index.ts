@@ -6,3 +6,5 @@ export * from './user.types';
 
 // Export all common types (API responses, auth, etc.)
 export * from './common.types';
+
+export * from './issue.types';
