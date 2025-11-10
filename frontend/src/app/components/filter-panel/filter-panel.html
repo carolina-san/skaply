@@ -1,151 +1,115 @@
-    <div 
-      *ngIf="isOpen"
-      class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-      [class.opacity-0]="!isAnimating"
-      [class.opacity-100]="isAnimating"
-      (click)="closeModal()">
+<div *ngIf="isOpen" class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+  [class.opacity-0]="!isAnimating" [class.opacity-100]="isAnimating" (click)="closeModal()">
+</div>
+
+<!-- Modal -->
+<div *ngIf="isOpen"
+  class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out"
+  [class.translate-x-full]="!isAnimating" [class.translate-x-0]="isAnimating">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between p-4 border-b border-gray-200">
+    <h2 class="text-2xl font-bold text-marron-oscuro">Filtros</h2>
+    <button (click)="closeModal()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+      <span class="material-symbols-rounded text-marron-oscuro">close</span>
+    </button>
+  </div>
+
+  <!-- Filter Sections -->
+  <div class="flex-1 overflow-y-auto p-4">
+
+    <!-- Proveedor Section -->
+    <div class="mb-4">
+      <button (click)="toggleSection('provider')" class="w-full flex items-center justify-between py-3 text-left">
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-semibold text-marron-oscuro">Proveedor</span>
+          <span *ngIf="getProviderIdsLength() > 0"
+            class="bg-azul-claro border-1 border-marron-oscuro text-marron-oscuro text-xs px-2 py-1 h-6 w-6 rounded-full">
+            {{ getProviderIdsLength() }}
+          </span>
+        </div>
+        <span class="material-symbols-rounded text-marron-oscuro transition-transform"
+          [class.rotate-180]="isSectionOpen('provider')">
+          expand_more
+        </span>
+      </button>
+
+      <div *ngIf="isSectionOpen('provider')" class="space-y-2 mt-2 ml-2">
+        <label *ngFor="let provider of providers"
+          class="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded px-2">
+          <input type="checkbox" [checked]="isProviderSelected(provider.id)" (change)="toggleProvider(provider.id)"
+            class="w-5 h-5 text-azul-claro rounded focus:ring-azul-claro focus:ring-2">
+          <span class="text-marron-oscuro">{{ provider.company_name }}</span>
+        </label>
+      </div>
     </div>
 
-    <!-- Modal -->
-    <div 
-      *ngIf="isOpen"
-      class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-out"
-      [class.translate-x-full]="!isAnimating"
-      [class.translate-x-0]="isAnimating">
-      
-      <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 class="text-xl font-bold text-marron-oscuro">Filtros</h2>
-        <button 
-          (click)="closeModal()"
-          class="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <span class="material-symbols-rounded text-marron-oscuro">close</span>
-        </button>
-      </div>
-
-      <!-- Filter Sections -->
-      <div class="flex-1 overflow-y-auto p-4">
-        
-        <!-- Proveedor Section -->
-        <div class="mb-4">
-          <button 
-            (click)="toggleSection('provider')"
-            class="w-full flex items-center justify-between py-3 text-left">
-            <div class="flex items-center gap-2">
-              <span class="text-lg font-semibold text-marron-oscuro">Proveedor</span>
-              <span 
-                *ngIf="getProviderIdsLength() > 0"
-                class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ getProviderIdsLength() }}
-              </span>
-            </div>
-            <span class="material-symbols-rounded text-marron-oscuro transition-transform" 
-                  [class.rotate-180]="openSection === 'provider'">
-              expand_more
-            </span>
-          </button>
-          
-          <div 
-            *ngIf="openSection === 'provider'"
-            class="space-y-2 mt-2 ml-2">
-            <label 
-              *ngFor="let provider of providers"
-              class="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded px-2">
-              <input 
-                type="checkbox"
-                [checked]="isProviderSelected(provider.id)"
-                (change)="toggleProvider(provider.id)"
-                class="w-5 h-5 text-azul-claro rounded focus:ring-azul-claro focus:ring-2">
-              <span class="text-marron-oscuro">{{ provider.company_name }}</span>
-            </label>
-          </div>
+    <!-- Color Section -->
+    <div class="mb-4 border-t border-gray-200 pt-4">
+      <button (click)="toggleSection('color')" class="w-full flex items-center justify-between py-3 text-left">
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-semibold text-marron-oscuro">Color</span>
+          <span *ngIf="getColorIdsLength() > 0"
+            class="bg-azul-claro border-1 border-marron-oscuro text-marron-oscuro text-xs px-2 py-1 h-6 w-6 rounded-full">
+            {{ getColorIdsLength() }}
+          </span>
         </div>
+        <span class="material-symbols-rounded text-marron-oscuro transition-transform"
+          [class.rotate-180]="isSectionOpen('color')">
+          expand_more
+        </span>
+      </button>
 
-        <!-- Color Section -->
-        <div class="mb-4 border-t border-gray-200 pt-4">
-          <button 
-            (click)="toggleSection('color')"
-            class="w-full flex items-center justify-between py-3 text-left">
-            <div class="flex items-center gap-2">
-              <span class="text-lg font-semibold text-marron-oscuro">Color</span>
-              <span 
-                *ngIf="getColorIdsLength() > 0"
-                class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                {{ getColorIdsLength() }}
-              </span>
-            </div>
-            <span class="material-symbols-rounded text-marron-oscuro transition-transform"
-                  [class.rotate-180]="openSection === 'color'">
-              expand_more
-            </span>
-          </button>
-          
-          <div 
-            *ngIf="openSection === 'color'"
-            class="grid grid-cols-2 gap-3 mt-2">
-            <button
-              *ngFor="let color of colors"
-              (click)="toggleColor(color.id)"
-              class="flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all"
-              [class.border-azul-claro]="isColorSelected(color.id)"
-              [class.bg-blue-50]="isColorSelected(color.id)"
-              [class.border-gray-200]="!isColorSelected(color.id)">
-              <div 
-                class="w-6 h-6 rounded"
-                [style.background-color]="color.hex">
-              </div>
-              <span class="text-sm text-marron-oscuro">{{ color.name }}</span>
-            </button>
+      <div *ngIf="isSectionOpen('color')" class="grid grid-cols-2 gap-3 mt-2">
+        <button *ngFor="let color of colors" (click)="toggleColor(color.id)"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all"
+          [class.border-azul-claro]="isColorSelected(color.id)" [class.bg-blue-50]="isColorSelected(color.id)"
+          [class.border-gray-200]="!isColorSelected(color.id)">
+          <div class="w-6 h-6 rounded" [style.background-color]="color.hex">
           </div>
-        </div>
-
-        <!-- Dificultad Section -->
-        <div class="mb-4 border-t border-gray-200 pt-4">
-          <button 
-            (click)="toggleSection('difficulty')"
-            class="w-full flex items-center justify-between py-3 text-left">
-            <div class="flex items-center gap-2">
-              <span class="text-lg font-semibold text-marron-oscuro">Dificultad</span>
-              <span 
-                *ngIf="getDifficultiesLength() > 0"
-                class="bg-azul-claro text-white text-xs px-2 py-0.5 rounded-full">
-                 {{ getDifficultiesLength() }}
-              </span>
-            </div>
-            <span class="material-symbols-rounded text-marron-oscuro transition-transform"
-                  [class.rotate-180]="openSection === 'difficulty'">
-              expand_more
-            </span>
-          </button>
-          
-          <div 
-            *ngIf="openSection === 'difficulty'"
-            class="space-y-2 mt-2">
-            <button
-              *ngFor="let diff of availableDifficulties"
-              (click)="toggleDifficulty(diff.value)"
-              class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border-2 transition-all"
-              [class.border-azul-claro]="isDifficultySelected(diff.value)"
-              [class.bg-blue-50]="isDifficultySelected(diff.value)"
-              [class.border-gray-200]="!isDifficultySelected(diff.value)">
-              <span class="text-marron-oscuro">{{ diff.label }}</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Footer Buttons -->
-      <div class="border-t border-gray-200 p-4 flex gap-3">
-        <button 
-          (click)="clearFilters()"
-          class="flex-1 py-3 border-2 border-marron-oscuro text-marron-oscuro rounded-full font-semibold hover:bg-gray-50 transition-colors">
-          LIMPIAR
-        </button>
-        <button 
-          (click)="applyFilters()"
-          class="flex-1 py-3 bg-azul-claro text-white rounded-full font-semibold hover:bg-opacity-90 transition-colors">
-          APLICAR
+          <span class="text-sm text-marron-oscuro">{{ color.name }}</span>
         </button>
       </div>
     </div>
+
+    <!-- Dificultad Section -->
+    <div class="mb-4 border-t border-gray-200 pt-4">
+      <button (click)="toggleSection('difficulty')" class="w-full flex items-center justify-between py-3 text-left">
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-semibold text-marron-oscuro">Dificultad</span>
+          <span *ngIf="getDifficultiesLength() > 0"
+            class="bg-azul-claro border-1 border-marron-oscuro text-marron-oscuro text-xs px-2 py-1 h-6 w-6 rounded-full">
+            {{ getDifficultiesLength() }}
+          </span>
+        </div>
+        <span class="material-symbols-rounded text-marron-oscuro transition-transform"
+          [class.rotate-180]="isSectionOpen('difficulty')">
+          expand_more
+        </span>
+      </button>
+
+      <div *ngIf="isSectionOpen('difficulty')" class="space-y-2 mt-2">
+        <button *ngFor="let diff of availableDifficulties" (click)="toggleDifficulty(diff.value)"
+          class="w-full flex items-center gap-3 px-3 py-3 rounded-lg border-2 transition-all"
+          [class.border-azul-claro]="isDifficultySelected(diff.value)"
+          [class.bg-blue-50]="isDifficultySelected(diff.value)"
+          [class.border-gray-200]="!isDifficultySelected(diff.value)">
+          <span class="text-marron-oscuro">{{ diff.label }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Buttons -->
+  <div class="border-t border-gray-200 p-4 flex gap-3">
+    <button (click)="clearFilters()"
+      class="flex-1 py-3 border-2 border-marron-oscuro text-marron-oscuro rounded-full font-semibold hover:bg-gray-50 transition-colors">
+      LIMPIAR
+    </button>
+    <button (click)="applyFilters()"
+      class="flex-1 py-3 bg-azul-claro border-2 border-marron-oscuro text-marron-oscuro rounded-full font-semibold hover:bg-opacity-90 transition-colors">
+      APLICAR
+    </button>
+  </div>
+</div>
