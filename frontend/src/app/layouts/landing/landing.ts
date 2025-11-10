@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { Menu } from '../../components/menu/menu';
 import { Router } from '@angular/router';
+import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-landing',
-  imports: [Menu],
+  imports: [Menu, Footer],
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })

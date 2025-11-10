@@ -1,21 +1,14 @@
-<header
-  [ngClass]="{
+<header [ngClass]="{
     'fixed top-0 bg-marron-oscuro/60 backdrop-blur-md shadow-md': currentRoute === '/',
     'relative': currentRoute !== '/'
-  }"
-  class="flex justify-between lg:justify-between items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300"
->
-  <button *ngIf="currentRoute !== '/'" (click)="goBack()" 
-  class="absolute left-10 top-7 text-beige cursor-pointer ">
+  }" class="flex items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300
+         justify-center lg:justify-between">
+  <button *ngIf="currentRoute !== '/'" (click)="goBack()" class="absolute left-10 top-6 lg:top-7 text-beige cursor-pointer ">
     <span class="material-symbols-rounded">arrow_back_ios</span>
   </button>
 
-  <img
-    (click)="scrollToTop()"
-    src="assets/skaply_azul.svg"
-    alt="logo skaply"
-    class="w-40 lg:w-50 transition-all duration-300 hover:scale-105 cursor-pointer"
-  />
+  <img (click)="scrollToTop()" src="assets/skaply_azul.svg" alt="logo skaply"
+    class="w-40 lg:w-50 transition-all duration-300 hover:scale-105 cursor-pointer" />
 
   <!-- Menú si está en la landing -->
   <app-menu *ngIf="currentRoute == '/'"></app-menu>
