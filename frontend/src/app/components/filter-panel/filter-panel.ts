@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common'; // para *ngIf
 import { FilterOptions, ProviderBasic, Color } from '../../types';
 import { DifficultyOptions } from '../../utils/difficulty-labels';
 
+
 @Component({
   selector: 'app-filter-panel',
   imports: [CommonModule],
-  templateUrl: './filter-panel.html',
+  templateUrl: './filter-panel.html'
 })
 
 export class FilterPanelComponent {
