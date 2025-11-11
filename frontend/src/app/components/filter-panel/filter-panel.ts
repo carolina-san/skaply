@@ -24,8 +24,8 @@ export class FilterPanelComponent {
   @Output() applyFilter = new EventEmitter<FilterOptions>();
 
   isAnimating = false;
-  openSection: 'provider' | 'color' | 'difficulty' | null = null;
-  availableDifficulties  = DifficultyOptions;
+  openSections: { [key: string]: boolean } = {};
+  availableDifficulties = DifficultyOptions;
 
   selectedFilters: FilterOptions = {
     difficulties: [],
@@ -49,8 +49,13 @@ export class FilterPanelComponent {
   }
 
   toggleSection(section: 'provider' | 'color' | 'difficulty') {
-    this.openSection = this.openSection === section ? null : section;
+    this.openSections[section] = !this.openSections[section];
   }
+
+  isSectionOpen(section: 'provider' | 'color' | 'difficulty'): boolean {
+    return !!this.openSections[section];
+  }
+
 
   private toggleArrayItem<T>(arrayKey: keyof FilterOptions, item: T): void {
     if (!this.selectedFilters[arrayKey]) {

@@ -1,7 +1,6 @@
-<main class="flex flex-col pt-6">
-
+<main class="flex flex-col page-main mt-6 ">
   <!-- Barra de búsqueda y filtros -->
-  <div class="w-full mx-auto mb-6 flex gap-3 items-center flex-shrink-0 px-4">
+  <section class="w-full  mb-6 flex gap-3 items-center flex-shrink-0 ">
     <div class="relative flex-1">
       <span
         (mousedown)="onSearch()"
@@ -18,14 +17,14 @@
 
     <!-- Botón de filtros -->
     <button (click)="openFilterModal()"
-      class="bg-beige text-marron-oscuro p-2 rounded-full shadow-lg relative flex-shrink-0 cursor-pointer hover:bg-azul-claro transition-colors">
+      class="bg-beige  text-marron-oscuro p-2 h-10 w-10 rounded-full shadow-lg relative flex-shrink-0 cursor-pointer hover:bg-azul-claro transition-colors">
       <span class="material-symbols-rounded text-xl">tune</span>
       <span *ngIf="activeFiltersCount > 0"
         class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
         {{ activeFiltersCount }}
       </span>
     </button>
-  </div>
+  </section>
 
   
   <!-- Resultados de búsqueda y filtros activos -->
@@ -122,15 +121,14 @@
     </div>
   </div>
 
-  <!-- Grid de muebles + Footer (con scroll) -->
-  <!-- furniture.file_uri en img [src] -->
-  <section class=" m-0 flex flex-col justify-between">
-    <div class="grid p-7 gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-      <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
-    </div>
+  <!-- Grid de muebles-->
+  <section class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-0.1">
+  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
+  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
+</section>
 
-    <app-footer class="m-0"></app-footer>
-  </section>
+
+
   <app-scanner></app-scanner>
 
   <!-- Filter Panel -->
@@ -145,3 +143,4 @@
   </app-filter-panel>
 
 </main>
+<app-footer></app-footer>

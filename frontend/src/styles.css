@@ -15,7 +15,7 @@
 
 body {
   margin: 0;
-  padding: 0;
+
   background-color: var(--color-marron-oscuro);
 }
 
@@ -27,13 +27,22 @@ p,
 span,
 a,
 li,
-div {
+div,
+article,section {
   font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded' !important;
+  font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48; 
 }
 
 @theme {
+  --color-marron-secundario: #2f1b17;
   --color-marron-oscuro: #452621;
+  --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
+  --color-beige-oscuro: #D6CFC4;
   --color-beige: #EAE3DB;
 }
 
@@ -46,6 +55,7 @@ div {
    =================================
 */
 
+/*Clases de botones*/
 .btn-primary {
   @apply flex items-center justify-between w-full 
   p-3 pl-6 pr-6 bg-beige text-marron-oscuro font-semibold 
@@ -63,18 +73,9 @@ div {
 
 .btn-azul {
   @apply 
-    bg-azul-claro 
-    text-marron-oscuro 
-    px-8 
-    py-3 
-    rounded-full 
-    font-semibold 
-    shadow-[4px_4px_8px_rgba(0,0,0,0.0)] 
-    hover:shadow-[6px_6px_12px_rgba(0,0,0,0.7)] 
-    transition-all 
-    duration-300 
-    ease-in-out 
-    cursor-pointer;
+    bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full 
+    font-bold hover:bg-azul-medio transition-all 
+    duration-300 shadow-md hover:shadow-xl cursor-pointer;
 }
 
 
@@ -123,7 +124,22 @@ div {
 .btn-filtros-home {
   @apply bg-beige text-marron-oscuro 
   px-3 py-1 rounded-full whitespace-nowrap 
-  font-medium shadow-md
-  hover:bg-azul-claro hover:text-marron-oscuro 
-  active:bg-azul-claro focus:bg-azul-claro;
+  font-semibold text-sm shadow-md border border-2 
+  border-beige transition-colors duration-200
+  hover:bg-azul-claro/70 hover:text-marron-oscuro 
+  active:bg-azul-claro/40 ;
+}
+.btn-filtros-activo {
+  @apply border border-2 border-azul-claro
+  bg-azul-claro/70 text-marron-oscuro font-bold;
+}
+
+
+/*Clases generales*/
+
+/*Para que todo el contenido de las 
+páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
+Padding top para salvar el header*/
+.page-main{
+  @apply px-5 md:px-10 lg:px-20;
 }

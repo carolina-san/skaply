@@ -26,6 +26,16 @@ export class Scanner implements OnDestroy {
     this.stopScanning();
   }
 
+  toggleScanner() {
+    this.isOpen = !this.isOpen;
+
+    if (!this.isOpen) {
+      this.showManualInput = false;
+      this.manualCode = '';
+      this.stopScanning();
+    }
+  }
+
   openScanner() {
     this.isOpen = true;
   }
