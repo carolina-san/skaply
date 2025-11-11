@@ -16,7 +16,7 @@
 body {
   margin: 0;
 
-  background-color: var(--color-marron-oscuro);
+ background-color: var(--color-marron-oscuro);
 }
 
 h1,h2 {
@@ -43,7 +43,8 @@ article,section {
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  --color-beige: #EAE3DB;
+  
+  --color-beige:#dcd6d5;
 }
 
 @tailwind base;
@@ -75,7 +76,15 @@ article,section {
   @apply 
     bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full 
     font-bold hover:bg-azul-medio transition-all 
-    duration-300 shadow-md hover:shadow-xl cursor-pointer;
+    duration-300 cursor-pointer;
+
+  /* sombra más suave y transparente */
+  box-shadow: 0 0 10px 2px rgba(186, 213, 227, 0.4);
+}
+
+.btn-azul:hover {
+  /* un poco más visible al hacer hover */
+  box-shadow: 0 0 10px 4px rgba(186, 213, 227, 0.6);
 }
 
 

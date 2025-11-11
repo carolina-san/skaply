@@ -2,7 +2,7 @@
     'fixed top-0 bg-marron-oscuro/60 backdrop-blur-md shadow-md': currentRoute === '/',
     'relative': currentRoute !== '/'
   }" class="flex items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300
-         justify-center lg:justify-between">
+         justify-center lg:justify-between shadow-2xl bg-marron-oscuro">
   <button *ngIf="currentRoute !== '/'" (click)="goBack()" class="absolute left-10 top-6 lg:top-7 text-beige cursor-pointer ">
     <span class="material-symbols-rounded">arrow_back_ios</span>
   </button>
