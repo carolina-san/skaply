@@ -92,7 +92,7 @@ export class FilterPanelComponent {
       category_ids: [],
       color_ids: []
     };
-    this.openSection = null; 
+    this.openSections = {}; 
     this.applyFilter.emit(this.selectedFilters);
     //this.closeModal();
   }
