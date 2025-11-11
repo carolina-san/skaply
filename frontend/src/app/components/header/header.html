@@ -1,5 +1,5 @@
 <header [ngClass]="{
-    'fixed top-0 bg-marron-oscuro/60 backdrop-blur-md shadow-md': currentRoute === '/',
+    'sticky top-0 bg-marron-oscuro/60 backdrop-blur-md shadow-md': currentRoute === '/',
     'relative': currentRoute !== '/'
   }" class="flex items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300
          justify-center lg:justify-between shadow-xl bg-marron-oscuro">
@@ -7,8 +7,15 @@
     <span class="material-symbols-rounded">arrow_back_ios</span>
   </button>
 
-  <img (click)="scrollToTop()" src="assets/skaply_azul.svg" alt="logo skaply"
-    class="w-40 lg:w-50 transition-all duration-300 hover:scale-105 cursor-pointer" />
+  <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="scrollToTop()">
+  <!-- Logo normal -->
+  <img src="assets/skaply_azul.svg" alt="logo normal"
+       class="logo-normal w-full h-auto transition-opacity duration-500" />
+
+  <!-- Logo reducido -->
+  <img src="assets/reducido.svg" alt="logo reducido"
+       class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
+</div>
 
   <!-- Menú si está en la landing -->
   <app-menu *ngIf="currentRoute == '/'"></app-menu>

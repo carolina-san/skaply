@@ -1,0 +1,17 @@
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+
+.logo-container img {
+  display: block;
+}
+
+/* Al hacer hover, el logo normal desaparece y el reducido aparece */
+.logo-container:hover .logo-normal {
+  opacity: 0;
+}
+
+.logo-container:hover .logo-hover {
+  opacity: 1;
+}

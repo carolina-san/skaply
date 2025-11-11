@@ -16,8 +16,19 @@
 .card-landing{
   @apply flex flex-col items-start bg-azul-claro 
   rounded-2xl p-6 shadow-lg 
-  hover:shadow-2xl transition-shadow 
+  hover:shadow-2xl transition-all hover:-translate-y-2
   duration-300 text-left;
+}
+
+.fade-slide {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.fade-slide.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .icon{
