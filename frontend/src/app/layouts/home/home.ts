@@ -322,6 +322,7 @@ export class Home implements OnInit {
       (this.activeFilters.difficulties?.length || 0) > 0 ||
       (this.activeFilters.provider_ids?.length || 0) > 0;
     if (!hasAnyFilter && !this.hasSearched) {
+      this.resetFiltersPanel();
       this.obtenerCatalogo();
       return;
     }

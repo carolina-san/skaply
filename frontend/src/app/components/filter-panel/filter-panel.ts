@@ -90,6 +90,7 @@ export class FilterPanelComponent {
   }
 
   clearFilters() {
+    console.log('PANEL: Llamo a clearFilters');
     this.selectedFilters = {
       difficulties: [],
       provider_ids: [],
