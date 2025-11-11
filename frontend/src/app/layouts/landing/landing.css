@@ -23,3 +23,59 @@
 .icon{
   @apply text-5xl;
 }
+.text-gradient {
+  font-family: 'Agrandir', sans-serif;
+  font-size: 9xl;
+  background: linear-gradient(270deg, #ffffff, #93bcd2, #ffffff, #93bcd2);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 8s ease infinite;
+  display: inline-block;
+  font-weight: bold; /* Opcional: resalta más el gradiente */
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-shadow {
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-hero {
+  @apply 
+    text-marron-oscuro px-7 py-3 rounded-full 
+    font-bold transition-all duration-300 cursor-pointer transform
+    items-center;
+
+  background-color: var(--color-azul-claro);
+box-shadow: 0 0 30px rgba(220, 214, 213, 0.30);
+}
+
+.btn-hero:hover {
+
+ box-shadow: 0 0 50px rgba(220, 214, 213, 0.40);
+}
+
+.btn-hero:active {
+  @apply scale-97;
+  box-shadow: 0 3px 10px rgba(186, 213, 227, 0.5);
+}
+
+
+.btn-hero .material-symbols-rounded {
+  @apply transition-transform duration-300;
+}
+
+.btn-hero:hover .material-symbols-rounded {
+  transform: translateX(7px); /* mueve la flecha 5px a la derecha */
+}
