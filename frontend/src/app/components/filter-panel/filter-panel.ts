@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges} from '@angular/core';
 import { CommonModule } from '@angular/common'; // para *ngIf
 import { FilterOptions, ProviderBasic, Color } from '../../types';
 import { DifficultyOptions } from '../../utils/difficulty-labels';
@@ -35,17 +35,21 @@ export class FilterPanelComponent {
     color_ids: []
   };
 
-  ngOnChanges() {
-    if (this.activeFilters) {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['activeFilters'] && this.activeFilters) {
       this.selectedFilters = { ...this.activeFilters };
     }
-    if (this.resetToggle) {
+    if (changes['resetToggle'] && this.resetToggle) {
       this.clearFilters();
     }
-    if (this.isOpen) {
-      setTimeout(() => this.isAnimating = true, 10);
-    } else {
-      this.isAnimating = false;
+    if (changes['isOpen']) {
+      if (this.isOpen && !changes['isOpen'].previousValue) {
+        console.log('PANEL: isOpen cambió a true, iniciando animación');
+        setTimeout(() => this.isAnimating = true, 10);
+      } else if (!this.isOpen && changes['isOpen'].previousValue) {
+        console.log('PANEL: isOpen cambió a false, finalizando animación');
+        this.isAnimating = false;
+      }
     }
   }
 
@@ -56,7 +60,6 @@ export class FilterPanelComponent {
   isSectionOpen(section: 'provider' | 'color' | 'difficulty'): boolean {
     return !!this.openSections[section];
   }
-
 
   private toggleArrayItem<T>(arrayKey: keyof FilterOptions, item: T): void {
     if (!this.selectedFilters[arrayKey]) {
@@ -95,20 +98,24 @@ export class FilterPanelComponent {
     };
     this.openSections = {}; 
     this.applyFilter.emit(this.selectedFilters);
-    //this.closeModal();
+    this.closeModal();
   }
 
   applyFilters() {
-    //this.isAnimating = false;
-    setTimeout(() => {
-      this.applyFilter.emit(this.selectedFilters);
-      this.closeModal();
-    }, 200);
+    console.log('PANEL: Llamo a applyFilters');
+    console.log('PANEL: emito apllyFliter al home');
+    this.applyFilter.emit(this.selectedFilters);
+    this.closeModal();
   }
 
   closeModal() {
-    this.isAnimating = false;
-    setTimeout(() => this.close.emit(), 500);
+    console.log('PANEL: Llamo a closeModal');
+    setTimeout(() => {
+      this.isAnimating = false;
+      console.log('PANEL: Cambio isAnimating a false');
+      console.log('PANEL: emito close.emit al home');
+      this.close.emit();
+    }, 100);
   }
 
   // Getters and helpers (to avoid "undefined")

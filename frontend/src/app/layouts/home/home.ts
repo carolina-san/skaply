@@ -159,8 +159,7 @@ export class Home implements OnInit {
 
   closeFilterModal() {
     console.log('Llamo a closeFilterModal');
-
-    this.isFilterModalOpen = false;
+    setTimeout(() => { this.isFilterModalOpen = false; }, 350); 
   }
 
   onApplyFilters(filters: FilterOptions) {
