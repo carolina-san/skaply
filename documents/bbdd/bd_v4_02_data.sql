@@ -86,12 +86,12 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 -- ============================
 -- 6. Insertar herramientas
 -- ============================
-INSERT INTO Tool (name) VALUES
-('Destornillador'),
-('Martillo'),
-('Llave Allen'),
-('Taladro'),
-('Alicates');
+INSERT INTO Tool (name,image_url) VALUES
+('Destornillador','https://www.rztools.com/wp-content/uploads/160714-18-destornilladores-ph1.jpg'),
+('Martillo','https://www.ferrokey.eu/media/catalog/product/cache/fd00e0b96a1c32b265511e0d53330673/1/3/13987.jpg'),
+('Llave Allen','https://www.bt-ingenieros.com/15773/llaves-allen-con-punta-de-bola-9-piezas.jpg'),
+('Taladro','https://www.sasmak.com/5774-large_default/taladro-percutor-compacto-m18-milwaukee-m18bpd-202c.jpg'),
+('Alicates','https://mibricolaje.com/26480-large_default/alicate-universal-6-1000v-pamacon.jpg');
 
 -- ============================
 -- 7. Insertar muebles

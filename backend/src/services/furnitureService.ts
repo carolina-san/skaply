@@ -219,4 +219,19 @@ export class FurnitureService {
         throw new Error('Error fetching furniture parts')
       }
   }
+
+  async getFurnitureIdByRef(ref:number){
+    try{
+      const result = await pool.query(`SELECT id FROM furniture 
+        WHERE reference_number = $1`, [ref]);
+      
+      if (result.rows.length === 0) {
+        throw new Error(`Furniture with reference ${ref} not found`);
+      }
+      
+      return result.rows[0].id;
+    }catch(error){
+      throw new Error('Error fetching the furniture id by the ref provided');
+    }
+  }
 }
