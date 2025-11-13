@@ -8,5 +8,5 @@ export const routes: Routes = [
     {path: '', component: Landing},
     {path: 'catalogo', component: Home},
     {path: 'res-scanner', component: ResScanner},
-    {path: 'viewer-3d', component: Viewer3D}
+    {path: 'viewer-3d/:id', component: Viewer3D}
 ];

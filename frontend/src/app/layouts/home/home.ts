@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   Header,
   Chatbot,
@@ -38,14 +38,38 @@ export class Home implements OnInit {
   hasSearched: boolean = false;
   activeFilters: FilterOptions = {};
   resetFilterToggle: boolean = false;
+  isFurnitureModalOpen = false;
+  selectedFurniture: Furniture | null = null;
 
-  constructor(private apiService: ApiService) { }
+  constructor(
+    private apiService: ApiService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.obtenerCategorias();
     this.obtenerCatalogo();
     this.loadProviders();
     this.loadColors();
+  }
+
+  goToViewer3D() {
+    if (!this.selectedFurniture) return;
+    // Navegar antes de limpiar
+    this.router.navigate(['/viewer-3d', this.selectedFurniture.id]);
+    // Ahora puedes limpiar si quieres
+    this.closeFurnitureModal();
+    this.selectedFurniture = null;
+  }
+
+
+  openFurnitureModal(furniture: Furniture) {
+    this.selectedFurniture = furniture;
+    this.isFurnitureModalOpen = true;
+  }
+
+  closeFurnitureModal() {
+    this.isFurnitureModalOpen = false;
   }
 
   obtenerCatalogo() {
@@ -91,7 +115,7 @@ export class Home implements OnInit {
   }
 
   onSearch() {
-    
+
     const searchTerm = this.searchText.trim();
     console.log('Llamo a onSearch conpreviousSearchText: ' + searchTerm);
     this.searchInput.nativeElement.blur();
@@ -111,7 +135,7 @@ export class Home implements OnInit {
         this.furnitures = response.data;
         this.selectedCategoryId = null;
         this.hasSearched = true;
-        this.previousSearchText = searchTerm;  
+        this.previousSearchText = searchTerm;
         console.log('Temrino de llamar a onSearch conpreviousSearchText: ' + searchTerm);
 
 
@@ -143,7 +167,7 @@ export class Home implements OnInit {
 
   onSearchBlur() {
     console.log('Llamo a onSearchBlur con preiousSearchText = ' + this.previousSearchText);
-    setTimeout(() => {  
+    setTimeout(() => {
       if (!this.hasSearched) {
         this.searchText = '';
       } else if (this.searchText.trim() !== this.previousSearchText) {
@@ -159,7 +183,7 @@ export class Home implements OnInit {
 
   closeFilterModal() {
     console.log('Llamo a closeFilterModal');
-    setTimeout(() => { this.isFilterModalOpen = false; }, 350); 
+    setTimeout(() => { this.isFilterModalOpen = false; }, 350);
   }
 
   onApplyFilters(filters: FilterOptions) {
@@ -190,9 +214,9 @@ export class Home implements OnInit {
   calculateActiveFilters(filters: FilterOptions) {
     console.log('Llamo a calculateActiveFilters');
 
-    this.activeFiltersCount = 
-      (filters.color_ids?.length || 0) + 
-      (filters.difficulties?.length || 0) + 
+    this.activeFiltersCount =
+      (filters.color_ids?.length || 0) +
+      (filters.difficulties?.length || 0) +
       (filters.provider_ids?.length || 0);
   }
 
@@ -237,7 +261,7 @@ export class Home implements OnInit {
 
   onQrScanned(code: string) {
     console.log('Código QR escaneado:', code);
-    
+
     // Aquí implementas tu lógica según el tipo de QR
     // Ejemplo 1: Si el QR contiene un ID de mueble
     if (code.includes('furniture')) {
@@ -248,11 +272,11 @@ export class Home implements OnInit {
           alert(`Mueble escaneado: ${furniture.name}`);
           // Aquí podrías navegar a la página del mueble o mostrar más detalles
         }
-        ,error: (error) => {
+        , error: (error) => {
           console.error('Error al obtener el mueble escaneado:', error);
         }
       });
-    } 
+    }
     // Ejemplo 2: Si es una clave de configuración
     else if (code.startsWith('CONFIG:')) {
       const configKey = code.replace('CONFIG:', '');
@@ -317,7 +341,7 @@ export class Home implements OnInit {
     console.log('Llamo a updateFiltersAfterRemoval');
 
     this.calculateActiveFilters(this.activeFilters);
-    const hasAnyFilter = 
+    const hasAnyFilter =
       (this.activeFilters.color_ids?.length || 0) > 0 ||
       (this.activeFilters.difficulties?.length || 0) > 0 ||
       (this.activeFilters.provider_ids?.length || 0) > 0;

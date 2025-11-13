@@ -1,6 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { Header } from '../../components/header/header';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
@@ -13,11 +13,23 @@ import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })
-export class Viewer3D {
+export class Viewer3D implements OnInit {
   @ViewChild(FurnitureViewer) furnitureViewer!: FurnitureViewer;
 
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
+
+  constructor(private route: ActivatedRoute) {} 
+
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    console.log('🧩 ID recibido del mueble:', id);
+
+    // Aquí puedes decidir qué modelo cargar según el ID
+    // Ejemplo:
+    // this.modelPath = `/assets/models/${id}.glb`;
+    // this.furnitureViewer?.loadModel(this.modelPath);
+  }
 
   // Array de modelos disponibles
   private modelPaths = [

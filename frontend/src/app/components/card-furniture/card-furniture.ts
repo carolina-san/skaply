@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
@@ -11,8 +11,12 @@ import { Furniture } from '../../types';
   styleUrl: './card-furniture.css'
 })
 export class CardFurniture {
-  // @Input() furniture: any = {};
   @Input() furniture!: Furniture;
-  
+  @Output() openDetails = new EventEmitter<number>();
+
   difficultyLabels = DifficultyLabels;
+
+  onCardClick() {
+    this.openDetails.emit(this.furniture.id);
+  }
 }

@@ -3,17 +3,13 @@
   <!-- Barra de búsqueda y filtros -->
   <section class="w-full  mb-6 flex gap-3 items-center flex-shrink-0 ">
     <div class="relative flex-1">
-      <span
-        (mousedown)="onSearch()"
+      <span (mousedown)="onSearch()"
         class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:text-amber-900 transition-colors">search</span>
-      <input 
-        #searchInput
-        type="text" 
-        placeholder="Buscar"
-        [(ngModel)]="searchText"
-        (keypress)="onSearchKeyPress($event)"
-        (blur)="onSearchBlur()"
+      <input #searchInput type="text" placeholder="Buscar" [(ngModel)]="searchText"
+        (keypress)="onSearchKeyPress($event)" (blur)="onSearchBlur()"
         class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none focus:ring-2 focus:ring-azul-claro">
+      <span
+        class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-marron-oscuro text-xl cursor-pointer hover:text-amber-900 transition-colors">photo_camera</span>
     </div>
 
     <!-- Botón de filtros -->
@@ -27,95 +23,94 @@
     </button>
   </section>
 
-  
+
   <!-- Resultados de búsqueda y filtros activos -->
   <div class="mb-6 px-4">
-    
+
     <!-- Búsqueda activa -->
 
     <!-- <div *ngIf="hasSearched && previousSearchText" class="mb-4"> -->
-      
-      <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2 mb-3">
-        <p class="text-beige text-lg font-semibold">
-          Resultado de la búsqueda: 
-          <span class="text-azul-claro">{{ previousSearchText }}</span>
-        </p>
-        <span
-          (click)="clearSearch()"
-          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+
+    <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2 mb-3">
+      <p class="text-beige text-lg font-semibold">
+        Resultado de la búsqueda:
+        <span class="text-azul-claro">{{ previousSearchText }}</span>
+      </p>
+      <span (click)="clearSearch()"
+        class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+        close
+      </span>
+    </div>
+
+    <div *ngIf="!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0"
+      class="flex items-center gap-2 mb-3">
+      <p class="text-beige text-lg font-semibold">
+        Categoría seleccionada:
+        <span class="text-azul-claro">{{ getCategoryName(selectedCategoryId) }}</span>
+      </p>
+      <span (click)="clearSearch()"
+        class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+        close
+      </span>
+    </div>
+
+    <!-- Filtros activos -->
+    <div
+      *ngIf="(hasSearched && previousSearchText) || (!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0)"
+      class="flex flex-wrap gap-2">
+
+      <!-- Filtros de color -->
+      <div *ngFor="let colorId of activeFilters.color_ids"
+        class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+        <span class="text-marron-oscuro text-sm font-medium">
+          {{ getColorName(colorId) }}
+        </span>
+        <span (click)="removeColorFilter(colorId)"
+          class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
           close
         </span>
       </div>
 
-      <div *ngIf="!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0" class="flex items-center gap-2 mb-3">
-        <p class="text-beige text-lg font-semibold">
-          Categoría seleccionada: 
-          <span class="text-azul-claro">{{ getCategoryName(selectedCategoryId) }}</span>
-        </p>
-        <span
-          (click)="clearSearch()"
-          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+      <!-- Filtros de dificultad -->
+      <div *ngFor="let difficulty of activeFilters.difficulties"
+        class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+        <span class="text-marron-oscuro text-sm font-medium">
+          {{ getDifficultyLabel(difficulty) }}
+        </span>
+        <span (click)="removeDifficultyFilter(difficulty)"
+          class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
           close
         </span>
       </div>
 
-      <!-- Filtros activos -->
-      <div *ngIf="(hasSearched && previousSearchText) || (!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0)" class="flex flex-wrap gap-2">
-
-        <!-- Filtros de color -->
-        <div *ngFor="let colorId of activeFilters.color_ids" 
-             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getColorName(colorId) }}
-          </span>
-          <span (click)="removeColorFilter(colorId)" 
-                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            close
-          </span>
-        </div>
-
-        <!-- Filtros de dificultad -->
-        <div *ngFor="let difficulty of activeFilters.difficulties" 
-             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getDifficultyLabel(difficulty) }}
-          </span>
-          <span (click)="removeDifficultyFilter(difficulty)" 
-                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            close
-          </span>
-        </div>
-
-        <!-- Filtros de proveedor -->
-        <div *ngFor="let providerId of activeFilters.provider_ids" 
-             class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getProviderName(providerId) }}
-          </span>
-          <span (click)="removeProviderFilter(providerId)" 
-                class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            close
-          </span>
-        </div>
-
+      <!-- Filtros de proveedor -->
+      <div *ngFor="let providerId of activeFilters.provider_ids"
+        class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
+        <span class="text-marron-oscuro text-sm font-medium">
+          {{ getProviderName(providerId) }}
+        </span>
+        <span (click)="removeProviderFilter(providerId)"
+          class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
+          close
+        </span>
       </div>
+
+    </div>
 
     <!-- </div> -->
 
     <!-- Carrusel de filtros de categorías -->
-    <div *ngIf="!hasSearched && (selectedCategoryId === null || activeFiltersCount === 0)" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-      <button       
-        (click)="filterByCategory(null)" 
+    <div *ngIf="!hasSearched && (selectedCategoryId === null || activeFiltersCount === 0)"
+      class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <button (click)="filterByCategory(null)"
         class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-        [class.!bg-azul-claro]="selectedCategoryId === null" >
+        [class.!bg-azul-claro]="selectedCategoryId === null">
         <!-- [class.!text-white]="selectedCategoryId === null" > -->
         Ver todo
       </button>
-      <button 
-        *ngFor="let category of categories" 
-        (click)="filterByCategory(category.id)" 
+      <button *ngFor="let category of categories" (click)="filterByCategory(category.id)"
         class="btn-filtros-home cursor-pointer hover:bg-opacity-90 transition-colors"
-        [class.!bg-azul-claro]="selectedCategoryId === category.id" >
+        [class.!bg-azul-claro]="selectedCategoryId === category.id">
         <!-- [class.!text-white]="selectedCategoryId === category.id"> -->
         {{ category.name }}
       </button>
@@ -124,22 +119,38 @@
 
   <!-- Grid de muebles-->
   <section class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
-  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
-  <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"></app-card-furniture>
-</section>
+    <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
+       (click)="openFurnitureModal(furniture)"></app-card-furniture>
+    <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
+      (click)="openFurnitureModal(furniture)"></app-card-furniture>
+  </section>
 
+  <div *ngIf="isFurnitureModalOpen" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div class="bg-beige rounded-2xl shadow-xl max-w-lg w-[90%] p-6 relative animate-fadeIn">
+      <button (click)="closeFurnitureModal()" class="absolute top-3 right-3 text-marron-oscuro hover:text-red-600">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+
+      <img [src]="'assets/imgs/ikea.jpg'" [alt]="selectedFurniture?.name" class="w-full rounded-lg mb-4">
+
+      <h2 class="text-2xl font-semibold mb-2 text-marron-oscuro">{{ selectedFurniture?.name }}</h2>
+      <p class="text-sm text-marron-oscuro mb-2"><strong>Dificultad:</strong> {{
+        difficultyLabels[selectedFurniture?.difficulty || 'low'] }}</p>
+      <p class="text-xs text-gray-600">REF: {{ selectedFurniture?.reference_number }}</p>
+      <button
+        class="mt-4 ml-15 px-4 py-2 bg-azul-claro text-marron-oscuro border border-marron-oscuro rounded-full hover:bg-azul-claro/90 transition-colors"
+        (click)="goToViewer3D()">
+        Empezar montaje
+      </button>
+    </div>
+  </div>
 
 
   <app-scanner></app-scanner>
 
   <!-- Filter Panel -->
-  <app-filter-panel 
-    [isOpen]="isFilterModalOpen" 
-    [providers]="providers" 
-    [colors]="colors" 
-    [activeFilters]="activeFilters"
-    [resetToggle]="resetFilterToggle"
-    (close)="closeFilterModal()"
+  <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors"
+    [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
 
