@@ -9,7 +9,7 @@
   text-center;
 }
 .num-paso{
-    @apply bg-beige text-marron-oscuro 
+    @apply bg-azul-claro text-marron-oscuro 
     font-bold text-2xl w-14 h-14 rounded-full 
     flex items-center justify-center;
 }
