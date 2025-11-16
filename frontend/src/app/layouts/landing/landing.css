@@ -64,7 +64,7 @@
 
 .btn-hero {
   @apply 
-    text-marron-oscuro px-7 py-3 rounded-full 
+    text-marron-oscuro text-base md:text-xl px-7 py-3 rounded-full 
     font-bold transition-all duration-300 cursor-pointer transform
     items-center;
 
@@ -88,5 +88,5 @@ box-shadow: 0 0 30px rgba(220, 214, 213, 0.30);
 }
 
 .btn-hero:hover .material-symbols-rounded {
-  transform: translateX(7px); /* mueve la flecha 5px a la derecha */
+  transform: translateX(7px);
 }

@@ -50,7 +50,6 @@ article,section {
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  
   --color-beige:#dcd6d5;
 }
 
@@ -81,11 +80,11 @@ article,section {
 
 .btn-azul {
   @apply 
-    bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full 
+    flex flex-row items-center bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full 
     font-bold hover:bg-azul-medio transition-all 
     duration-300 cursor-pointer;
 
- 
+
  
 }
 
@@ -93,7 +92,13 @@ article,section {
   @apply bg-azul-medio;
 }
 
+.btn-azul .material-symbols-rounded {
+  @apply transition-transform duration-300;
+}
 
+.btn-azul:hover .material-symbols-rounded {
+  transform: translateX(7px);
+}
 
 .btn-azul-chatbot {
   @apply bg-azul-claro text-marron-oscuro 
