@@ -158,8 +158,7 @@ article,section {
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
-páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
-Padding top para salvar el header*/
+páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil*/
 .page-main{
   @apply px-5 md:px-10 lg:px-20;
 }
