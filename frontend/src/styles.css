@@ -26,7 +26,8 @@ body {
 }
 
 
-h1,h2 {
+h1,
+h2 {
   font-family: 'Agrandir', sans-serif;
 }
 
@@ -35,13 +36,15 @@ span,
 a,
 li,
 div,
-article,section {
+article,
+section {
   font-family: 'Inter', sans-serif;
   font-weight: 500;
 }
+
 .material-symbols-rounded {
   font-family: 'Material Symbols Rounded' !important;
-  font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48; 
+  font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48;
 }
 
 @theme {
@@ -50,7 +53,7 @@ article,section {
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  --color-beige:#dcd6d5;
+  --color-beige: #dcd6d5;
 }
 
 @tailwind base;
@@ -64,28 +67,19 @@ article,section {
 
 /*Clases de botones*/
 .btn-primary {
-  @apply flex items-center justify-between w-full 
-  p-3 pl-6 pr-6 bg-beige text-marron-oscuro font-semibold 
-  rounded-[25px] shadow-md transition-colors duration-200 
-  hover:bg-azul-claro cursor-pointer;
-}/*Fondo beige hover azul*/
+  @apply flex items-center justify-between w-full p-3 pl-6 pr-6 bg-beige text-marron-oscuro font-semibold rounded-[25px] shadow-md transition-colors duration-200 hover:bg-azul-claro cursor-pointer;
+}
+
+/*Fondo beige hover azul*/
 
 .btn-primary-2 {
-  @apply flex items-center justify-between 
-  w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige 
-  font-semibold rounded-[25px] shadow-md transition-colors 
-  duration-200 hover:bg-azul-claro hover:text-marron-oscuro 
-  cursor-pointer;
-}/*Fondo marron hover azul*/
+  @apply flex items-center justify-between w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige font-semibold rounded-[25px] shadow-md transition-colors duration-200 hover:bg-azul-claro hover:text-marron-oscuro cursor-pointer;
+}
+
+/*Fondo marron hover azul*/
 
 .btn-azul {
-  @apply 
-    flex flex-row items-center bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full 
-    font-bold hover:bg-azul-medio transition-all 
-    duration-300 cursor-pointer;
-
-
- 
+  @apply flex flex-row items-center bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 cursor-pointer;
 }
 
 .btn-azul:hover {
@@ -101,28 +95,19 @@ article,section {
 }
 
 .btn-azul-chatbot {
-  @apply bg-azul-claro text-marron-oscuro 
-  p-2 h-12 w-12 rounded-full hover:bg-marron-oscuro/90 
-  transition-colors cursor-pointer;
+  @apply bg-azul-claro text-marron-oscuro p-2 h-12 w-12 rounded-full hover:bg-marron-oscuro/90 transition-colors cursor-pointer;
 }
 
 .btn-escaneo {
-  @apply fixed bottom-10 right-6 h-12 w-12 
-  bg-azul-claro p-3 rounded-full shadow-2xl 
-  hover:scale-110 transition-transform z-50;
+  @apply fixed bottom-10 right-6 h-12 w-12 bg-azul-claro p-3 rounded-full shadow-2xl hover:scale-110 transition-transform z-50;
 }
 
-
-
 .btn-vista-mueble {
-  @apply flex flex-col items-center 
-  justify-center flex-1 h-full hover:bg-beige 
-  transition-colors;
+  @apply flex flex-col items-center justify-center flex-1 h-full hover:bg-beige transition-colors;
 }
 
 .btn-opciones-mueble {
-  @apply flex flex-col items-center px-7 py-1 
-  rounded-3xl text-marron-oscuro transition-colors;
+  @apply flex flex-col items-center px-7 py-1 rounded-3xl text-marron-oscuro transition-colors;
 }
 
 .btn-opciones-mueble:hover {
@@ -134,31 +119,30 @@ article,section {
 }
 
 .btn-canvas {
-  @apply flex flex-col items-center 
-  justify-center gap-0.5 px-2 py-2 bg-beige 
-  text-marron-oscuro rounded-lg shadow-md 
-  hover:shadow-lg hover:scale-105 transition-all 
-  duration-300 w-full;
+  @apply flex flex-col items-center justify-center gap-0.5 px-2 py-2 bg-beige text-marron-oscuro rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
 }
 
 .btn-filtros-home {
-  @apply bg-beige text-marron-oscuro 
-  px-3 py-1 rounded-full whitespace-nowrap 
-  font-semibold text-sm shadow-md border border-2 
-  border-beige transition-colors duration-200
-  hover:bg-azul-claro/70 hover:text-marron-oscuro 
-  active:bg-azul-claro/40 ;
-}
-.btn-filtros-activo {
-  @apply border border-2 border-azul-claro
-  bg-azul-claro/70 text-marron-oscuro font-bold;
+  @apply bg-beige text-marron-oscuro px-3 py-1 rounded-full whitespace-nowrap font-semibold text-sm shadow-md border border-2 border-beige transition-colors duration-200 hover:bg-azul-claro/70 hover:text-marron-oscuro active:bg-azul-claro/40;
 }
 
+.btn-filtros-activo {
+  @apply border border-2 border-azul-claro bg-azul-claro/70 text-marron-oscuro font-bold;
+}
+
+.btn-registro {
+  @apply w-full rounded-lg bg-beige text-marron-oscuro py-3 pr-4 pl-12
+}
+
+.iconos-registro{
+  @apply absolute left-4 top-1/2 -translate-y-1/2 text-marron-oscuro;
+}
 
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
-páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil*/
+páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
+Padding top para salvar el header*/
 .page-main{
   @apply px-5 md:px-10 lg:px-20;
 }
