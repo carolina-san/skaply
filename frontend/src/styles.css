@@ -123,7 +123,7 @@ section {
 }
 
 .btn-filtros-home {
-  @apply bg-beige text-marron-oscuro px-3 py-1 rounded-full whitespace-nowrap font-semibold text-sm shadow-md border border-2 border-beige transition-colors duration-200 hover:bg-azul-claro/70 hover:text-marron-oscuro active:bg-azul-claro/40;
+  @apply bg-beige text-marron-oscuro px-3 py-1 rounded-full whitespace-nowrap font-semibold text-sm shadow-md border border-2 border-beige transition-colors duration-200 hover:bg-azul-claro hover:text-marron-oscuro active:bg-azul-claro/40;
 }
 
 .btn-filtros-activo {
