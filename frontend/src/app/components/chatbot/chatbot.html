@@ -22,16 +22,38 @@
         <!-- Área de mensajes -->
         <div class="flex-1 overflow-y-auto p-4">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
-    'text-right': msg.sender === 'user',
-    'text-left': msg.sender === 'bot'
+  'text-right': msg.sender === 'user',
+  'text-left': msg.sender === 'bot'
 }">
-                <div [ngClass]="{
-        'inline-block bg-blue-500 text-white px-4 py-2 rounded-xl': msg.sender === 'user',
-        'inline-block bg-gray-200 text-black px-4 py-2 rounded-xl': msg.sender === 'bot'
-    }">
+
+                <!-- Mensaje normal -->
+                <div *ngIf="msg.text" [ngClass]="{
+      'inline-block bg-blue-500 text-white px-4 py-2 rounded-xl': msg.sender === 'user',
+      'inline-block bg-gray-200 text-black px-4 py-2 rounded-xl': msg.sender === 'bot'
+  }">
                     {{ msg.text }}
                 </div>
+
+                <!-- Info card -->
+                <!-- Info card -->
+                <div *ngIf="msg.rich?.type === 'info'"
+                    class="inline-block bg-gray-100 text-black px-4 py-2 rounded-xl shadow">
+                    <h4 class="font-bold">{{ msg.rich.title }}</h4>
+                    <p>{{ msg.rich.subtitle }}</p>
+                </div>
+
+                <!-- Chips -->
+                <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
+                    <button *ngFor="let opt of msg.rich.options"
+                        class="bg-blue-500 text-white px-3 py-1 m-1 rounded-full hover:bg-blue-600 transition"
+                        (click)="handleChipClick(opt.text)">
+                        {{ opt.text }}
+                    </button>
+                </div>
+
+
             </div>
+
         </div>
 
         <div class="p-4 fixed bottom-[5rem] right-0">

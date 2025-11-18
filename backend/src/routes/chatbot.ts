@@ -4,6 +4,7 @@ import { ChatbotController } from '@/controllers/chatbotController';
 const router = Router();
 const chatbotController = new ChatbotController();
 
-router.post('/webhook',chatbotController.handleWebhook);
+router.post('/',chatbotController.handleChatbot);
+router.post('/webhook', chatbotController.handleWebhook);
 
 export default router;
