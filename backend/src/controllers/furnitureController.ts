@@ -40,37 +40,6 @@ export class FurnitureController {
     }
   }
 
-  getFurnitureByCategory = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const cat = parseInt(req.params.cat || '0');
-      if (isNaN(cat)) {
-        res.status(400).json({ error: 'Invalid furniture category' });
-        return;
-      }
-      const result = await this.furnitureService.getFurnitureByCategory(cat);
-      res.status(200).json({
-        data: result.rows
-      })
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch furnitures in this category' })
-    }
-  }
-
-  getFurnitureByReference = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const ref = req.params.ref || '';
-      const result = await this.furnitureService.getFurnitureByReference(ref)
-      res.status(200).json(
-        {
-          data: result.rows
-        }
-      )
-    } catch (error) {
-      res.status(500).json({ error: 'Unkwown reference number' });
-    }
-  }
-
-
   getFurnitureParts = async (req: Request, res: Response): Promise<void> => {
     try {
       const id = parseInt(req.params.id || '0');

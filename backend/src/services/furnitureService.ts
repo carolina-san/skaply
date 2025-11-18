@@ -91,25 +91,6 @@ export class FurnitureService {
         throw new Error('Unable to fetch the furniture included in the parameters');
     }
   }
-
-  // DUDA: tiene más sentido que le pasemos por parámtro el nombre de la categoria?
-  async getFurnitureByCategory(cat:number){
-    try{
-      const result = await pool.query('SELECT * FROM public.furniture WHERE category_id = $1',[cat]);
-      return result;
-    }catch(error){
-      throw new Error('Unable to fetch furnitures included in this category');
-    }
-  }
-
-  async getFurnitureByReference(ref:string){
-    try{
-      const result = await pool.query('SELECT * FROM public.furniture WHERE reference_number = $1',[ref]);
-      return result;
-    }catch(error){
-      throw new Error('Unable to fetch the furniture included in the reference number');
-    }
-  }
  
   async getFurnitureParts(id:number){
     try{
