@@ -1,10 +1,10 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-chatbot',
-    standalone: true, 
+    standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './chatbot.html',
     styleUrls: ['./chatbot.css']
@@ -18,44 +18,46 @@ export class Chatbot implements OnInit {
     initialHeight: number = 0;
     startDragHeight: number = 0;
     startY: number = 0;
+
+    messages: ChatMessage[] = [];
+    newMessage: string = '';
+
     ngOnInit() {
         this.initialHeight = window.innerHeight * 0.9;
         this.chatHeight = this.initialHeight;
     }
+
     toggleChat() {
         this.chatVisible = !this.chatVisible;
         this.chatHeight = this.initialHeight;
     }
-    startDrag(event: MouseEvent) {
-        if (this.chatVisible) {
-            this.isDragging = true;
-            event.preventDefault();
 
-            this.startDragHeight = this.chatHeight;
-            this.startY = event.clientY;
-        }
-    }
+    // ... tus métodos de drag ya existentes
 
-    @HostListener('document:mouseup')
-    stopDrag() {
-        if (this.isDragging) {
-            this.isDragging = false;
+    sendMessage() {
+        if (!this.newMessage.trim()) return;
 
-            if (this.chatHeight < (this.initialHeight * 0.7)) {
-                this.chatVisible = false;
-            }
-            this.chatHeight = this.initialHeight;
-        }
-    }
+        // Agregar mensaje del usuario
+        this.messages.push({ sender: 'user', text: this.newMessage });
 
-    @HostListener('document:mousemove', ['$event'])
-    onDrag(event: MouseEvent) {
-        if (!this.isDragging || !this.chatVisible) return;
+        // Guardar mensaje antes de enviar
+        const messageToSend = this.newMessage;
+        this.newMessage = '';
 
-        const newHeight = this.startDragHeight - (event.clientY - this.startY);
-
-        if (newHeight >= 200 && newHeight <= this.initialHeight) {
-            this.chatHeight = newHeight;
-        }
+        // Llamar al backend
+        fetch('http://localhost:3000/api/chatbot/webhook', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: messageToSend })
+        })
+            .then(res => res.json())
+            .then(data => {
+                const botReply = data.fulfillmentText || 'No entiendo esa consulta.';
+                this.messages.push({ sender: 'bot', text: botReply });
+            })
+            .catch(err => {
+                console.error(err);
+                this.messages.push({ sender: 'bot', text: 'Error al conectar con el chatbot.' });
+            });
     }
 }

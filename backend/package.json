@@ -13,6 +13,7 @@
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "dependencies": {
+    "@google-cloud/dialogflow": "^7.4.0",
     "@types/pg": "^8.15.5",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",

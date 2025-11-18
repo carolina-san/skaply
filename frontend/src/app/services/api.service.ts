@@ -39,4 +39,5 @@ export class ApiService {
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
+  
 }
