@@ -25,10 +25,12 @@ CREATE TABLE "User" (
     name VARCHAR(100),
     cif VARCHAR(20),
     company_name VARCHAR(100),
-    professional_code VARCHAR(50),
+    telephone VARCHAR(15),
     tax_address VARCHAR(200),
     role user_role NOT NULL,
-    image_url TEXT
+    image_url TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    new_user BOOLEAN DEFAULT FALSE
 );
 
 -- ============================

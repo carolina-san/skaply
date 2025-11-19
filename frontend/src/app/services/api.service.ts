@@ -11,7 +11,7 @@ import { FilterOptions } from '../types'; //filter
 export class ApiService {
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   //Obtener muebles
   getFurnitures(): Observable<any> {
@@ -39,5 +39,13 @@ export class ApiService {
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
-  
+
+  registerProvider(data: any): Observable<any> {
+    const payload = {
+      ...data,
+      role: 'provider',
+      new_user: true
+    };
+    return this.http.post(`${this.apiUrl}/providers`, payload);
+  }
 }

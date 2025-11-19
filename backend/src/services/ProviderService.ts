@@ -22,6 +22,19 @@ export class ProviderService {
     }
   }
 
+  async createProvider(company_name: string, cif: string, tax_address: string, email: string, telephone: string) {
+    try {
+      const result = await pool.query(
+        `INSERT INTO public."User" (company_name, cif, tax_adress, email, telephone)
+          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [company_name, cif, tax_address, email, telephone]
+      );
+      return result;
+    } catch (error) {
+      throw new Error('Unable to create provider');
+    }
+  }
+
   async getAllProvidersChatbot(){
     try{
       const result = await pool.query(`SELECT id, company_name, email, cif, tax_address, name,image_url

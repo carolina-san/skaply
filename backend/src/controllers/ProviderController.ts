@@ -39,6 +39,19 @@ export class ProviderController {
     }
   };
 
+  postProvider = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { company_name, cif, tax_address, email, telephone} = req.body;
+      const result = await this.providerService.createProvider(company_name, cif, tax_address, email, telephone);
+      res.status(201).json({
+        message: 'Provider created successfully',
+        data: result.rows[0]
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create provider' });
+    }
+  };
+
 
 //   updateProvider = async (req: Request, res: Response): Promise<void> => {
 //     try {
