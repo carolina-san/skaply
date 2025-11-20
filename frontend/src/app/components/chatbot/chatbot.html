@@ -29,10 +29,21 @@
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
                 }">
-
+                <div *ngIf="msg.rich?.type === 'card'" class="msg-bot border p-3 rounded-md shadow mb-2 bg-white">
+                    <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
+                        class="w-full h-32 object-cover rounded-md mb-2">
+                    <h4 class="font-bold">{{ msg.rich.title }}</h4>
+                    <p class="text-sm text-gray-700 whitespace-pre-line">{{ msg.rich.subtitle }}</p>
+                    <div class="mt-2">
+                        <button *ngFor="let btn of msg.rich.buttons"
+                            class="bg-blue-500 text-white px-3 py-1 m-1 rounded hover:bg-blue-600 transition"
+                            (click)="openLink(btn.postback)">
+                            {{ btn.text }}
+                        </button>
+                    </div>
+                </div>
                 <!-- Mensaje normal -->
-                <div *ngIf="msg.text"
-                    [ngClass]="msg.sender === 'user'
+                <div *ngIf="msg.text" [ngClass]="msg.sender === 'user'
     ? 'msg-user'
     : 'msg-bot'">
                     {{ msg.text }}
@@ -40,8 +51,7 @@
 
                 <!-- Info card -->
                 <!-- Info card -->
-                <div *ngIf="msg.rich?.type === 'info'"
-                    class="msg-bot">
+                <div *ngIf="msg.rich?.type === 'info'" class="msg-bot">
                     <h4 class="font-bold">{{ msg.rich.title }}</h4>
                     <p>{{ msg.rich.subtitle }}</p>
                 </div>
