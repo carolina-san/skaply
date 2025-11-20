@@ -53,7 +53,7 @@ section {
   --color-marron-claro: #997662;
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
-  --color-beige-oscuro: #D6CFC4;
+  --color-beige-oscuro: #997662;
   --color-beige: #dcd6d5;
 }
 
@@ -139,6 +139,10 @@ section {
   @apply absolute left-4 top-1/2 -translate-y-1/2 text-marron-oscuro;
 }
 
+/*Botón sin fondo con fondo marron claro en el hover*/
+.btn-hover-marron{
+  @apply cursor-pointer rounded-full p-1 hover:bg-beige-oscuro transition-colors duration-300
+}
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
