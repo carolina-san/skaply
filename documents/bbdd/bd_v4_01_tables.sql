@@ -62,7 +62,8 @@ CREATE TABLE Furniture (
     difficulty diff NOT NULL,
     category_id INTEGER REFERENCES Category(id) ON DELETE SET NULL,
     provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL,
-    color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL
+    color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL,
+    short_description TEXT
 );
 
 -- ============================

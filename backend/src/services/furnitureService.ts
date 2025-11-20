@@ -37,7 +37,8 @@ export class FurnitureService {
               f.color_id, 
               cl.name AS color_name,
               cl.hex AS color_hex,
-              f.difficulty
+              f.difficulty,
+              f.short_description
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
@@ -67,6 +68,7 @@ export class FurnitureService {
               cl.name AS color_name,
               cl.hex AS color_hex,
               f.difficulty,
+              f.short_description
               COUNT(*) AS total_steps
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
@@ -84,6 +86,7 @@ export class FurnitureService {
               f.provider_id, 
               p.company_name, 
               f.color_id, 
+              f.short_description,
               cl.name;`,
           [id]);
         return result;
@@ -154,7 +157,8 @@ export class FurnitureService {
             f.color_id, 
             cl.name AS color_name,
             cl.hex AS color_hex,
-            f.difficulty
+            f.difficulty,
+            f.short_description
         FROM public.furniture f
         INNER JOIN Step s ON s.furniture_id = f.id
         INNER JOIN Category c ON f.category_id = c.id

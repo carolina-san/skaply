@@ -96,12 +96,11 @@ INSERT INTO Tool (name,image_url) VALUES
 -- ============================
 -- 7. Insertar muebles
 -- ============================
-INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_id,difficulty, color_id) VALUES
-('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3),
-('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4),
-('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5),
-('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5);
-
+INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_id,difficulty, color_id, short_description) VALUES
+('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3, 'Silla de madera cómoda y resistente'),
+('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4, 'Mesa de comedor grande y elegante'),
+('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5, 'Sofa gris de tres plazas con cojines suaves'),
+('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable');
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
 --         |- pieza2 x1 -|

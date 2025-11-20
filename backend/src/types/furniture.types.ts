@@ -7,5 +7,6 @@ export interface Furniture {
   reference_number: string;
   category: number;
   provider: number;
+  short_description: string;
 }
 
