@@ -10,8 +10,8 @@ export interface Furniture {
     difficulty: Difficulty;
     file_uri?: string;
     short_description: string;
-    // provider_id: number;
-    // provider_name: number;
+    provider_id: number;
+    provider_name?: string;
     // category_id: number;
     // category_name: number;
 }

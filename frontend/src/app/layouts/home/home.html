@@ -126,7 +126,7 @@
   </section>
 
   <div *ngIf="isFurnitureModalOpen" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div class="bg-beige rounded-2xl shadow-xl max-w-lg w-[90%] p-6 relative animate-fadeIn">
+    <div class="bg-beige rounded-2xl shadow-xl max-w-lg w-[90%] p-6 relative animate-fadeIn text-center">
       <button (click)="closeFurnitureModal()" class="absolute top-3 right-3 text-marron-oscuro">
         <span class="material-symbols-rounded">close</span>
       </button>
@@ -134,8 +134,9 @@
       <img [src]="'assets/imgs/ikea.jpg'" [alt]="selectedFurniture?.name" class="w-full rounded-lg mb-4">
 
       <h2 class="text-2xl font-semibold mb-2 text-marron-oscuro">{{ selectedFurniture?.name }}</h2>
-      <p class="text-sm text-marron-oscuro mb-2"><strong>Dificultad:</strong> {{
-        difficultyLabels[selectedFurniture?.difficulty || 'low'] }}</p>
+      <p class="text-sm font-semibold text-marron-oscuro mb-4">{{ selectedFurniture?.short_description }}</p>
+      <p class="text-sm text-marron-oscuro mb-2"><strong>Dificultad:</strong> {{difficultyLabels[selectedFurniture?.difficulty || 'low'] }}</p>
+      <p class="text-sm text-marron-oscuro mb-2"><strong>Proveedor:</strong> {{ selectedFurniture?.provider_name }}</p>
       <p class="text-xs text-gray-600">REF: {{ selectedFurniture?.reference_number }}</p>
       <button
         class="mt-4 px-4 py-2 bg-azul-claro text-marron-oscuro border border-marron-oscuro rounded-full hover:bg-azul-claro/90 transition-colors mx-auto block"
