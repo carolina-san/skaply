@@ -51,10 +51,6 @@ export class ProviderController {
       res.status(500).json({ error: 'Failed to create provider' });
     }
   };
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/front/chatbot
 
 
 //   updateProvider = async (req: Request, res: Response): Promise<void> => {
