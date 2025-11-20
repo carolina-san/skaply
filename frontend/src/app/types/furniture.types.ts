@@ -9,6 +9,7 @@ export interface Furniture {
     color_hex: string
     difficulty: Difficulty;
     file_uri?: string;
+    short_description: string;
     // provider_id: number;
     // provider_name: number;
     // category_id: number;

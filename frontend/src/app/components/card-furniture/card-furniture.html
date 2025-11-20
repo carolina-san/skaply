@@ -1,32 +1,16 @@
-<article
-  (click)="onCardClick()"
+<article (click)="onCardClick()"
   class="group relative flex flex-col text-marron-oscuro rounded-2xl overflow-hidden bg-beige border border-marron-oscuro/10 hover:border-azul-claro/40 transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer">
 
   <!-- Imagen del mueble -->
   <div class="relative w-full aspect-[5/4] overflow-hidden bg-beige">
-    <img 
-      [src]="'assets/imgs/ikea.jpg'" 
-      [alt]="furniture.name"
+    <img [src]="'assets/imgs/ikea.jpg'" [alt]="furniture.name"
       class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
   </div>
 
   <!-- Contenido -->
   <section class="flex flex-col gap-2 p-4">
     <h2 class="font-semibold text-base line-clamp-2">{{ furniture.name }}</h2>
-    <p class="text-xs">REF: {{ furniture.reference_number }}</p>
-
-    <div class="flex justify-between items-center mt-2 text-xs">
-      <span class="flex items-center gap-2">
-        <span class="w-4 h-4 rounded-full border border-marron-oscuro/20"
-          [ngStyle]="{'background-color': furniture.color_hex}"></span>
-        {{ furniture.color_name }}
-      </span>
-
-      <!-- Dificultad -->
-      <span class="px-2 py-1 rounded-full bg-azul-claro/10 text-marron-oscuro text-[11px] font-medium">
-        {{ difficultyLabels[furniture.difficulty] }}
-      </span>
-    </div>
+    <p class="text-xs">{{ furniture.short_description }}</p>
   </section>
 </article>
 
@@ -81,7 +65,7 @@ build
           <span *ngSwitchCase="'high'">bolt</span>
         </ng-container>
       </span> -->
-      <!-- {{ difficultyLabels[furniture.difficulty] }}
+<!-- {{ difficultyLabels[furniture.difficulty] }}
     </span>
   </div>
 
@@ -99,4 +83,4 @@ build
     <p class="text-xs text-beige/60 mt-1">REF: {{ furniture.reference_number }}</p>
   </section>
 
-</article> --> 
+</article> -->

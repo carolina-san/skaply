@@ -55,13 +55,10 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-    // Navegar antes de limpiar
     this.router.navigate(['/viewer-3d', this.selectedFurniture.id]);
-    // Ahora puedes limpiar si quieres
     this.closeFurnitureModal();
     this.selectedFurniture = null;
   }
-
 
   openFurnitureModal(furniture: Furniture) {
     this.selectedFurniture = furniture;
@@ -115,7 +112,6 @@ export class Home implements OnInit {
   }
 
   onSearch() {
-
     const searchTerm = this.searchText.trim();
     console.log('Llamo a onSearch conpreviousSearchText: ' + searchTerm);
     this.searchInput.nativeElement.blur();
@@ -126,7 +122,6 @@ export class Home implements OnInit {
       this.hasSearched = false;
       return;
     }
-    // Filter by text
     const filters: FilterOptions = {
       search: searchTerm
     };
@@ -136,9 +131,6 @@ export class Home implements OnInit {
         this.selectedCategoryId = null;
         this.hasSearched = true;
         this.previousSearchText = searchTerm;
-        console.log('Temrino de llamar a onSearch conpreviousSearchText: ' + searchTerm);
-
-
       },
       error: (error) => {
         console.error('Error al buscar muebles:', error);
@@ -147,8 +139,6 @@ export class Home implements OnInit {
   }
 
   clearSearch() {
-    console.log('Llamo a clearSearch');
-
     this.searchText = '';
     this.previousSearchText = '';
     this.hasSearched = false;
@@ -166,7 +156,6 @@ export class Home implements OnInit {
   }
 
   onSearchBlur() {
-    console.log('Llamo a onSearchBlur con preiousSearchText = ' + this.previousSearchText);
     setTimeout(() => {
       if (!this.hasSearched) {
         this.searchText = '';
@@ -177,18 +166,14 @@ export class Home implements OnInit {
   }
 
   openFilterModal() {
-    console.log('Llamo a openFilterModal');
     this.isFilterModalOpen = true;
   }
 
   closeFilterModal() {
-    console.log('Llamo a closeFilterModal');
     setTimeout(() => { this.isFilterModalOpen = false; }, 350);
   }
 
   onApplyFilters(filters: FilterOptions) {
-    console.log('Llamo a onApplyFilters');
-
     if (this.hasSearched && this.previousSearchText.trim() !== '') {
       filters.search = this.previousSearchText.trim();
     }
@@ -197,8 +182,6 @@ export class Home implements OnInit {
   }
 
   resetFiltersPanel() {
-    console.log('Llamo a resetFiltersPanel');
-
     this.activeFilters = {
       color_ids: [],
       difficulties: [],
@@ -212,8 +195,6 @@ export class Home implements OnInit {
   }
 
   calculateActiveFilters(filters: FilterOptions) {
-    console.log('Llamo a calculateActiveFilters');
-
     this.activeFiltersCount =
       (filters.color_ids?.length || 0) +
       (filters.difficulties?.length || 0) +
@@ -221,9 +202,6 @@ export class Home implements OnInit {
   }
 
   filterByCategory(categoryId: number | null) {
-    console.log('Llamo a filterByCategory');
-
-    // Same category selected
     if (this.selectedCategoryId === categoryId) {
       return;
     }
@@ -233,7 +211,6 @@ export class Home implements OnInit {
       this.obtenerCatalogo();
       return;
     }
-    // Filter by category
     const filters: FilterOptions = {
       category_ids: [categoryId]
     };
@@ -241,8 +218,6 @@ export class Home implements OnInit {
   }
 
   private applyFiltersWithCategory(filters: FilterOptions) {
-    console.log('Llamo a applyFiltersWithCategory');
-
     const completeFilters: FilterOptions = {
       ...filters,
       category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : filters.category_ids
@@ -250,7 +225,7 @@ export class Home implements OnInit {
     this.apiService.getFilteredFurniture(completeFilters).subscribe({
       next: (response) => {
         this.furnitures = response.data;
-        this.calculateActiveFilters(filters); // without counting category
+        this.calculateActiveFilters(filters);
         this.activeFilters = filters;
       },
       error: (error) => {
@@ -262,8 +237,7 @@ export class Home implements OnInit {
   onQrScanned(code: string) {
     console.log('Código QR escaneado:', code);
 
-    // Aquí implementas tu lógica según el tipo de QR
-    // Ejemplo 1: Si el QR contiene un ID de mueble
+    //Si el QR contiene un ID de mueble
     if (code.includes('furniture')) {
       const furnitureId = code.split('/').pop();
       this.apiService.getFurnitureById(furnitureId!).subscribe({
@@ -277,12 +251,12 @@ export class Home implements OnInit {
         }
       });
     }
-    // Ejemplo 2: Si es una clave de configuración
+    //Si es una clave de configuración
     else if (code.startsWith('CONFIG:')) {
       const configKey = code.replace('CONFIG:', '');
       this.processConfiguration(configKey);
     }
-    // Ejemplo 3: Mostrar el código
+    //Mostrar el código
     else {
       alert(`Código escaneado: ${code}`);
     }
@@ -291,10 +265,7 @@ export class Home implements OnInit {
   processConfiguration(configKey: string) {
     // Implementa tu lógica de configuración
     console.log('Procesando configuración:', configKey);
-    // Ejemplo: this.apiService.applyConfiguration(configKey).subscribe(...)
   }
-
-
 
   getColorName(id: number): string {
     return this.colors.find(c => c.id === id)?.name || 'Color';
@@ -314,32 +285,24 @@ export class Home implements OnInit {
   }
 
   removeColorFilter(colorId: number) {
-    console.log('Llamo a removeColorFilter');
-
     if (!this.activeFilters.color_ids) return;
     this.activeFilters.color_ids = this.activeFilters.color_ids.filter(id => id !== colorId);
     this.updateFiltersAfterRemoval();
   }
 
   removeProviderFilter(providerId: number) {
-    console.log('Llamo a removeProviderFilter');
-
     if (!this.activeFilters.provider_ids) return;
     this.activeFilters.provider_ids = this.activeFilters.provider_ids.filter(id => id !== providerId);
     this.updateFiltersAfterRemoval();
   }
 
   removeDifficultyFilter(difficulty: 'low' | 'medium' | 'high') {
-    console.log('Llamo a removeDifficultyFilter');
-
     if (!this.activeFilters.difficulties) return;
     this.activeFilters.difficulties = this.activeFilters.difficulties.filter(d => d !== difficulty);
     this.updateFiltersAfterRemoval();
   }
 
   private updateFiltersAfterRemoval() {
-    console.log('Llamo a updateFiltersAfterRemoval');
-
     this.calculateActiveFilters(this.activeFilters);
     const hasAnyFilter =
       (this.activeFilters.color_ids?.length || 0) > 0 ||
