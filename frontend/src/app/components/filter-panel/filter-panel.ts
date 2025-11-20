@@ -44,10 +44,8 @@ export class FilterPanelComponent {
     }
     if (changes['isOpen']) {
       if (this.isOpen && !changes['isOpen'].previousValue) {
-        console.log('PANEL: isOpen cambió a true, iniciando animación');
         setTimeout(() => this.isAnimating = true, 10);
       } else if (!this.isOpen && changes['isOpen'].previousValue) {
-        console.log('PANEL: isOpen cambió a false, finalizando animación');
         this.isAnimating = false;
       }
     }
@@ -90,7 +88,6 @@ export class FilterPanelComponent {
   }
 
   clearFilters() {
-    console.log('PANEL: Llamo a clearFilters');
     this.selectedFilters = {
       difficulties: [],
       provider_ids: [],
@@ -103,18 +100,13 @@ export class FilterPanelComponent {
   }
 
   applyFilters() {
-    console.log('PANEL: Llamo a applyFilters');
-    console.log('PANEL: emito apllyFliter al home');
     this.applyFilter.emit(this.selectedFilters);
     this.closeModal();
   }
 
   closeModal() {
-    console.log('PANEL: Llamo a closeModal');
     setTimeout(() => {
       this.isAnimating = false;
-      console.log('PANEL: Cambio isAnimating a false');
-      console.log('PANEL: emito close.emit al home');
       this.close.emit();
     }, 100);
   }
@@ -143,6 +135,4 @@ export class FilterPanelComponent {
   isDifficultySelected(difficulty: 'low' | 'medium' | 'high'): boolean {
     return this.selectedFilters.difficulties?.includes(difficulty) || false;
   }
-
-
 }
