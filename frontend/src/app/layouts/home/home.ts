@@ -8,7 +8,8 @@ import {
   Footer,
   FilterPanelComponent,
   CardFurniture,
-  Scanner
+  Scanner,
+  Modal
 } from '../../components';
 import { ApiService } from '../../services/api.service';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types'; // tipos
@@ -16,7 +17,7 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Scanner],
+  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Scanner, Modal],
   templateUrl: './home.html',
   //styleUrl: './home.css'
 })

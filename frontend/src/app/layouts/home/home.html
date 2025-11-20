@@ -124,8 +124,22 @@
     <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
   </section>
+  <app-modal [(open)]="isFurnitureModalOpen" title="Mi Modal Reutilizable">
+    
+    <!-- ESTO ES LO QUE CAMBIA EN CADA PANTALLA -->
+    <p class="text-gray-700">
+      Este es el contenido específico de esta pantalla.
+    </p>
 
-  <div *ngIf="isFurnitureModalOpen" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <button 
+      class="mt-4 px-4 py-2 bg-green-600 text-white rounded"
+     
+    >
+      Aceptar
+    </button>
+
+  </app-modal>
+  <!-- <div *ngIf="isFurnitureModalOpen" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
     <div class="bg-beige rounded-2xl shadow-xl max-w-lg w-[90%] p-6 relative animate-fadeIn text-center">
       <button (click)="closeFurnitureModal()" class="absolute top-3 right-3 text-marron-oscuro">
         <span class="material-symbols-rounded">close</span>
@@ -144,7 +158,7 @@
         Empezar montaje
       </button>
     </div>
-  </div>
+  </div> -->
 
 
   <app-scanner></app-scanner>
