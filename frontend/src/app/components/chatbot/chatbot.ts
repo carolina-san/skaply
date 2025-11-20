@@ -59,38 +59,46 @@ export class Chatbot implements OnInit {
 
                 const messages = data.fulfillmentMessages || [];
 
-                let richPayload: any[] | null = null;
+                let handled = false;
+                // 3. Texto normal
+                for (let m of messages) {
+                    if (m.message === "text" && m.text?.text?.[0]) {
+                        this.messages.push({ sender: 'bot', text: m.text.text[0] });
+                        handled = true;
+                        break;
+                    }
+                }
+                // 1. Cards
+                for (let m of messages) {
+                    if (m.card) {
+                        this.messages.push({
+                            sender: 'bot',
+                            rich: {
+                                type: 'card',
+                                title: m.card.title,
+                                subtitle: m.card.subtitle || '',      
+                                imageUri: m.card.imageUri || '',      
+                                buttons: m.card.buttons || []
+                            }
+                        });
+                        handled = true;
+                    }
+                }
 
                 for (let m of messages) {
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
-                        richPayload = rich;
+                        this.renderRichContent(rich);
+                        handled = true;
                         break;
                     }
                 }
-
-                if (richPayload) {
-                    this.renderRichContent(richPayload);
-                    return;
+                // 4. fallback
+                if (!handled) {
+                    this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
                 }
-
-                // Mensaje de texto normal
-                let textMessage: string | null = null;
-                for (let m of messages) {
-                    if (m.message === "text" && m.text?.text?.[0]) {
-                        textMessage = m.text.text[0];
-                        break;
-                    }
-                }
-
-                if (textMessage) {
-                    this.messages.push({ sender: 'bot', text: textMessage });
-                    return;
-                }
-
-                // fallback
-                this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
             });
+
 
 
 
@@ -150,5 +158,9 @@ export class Chatbot implements OnInit {
     handleChipClick(text: string) {
         this.newMessage = text;
         this.sendMessage();
+    }
+
+    openLink(url: string) {
+        window.open(url, '_blank');
     }
 }
