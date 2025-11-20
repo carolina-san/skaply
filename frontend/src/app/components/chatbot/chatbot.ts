@@ -2,6 +2,12 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+interface ChatMessage {
+    sender: 'user' | 'bot';
+    text?: string;
+    rich?: any; // para RichContent
+}
+
 @Component({
     selector: 'app-chatbot',
     standalone: true,
@@ -9,15 +15,11 @@ import { FormsModule } from '@angular/forms';
     templateUrl: './chatbot.html',
     styleUrls: ['./chatbot.css']
 })
-
-
 export class Chatbot implements OnInit {
     chatVisible: boolean = false;
     isDragging: boolean = false;
     chatHeight: number = 0;
     initialHeight: number = 0;
-    startDragHeight: number = 0;
-    startY: number = 0;
 
     messages: ChatMessage[] = [];
     newMessage: string = '';
@@ -32,32 +34,121 @@ export class Chatbot implements OnInit {
         this.chatHeight = this.initialHeight;
     }
 
-    // ... tus métodos de drag ya existentes
+    // ----------------------------------------------
+    // ENVÍO DE MENSAJE
+    // ----------------------------------------------
 
     sendMessage() {
         if (!this.newMessage.trim()) return;
 
-        // Agregar mensaje del usuario
+        // Mensaje del usuario
         this.messages.push({ sender: 'user', text: this.newMessage });
 
-        // Guardar mensaje antes de enviar
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
-        // Llamar al backend
-        fetch('http://localhost:3000/api/chatbot/webhook', {
+        // Llamada al backend
+        fetch('http://localhost:3000/api/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: messageToSend })
         })
             .then(res => res.json())
             .then(data => {
-                const botReply = data.fulfillmentText || 'No entiendo esa consulta.';
-                this.messages.push({ sender: 'bot', text: botReply });
-            })
-            .catch(err => {
-                console.error(err);
-                this.messages.push({ sender: 'bot', text: 'Error al conectar con el chatbot.' });
+                console.log("RESPUESTA DEL BACKEND:", data);
+
+                const messages = data.fulfillmentMessages || [];
+
+                let richPayload: any[] | null = null;
+
+                for (let m of messages) {
+                    const rich = m.payload?.fields?.richContent?.listValue?.values;
+                    if (rich) {
+                        richPayload = rich;
+                        break;
+                    }
+                }
+
+                if (richPayload) {
+                    this.renderRichContent(richPayload);
+                    return;
+                }
+
+                // Mensaje de texto normal
+                let textMessage: string | null = null;
+                for (let m of messages) {
+                    if (m.message === "text" && m.text?.text?.[0]) {
+                        textMessage = m.text.text[0];
+                        break;
+                    }
+                }
+
+                if (textMessage) {
+                    this.messages.push({ sender: 'bot', text: textMessage });
+                    return;
+                }
+
+                // fallback
+                this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
             });
+
+
+
+    }
+
+    // ----------------------------------------------
+    // RENDERIZAR RICH CONTENT
+    // ----------------------------------------------
+
+    renderRichContent(groups: any[]) {
+        groups.forEach(group => {
+            const list = group.listValue?.values || [];
+
+            list.forEach((item: any) => {
+                const fields = item.structValue?.fields;
+                if (!fields) return;
+
+                const parsed: any = {};
+
+                Object.keys(fields).forEach(key => {
+                    const field = fields[key];
+
+                    // Campos string
+                    if (field.stringValue !== undefined) {
+                        parsed[key] = field.stringValue;
+                    }
+
+                    // Campos con arrays (chips, botones, etc.)
+                    if (field.listValue?.values) {
+                        parsed[key] = field.listValue.values.map((v: any) => {
+                            if (v.structValue?.fields) {
+                                const obj: any = {};
+                                Object.keys(v.structValue.fields).forEach(k => {
+                                    const subv = v.structValue.fields[k];
+                                    if (subv.stringValue !== undefined) obj[k] = subv.stringValue;
+                                });
+                                return obj;
+                            }
+                            return v.stringValue;
+                        });
+                    }
+                });
+
+                this.messages.push({
+                    sender: 'bot',
+                    rich: parsed
+                });
+            });
+        });
+    }
+
+
+    // ----------------------------------------------
+    // MANEJO DE CLICS EN CHIPS
+    // ----------------------------------------------
+
+    handleChipClick(text: string) {
+        this.newMessage = text;
+        this.sendMessage();
     }
 }

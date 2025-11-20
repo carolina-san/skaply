@@ -39,6 +39,7 @@ export class ProviderController {
     }
   };
 
+<<<<<<< HEAD
   postProvider = async (req: Request, res: Response): Promise<void> => {
     try {
       const { company_name, cif, tax_address, email, telephone} = req.body;
@@ -51,6 +52,9 @@ export class ProviderController {
       res.status(500).json({ error: 'Failed to create provider' });
     }
   };
+=======
+  
+>>>>>>> feature/front/chatbot
 
 
 //   updateProvider = async (req: Request, res: Response): Promise<void> => {
