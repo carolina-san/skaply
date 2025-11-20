@@ -16,10 +16,8 @@
   <div class="bg-beige rounded-t-3xl sm:rounded-xl shadow-2xl flex flex-col h-full w-full p-6 overflow-hidden">
 
     <!-- HEADER -->
-    <header class="flex justify-between items-center mb-4">
-      <h2 *ngIf="title" class="text-xl font-semibold">{{ title }}</h2>
-
-      <button (click)="close()" class="text-gray-500 hover:text-black">
+    <header class="w-full relative justify-end mb-4">
+      <button (click)="close()" class="fixed right-0 hover:text-black">
         ✕
       </button>
     </header>
