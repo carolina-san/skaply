@@ -10,6 +10,7 @@ import apiRoutes from '@/routes';
 import { connectDB } from '@/config/database';
 import corsMiddleware from './config/cors';
 
+
 dotenv.config();
 
 const app = express();
@@ -34,4 +35,20 @@ app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });
 
+
+// Log inicial del api
+const syslog =  require('syslog-client');
+// const client = syslog.createClient('localhost');
+
+const client = syslog.createClient('127.0.0.1', {
+  transport: syslog.Transport.Udp, 
+  port: 514                         // puerto estándar de syslog
+});
+
+
+client.log('Api is inicialized 2',{
+  facility: syslog.Facility.Local0,
+  severity: syslog.Severity.Informational,
+  tag: 'skaply_api'
+});
 export default app;
