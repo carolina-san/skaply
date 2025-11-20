@@ -32,6 +32,15 @@ export class ProviderService {
     }
   }
 
+  async getProviderByName(name:string){
+    try{
+        const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
+        return result;
+    }catch(error){
+        throw new Error('Unable to fetch the provided with this name');
+    }
+  }
+
   // async updateProvider(id: string, userData: any) {
   //   // Update user logic here
   //   throw new Error('Method not implemented');

@@ -26,6 +26,7 @@ export class ChatbotController {
     }
 
     handleChatbot = async (req: Request, res: Response): Promise<void> => {
+        
         try {
             const userMessage = req.body.text;
 
@@ -67,6 +68,7 @@ export class ChatbotController {
     };
 
     handleWebhook = async (req: Request, res: Response): Promise<void> => {
+        console.log("Received webhook request:", JSON.stringify(req.body, null, 2));
         try {
             const action: string = req.body.queryResult.action;
 
@@ -80,6 +82,9 @@ export class ChatbotController {
                     return;
                 case "issue.complete":
                     await this.completeIssue(req, res);
+                    return;
+                case "get.provider.by.name":
+                    await this.getProviderByName(req, res);
                     return;
                 default:
                     res.status(200).json({
@@ -103,6 +108,43 @@ export class ChatbotController {
                     text: {
                         text: [`Tenemos ${result.rows.length} proveedores disponibles:`]
                     }
+                },
+                ...result.rows.map((p: any) => ({
+                    card: {
+                        title: p.company_name,
+                        subtitle: `${p.email}\n${p.tax_address}`,
+                        imageUri: p.image_url || "https://via.placeholder.com/150",
+                        buttons: [
+                            {
+                                text: "Ver más información",
+                                postback: `https://tudominio.com/proveedores/${p.id}`
+                            }
+                        ]
+                    }
+                }))
+            ]
+        });
+    };
+
+    private getProviderByName = async (req: Request, res: Response): Promise<void> => {
+        const name = req.body.queryResult.parameters["proveedor"];
+        if (!name) {
+            res.status(200).json({
+                fulfillmentText: "Necesito el nombre del proveedor."
+            });
+            return;
+        }
+        const result = await this.providerService.getProviderByName(name);
+        if (result.rows.length === 0) {
+            res.status(200).json({
+                fulfillmentText: `No, "${name}" no forma parte de Skäply todavía.`
+            });
+            return;
+        }
+        res.status(200).json({
+            fulfillmentMessages: [
+                {
+                    text: { text: [`Sí, el proveedor "${name}" está registrado en Skäply:`] }
                 },
                 ...result.rows.map((p: any) => ({
                     card: {
@@ -171,7 +213,7 @@ export class ChatbotController {
             await this.issueService.postChatbotIssues(issue);
 
             res.status(200).json({
-                fulfillmentText: "Tu incidencia ha sido creada. Gracias."
+                fulfillmentText: "Tu incidencia ha sido creada con éxito y será atendida pronto. Gracias."
             });
 
         } catch (err) {

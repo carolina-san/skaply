@@ -1,7 +1,5 @@
-<div class="fixed bottom-0 left-0 w-full z-50 sm:rounded-t-xl" [ngClass]="{
-         'h-[90vh] sm:w-96': chatVisible, 
-         'h-20': !chatVisible
-     }" [style.height.px]="chatVisible ? chatHeight : 90">
+<div class="fixed bottom-0 left-0 w-full z-50 sm:w-96 sm:left-auto sm:right-6 transition-all duration-300"
+    [ngClass]="chatVisible ? 'h-[90vh]' : 'h-20'">
 
     <!-- Botón para abrir el chat, aquí pondremos el icono-->
     <button *ngIf="!chatVisible"
@@ -12,32 +10,38 @@
 
     <div *ngIf="chatVisible" class="bg-beige rounded-t-3xl overflow-hidden shadow-2xl flex flex-col h-full w-full">
 
-        <header class="bg-beige text-marron-oscuro p-4 flex justify-between items-center cursor-pointer">
-            <div class="flex items-center space-x-2">
-                <span class="text-xl font-bold">Allen</span>
+        <header class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shadow-sm">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-9 h-9 bg-marron-oscuro rounded-full flex items-center justify-center text-white font-bold">
+                    A
+                </div>
+                <span class="text-lg font-semibold text-gray-800">Allen</span>
             </div>
-            <span class="material-symbols-rounded" (click)="toggleChat()">expand_more</span>
+            <button (click)="toggleChat()" class="text-gray-500 hover:text-gray-700 transition">
+                <span class="material-symbols-rounded">expand_more</span>
+            </button>
         </header>
 
         <!-- Área de mensajes -->
-        <div class="flex-1 overflow-y-auto p-4">
+        <div class="flex-1 overflow-y-auto p-4 bg-beige">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
-  'text-right': msg.sender === 'user',
-  'text-left': msg.sender === 'bot'
-}">
+                'text-right': msg.sender === 'user',
+                'text-left': msg.sender === 'bot'
+                }">
 
                 <!-- Mensaje normal -->
-                <div *ngIf="msg.text" [ngClass]="{
-      'inline-block bg-blue-500 text-white px-4 py-2 rounded-xl': msg.sender === 'user',
-      'inline-block bg-gray-200 text-black px-4 py-2 rounded-xl': msg.sender === 'bot'
-  }">
+                <div *ngIf="msg.text"
+                    [ngClass]="msg.sender === 'user'
+    ? 'msg-user'
+    : 'msg-bot'">
                     {{ msg.text }}
                 </div>
 
                 <!-- Info card -->
                 <!-- Info card -->
                 <div *ngIf="msg.rich?.type === 'info'"
-                    class="inline-block bg-gray-100 text-black px-4 py-2 rounded-xl shadow">
+                    class="msg-bot">
                     <h4 class="font-bold">{{ msg.rich.title }}</h4>
                     <p>{{ msg.rich.subtitle }}</p>
                 </div>
@@ -45,7 +49,7 @@
                 <!-- Chips -->
                 <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
                     <button *ngFor="let opt of msg.rich.options"
-                        class="bg-blue-500 text-white px-3 py-1 m-1 rounded-full hover:bg-blue-600 transition"
+                        class="bg-white px-3 py-1 m-1 rounded-full hover:bg-blue-600 transition"
                         (click)="handleChipClick(opt.text)">
                         {{ opt.text }}
                     </button>
@@ -62,13 +66,16 @@
             </button>
         </div>
 
-        <div class="bg-beige border-t border-marron-oscuro/20 p-4">
-            <div class="flex items-center space-x-2">
-                <input type="text" placeholder="Mensaje" [(ngModel)]="newMessage" (keydown.enter)="sendMessage()"
-                    class="flex-1 bg-white border border-marron-oscuro/30 rounded-[25px] px-4 py-2 focus:outline-none focus:border-marron-oscuro">
+        <div class="bg-white border-t border-gray-200 p-4">
+            <div class="flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2">
+                <input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
+                    (keydown.enter)="sendMessage()"
+                    class="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400" />
 
-                <button class="btn-azul-chatbot" (click)="sendMessage()">
-                    <span class="material-symbols-rounded w-9">send</span>
+                <button
+                    class="w-10 h-10 bg-marron-oscuro rounded-full flex items-center justify-center text-white hover:opacity-90 transition"
+                    (click)="sendMessage()">
+                    <span class="material-symbols-rounded">send</span>
                 </button>
             </div>
         </div>
