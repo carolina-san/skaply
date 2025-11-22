@@ -1,11 +1,16 @@
 <!-- Mejoras: que solo salga el borde y se ahga un poco más estrecho cuando hagas scroll -->
-<header [ngClass]="{
-    'sticky top-0 bg-marron-oscuro/50 backdrop-blur-md shadow-md border-b border-beige/20': currentRoute === '/',
-    'relative': currentRoute !== '/'
-  }" class="flex items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300
-         justify-center lg:justify-between shadow-xl bg-marron-oscuro">
+<header 
+  [ngClass]="{
+    'fixed top-0 left-0 w-full backdrop-blur-md  transition-all duration-300':
+      true, 
+  }"
+  [class.header-expanded]="!scrolled"
+  [class.header-compact]="scrolled"
+  class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20  transition-all duration-300"
+>
+
   <button *ngIf="currentRoute !== '/'" (click)="goBack()"
-    class="absolute left-10 top-6 lg:top-7 text-beige cursor-pointer ">
+    class="absolute left-10 text-beige cursor-pointer ">
     <span class="material-symbols-rounded">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
@@ -19,7 +24,7 @@
       class="logo-normal w-full h-auto transition-opacity duration-500" />
 
     <!-- Logo reducido -->
-    <img src="assets/reducido.svg" alt="logo reducido"
+    <img *ngIf="currentRoute == '/'" src="assets/reducido.svg" alt="logo reducido"
       class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
   </div>
 

@@ -14,19 +14,27 @@ export class Header {
   
   showBackButton = true;
   currentRoute: string = '';
-
+  scrolled = false;
+  
   constructor(private router: Router, private location: Location) {
 
      this.router.events.subscribe(() => {
       this.currentRoute = this.router.url;
     });
   }
+ 
 
+  ngOnInit() {
+    window.addEventListener("scroll", () => {
+      this.scrolled = window.scrollY > 30; 
+    });
+  }
   goBack(): void {
     this.location.back();
   }
   scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+ 
  
 }

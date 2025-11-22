@@ -53,7 +53,7 @@ section {
   --color-marron-claro: #997662;
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
-  --color-beige-oscuro: #997662;
+  --color-beige-oscuro: #b6a4a0;
   --color-beige: #dcd6d5;
 }
 
@@ -123,13 +123,6 @@ section {
   @apply flex flex-col items-center justify-center gap-0.5 px-2 py-2 bg-beige text-marron-oscuro rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
 }
 
-.btn-filtros-home {
-  @apply bg-beige text-marron-oscuro px-3 py-1 rounded-full whitespace-nowrap font-semibold text-sm shadow-md border border-2 border-beige transition-colors duration-200 hover:bg-azul-claro hover:text-marron-oscuro active:bg-azul-claro/40;
-}
-
-.btn-filtros-activo {
-  @apply border border-2 border-azul-claro bg-azul-claro/70 text-marron-oscuro font-bold;
-}
 
 .btn-registro {
   @apply w-full rounded-lg bg-beige text-marron-oscuro py-3 pr-4 pl-12

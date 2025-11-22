@@ -1,3 +1,4 @@
+@import "../../../styles.css";
 .logo-container {
   position: relative;
   display: inline-block;
@@ -14,4 +15,13 @@
 
 .logo-container:hover .logo-hover {
   opacity: 1;
+}
+
+.header-expanded {
+  @apply py-6; /* más alto al inicio */
+}
+
+.header-compact {
+  @apply py-2 border-beige/20 border-b bg-marron-oscuro/50 shadow-md; /* se reduce al hacer scroll */
+
 }

@@ -1,0 +1,12 @@
+@import "../../../styles.css";
+@import "tailwindcss";
+
+.fondo {
+    @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
+}
+
+.btn-filtros-home {
+    @apply bg-beige text-marron-oscuro px-3 py-1 rounded-full 
+    whitespace-nowrap font-semibold text-sm shadow-md transition-colors 
+    duration-400 hover:bg-azul-claro hover:text-marron-secundario;
+}

@@ -1,10 +1,12 @@
 <article (click)="onCardClick()"
-  class="group relative flex flex-col text-marron-oscuro rounded-2xl overflow-hidden bg-beige border border-marron-oscuro/10 hover:border-azul-claro/40 transition-all duration-300 shadow-sm hover:shadow-lg cursor-pointer">
+  class="group min-h-75 relative flex flex-col text-marron-oscuro rounded-2xl overflow-hidden bg-beige 
+  transition-all duration-400 shadow-sm cursor-pointer
+  hover:shadow-lg hover:scale-102 hover:bg-beige-oscuro">
 
   <!-- Imagen del mueble -->
-  <div class="relative w-full aspect-[5/4] overflow-hidden bg-beige">
+  <div class="relative w-full aspect-[5/4] overflow-hidden ">
     <img [src]="'assets/imgs/ikea.jpg'" [alt]="furniture.name"
-      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+      class="w-full h-full object-cover">
   </div>
 
   <!-- Contenido -->
@@ -13,74 +15,3 @@
     <p class="text-xs">{{ furniture.short_description }}</p>
   </section>
 </article>
-
-<!-- <article
-  class="group flex flex-col relative overflow-hidden bg-marron-secundario text-beige cursor-pointer
-  transition-transform duration-300 hover:-translate-y-1">
-
-  <div class="relative w-full aspect-[5/4] overflow-hidden bg-beige">
-    <img
-      [src]="'assets/imgs/estanteria3d.png'"
-      [alt]="furniture.name"
-      class="w-full h-full object-cover transition-transform duration-500 "
-    >
-  </div>
-
-  <section class="flex flex-col gap-1 p-3 pt-3">
-     <p class="text-xs text-beige/70"> {{ furniture.reference_number }}</p>
-    <h2 class="font-medium text-lg">{{ furniture.name }}</h2>
-   
-
-    <div class="flex justify-between items-center mt-1 text-xs text-beige/80">
-        <span
-          class="w-3.5 h-3.5 rounded-full border border-beige/20"
-          [ngStyle]="{'background-color': furniture.color_hex}"
-        ></span>
-    </div>
-  </section>
-   <span class="absolute top-2 right-3 text-[11px] font-medium text-marron-secundario bg-azul-claro px-2 py-1 rounded-full">
-        <span class="material-symbols-rounded">
-build
-</span>{{ difficultyLabels[furniture.difficulty] }}
-      </span>
-</article> -->
-<!-- <article
-  class="group flex flex-col relative overflow-hidden bg-marron-secundario text-beige cursor-pointer 
-  border-l-[0.5px] border-r-[0.5px] border-marron-oscuro
-  transition-transform duration-300  hover:scale-103 shadow-md hover:z-20 "
->
-
-  <div class="relative w-full aspect-[5/4] overflow-hidden bg-beige ">
-    <img
-      [src]="'assets/imgs/estanteria3d.png'"
-      [alt]="furniture.name"
-      class="w-full h-full object-cover transition-transform duration-500"
-    >
-
-    <span class="absolute top-3 right-3 flex items-center gap-1 bg-azul-claro text-marron-secundario text-[11px] font-medium px-2 py-1 rounded-full shadow-md">
-       <span class="material-symbols-rounded ">
-        <ng-container [ngSwitch]="furniture.difficulty">
-          <span class="material-symbols-rounded" *ngSwitchCase="'low'">star</span>
-          <span *ngSwitchCase="'medium'">star_half</span>
-          <span *ngSwitchCase="'high'">bolt</span>
-        </ng-container>
-      </span> -->
-<!-- {{ difficultyLabels[furniture.difficulty] }}
-    </span>
-  </div>
-
-  <section class="flex flex-col gap-2 p-4">
-    <h2 class="font-semibold text-lg sm:text-xl line-clamp-2">{{ furniture.name }}</h2>
-
-    <div class="flex items-center gap-2 text-sm text-beige/80">
-      <span
-        class="w-4 h-4 rounded-full border border-beige/30"
-        [ngStyle]="{'background-color': furniture.color_hex}"
-      ></span>
-      {{ furniture.color_name }}
-    </div>
-
-    <p class="text-xs text-beige/60 mt-1">REF: {{ furniture.reference_number }}</p>
-  </section>
-
-</article> -->

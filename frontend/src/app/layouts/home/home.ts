@@ -19,7 +19,7 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
   selector: 'app-home',
   imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Scanner, Modal],
   templateUrl: './home.html',
-  //styleUrl: './home.css'
+  styleUrl: './home.css'
 })
 export class Home implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
