@@ -1,11 +1,16 @@
+<!-- Mejoras: que solo salga el borde y se ahga un poco más estrecho cuando hagas scroll -->
 <header [ngClass]="{
-    'sticky top-0 bg-marron-oscuro/60 backdrop-blur-md shadow-md': currentRoute === '/',
+    'sticky top-0 bg-marron-oscuro/50 backdrop-blur-md shadow-md border-b border-beige/20': currentRoute === '/',
     'relative': currentRoute !== '/'
   }" class="flex items-center pl-5 lg:px-20 py-2 w-full z-30 transition-all duration-300
          justify-center lg:justify-between shadow-xl bg-marron-oscuro">
   <button *ngIf="currentRoute !== '/'" (click)="goBack()"
     class="absolute left-10 top-6 lg:top-7 text-beige cursor-pointer ">
-    <span class="material-symbols-rounded">arrow_back_ios</span>
+    <span class="material-symbols-rounded">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="m382-480 294 294q15 15 14.5 35T675-116q-15 15-35 15t-35-15L297-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T676-844q15 15 15 35t-15 35L382-480Z" />
+      </svg></span>
   </button>
 
   <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="scrollToTop()">

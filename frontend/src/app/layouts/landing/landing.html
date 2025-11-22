@@ -1,9 +1,10 @@
 <main class=" bg-marron-oscuro  ">
 
   <!-- Sección Hero, estilo terminado y responsive-->
-  <section class="bg-[url('/assets/imgs/habitacionrecortada.png')] bg-cover bg-center bg-no-repeat
-    flex flex-col w-full justify-center items-center lg:flex-row lg:justify-center lg:items-center page-main fade-slide" #fadeSlide
-    style="height: calc(100vh - 5rem);">
+  <section
+    class="bg-[url('/assets/imgs/habitacionrecortada.png')] bg-cover bg-center bg-no-repeat
+    flex flex-col w-full justify-center items-center lg:flex-row lg:justify-center lg:items-center page-main fade-slide"
+    #fadeSlide style="height: calc(100vh - 5rem);">
 
     <div class="absolute inset-0 bg-marron-oscuro/80 z-0"></div>
     <div class="relative pb-10 mt-10 w-full 
@@ -23,8 +24,9 @@
       <button (click)="acceder()" class="flex btn-hero">
         Acceder al catálogo
         <span class="material-symbols-rounded ml-2">
-          <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"  fill="currentColor" class="w-7 h-7">
-            <path d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" class="w-7 h-7">
+            <path
+              d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
           </svg>
         </span>
       </button>
@@ -33,13 +35,18 @@
 
 
   </section>
-
+<div className="absolute top-20 right-0 w-[500px] h-[500px] bg-azul-claro/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-azul-claro/5 rounded-full blur-3xl translate-y-1/4 -translate-x-1/4 pointer-events-none"></div>
   <!-- Sección de características, terminado y responsive-->
   <section class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-20 page-main">
-
+    
     <!-- Card 1: Visor 3D -->
     <div class="card-landing order-1 fade-slide" #card data-index="0">
-      <span class="material-symbols-rounded text-marron-oscuro icon  mb-4">view_in_ar</span>
+      <span class="material-symbols-rounded text-marron-oscuro  icon! mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="55px" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M440-181 240-296q-19-11-29.5-29T200-365v-230q0-22 10.5-40t29.5-29l200-115q19-11 40-11t40 11l200 115q19 11 29.5 29t10.5 40v230q0 22-10.5 40T720-296L520-181q-19 11-40 11t-40-11Zm0-92v-184l-160-93v185l160 92Zm80 0 160-92v-185l-160 93v184ZM120-640q-17 0-28.5-11.5T80-680v-120q0-33 23.5-56.5T160-880h120q17 0 28.5 11.5T320-840q0 17-11.5 28.5T280-800H160v120q0 17-11.5 28.5T120-640Zm40 560q-33 0-56.5-23.5T80-160v-120q0-17 11.5-28.5T120-320q17 0 28.5 11.5T160-280v120h120q17 0 28.5 11.5T320-120q0 17-11.5 28.5T280-80H160Zm640 0H680q-17 0-28.5-11.5T640-120q0-17 11.5-28.5T680-160h120v-120q0-17 11.5-28.5T840-320q17 0 28.5 11.5T880-280v120q0 33-23.5 56.5T800-80Zm0-600v-120H680q-17 0-28.5-11.5T640-840q0-17 11.5-28.5T680-880h120q33 0 56.5 23.5T880-800v120q0 17-11.5 28.5T840-640q-17 0-28.5-11.5T800-680ZM480-526l158-93-158-91-158 91 158 93Zm0 45Zm0-45Zm40 69Zm-80 0Z" />
+        </svg></span>
       <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Visor 3D</h3>
       <p class="text-marron-oscuro text-base">
         Gira, acerca y explora el mueble desde cualquier ángulo.
@@ -48,7 +55,11 @@
 
     <!-- Card 2: Asistente Virtual -->
     <div class="card-landing bg-beige! order-2 fade-slide" #card data-index="1">
-      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">chat</span>
+      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="55px" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="m240-240-92 92q-19 19-43.5 8.5T80-177v-623q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240Zm-34-80h594v-480H160v525l46-45Zm-46 0v-480 480Zm120-80h240q17 0 28.5-11.5T560-440q0-17-11.5-28.5T520-480H280q-17 0-28.5 11.5T240-440q0 17 11.5 28.5T280-400Zm0-120h400q17 0 28.5-11.5T720-560q0-17-11.5-28.5T680-600H280q-17 0-28.5 11.5T240-560q0 17 11.5 28.5T280-520Zm0-120h400q17 0 28.5-11.5T720-680q0-17-11.5-28.5T680-720H280q-17 0-28.5 11.5T240-680q0 17 11.5 28.5T280-640Z" />
+        </svg></span>
       <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Asistente Virtual</h3>
       <p class="text-marron-oscuro text-base">
         Chatbot que responde tus dudas y te guía paso a paso.
@@ -57,7 +68,11 @@
 
     <!-- Card 3: Montaje sencillo -->
     <div class="card-landing md:order-4 lg:order-3 fade-slide" #card data-index="2">
-      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">crossword</span>
+      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="55px" fill="currentColor">
+          <path
+            d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
+        </svg></span>
       <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Montaje sencillo</h3>
       <p class="text-marron-oscuro text-base">
         Instrucciones claras y visuales sin lenguaje técnico.
@@ -66,7 +81,11 @@
 
     <!-- Card 4: Accesible desde la web -->
     <div class="card-landing bg-beige! md:order-3 lg:order-4 fade-slide" #card data-index="3">
-      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">qr_code</span>
+      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="55px" fill="currentColor">
+          <path
+            d="M120-560v-240q0-17 11.5-28.5T160-840h240q17 0 28.5 11.5T440-800v240q0 17-11.5 28.5T400-520H160q-17 0-28.5-11.5T120-560Zm80-40h160v-160H200v160Zm-80 440v-240q0-17 11.5-28.5T160-440h240q17 0 28.5 11.5T440-400v240q0 17-11.5 28.5T400-120H160q-17 0-28.5-11.5T120-160Zm80-40h160v-160H200v160Zm320-360v-240q0-17 11.5-28.5T560-840h240q17 0 28.5 11.5T840-800v240q0 17-11.5 28.5T800-520H560q-17 0-28.5-11.5T520-560Zm80-40h160v-160H600v160Zm160 480v-80h80v80h-80ZM520-360v-80h80v80h-80Zm80 80v-80h80v80h-80Zm-80 80v-80h80v80h-80Zm80 80v-80h80v80h-80Zm80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80 80v-80h80v80h-80Z" />
+        </svg></span>
       <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Accesible desde la web</h3>
       <p class="text-marron-oscuro text-base">
         No necesitas instalar nada, funciona desde cualquier dispositivo.
@@ -81,40 +100,36 @@
 
     <div class="relative px-20 flex flex-col lg:flex-row items-center justify-between">
 
-     <!-- Línea vertical (móvil) -->
-    <div class="absolute top-0 bottom-8 left-1/2 w-[4px] -translate-x-1/2 bg-azul-claro lg:hidden"></div>
+      <!-- Línea vertical (móvil) -->
+      <div class="absolute top-0 bottom-8 left-1/2 w-[4px] -translate-x-1/2 bg-azul-claro lg:hidden"></div>
 
-    <!-- Línea horizontal (portátil) -->
-    <div class="absolute left-20 right-20 top-1/2 h-[4px] -translate-y-1/2 bg-azul-claro hidden lg:block"></div>
+      <!-- Línea horizontal (portátil) -->
+      <div class="absolute left-20 right-20 top-1/2 h-[4px] -translate-y-1/2 bg-azul-claro hidden lg:block"></div>
 
       <div class="paso-landing group">
         <div class="num-paso ">1</div>
-        <span
-          class="texto-paso">
+        <span class="texto-paso">
           Escanea tu modelo de <br>mueble o escribe su código
         </span>
       </div>
 
       <div class="paso-landing group ">
         <div class="num-paso ">2</div>
-        <span
-          class="texto-paso">
+        <span class="texto-paso">
           Visualízalo en 3D y sigue <br> las instrucciones paso a paso
         </span>
       </div>
 
       <div class="paso-landing group">
         <div class="num-paso ">3</div>
-        <span
-          class="texto-paso ">
+        <span class="texto-paso ">
           Pregunta al asistente virtual <br> si tienes alguna duda
         </span>
       </div>
 
       <div class="paso-landing group">
         <div class="num-paso ">4</div>
-        <span
-          class="texto-paso">
+        <span class="texto-paso">
           ¡Listo! Mueble montado <br> sin complicaciones.
         </span>
       </div>
@@ -159,20 +174,27 @@
 
 
       <ul class="w-[50%] gap-3 flex flex-col">
-        <li><a class="enlace-landing group" href="https://www.linkedin.com/in/lynk-team-309794396/"><svg xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor" viewBox="0 0 24 24" class="w-7 h-7 text-azul-claro m-0 p-1">
+        <li><a class="enlace-landing group" href="https://www.linkedin.com/in/lynk-team-309794396/"><svg
+              xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+              class="w-7 h-7 text-azul-claro m-0 p-1">
               <path
                 d="M4.984 3.5C4.984 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.484 1.12 2.484 2.5zM.2 8.1h4.6V24H.2V8.1zm7.2 0h4.4v2.2h.1c.6-1.1 2-2.3 4.3-2.3C22.4 8 24 10.6 24 14.8V24h-4.6v-8.2c0-2-.1-4.6-2.9-4.6-2.9 0-3.3 2.2-3.3 4.4V24H8.3V8.1z" />
             </svg>
             LinkedIn</a></li>
-        <li><a class="enlace-landing group" href="https://www.instagram.com/skaply.lynk/"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-              viewBox="0 0 24 24" class="w-7 h-7 text-azul-claro m-0 p-0">
+        <li><a class="enlace-landing group" href="https://www.instagram.com/skaply.lynk/"><svg
+              xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+              class="w-7 h-7 text-azul-claro m-0 p-0">
               <path
                 d="M7 2C4.243 2 2 4.243 2 7v10c0 2.757 2.243 5 5 5h10c2.757 0 5-2.243 5-5V7c0-2.757-2.243-5-5-5H7zm10 2a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3h10zm-5 3a5 5 0 100 10 5 5 0 000-10zm6-1a1 1 0 110 2 1 1 0 010-2z" />
             </svg>
             Instagram</a></li>
         <li><a class="enlace-landing group" href="https://skaply.ovh/lynk/blog"><span
-              class="material-symbols-rounded text-azul-claro p-[0.1em]">newspaper</span>Nuestro blog</a></li>
+              class="material-symbols-rounded text-azul-claro p-[0.1em]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-6 h-6 ml-0"
+                fill="currentColor">
+                <path
+                  d="M160-120q-33 0-56.5-23.5T80-200v-616q0-7 6-9.5t11 2.5l50 50 52-53q6-6 14-6t14 6l53 53 53-53q6-6 14-6t14 6l52 53 53-53q6-6 14-6t14 6l53 53 52-53q6-6 14-6t14 6l53 53 53-53q6-6 14-6t14 6l52 53 50-50q5-5 11-2.5t6 9.5v616q0 33-23.5 56.5T800-120H160Zm0-80h280v-240H160v240Zm360 0h280v-80H520v80Zm0-160h280v-80H520v80ZM160-520h640v-120H160v120Z" />
+              </svg></span>Nuestro blog</a></li>
       </ul>
     </div>
   </section>
