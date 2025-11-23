@@ -1,7 +1,6 @@
-<!-- Mejoras: que solo salga el borde y se ahga un poco más estrecho cuando hagas scroll -->
 <header 
   [ngClass]="{
-    'fixed top-0 left-0 w-full backdrop-blur-md  transition-all duration-300':
+    'fixed top-0 left-0 w-full backdrop-blur-lg  transition-all duration-300':
       true, 
   }"
   [class.header-expanded]="!scrolled"
@@ -10,7 +9,7 @@
 >
 
   <button *ngIf="currentRoute !== '/'" (click)="goBack()"
-    class="absolute left-10 text-beige cursor-pointer ">
+    class="absolute w-6 h-6 left-5 md:left-10  text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
     <span class="material-symbols-rounded">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
@@ -21,7 +20,8 @@
   <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="scrollToTop()">
     <!-- Logo normal -->
     <img src="assets/skaply_azul.svg" alt="logo normal"
-      class="logo-normal w-full h-auto transition-opacity duration-500" />
+      class="w-full h-auto hover:scale-105 transition-all duration-400" 
+       [ngClass]="{'logo-normal':currentRoute == '/'}"/>
 
     <!-- Logo reducido -->
     <img *ngIf="currentRoute == '/'" src="assets/reducido.svg" alt="logo reducido"
@@ -31,7 +31,7 @@
   <!-- Menú si está en la landing -->
   <app-menu *ngIf="currentRoute == '/'"></app-menu>
 
-  <a *ngIf="currentRoute !== '/'" href="/login" class="hidden lg:flex items-center justify-center absolute right-10
+  <a *ngIf="currentRoute !== '/'" href="/login" class="hidden lg:flex items-center justify-center absolute lg:right-20
           bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
           hover:bg-beige transition duration-300 cursor-pointer">
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">

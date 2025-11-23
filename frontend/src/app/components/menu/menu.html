@@ -1,13 +1,13 @@
 <!-- MEJORA PARA EL FUTURO: que las 3 rayas se conviertan en la x (animación)-->
-<div class="lg:hidden relative">
+<div class="lg:hidden  items-center flex justify-center items-center w-full py-4">
   <!-- Botón hamburguesa / X -->
   <span (click)="toggleMenu()"
-    class="fixed text-azul-claro material-symbols-rounded cursor-pointer text-3xl right-5 top-5 z-50">
+    class=" absolute text-azul-claro material-symbols-rounded cursor-pointer text-3xl right-5  z-50">
     {{ menuAbierto ? 'close' : 'menu' }}
   </span>
 
   <!-- Bocadillo animado desde el botón -->
-  <div class="fixed top-12 right-5 z-40">
+  <div class="fixed top-18 lg:top-12 right-5 z-40">
     <div class="origin-top-right bg-white shadow-2xl rounded-3xl p-4 flex flex-col gap-2
              transform transition-all duration-300 scale-95 opacity-0 invisible" [ngClass]="{
         'scale-100 opacity-100 visible translate-y-0': menuAbierto,

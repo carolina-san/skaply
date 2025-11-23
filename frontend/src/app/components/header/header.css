@@ -18,10 +18,10 @@
 }
 
 .header-expanded {
-  @apply py-6; /* más alto al inicio */
+  @apply py-5; /* más alto al inicio */
 }
 
 .header-compact {
-  @apply py-2 border-beige/20 border-b bg-marron-oscuro/50 shadow-md; /* se reduce al hacer scroll */
+  @apply py-2  bg-marron-oscuro/70 ; /* se reduce al hacer scroll */
 
 }

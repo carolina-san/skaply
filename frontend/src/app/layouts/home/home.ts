@@ -28,7 +28,7 @@ export class Home implements OnInit {
   furnitures: Furniture[] = [];
   providers: ProviderBasic[] = [];
   colors: Color[] = [];
-
+  scrolled = false;
   isFilterModalOpen = false;
   activeFiltersCount = 0;
   isQrScannerOpen = false;
@@ -52,7 +52,11 @@ export class Home implements OnInit {
     this.obtenerCatalogo();
     this.loadProviders();
     this.loadColors();
+    window.addEventListener("scroll", () => {
+      this.scrolled = window.scrollY > 70; 
+    });
   }
+  
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
