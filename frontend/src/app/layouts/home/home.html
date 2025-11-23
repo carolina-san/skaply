@@ -1,7 +1,7 @@
 <main class="pt-35 flex flex-col fondo">
   <h1 class="text-5xl font-bold text-azul-claro mb-3 text-left page-main">Catálogo de Muebles</h1>
   <!-- Barra de búsqueda y filtros -->
-  <div class="sticky top-[66px] lg:top-[78px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
+  <div class="sticky top-[57px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
     [class.busqueda-expanded]="!scrolled" [class.busqueda-compact]="scrolled">
     <section class="w-full  flex gap-3 items-center flex-shrink-0 transition-all duration-300"
       [ngClass]="scrolled ? 'mb-2' : 'mb-6'">
@@ -125,13 +125,13 @@
     <div *ngIf="!hasSearched && (selectedCategoryId === null || activeFiltersCount === 0)"
       class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
       <button (click)="filterByCategory(null)"
-        class="btn-filtros-home "
+        class="btn-filtros-home whitespace-nowrap"
         [class.!bg-azul-claro]="selectedCategoryId === null">
         <!-- [class.!text-white]="selectedCategoryId === null" > -->
         Ver todo
       </button>
       <button *ngFor="let category of categories" (click)="filterByCategory(category.id)"
-        class="btn-filtros-home "
+        class="btn-filtros-home whitespace-nowrap"
         [class.!bg-azul-claro]="selectedCategoryId === category.id">
         <!-- [class.!text-white]="selectedCategoryId === category.id"> -->
         {{ category.name }}
