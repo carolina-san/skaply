@@ -29,7 +29,59 @@
 
   </section>
 
+  <!-- Interactive Assembly Section -->
+  <section class="relative mt-20 page-main">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[600px]">
+      
+      <!-- Left side - Content -->
+      <div class="flex flex-col justify-center space-y-6 p-6 lg:p-12">
+        <div class="inline-block">
+          <span class="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
+            <span class="w-2 h-2 bg-amber-600 rounded-full mr-2"></span>
+            LA REVOLUCIÓN DEL MONTAJE
+          </span>
+        </div>
+        
+        <h2 class="text-4xl lg:text-6xl font-bold text-white leading-tight">
+          Tu asistente 3D para montar muebles
+        </h2>
+        
+        <p class="text-lg text-gray-300 leading-relaxed">
+          Olvídate de los manuales complicados. Con Skäply, 
+          puedes montar cualquier mueble viendo cada pieza en 
+          3D y recibiendo instrucciones personalizadas del 
+          asistente virtual.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+          <button (click)="acceder()" class="flex items-center justify-center px-6 py-3 bg-azul-claro hover:bg-azul-claro/90 text-marron-oscuro font-semibold rounded-full transition-all duration-200 transform hover:scale-105">
+            Empezar ahora
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </button>
+          <button class="flex items-center justify-center px-6 py-3 border-2 border-white/30 hover:border-white/50 text-white font-semibold rounded-full transition-all duration-200">
+            Ver demo
+          </button>
+        </div>
+        
+        <div class="flex items-center space-x-4 pt-6">
+          <div class="flex -space-x-2">
+            <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-white"></div>
+            <div class="w-8 h-8 bg-gray-500 rounded-full border-2 border-white"></div>
+            <div class="w-8 h-8 bg-gray-600 rounded-full border-2 border-white"></div>
+          </div>
+          <span class="text-sm text-gray-400">Más de 10.000 muebles montados</span>
+        </div>
+      </div>
 
+      <!-- Right side - Interactive Assembly Component -->
+      <div class="h-[500px] lg:h-[600px] p-4">
+        <app-interactive-assembly></app-interactive-assembly>
+      </div>
+      
+    </div>
+  </section>
 
   <section class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-20 page-main">
 

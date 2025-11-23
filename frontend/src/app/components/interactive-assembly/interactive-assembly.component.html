@@ -1,0 +1,55 @@
+<div class="w-full h-full bg-skaply-ui-dark rounded-3xl shadow-2xl flex flex-col p-2 sm:p-4 text-white overflow-hidden border border-skaply-light/10">
+  <!-- Header -->
+  <header class="flex justify-between items-start p-2">
+    <div>
+      <div class="flex items-center space-x-2 text-sm text-gray-300">
+        <span class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
+        <span>MÓDULO CUBO 1.0</span>
+      </div>
+      @if (isComplete()) {
+        <p class="text-white font-semibold mt-1">¡Listo! Estructura completada.</p>
+      } @else {
+        <p class="text-white font-semibold mt-1 text-sm sm:text-base">{{ stepDescriptions[currentStep()] }}</p>
+      }
+    </div>
+    <button class="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-full text-sm hover:bg-white/20 transition-colors">
+      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+      <span>Ver en AR</span>
+    </button>
+  </header>
+
+  <!-- Canvas Container -->
+  <div class="flex-grow relative -m-4">
+    <canvas #canvas class="absolute top-0 left-0 w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+    <div class="absolute bottom-6 right-4 flex items-center space-x-2 px-3 py-1.5 bg-black/40 backdrop-blur-sm rounded-full text-xs text-gray-300 pointer-events-none">
+      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path><path d="m12 12 4 10 3-1-4-10z"></path></svg>
+      <span>Arrastra para girar</span>
+    </div>
+  </div>
+
+  <!-- Footer Controls -->
+  <footer class="flex items-center justify-between p-2">
+    <button (click)="prevStep()" [disabled]="isFirstStep()" class="w-12 h-12 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    
+    <div class="flex-grow flex flex-col items-center mx-2 sm:mx-4">
+      <div class="flex items-center space-x-1 w-full max-w-xs">
+        @for (step of stepsArray(); track $index) {
+          <div class="h-1.5 flex-1 rounded-full transition-colors" [class.bg-skaply-accent]="currentStep() >= $index" [class.bg-white/20]="currentStep() < $index"></div>
+        }
+      </div>
+      <span class="text-xs text-gray-400 mt-2 font-mono tracking-widest">PASO {{ currentStep() + 1 }} / {{ totalSteps }}</span>
+    </div>
+
+    @if (!isComplete()) {
+      <button (click)="nextStep()" class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+    } @else {
+      <button (click)="reset()" class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"></path><path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path><path d="M21 22v-6h-6"></path><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path></svg>
+      </button>
+    }
+  </footer>
+</div>

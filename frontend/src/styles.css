@@ -50,8 +50,12 @@ article,section {
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  
   --color-beige:#dcd6d5;
+  
+  /* Skaply Interactive Assembly Colors */
+  --color-skaply-ui-dark: #1e293b;
+  --color-skaply-accent: #00d4ff;
+  --color-skaply-light: #94a3b8;
 }
 
 @tailwind base;
