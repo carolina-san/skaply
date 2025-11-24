@@ -16,8 +16,13 @@ import { InteractiveAssemblyComponent } from '../../components/interactive-assem
 export class Landing implements AfterViewInit{
  
   constructor(private router: Router) { }
+  
   acceder() {
      this.router.navigate(['/catalogo']);
+  }
+
+  goToMotor() {
+     this.router.navigate(['/motor']);
   }
   @ViewChildren('card') cards!: QueryList<ElementRef>;
   @ViewChildren('fadeSlide') fadeSlides!: QueryList<ElementRef>;
