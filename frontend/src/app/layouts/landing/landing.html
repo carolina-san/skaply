@@ -77,7 +77,8 @@
 
       <!-- Right side - Interactive Assembly Component -->
       <div class="h-[500px] lg:h-[600px] p-4">
-        <app-interactive-assembly></app-interactive-assembly>
+        <!-- Preview: always run simulation at 1x and disable controls -->
+        <app-interactive-assembly [controlsMode]="'display-only'" [autoStartSimulation]="true"></app-interactive-assembly>
       </div>
       
     </div>
