@@ -103,7 +103,7 @@ section {
 }
 
 .btn-opciones-mueble:hover {
-  @apply bg-azul-claro text-white;
+  @apply bg-azul-claro;
 }
 
 .btn-opciones-mueble.active {
