@@ -1,6 +1,4 @@
 import cors from "cors"
-import { defaultMaxListeners } from "events";
-
 
 const allowedOrigins =
       process.env.NODE_ENV === "production"

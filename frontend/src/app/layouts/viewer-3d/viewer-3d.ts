@@ -1,7 +1,6 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
-import { Header } from '../../components/header/header';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
@@ -9,7 +8,7 @@ import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, Header, Chatbot, FurnitureViewer, MenuViewer],
+  imports: [CommonModule, RouterModule, Chatbot, FurnitureViewer, MenuViewer],
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })

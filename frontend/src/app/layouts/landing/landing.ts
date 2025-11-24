@@ -5,18 +5,24 @@ import { AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/cor
 import { Menu } from '../../components/menu/menu';
 import { Router } from '@angular/router';
 import { Footer } from '../../components/footer/footer';
+import { InteractiveAssemblyComponent } from '../../components/interactive-assembly/interactive-assembly.component';
 
 @Component({
   selector: 'app-landing',
-  imports: [Menu, Footer, CommonModule],
+  imports: [Menu, Footer, CommonModule, InteractiveAssemblyComponent],
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })
 export class Landing implements AfterViewInit{
  
   constructor(private router: Router) { }
+  
   acceder() {
      this.router.navigate(['/catalogo']);
+  }
+
+  goToMotor() {
+     this.router.navigate(['/motor']);
   }
   @ViewChildren('card') cards!: QueryList<ElementRef>;
   @ViewChildren('fadeSlide') fadeSlides!: QueryList<ElementRef>;
