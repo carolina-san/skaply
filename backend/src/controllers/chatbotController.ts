@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as dialogflow from '@google-cloud/dialogflow';
-import { ProviderService } from '@/services/providerService';
+import { ProviderService } from '@/services/ProviderService';
 import { ToolService } from '@/services/toolService';
 import { IssueService } from '@/services/issueService';
 import { FurnitureService } from '@/services/furnitureService';
