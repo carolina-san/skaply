@@ -1,0 +1,77 @@
+<!-- CONTENEDOR GENERAL (debajo del header) -->
+<div class="pt-24 px-6 lg:px-20 w-full flex flex-col text-beige">
+
+  <!-- TÍTULOS / TABS -->
+  <div class="flex items-center gap-10 text-lg font-semibold mb-6">
+    <button class="text-beige opacity-40 hover:opacity-100 transition">Dashboard</button>
+    <button class="text-beige border-b-2 border-beige pb-1">Proveedores</button>
+    <button class="relative text-beige opacity-40 hover:opacity-100 transition">
+      Solicitudes
+      <span
+        class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
+        2
+      </span>
+    </button>
+  </div>
+
+  <!-- BUSCADOR + ICONO -->
+  <div class="flex justify-between items-center mb-5">
+    <div class="w-80 bg-white rounded-full flex items-center px-4 shadow">
+      <input
+        type="text"
+        placeholder="Buscar"
+        class="w-full py-2 outline-none text-marron-oscuro placeholder-marron-oscuro"
+      />
+    </div>
+
+    <button class="bg-white shadow p-3 rounded-full hover:scale-105 transition">
+      <img src="assets/icons/filter.svg" class="w-5 h-5" alt="filtrar" />
+    </button>
+  </div>
+
+  <!-- TABLA -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <!-- HEADER TABLA -->
+    <div class="grid grid-cols-3 bg-[#bfd2e0] px-6 py-3 font-semibold text-[#452621]">
+      <div>Nombre de empresa</div>
+      <div>Fecha alta</div>
+      <div class="text-center">Acciones</div>
+    </div>
+
+    <!-- FILAS -->
+    <div *ngFor="let provider of provider" class="grid grid-cols-3 items-center px-6 py-4 border-b text-[#452621]">
+      
+      <!-- Nombre -->
+      <div>{{ provider.company_name }}</div>
+
+      <!-- Fecha (usar la que tengas en la BD, aquí un placeholder) -->
+
+      <!-- Acciones -->
+      <div class="flex justify-center gap-4 text-xl">
+        <button class="hover:scale-110 transition text-[#452621]">
+          <span class="material-symbols-rounded">visibility</span>
+        </button>
+
+        <button class="hover:scale-110 transition text-[#452621]">
+          <span class="material-symbols-rounded">edit</span>
+        </button>
+
+        <button class="hover:scale-110 transition text-[#b43d3d]">
+          <span class="material-symbols-rounded">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FOOTER PAGINACIÓN -->
+    <div class="flex justify-end items-center px-6 py-4 text-sm text-[#452621] gap-4">
+      <span>Mostrando {{ provider.length }} de {{ provider.length }}</span>
+
+      <div class="flex gap-2">
+        <button class="px-2 py-1 bg-white border rounded hover:bg-gray-100">1</button>
+        <button class="px-2 py-1 bg-white border rounded hover:bg-gray-100">2</button>
+        <button class="px-2 py-1 bg-white border rounded hover:bg-gray-100">3</button>
+      </div>
+    </div>
+  </div>
+
+</div>
