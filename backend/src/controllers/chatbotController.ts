@@ -29,6 +29,7 @@ export class ChatbotController {
         
         try {
             const userMessage = req.body.text;
+            const ref = req.body.ref;
 
             if (!userMessage) {
                 res.status(400).json({ fulfillmentText: 'No recibí ningún mensaje.' });
@@ -41,19 +42,32 @@ export class ChatbotController {
                 sessionId
             );
 
-            const request = {
+            const request: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentRequest = {
                 session: sessionPath,
                 queryInput: {
                     text: {
-                        text: userMessage,
+                        text: userMessage +' '+ ref,
                         languageCode: 'es'
                     }
+                },
+                queryParams: {
+                    contexts: [{
+                        name: `${sessionPath}/contexts/prueba-context`,
+                        lifespanCount: 3,
+                        parameters: {
+                            fields: {
+                                furniture_ref: {
+                                    stringValue: ref || ''
+                                }
+                            }
+                        }
+                    }]
                 }
             };
 
             
-            const responses = await this.sessionClient.detectIntent(request);
-            const result = responses[0].queryResult;
+            const [response] = await this.sessionClient.detectIntent(request);
+            const result = response.queryResult;
 
             // Envía todo tal cual lo devuelve Dialogflow
             res.json({
@@ -165,6 +179,7 @@ export class ChatbotController {
 
     private getTools = async (req: Request, res: Response): Promise<void> => {
         const ref = req.body.queryResult.parameters["furniture_ref"];
+        console.log('referencia del mueble: ',ref);
         if (!ref) {
             res.status(200).json({
                 fulfillmentText: "Necesito el número de referencia del mueble."

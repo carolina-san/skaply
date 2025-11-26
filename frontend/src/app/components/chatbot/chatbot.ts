@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -21,12 +22,18 @@ export class Chatbot implements OnInit {
     chatHeight: number = 0;
     initialHeight: number = 0;
 
+    
+    constructor(private route: ActivatedRoute) {}
+    furnitureRef: string = '';
+
     messages: ChatMessage[] = [];
     newMessage: string = '';
 
     ngOnInit() {
         this.initialHeight = window.innerHeight * 0.9;
         this.chatHeight = this.initialHeight;
+        this.furnitureRef = this.route.snapshot.paramMap.get('ref')?.toString() || '';
+        console.info('FurnitureRef', this.furnitureRef);
     }
 
     toggleChat() {
@@ -48,10 +55,12 @@ export class Chatbot implements OnInit {
         this.newMessage = '';
 
         // Llamada al backend
+        const requestBody = JSON.stringify({ text: messageToSend , ref:this.furnitureRef});
+        console.log('body chatbot send', requestBody);
         fetch('http://localhost:3000/api/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: messageToSend })
+            body: requestBody
         })
             .then(res => res.json())
             .then(data => {
@@ -101,7 +110,7 @@ export class Chatbot implements OnInit {
 
 
 
-
+            
     }
 
     // ----------------------------------------------

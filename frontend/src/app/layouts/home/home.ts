@@ -60,7 +60,7 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-    this.router.navigate(['/viewer-3d', this.selectedFurniture.id]);
+    this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
     this.closeFurnitureModal();
     this.selectedFurniture = null;
   }
