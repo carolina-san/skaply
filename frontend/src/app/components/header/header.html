@@ -1,12 +1,11 @@
-<header 
-  [ngClass]="{
-    'fixed top-0 left-0 w-full backdrop-blur-lg  transition-all duration-300':
+<header [ngClass]="{
+    'fixed top-0 left-0 w-full backdrop-blur-lg transition-all duration-300':
       true, 
-  }"
-  [class.header-expanded]="!scrolled"
-  [class.header-compact]="scrolled"
-  class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20  transition-all duration-300"
->
+  }" [ngClass]="{
+    'backdrop-blur-none bg-transparent fixed':
+      currentRoute == '/profile', 
+  }" [class.header-expanded]="!scrolled" [class.header-compact]="scrolled"
+  class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20  transition-all duration-300">
 
   <button *ngIf="currentRoute !== '/'" (click)="goBack()"
     class="absolute w-6 h-6 left-5 md:left-10  text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
@@ -20,8 +19,8 @@
   <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="scrollToTop()">
     <!-- Logo normal -->
     <img src="assets/skaply_azul.svg" alt="logo normal"
-      class="w-full h-auto hover:scale-105 transition-all duration-400" 
-       [ngClass]="{'logo-normal':currentRoute == '/'}"/>
+      class="w-full h-auto hover:scale-105 transition-all duration-400"
+      [ngClass]="{'logo-normal':currentRoute == '/'}" />
 
     <!-- Logo reducido -->
     <img *ngIf="currentRoute == '/'" src="assets/reducido.svg" alt="logo reducido"
@@ -31,7 +30,7 @@
   <!-- Menú si está en la landing -->
   <app-menu *ngIf="currentRoute == '/'"></app-menu>
 
-  <a *ngIf="currentRoute !== '/'" href="/profile" class="hidden lg:flex items-center justify-center absolute lg:right-20
+  <a *ngIf="currentRoute !== '/' && currentRoute !== '/profile'" href="/profile" class="hidden lg:flex items-center justify-center absolute lg:right-20
           bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
           hover:bg-beige transition duration-300 cursor-pointer">
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">

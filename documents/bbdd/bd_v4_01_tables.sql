@@ -30,7 +30,8 @@ CREATE TABLE "User" (
     role user_role NOT NULL,
     image_url TEXT,
     active BOOLEAN DEFAULT TRUE,
-    new_user BOOLEAN DEFAULT FALSE
+    new_user BOOLEAN DEFAULT FALSE,
+    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================
