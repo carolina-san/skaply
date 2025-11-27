@@ -1,6 +1,8 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpParams } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -23,12 +25,20 @@ export class Chatbot implements OnInit {
     isDesktop = false;
     messages: ChatMessage[] = [];
     newMessage: string = '';
-    constructor() {
+    constructor(private route: ActivatedRoute) {
         this.checkScreenSize();
+        
     }
     ngOnInit() {
         this.initialHeight = window.innerHeight * 0.9;
         this.chatHeight = this.initialHeight;
+       const furnitureRef = this.route.snapshot.paramMap.get('ref');
+       if (furnitureRef) {
+            this.messages.push({
+                sender: 'bot',
+                text: `¡Hola! Has iniciado el montaje del mueble ${furnitureRef}. Si necesitas ayuda, no dudes en preguntar.`
+            });
+        }
     }
 
     toggleChat() {
@@ -36,7 +46,7 @@ export class Chatbot implements OnInit {
             this.chatVisible = !this.chatVisible;
             this.chatHeight = this.initialHeight;
         }
-        
+
     }
     @HostListener('window:resize', ['$event'])
     onResize(event: any) {
@@ -50,13 +60,11 @@ export class Chatbot implements OnInit {
     sendMessage() {
         if (!this.newMessage.trim()) return;
 
-        // Mensaje del usuario
         this.messages.push({ sender: 'user', text: this.newMessage });
 
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
-        // Llamada al backend
         fetch('http://localhost:3000/api/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -69,7 +77,6 @@ export class Chatbot implements OnInit {
                 const messages = data.fulfillmentMessages || [];
 
                 let handled = false;
-                // 3. Texto normal
                 for (let m of messages) {
                     if (m.message === "text" && m.text?.text?.[0]) {
                         this.messages.push({ sender: 'bot', text: m.text.text[0] });
@@ -77,7 +84,6 @@ export class Chatbot implements OnInit {
                         break;
                     }
                 }
-                // 1. Cards
                 for (let m of messages) {
                     if (m.card) {
                         this.messages.push({
@@ -102,15 +108,10 @@ export class Chatbot implements OnInit {
                         break;
                     }
                 }
-                // 4. fallback
                 if (!handled) {
                     this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
                 }
             });
-
-
-
-
     }
 
     // ----------------------------------------------

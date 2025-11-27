@@ -12,7 +12,7 @@ export const routes: Routes = [
     {path: '', component: Landing},
     {path: 'catalogo', component: Home},
     {path: 'res-scanner', component: ResScanner},
-    {path: 'viewer-3d/:id', component: Viewer3D},
+    {path: 'viewer-3d/:ref', component: Viewer3D},
     {path: 'motor', component: Motor},
     {path: 'registro', component: Registro},
     {path: 'login', component: Login},

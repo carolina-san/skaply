@@ -57,7 +57,6 @@ export class ChatbotController {
             const responses = await this.sessionClient.detectIntent(request);
             const result = responses[0].queryResult;
 
-            // Envía todo tal cual lo devuelve Dialogflow
             res.json({
                 fulfillmentText: result?.fulfillmentText ?? "",
                 fulfillmentMessages: result?.fulfillmentMessages ?? []
@@ -70,7 +69,6 @@ export class ChatbotController {
     };
 
     handleWebhook = async (req: Request, res: Response): Promise<void> => {
-        console.log("Received webhook request:", JSON.stringify(req.body, null, 2));
         try {
             const action: string = req.body.queryResult.action;
 
@@ -122,7 +120,7 @@ export class ChatbotController {
                 queryInput: {
                     event: {
                         name: "INICIAR_MONTAJE",
-                        parameters: parametersStruct,  // <-- AQUI
+                        parameters: parametersStruct, 
                         languageCode: "es"
                     }
                 }
@@ -130,14 +128,14 @@ export class ChatbotController {
 
             const [responses] = await this.sessionClient.detectIntent(request);
             const result = responses.queryResult;
-            console.log("Respuesta de Dialogflow para inicioMontaje:", JSON.stringify(result, null, 2));
+            console.log("Respuesta de Dialogflow:", result);
             res.json({
                 fulfillmentText: result?.fulfillmentText ?? "",
                 fulfillmentMessages: result?.fulfillmentMessages ?? []
             });
 
         } catch (error) {
-            console.error("Error en startAssembly:", error);
+            console.error("Error en el inicio de montaje:", error);
             res.status(500).json({ message: "Error al enviar evento a Dialogflow" });
         }
     };
@@ -211,7 +209,6 @@ export class ChatbotController {
             (c: any) => c.name.endsWith("/contexts/montaje_context")
         );
 
-        // Obtener el parámetro furniture_ref del contexto
         const ref = ctx?.parameters?.furniture_ref;
 
         if (!ref) {
@@ -221,7 +218,6 @@ export class ChatbotController {
             return;
         }
 
-        // Llamada al servicio para obtener herramientas
         const result = await this.toolService.getFurnitureTools(ref);
 
         res.status(200).json({
