@@ -1,7 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -30,8 +29,6 @@ export class Chatbot implements OnInit {
     ngOnInit() {
         this.initialHeight = window.innerHeight * 0.9;
         this.chatHeight = this.initialHeight;
-        this.furnitureRef = this.route.snapshot.paramMap.get('ref')?.toString() || '';
-        console.info('FurnitureRef', this.furnitureRef);
     }
 
     toggleChat() {
