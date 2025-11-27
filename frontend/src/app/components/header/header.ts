@@ -30,7 +30,17 @@ export class Header {
     });
   }
   goBack(): void {
+    
+    this.finMontaje(); // Elimina el contexto del mueble (comprobar si sale de un montaje)
     this.location.back();
+  }
+
+  finMontaje(){
+    fetch("http://localhost:3000/api/chatbot/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: '123456' })
+    });
   }
   scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });

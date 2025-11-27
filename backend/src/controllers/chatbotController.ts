@@ -23,7 +23,7 @@ export class ChatbotController {
         this.furnitureService = furnitureService || new FurnitureService();
         this.projectId = 'allen-hmmc';
         this.sessionClient = new dialogflow.SessionsClient({
-            keyFilename: 'dialogflow.json' // JSON de servicio de Dialogflow
+            keyFilename: 'dialogflow.json'
         });
     }
 
@@ -37,7 +37,7 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = '133456';
+            const sessionId = '123456';
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
@@ -71,7 +71,7 @@ export class ChatbotController {
     handleWebhook = async (req: Request, res: Response): Promise<void> => {
         try {
             const action: string = req.body.queryResult.action;
-
+            console.log(req.body.session);
             switch (action) {
                 case "get.providers":
                     await this.getProviders(req, res);
@@ -107,7 +107,7 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = "133456";
+            const sessionId = "123456";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
@@ -120,7 +120,7 @@ export class ChatbotController {
                 queryInput: {
                     event: {
                         name: "INICIAR_MONTAJE",
-                        parameters: parametersStruct, 
+                        parameters: parametersStruct,
                         languageCode: "es"
                     }
                 }
@@ -128,7 +128,6 @@ export class ChatbotController {
 
             const [responses] = await this.sessionClient.detectIntent(request);
             const result = responses.queryResult;
-            console.log("Respuesta de Dialogflow:", result);
             res.json({
                 fulfillmentText: result?.fulfillmentText ?? "",
                 fulfillmentMessages: result?.fulfillmentMessages ?? []
@@ -137,6 +136,40 @@ export class ChatbotController {
         } catch (error) {
             console.error("Error en el inicio de montaje:", error);
             res.status(500).json({ message: "Error al enviar evento a Dialogflow" });
+        }
+    };
+
+    resetMontaje = async (req: Request, res: Response): Promise<void> => {
+        try {
+            
+
+            const sessionId = '123456';
+            const sessionPath = this.sessionClient.projectAgentSessionPath(
+                this.projectId,
+                sessionId
+            );
+
+            const request = {
+                session: sessionPath,
+                queryInput: {
+                    event: {
+                        name: "RESET_MONTAJE",
+                        languageCode: "es"
+                    }
+                }
+            };
+
+            const [responses] = await this.sessionClient.detectIntent(request);
+            const result = responses.queryResult;
+
+            res.json({
+                fulfillmentText: result?.fulfillmentText ?? "",
+                fulfillmentMessages: result?.fulfillmentMessages ?? []
+            });
+
+        } catch (error) {
+            console.error("Error en resetMontaje:", error);
+            res.status(500).json({ message: "Error enviando RESET_MONTAJE" });
         }
     };
 
@@ -223,7 +256,7 @@ export class ChatbotController {
         res.status(200).json({
             fulfillmentMessages: [
                 {
-                    text: { text: [`Para el mueble ${ref} necesitas:`] }
+                    text: { text: [`Para montar este mueble necesitas:`] }
                 },
                 ...result.rows.map((t: any) => ({
                     card: {
