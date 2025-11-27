@@ -5,6 +5,8 @@ import { ToolService } from '@/services/toolService';
 import { IssueService } from '@/services/issueService';
 import { FurnitureService } from '@/services/furnitureService';
 import { Issue } from '@/types';
+import { struct } from "pb-util";
+
 
 export class ChatbotController {
     private providerService: ProviderService;
@@ -26,7 +28,7 @@ export class ChatbotController {
     }
 
     handleChatbot = async (req: Request, res: Response): Promise<void> => {
-        
+
         try {
             const userMessage = req.body.text;
 
@@ -51,7 +53,7 @@ export class ChatbotController {
                 }
             };
 
-            
+
             const responses = await this.sessionClient.detectIntent(request);
             const result = responses[0].queryResult;
 
@@ -98,6 +100,48 @@ export class ChatbotController {
         }
     };
 
+    inicioMontaje = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { furniture_ref } = req.body;
+            console.log("Referencia de mueble recibida:", furniture_ref);
+            if (!furniture_ref) {
+                res.status(400).json({ message: "No se recibió el mueble" });
+                return;
+            }
+
+            const sessionId = "123456";
+            const sessionPath = this.sessionClient.projectAgentSessionPath(
+                this.projectId,
+                sessionId
+            );
+
+            // ⭐ Convertir parámetros a Struct protobuf
+            const parametersStruct = struct.encode({ furniture_ref });
+
+            const request = {
+                session: sessionPath,
+                queryInput: {
+                    event: {
+                        name: "INICIAR_MONTAJE",
+                        parameters: parametersStruct,  // <-- AQUI
+                        languageCode: "es"
+                    }
+                }
+            };
+
+            const [responses] = await this.sessionClient.detectIntent(request);
+            const result = responses.queryResult;
+            console.log("Respuesta de Dialogflow para inicioMontaje:", JSON.stringify(result, null, 2));
+            res.json({
+                fulfillmentText: result?.fulfillmentText ?? "",
+                fulfillmentMessages: result?.fulfillmentMessages ?? []
+            });
+
+        } catch (error) {
+            console.error("Error en startAssembly:", error);
+            res.status(500).json({ message: "Error al enviar evento a Dialogflow" });
+        }
+    };
 
     private getProviders = async (req: Request, res: Response): Promise<void> => {
         const result = await this.providerService.getAllProvidersChatbot();
@@ -164,14 +208,23 @@ export class ChatbotController {
     };
 
     private getTools = async (req: Request, res: Response): Promise<void> => {
-        const ref = req.body.queryResult.parameters["furniture_ref"];
+        const ctx = req.body.queryResult.outputContexts?.find(
+            (c: any) => c.name.endsWith("/contexts/montaje_context")
+        );
+
+        // Obtener el parámetro furniture_ref del contexto
+        const ref = ctx?.parameters?.furniture_ref;
+
         if (!ref) {
             res.status(200).json({
                 fulfillmentText: "Necesito el número de referencia del mueble."
             });
             return;
         }
+
+        // Llamada al servicio para obtener herramientas
         const result = await this.toolService.getFurnitureTools(ref);
+
         res.status(200).json({
             fulfillmentMessages: [
                 {
