@@ -19,4 +19,5 @@ router.get('/:id/parts',furnitureController.getFurnitureParts);
 router.get('/:id/step/:stepId/parts',furnitureController.getFurnitureStepParts);
 router.get('/:id/issues',issueControllerInstance.getFurnitureIssues);
 router.get('/:id/reviews',reviewControllerInstance.getFurnitureReviews);
+router.get('/:id/assembly',furnitureController.getFurnitureAssembly);
 export default router;

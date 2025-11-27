@@ -13,7 +13,7 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  //Obtener muebles
+  //MUEBLES
   getFurnitures(): Observable<any> {
     return this.http.get(`${this.apiUrl}/furniture`);
   }
@@ -22,22 +22,21 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}`);
   }
 
-  // Obtener muebles filtrados
   getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
   }
 
-  //Obtener categorias
   getCategories(): Observable<any> {
     return this.http.get(`${this.apiUrl}/categories`);
   }
 
-  getProviders(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/providers`);
-  }
-
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
+  }
+
+  //PROVEEDORES
+  getProviders(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/providers`);
   }
 
   registerProvider(data: any): Observable<any> {
@@ -47,5 +46,9 @@ export class ApiService {
       new_user: true
     };
     return this.http.post(`${this.apiUrl}/providers`, payload);
+  }
+
+  deleteProvider(providerId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/providers/${providerId}`);
   }
 }

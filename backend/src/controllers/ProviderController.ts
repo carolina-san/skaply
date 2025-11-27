@@ -52,6 +52,15 @@ export class ProviderController {
     }
   };
 
+  deleteProvider = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      res.status(200).json({ message: `Delete user ${id} endpoint` });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
+  };
+
 
 //   updateProvider = async (req: Request, res: Response): Promise<void> => {
 //     try {

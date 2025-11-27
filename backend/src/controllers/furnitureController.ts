@@ -129,4 +129,22 @@ export class FurnitureController {
     }
   }
 
+   getFurnitureAssembly = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const furnitureId = parseInt(req.params.id || '0');
+      if (isNaN(furnitureId)) {
+        res.status(400).json({ error: 'Invalid furniture ID' });
+        return;
+      }
+
+      // Llamada al servicio
+      const assemblyData = await this.furnitureService.getFurnitureAssembly(furnitureId);
+      res.status(200).json(assemblyData);
+      
+    } catch (error) {
+      console.error('getFurnitureAssembly error:', error);
+      res.status(500).json({ error: 'Failed to fetch furniture assembly', details: (error as Error).message });
+    }
+  }
+
 }
