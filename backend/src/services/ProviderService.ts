@@ -2,22 +2,22 @@ import pool from '@config/database';
 import { UserRole } from '../types/user.types';
 
 export class ProviderService {
-  
+
   async getAllProviders() {
-    try{
-        const result = await pool.query('SELECT * FROM public."User" WHERE role = $1', [UserRole.PROV]);
-        return result;
-    }catch(error){
-        throw new Error('Method not implemented');
+    try {
+      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1', [UserRole.PROV]);
+      return result;
+    } catch (error) {
+      throw new Error('Method not implemented');
     }
   }
 
-  async getProvider(id:number){
-    try{
-        const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND id = $2 ', [UserRole.PROV, id]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the provided with this id');
+  async getProvider(id: number) {
+    try {
+      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND id = $2 ', [UserRole.PROV, id]);
+      return result;
+    } catch (error) {
+      throw new Error('Unable to fetch the provided with this id');
     }
   }
 
@@ -34,22 +34,34 @@ export class ProviderService {
     }
   }
 
-  async getAllProvidersChatbot(){
-    try{
+  async getAllProvidersChatbot() {
+    try {
       const result = await pool.query(`SELECT id, company_name, email, cif, tax_address, name,image_url
                                       FROM public."User" where role = 'provider'`);
-      return result;                                
-    }catch(error){
+      return result;
+    } catch (error) {
       throw new Error('Unable to fetch providers for chatbot')
     }
   }
 
-  async getProviderByName(name:string){
-    try{
-        const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the provided with this name');
+  async getProviderByName(name: string) {
+    try {
+      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
+      return result;
+    } catch (error) {
+      throw new Error('Unable to fetch the provided with this name');
+    }
+  }
+
+  async deleteProvider(id: number) {
+    try {
+      const result = await pool.query(
+        'DELETE FROM public."User" WHERE id = $1 AND role = $2 RETURNING *',
+        [id, UserRole.PROV]
+      );
+      return result;
+    } catch (error) {
+      throw new Error('Unable to delete provider');
     }
   }
 
