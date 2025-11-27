@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.css']
 })
@@ -17,8 +16,14 @@ export class Profile {
   }
 
   fetchProviders() {
-    this.apiService.getProviders().subscribe((res: any) => {
-      this.providers = res.data || []; 
-    });
+    this.apiService.getProviders().subscribe(
+      (response) => {
+        console.log('Providers fetched successfully:', response);
+        this.providers = response.data;
+      },
+      (error) => {
+        console.error('Error fetching providers:', error);
+      }
+    );
   }
 }
