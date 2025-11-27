@@ -26,7 +26,7 @@ export class Chatbot implements OnInit {
     messages: ChatMessage[] = [];
     newMessage: string = '';
     constructor(private route: ActivatedRoute) {
-        this.checkScreenSize();
+       // this.checkScreenSize();
         
     }
     ngOnInit() {
@@ -50,12 +50,12 @@ export class Chatbot implements OnInit {
     }
     @HostListener('window:resize', ['$event'])
     onResize(event: any) {
-        this.checkScreenSize();
+       // this.checkScreenSize();
     }
 
     checkScreenSize() {
-        this.isDesktop = window.innerWidth >= 1024; // >=lg
-        if (this.isDesktop) this.chatVisible = true; // Siempre visible en escritorio
+        this.isDesktop = window.innerWidth >= 1024; 
+        if (this.isDesktop) this.chatVisible = true;
     }
     sendMessage() {
         if (!this.newMessage.trim()) return;
