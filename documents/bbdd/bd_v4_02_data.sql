@@ -81,7 +81,10 @@ INSERT INTO Color (name, hex) VALUES
 INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('part1.stl','P001', 1),
 ('part2.stl','P002', 2),
-('part3.stl','P003', 3);
+('part3.stl','P003', 3),
+('','PSILLA01', 4),
+('','PSILLA02', 5),
+('','PSILLA03', 6);
 
 -- ============================
 -- 6. Insertar herramientas
@@ -100,7 +103,8 @@ INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_i
 ('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3, 'Silla de madera cómoda y resistente'),
 ('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4, 'Mesa de comedor grande y elegante'),
 ('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5, 'Sofa gris de tres plazas con cojines suaves'),
-('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable');
+('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable'),
+('silla.stl', 'Silla azul','F008', 1, 4,'low', 3, 'Silla azul apilable y ligera');
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
 --         |- pieza2 x1 -|
@@ -124,14 +128,22 @@ INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_i
 --         |             |- paso1
 --         |- pieza2 x2 -|
 
+
+-- silla   |- PSILLA01 x1 -|
+--         |               |- paso1 -|
+--         |- PSILLA02 x1 -|         |- paso2
+--         |- PSILLA03 x1 -----------|
+
+
 -- ============================
 -- 8. Asignar las piezas a los muebles
 -- ============================
-INSERT INTO Furniture_Part (furniture_id, part_id, quantity) VALUES
-(1,1,1),(1,2,1),                        
-(2,1,1),(2,2,1), (2,3,1),      
-(3,1,2),(3,2,2),
-(4,1,2),(4,2,2);                     
+INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, exploded_distance) VALUES
+(1,1,1,'y',0.0),(1,2,1,'y',0.0),                        
+(2,1,1,'y',0.0),(2,2,1,'y',0.0), (2,3,1,'y',0.0),      
+(3,1,2,'y',0.0),(3,2,2,'y',0.0),
+(4,1,2,'y',0.0),(4,2,2,'y',0.0),
+(5,4,1,'y',0.0),(5,5,1,'y',0.4), (5,6,1,'z',0.4) ;                      
 
 -- ============================
 -- 9. Insertar pasos de ensamblaje
@@ -140,7 +152,8 @@ INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES -- ste
 (1,1,NULL),                     -- mueble 1
 (2,1,3),(2,2,NULL),             -- mueble 2: el paso1 se usa en el paso2 (id3)    
 (3,1,6),(3,2,6),(3,3,NULL),     -- mueble 3: el paso1 y el paso2 se usan en el paso3 (id6)
-(4,1,NULL);                     -- mueble 4
+(4,1,NULL),                     -- mueble 4
+(5,1,9),(5,2,NULL);             -- silla azul
 
 -- ============================
 -- 10. Asignar piezas a los pasos
@@ -149,7 +162,8 @@ INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (1,1,1),(1,2,1),                    -- mueble 1
 (2,1,1),(2,2,1),(3,3,1),            -- mueble 2   
 (4,1,1),(4,2,1),(5,1,1),(5,2,1),    -- mueble 3
-(7,1,2),(7,2,2);                    -- mueble 4
+(7,1,2),(7,2,2),                    -- mueble 4
+(8,4,1),(8,5,1),(9,6,1);            -- silla azul
 
 -- ============================
 -- 11. Asignar herramientas a pasos
@@ -158,7 +172,8 @@ INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (1,1),(1,2),                -- mueble 1
 (2,1),(2,4),(3,5),          -- mueble 2
 (4,2),(5,3),(6,4),(6,5),    -- mueble 3
-(7,3);                      -- mueble 4
+(7,3),                      -- mueble 4
+(8,1),(9,2);                -- silla
 
 -- ============================
 -- 12. Insertar issues

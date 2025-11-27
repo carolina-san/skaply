@@ -94,6 +94,8 @@ CREATE TABLE Furniture_Part (
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     part_id INTEGER REFERENCES Part(id) ON DELETE CASCADE,
     quantity INTEGER CHECK (quantity >= 0),
+    exploded_axis CHAR(1) CHECK (exploded_axis IN ('x','y','z')),
+    exploded_distance FLOAT,
     PRIMARY KEY (furniture_id, part_id)
 );
 
