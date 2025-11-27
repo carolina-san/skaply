@@ -32,7 +32,7 @@
   </div>
 
   <!-- tabla proveedores -->
-  <div class="bg-white rounded-3xl shadow-lg overflow-hidden mr-15">
+  <div class="bg-white rounded-3xl overflow-hidden mr-15">
     <div class="grid grid-cols-3 bg-azul-claro px-8 py-4 font-semibold text-marron-oscuro">
       <div>Nombre de empresa</div>
       <div>Fecha alta</div>
@@ -40,25 +40,25 @@
     </div>
 
     <!-- FILAS -->
-    <div *ngFor="let provider of paginatedProviders" class="grid grid-cols-3 px-8 py-5 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+    <div *ngFor="let provider of paginatedProviders" class="grid grid-cols-3 px-8 py-5 border-b border-gray-200 items-center">
       <div class="flex items-center gap-4">
         <span class="font-medium">{{ provider.company_name }}</span>
       </div>
       <div class="text-gray-700">{{ provider.fecha_alta | date:'dd/MM/yyyy' }}</div>
       <div class="flex justify-center gap-3">
-        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+        <button class="btn-acciones">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
             <path
               d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-134 0-244.5-72T61-462q-5-9-7.5-18.5T51-500q0-10 2.5-19.5T61-538q64-118 174.5-190T480-800q134 0 244.5 72T899-538q5 9 7.5 18.5T909-500q0 10-2.5 19.5T899-462q-64 118-174.5 190T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z" />
           </svg>
         </button>
-        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+        <button class="btn-acciones">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
             <path
               d="M560-120v-66q0-8 3-15.5t9-13.5l209-208q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L695-92q-6 6-13.5 9T666-80h-66q-17 0-28.5-11.5T560-120Zm300-223-37-37 37 37ZM620-140h38l121-122-37-37-122 121v38ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h287q16 0 30.5 6t25.5 17l194 194q11 11 17 25.5t6 30.5v57q0 17-11.5 28.5T760-510q-17 0-28.5-11.5T720-550v-50H560q-17 0-28.5-11.5T520-640v-160H240v640h200q17 0 28.5 11.5T480-120q0 17-11.5 28.5T440-80H240Zm0-80v-640 640Zm521-121-19-18 37 37-18-19Z" />
           </svg>
         </button>
-        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+        <button class="btn-acciones">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
             <path
               d="M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM280-720v520-520Z" />
@@ -72,12 +72,12 @@
   <div class="flex justify-end items-center mt-6 mr-15 gap-4">
     <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} de {{ totalItems }}</span>
 
-    <div class="flex gap-1 items-center">
+    <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
       <!-- Botón anterior -->
       <button 
         (click)="goToPage(currentPage - 1)"
         [disabled]="currentPage === 1"
-        class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
           <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/>
         </svg>
@@ -112,8 +112,8 @@
       <!-- Botón siguiente -->
       <button 
         (click)="goToPage(currentPage + 1)"
-        [disabled]="currentPage === totalPages"
-        class="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        [disabled]="currentPage === totalPages || totalPages <= 1"
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
           <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/>
         </svg>
