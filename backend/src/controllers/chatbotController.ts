@@ -37,7 +37,7 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = '123456';
+            const sessionId = '133456';
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
@@ -109,13 +109,12 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = "123456";
+            const sessionId = "133456";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
             );
 
-            // ⭐ Convertir parámetros a Struct protobuf
             const parametersStruct = struct.encode({ furniture_ref });
 
             const request = {
@@ -217,7 +216,7 @@ export class ChatbotController {
 
         if (!ref) {
             res.status(200).json({
-                fulfillmentText: "Necesito el número de referencia del mueble."
+                fulfillmentText: "No puedo decirte qué herramientas usar sin que hayas iniciado el montaje de un mueble."
             });
             return;
         }
