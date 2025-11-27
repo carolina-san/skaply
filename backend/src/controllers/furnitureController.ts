@@ -129,7 +129,7 @@ export class FurnitureController {
     }
   }
 
-    getFurnitureAssembly = async (req: Request, res: Response): Promise<void> => {
+   getFurnitureAssembly = async (req: Request, res: Response): Promise<void> => {
     try {
       const furnitureId = parseInt(req.params.id || '0');
       if (isNaN(furnitureId)) {
