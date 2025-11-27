@@ -53,13 +53,22 @@ export class Home implements OnInit {
     this.loadProviders();
     this.loadColors();
     window.addEventListener("scroll", () => {
-      this.scrolled = window.scrollY > 70; 
+      this.scrolled = window.scrollY > 70;
     });
   }
-  
+
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
+
+    fetch("http://localhost:3000/api/chatbot/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        furniture_ref: this.selectedFurniture.reference_number,
+      })
+    });
+
     this.router.navigate(['/viewer-3d', this.selectedFurniture.id]);
     this.closeFurnitureModal();
     this.selectedFurniture = null;
