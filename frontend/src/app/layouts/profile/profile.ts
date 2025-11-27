@@ -30,7 +30,21 @@ export class Profile {
     );
   }
 
-    get paginatedProviders() {
+  deleteProvider(id: number) {
+    if (confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
+      this.apiService.deleteProvider(id).subscribe(
+        (response) => {
+          console.log('Provider deleted successfully:', response);
+          this.fetchProviders();
+        },
+        (error) => {
+          alert('Error al eliminar el proveedor');
+        }
+      );
+    }
+  }
+
+  get paginatedProviders() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
     return this.providers.slice(start, end);
