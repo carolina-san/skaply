@@ -12,6 +12,7 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+
 // Test the connection
 export const connectDB = async (): Promise<void> => {
   try {
