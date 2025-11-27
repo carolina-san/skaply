@@ -148,7 +148,7 @@
   </section>
 
   <app-modal [(open)]="isFurnitureModalOpen">
-    <img [src]="'assets/imgs/ikea.jpg'" [alt]="selectedFurniture?.name" class="w-50 mx-auto rounded-lg mb-4">
+    <img [src]="'assets/imgs/ikea.jpg'" [alt]="selectedFurniture?.name" class="w-full lg:w-50 lg:mx-auto rounded-lg mb-4">
     <h2 class="text-2xl font-semibold mb-2 text-marron-oscuro">{{ selectedFurniture?.name }}</h2>
     <p class="text-sm font-semibold text-marron-oscuro mb-4">{{ selectedFurniture?.short_description }}</p>
     <p class="text-sm text-marron-oscuro mb-2"><strong>Dificultad:</strong>
