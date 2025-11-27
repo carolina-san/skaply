@@ -10,7 +10,6 @@ export class ProviderService {
     }catch(error){
         throw new Error('Method not implemented');
     }
-    
   }
 
   async getProvider(id:number){

@@ -21,14 +21,12 @@ export class Chatbot implements OnInit {
     isDragging: boolean = false;
     chatHeight: number = 0;
     initialHeight: number = 0;
-
-    
-    constructor(private route: ActivatedRoute) {}
-    furnitureRef: string = '';
-
+    isDesktop = false;
     messages: ChatMessage[] = [];
     newMessage: string = '';
-
+    constructor() {
+        this.checkScreenSize();
+    }
     ngOnInit() {
         this.initialHeight = window.innerHeight * 0.9;
         this.chatHeight = this.initialHeight;
@@ -37,14 +35,21 @@ export class Chatbot implements OnInit {
     }
 
     toggleChat() {
-        this.chatVisible = !this.chatVisible;
-        this.chatHeight = this.initialHeight;
+        if (!this.isDesktop) {
+            this.chatVisible = !this.chatVisible;
+            this.chatHeight = this.initialHeight;
+        }
+        
+    }
+    @HostListener('window:resize', ['$event'])
+    onResize(event: any) {
+        this.checkScreenSize();
     }
 
-    // ----------------------------------------------
-    // ENVÍO DE MENSAJE
-    // ----------------------------------------------
-
+    checkScreenSize() {
+        this.isDesktop = window.innerWidth >= 1024; // >=lg
+        if (this.isDesktop) this.chatVisible = true; // Siempre visible en escritorio
+    }
     sendMessage() {
         if (!this.newMessage.trim()) return;
 
@@ -85,8 +90,8 @@ export class Chatbot implements OnInit {
                             rich: {
                                 type: 'card',
                                 title: m.card.title,
-                                subtitle: m.card.subtitle || '',      
-                                imageUri: m.card.imageUri || '',      
+                                subtitle: m.card.subtitle || '',
+                                imageUri: m.card.imageUri || '',
                                 buttons: m.card.buttons || []
                             }
                         });
