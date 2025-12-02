@@ -33,11 +33,9 @@ export class Viewer3D implements OnInit {
 
   abrirModalIncidencia() {
     this.isIncidenciaModalOpen = true;
-    this.resetIncidenciaForm();
   }
 
   resetIncidenciaForm() {
-    // Lógica para enviar la incidencia
     this.isIncidenciaModalOpen = false;
   }
 

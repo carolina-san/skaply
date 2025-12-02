@@ -24,7 +24,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
     messages: ChatMessage[] = [];
     newMessage: string = '';
     isMobile: boolean = false;
-    isIncidenceModalOpen: boolean = false;
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
