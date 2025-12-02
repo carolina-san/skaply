@@ -4,11 +4,12 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
+import { Modal } from '../../components/modal/modal';
 
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, Chatbot, FurnitureViewer, MenuViewer],
+  imports: [CommonModule, RouterModule, Chatbot, FurnitureViewer, MenuViewer, Modal],
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })
@@ -17,7 +18,7 @@ export class Viewer3D implements OnInit {
 
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
-
+  isIncidenciaModalOpen = false;
   constructor(private route: ActivatedRoute) {} 
 
   ngOnInit() {
@@ -28,6 +29,16 @@ export class Viewer3D implements OnInit {
     // Ejemplo:
     // this.modelPath = `/assets/models/${id}.glb`;
     // this.furnitureViewer?.loadModel(this.modelPath);
+  }
+
+  abrirModalIncidencia() {
+    this.isIncidenciaModalOpen = true;
+    this.resetIncidenciaForm();
+  }
+
+  resetIncidenciaForm() {
+    // Lógica para enviar la incidencia
+    this.isIncidenciaModalOpen = false;
   }
 
   // Array de modelos disponibles

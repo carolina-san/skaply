@@ -1,4 +1,5 @@
 import pool from "@/config/database";
+
 import { Issue } from "@/types";
 
 export class IssueService{
