@@ -17,5 +17,4 @@ export class Modal{
     this.open = false;
     this.openChange.emit(false);
   }
-  
 }

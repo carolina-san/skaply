@@ -57,7 +57,6 @@ export class Home implements OnInit {
     });
   }
 
-
   goToViewer3D() {
     if (!this.selectedFurniture) return;
 

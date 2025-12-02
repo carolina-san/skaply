@@ -12,3 +12,6 @@ export * from './filter.types';
 
 // Color types
 export * from './color.types';
+
+// Issue types
+export * from './issue.types';
