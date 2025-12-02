@@ -36,59 +36,26 @@
 
   </section>
 
-  <!-- Interactive Assembly Section -->
-  <section class="relative mt-20 page-main">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[600px]">
-      
-      <!-- Left side - Content -->
-      <div class="flex flex-col justify-center space-y-6 p-6 lg:p-12">
-        <div class="inline-block">
-          <span class="inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-full">
-            <span class="w-2 h-2 bg-amber-600 rounded-full mr-2"></span>
-            LA REVOLUCIÓN DEL MONTAJE
-          </span>
-        </div>
-        
-        <h2 class="text-4xl lg:text-6xl font-bold text-white leading-tight">
-          Tu asistente 3D para montar muebles
-        </h2>
-        
-        <p class="text-lg text-gray-300 leading-relaxed">
-          Olvídate de los manuales complicados. Con Skäply, 
-          puedes montar cualquier mueble viendo cada pieza en 
-          3D y recibiendo instrucciones personalizadas del 
-          asistente virtual.
-        </p>
-        
-        <div class="flex flex-col sm:flex-row gap-4 pt-4">
-          <button (click)="acceder()" class="flex items-center justify-center px-6 py-3 bg-azul-claro hover:bg-azul-claro/90 text-marron-oscuro font-semibold rounded-full transition-all duration-200 transform hover:scale-105">
-            Empezar ahora
-            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-          </button>
-          <button (click)="goToMotor()" class="flex items-center justify-center px-6 py-3 border-2 border-white/30 hover:border-white/50 text-white font-semibold rounded-full transition-all duration-200">
-            Ver demo
-          </button>
-        </div>
-        
-        <div class="flex items-center space-x-4 pt-6">
-          <div class="flex -space-x-2">
-            <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-white"></div>
-            <div class="w-8 h-8 bg-gray-500 rounded-full border-2 border-white"></div>
-            <div class="w-8 h-8 bg-gray-600 rounded-full border-2 border-white"></div>
-          </div>
-          <span class="text-sm text-gray-400">Más de 10.000 muebles montados</span>
-        </div>
-      </div>
-
-      <!-- Right side - Interactive Assembly Component -->
-      <div class="h-[500px] lg:h-[600px] p-4">
-        <!-- Preview: always run simulation at 1x and disable controls -->
-        <app-interactive-assembly [controlsMode]="'display-only'" [autoStartSimulation]="true"></app-interactive-assembly>
-      </div>
-      
+  <section class="w-full flex flex-col-reverse lg:flex-row items-center justify-between mt-20 page-main gap-5 fade-slide" #fadeSlide>
+    <div class="h-[300px] lg:h-[400px] w-[100%] lg:w-[50%]">
+      <app-demo-landing ></app-demo-landing>
     </div>
+    <div class="flex flex-col lg:items-end items-center text-center lg:text-right mt-6 lg:mt-0 gap-5">
+      <h2 class="text-3xl md:text-5xl text-azul-claro font-semibold mb-2">Echa un vistazo a nuestra demo 3D</h2>
+      <p class="text-beige max-w-md lg:max-w-sm">
+        Descubre cómo Skäply hace que montar muebles sea sencillo, visual e interactivo. Visualiza cada pieza en 3D y sigue las instrucciones paso a paso para un montaje rápido y sin errores.
+      </p>
+       <button (click)="acceder()" class="flex btn-azul mt-10">
+        Quiero ver más
+        <span class="material-symbols-rounded ml-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" class="w-7 h-7">
+            <path
+              d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
+          </svg>
+        </span>
+      </button>
+    </div>
+
   </section>
 
   <div
@@ -203,7 +170,8 @@
       <span class="material-symbols-rounded absolute md:-left-50 top-1/2 -translate-y-1/2 
                  text-marron-oscuro opacity-10 md:opacity-60 leading-none pointer-events-none ">
 
-        <svg xmlns="http://www.w3.org/2000/svg" height="400px" viewBox="0 -960 960 960" width="400px" fill="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" height="400px" viewBox="0 -960 960 960" width="400px"
+          fill="currentColor">
           <path
             d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
         </svg>
@@ -230,7 +198,7 @@
   <section class="w-full flex flex-col page-main justify-center mt-20 pb-20 fade-slide" #fadeSlide>
     <h2 class="text-4xl text-azul-claro text-center">¡Síguenos!</h2>
     <div class="flex flex-row text-beige gap-4 lg:gap-10 justify-center mt-10 items-center text-xl">
-      <p class="text-right w-[50%]">Para saber más de nosotros y <br>estar al tanto de las novedades, <br>síguenos en
+      <p class="text-right text-sm md:text-md w-[50%]">Para saber más de nosotros y <br>estar al tanto de las novedades, <br>síguenos en
         nuestras redes<br>
         sociales y en nuestro blog</p>
       <div class="border-r border-beige/20 self-stretch"></div>

@@ -6,10 +6,11 @@ import { Menu } from '../../components/menu/menu';
 import { Router } from '@angular/router';
 import { Footer } from '../../components/footer/footer';
 import { InteractiveAssemblyComponent } from '../../components/interactive-assembly/interactive-assembly.component';
+import { DemoLanding } from '../../components/demo-landing/demo-landing';
 
 @Component({
   selector: 'app-landing',
-  imports: [Menu, Footer, CommonModule, InteractiveAssemblyComponent],
+  imports: [Menu, Footer, CommonModule, DemoLanding],
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })

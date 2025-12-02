@@ -1,0 +1,26 @@
+<div class="w-full h-full rounded-3xl flex flex-col border border-2 border-marron-secundario overflow-hidden">
+
+    <!-- Canvas wrapper sin padding -->
+    <div class="flex-1 relative">
+        <canvas #canvas class="absolute inset-0 block active:cursor-grabbing" style="cursor: grab;"></canvas>
+
+        <div class="absolute top-2 left-2 flex items-center space-x-2 px-2 py-1 backdrop-blur-sm rounded-full text-xs text-beige pointer-events-none">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path>
+                <path d="m12 12 4 10 3-1-4-10z"></path>
+            </svg>
+            <span>Arrastra para girar</span>
+        </div>
+    </div>
+
+    <!-- Footer con padding separado -->
+    <footer class="flex flex-col items-center justify-center p-4 flex-shrink-0">
+        <div class="flex items-center justify-center p-1 rounded-full bg-beige text-sm text-marron-oscuro transition-colors">
+            <button disabled class="px-4 py-1 rounded-full opacity-60">Manual</button>
+            <button disabled class="px-4 py-1 rounded-full bg-azul-claro shadow-lg">Simulación</button>
+            <button disabled class="px-4 py-1 rounded-full opacity-60">Resultado</button>
+        </div>
+    </footer>
+
+</div>
