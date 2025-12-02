@@ -1,24 +1,28 @@
-<div class="fixed bottom-0 left-0 w-full z-50 sm:w-96 sm:left-auto sm:right-6 transition-all duration-400"
-    [ngClass]="chatVisible ? 'h-[90vh]' : 'h-20'">
+<div class="fixed right-0 bottom-0 transition-all duration-400 z-40" [ngClass]="{
+    ' top-0 h-[85vh] mt-23': inMontajeMode && isDesktop,     
+    'w-1/4  ':  isDesktop,                    
+    ' w-full sm:w-96  h-[85vh] ': !inMontajeMode || !isDesktop,
+    'h-20': !chatVisible && (!inMontajeMode || isMobile)
+  }">
 
-    <button *ngIf="!chatVisible"
-        class="absolute flex bottom-28 right-6 bg-beige text-marron-oscuro items-center justify-center p-4 rounded-full shadow-lg hover:scale-110 transition-transform"
+    <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
+        class="absolute flex bottom-10 right-6 bg-beige text-marron-oscuro items-center justify-center p-4 rounded-full shadow-lg hover:scale-110 transition-transform"
         (click)="toggleChat()">
         <span class="material-symbols-rounded w-9 h-9">
-            <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                 <path
                     d="M470-200h-10q-142 0-241-99t-99-241q0-142 99-241t241-99q71 0 132.5 26.5t108 73q46.5 46.5 73 108T800-540q0 134-75.5 249T534-111q-10 5-20 5.5t-18-4.5q-8-5-14-13t-7-19l-5-58Zm90-26q71-60 115.5-140.5T720-540q0-109-75.5-184.5T460-800q-109 0-184.5 75.5T200-540q0 109 75.5 184.5T460-280h100v54Zm-101-95q17 0 29-12t12-29q0-17-12-29t-29-12q-17 0-29 12t-12 29q0 17 12 29t29 12Zm-87-304q11 5 22 .5t18-14.5q9-12 21-18.5t27-6.5q24 0 39 13.5t15 34.5q0 13-7.5 26T480-558q-25 22-37 41.5T431-477q0 12 8.5 20.5T460-448q12 0 20-9t12-21q5-17 18-31t24-25q21-21 31.5-42t10.5-42q0-46-31.5-74T460-720q-32 0-59 15.5T357-662q-6 11-1.5 21.5T372-625Zm88 112Z" />
             </svg></span>
     </button>
 
-    <div *ngIf="chatVisible"
-        class="bg-beige rounded-t-3xl overflow-hidden shadow-2xl flex flex-col h-full w-full page-main py-4 ">
+    <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-5 py-4 "
+        [ngClass]="{
+    'rounded-t-3xl': !inMontajeMode || isMobile}">
 
         <header class="flex justify-between items-center">
-
             <h2 class="text-2xl font-semibold text-marron-oscuro">Allen</h2>
-
-            <button (click)="toggleChat()" class="btn-hover-marron">
+            <button (click)="toggleChat()" class="btn-hover-marron" [ngClass]="{
+    'hidden': inMontajeMode && isDesktop}">
                 <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px"
                     fill="var(--color-marron-secundario)">
                     <path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 
@@ -27,7 +31,7 @@
             </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 bg-beige">
+        <div #messagesContainer class="flex-1 overflow-y-auto p-4 bg-beige scrollbar-hide">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
@@ -45,20 +49,19 @@
                         </button>
                     </div>
                 </div>
-                <!-- Mensaje normal -->
                 <div *ngIf="msg.text" [ngClass]="msg.sender === 'user'
                     ? 'msg-user'
                     : 'msg-bot'">
                     {{ msg.text }}
                 </div>
 
-                <!-- Info card -->
+                <!-- card -->
                 <div *ngIf="msg.rich?.type === 'info'" class="msg-bot">
                     <h4 class="font-bold">{{ msg.rich.title }}</h4>
                     <p>{{ msg.rich.subtitle }}</p>
                 </div>
 
-                <!-- Chips -->
+                <!-- Botones -->
                 <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
                     <button *ngFor="let opt of msg.rich.options"
                         class="bg-white px-3 py-1 m-1 rounded-full hover:bg-blue-600 transition"
@@ -69,7 +72,7 @@
             </div>
         </div>
 
-        <div class="p-4 fixed bottom-[5rem] right-0">
+        <div class="p-4 fixed bottom-[4rem] right-1">
             <button class="btn-azul-chatbot">
                 <span class="material-symbols-rounded w-7 h-7">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
