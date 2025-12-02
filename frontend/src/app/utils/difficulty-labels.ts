@@ -11,9 +11,9 @@ import { Difficulty } from '../types';
  * }
  */
 export const DifficultyLabels: Record<Difficulty, string> = { 
-  [Difficulty.LOW]: 'Baja',
-  [Difficulty.MEDIUM]: 'Media',
-  [Difficulty.HIGH]: 'Alta',
+  [Difficulty.LOW]: 'Fácil',
+  [Difficulty.MEDIUM]: 'Avanzado',
+  [Difficulty.HIGH]: 'Difícil',
 };
 
 /**

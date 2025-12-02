@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './modal.html'
+  ,styleUrls: ['./modal.css']
 })
 export class Modal{
   @Input() open = false;
@@ -17,5 +18,12 @@ export class Modal{
     this.open = false;
     this.openChange.emit(false);
   }
+  ngOnChanges() {
+  if (this.open) {
+    document.body.style.overflow = 'hidden'; // bloquear scroll
+  } else {
+    document.body.style.overflow = ''; // restaurar scroll
+  }
+}
   
 }

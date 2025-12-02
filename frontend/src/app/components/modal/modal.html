@@ -1,31 +1,31 @@
-<!-- Fondo negro semitransparente -->
-<div 
-  *ngIf="open"
-  class="fixed inset-0 bg-black/50 z-40"
-  (click)="close()"
-></div>
+<!-- BACKDROP -->
+<div *ngIf="open"
+     class="fixed inset-0 bg-black/40 backdrop-blur-sm z-45">
+</div>
 
-<!-- Modal -->
-<div 
-  *ngIf="open"
-  class="fixed bottom-0 left-0 w-full z-50
-         sm:w-[32rem] sm:left-1/2 sm:-translate-x-1/2 sm:top-1/2 sm:-translate-y-1/2
-         h-[90vh] sm:h-[500px] sm:max-h-[90vh]
-         transition-all duration-300"
->
-  <div class="bg-beige rounded-t-3xl sm:rounded-xl shadow-2xl flex flex-col h-full w-full p-6 overflow-hidden">
+<!-- MODAL WRAPPER -->
+<div *ngIf="open"
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-0">
 
-    <!-- HEADER -->
-    <header class="w-full relative justify-end mb-4">
-      <button (click)="close()" class="fixed right-4 top-2 text-marron-oscuro font-bold hover:transition-transform hover:scale-110">
-        ✕
-      </button>
-    </header>
+  <!-- MODAL CONTENT -->
+  <div
+    class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl 
+          w-full sm:max-w-[60%] sm:w-[60%]
+           max-h-[90vh] overflow-y-auto relative
+           
+           animate-slide-up  
+           sm:!animate-none     
+  ">
 
-    <!-- CONTENIDO -->
-    <div class="flex-1 overflow-y-auto">
-      <ng-content></ng-content>
-    </div>
+    <!-- CLOSE BUTTON -->
+    <button (click)="close()" class="absolute top-2 right-2 w-8 btn-hover-marron">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="24px" width="24px" fill="currentColor">
+        <path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
+      </svg>
+    </button>
+
+    <ng-content></ng-content>
 
   </div>
+
 </div>
