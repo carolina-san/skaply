@@ -11,11 +11,24 @@ export class AuthController {
   }
 
   login = async (req: Request, res: Response): Promise<void> => {
+    const { email, password } = req.body;
     try {
-      // Implementation here
-      res.status(200).json({ message: 'Login endpoint' });
+      const comparePass = await this.authService.checkPassword(email);
+      if (comparePass.rows.length === 0) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      const validPass = await bcrypt.compare(password, comparePass.rows[0].password);
+      if (!validPass) {
+        res.status(401).json({ error: 'Invalid password' });
+        return;
+      }      
+      
+      // Generate JWT token or perform other login actions here
+      const token = jwt.sign({ emailuser: email, role: 'provider' }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
+      res.status(200).json({ message: 'Login successful', data: { email, token } });
     } catch (error) {
-      res.status(500).json({ error: 'Login failed' });
+     throw new Error('Error during login process');
     }
   };
 

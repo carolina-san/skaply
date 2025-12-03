@@ -1,5 +1,5 @@
 import pool from '@config/database';
-import { RegisterUser } from '@/types';
+import { LoginRequest, RegisterUser } from '@/types';
 export class AuthService {
 
   async checkUser(email:string){
@@ -14,9 +14,22 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
-    // Authentication logic here
-    throw new Error('Method not implemented');
+  async checkPassword(email:string){
+    try{  
+      const result = await pool.query(`SELECT password FROM "User"
+        WHERE email = $1`,[email]);
+      return result;
+    }catch(error){
+      throw new Error('Error checking user password');
+    }
+  }
+
+  async login(reqUser: LoginRequest) {
+    try{
+      const passwordData = await this.checkPassword(reqUser.email);
+    }catch(error){
+      throw new Error('Error during login process');
+    }
   }
 
   async register(reqUser: RegisterUser) {
