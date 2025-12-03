@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListene
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { ApiService } from '../../services/api.service';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -28,7 +29,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
-    constructor(private route: ActivatedRoute) { }
+    constructor(private route: ActivatedRoute, private api: ApiService) { }
     ngAfterViewChecked(): void {
         this.scrollToBottom();
     }
@@ -95,53 +96,48 @@ export class Chatbot implements OnInit, AfterViewChecked {
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
-        fetch('http://localhost:3000/api/chatbot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: messageToSend })
-        })
-            .then(res => res.json())
-            .then(data => {
-                const messages = data.fulfillmentMessages || [];
-                let handled = false;
+        this.api.enviarMensajeChatbot(messageToSend)
+        .subscribe(data => {
+            const messages = data.fulfillmentMessages || [];
+            let handled = false;
 
-                for (let m of messages) {
-                    if (m.message === "text" && m.text?.text?.[0]) {
-                        this.messages.push({ sender: 'bot', text: m.text.text[0] });
-                        handled = true;
-                        break;
-                    }
+            for (let m of messages) {
+                if (m.message === "text" && m.text?.text?.[0]) {
+                    this.messages.push({ sender: 'bot', text: m.text.text[0] });
+                    handled = true;
+                    break;
                 }
+            }
 
-                for (let m of messages) {
-                    if (m.card) {
-                        this.messages.push({
-                            sender: 'bot',
-                            rich: {
-                                type: 'card',
-                                title: m.card.title,
-                                subtitle: m.card.subtitle || '',
-                                imageUri: m.card.imageUri || '',
-                                buttons: m.card.buttons || []
-                            }
-                        });
-                        handled = true;
-                    }
+            for (let m of messages) {
+                if (m.card) {
+                    this.messages.push({
+                        sender: 'bot',
+                        rich: {
+                            type: 'card',
+                            title: m.card.title,
+                            subtitle: m.card.subtitle || '',
+                            imageUri: m.card.imageUri || '',
+                            buttons: m.card.buttons || []
+                        }
+                    });
+                    handled = true;
                 }
+            }
 
-                for (let m of messages) {
-                    const rich = m.payload?.fields?.richContent?.listValue?.values;
-                    if (rich) {
-                        this.renderRichContent(rich);
-                        handled = true;
-                        break;
-                    }
+            for (let m of messages) {
+                const rich = m.payload?.fields?.richContent?.listValue?.values;
+                if (rich) {
+                    this.renderRichContent(rich);
+                    handled = true;
+                    break;
                 }
+            }
 
-                if (!handled) {
-                    this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
-                }
-            });
+            if (!handled) {
+                this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
+            }
+        });
     }
 
     renderRichContent(groups: any[]) {

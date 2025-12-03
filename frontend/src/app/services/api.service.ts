@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilterOptions } from '../types'; //filter 
+import { FilterOptions } from '../types';  
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +34,6 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/colors`);
   }
 
-  //PROVEEDORES
   getProviders(): Observable<any> {
     return this.http.get(`${this.apiUrl}/providers`);
   }
@@ -50,5 +49,10 @@ export class ApiService {
 
   deleteProvider(providerId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/providers/${providerId}`);
+  }
+  
+  //CHATBOT
+  enviarMensajeChatbot(text: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/chatbot`, { text });
   }
 }

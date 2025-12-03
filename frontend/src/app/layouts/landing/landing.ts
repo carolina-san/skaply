@@ -19,7 +19,7 @@ export class Landing implements AfterViewInit{
   constructor(private router: Router) { }
   
   acceder() {
-     this.router.navigate(['/catalogo']);
+     //this.router.navigate(['/catalogo']);
   }
 
   goToMotor() {
