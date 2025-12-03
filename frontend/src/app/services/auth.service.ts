@@ -64,8 +64,8 @@ export class AuthService {
       return {
         email: payload.emailuser,
         role: payload.role,
-        company_name: payload.company_name,
-        loginMethod: payload.loginMethod || 'traditional'
+        company_name: payload.company_name || '',
+        loginMethod: 'traditional' // No distinguimos el método en el token
       };
     } catch (error) {
       console.error('Error decoding token:', error);
@@ -96,10 +96,17 @@ export class AuthService {
     }
 
     if (token) {
+      // Guardar token en localStorage (igual que login tradicional)
       this.setToken(token);
+      
+      // Verificar que se guardó correctamente
+      console.log('Token saved to localStorage:', this.getToken());
+      console.log('User data:', this.getCurrentUser());
+      
       // Limpiar la URL de parámetros
       window.history.replaceState({}, document.title, window.location.pathname);
-      // Redirigir al dashboard o página principal
+      
+      // Redirigir al catálogo (igual que login tradicional)
       window.location.href = '/catalogo';
     }
   }

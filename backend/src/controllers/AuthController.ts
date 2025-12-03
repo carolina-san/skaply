@@ -120,12 +120,10 @@ export class AuthController {
           return;
         }
 
-        // Generate JWT token
+        // Generate JWT token (same format as traditional login)
         const token = jwt.sign({ 
           emailuser: user.email, 
-          role: 'provider',
-          company_name: user.company_name,
-          loginMethod: 'google'
+          role: 'provider'
         }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
 
         // Redirect to frontend with token

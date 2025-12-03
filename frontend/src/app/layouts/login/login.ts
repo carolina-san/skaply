@@ -46,7 +46,14 @@ export class Login implements OnInit {
 
     this.apiService.login(this.email, this.password).subscribe({
       next: (response) => {
+        // Guardar token en localStorage (igual que Google OAuth)
         this.authService.setToken(response.data.token);
+        
+        // Verificar que se guardó correctamente
+        console.log('Token saved to localStorage:', this.authService.getToken());
+        console.log('User data:', this.authService.getCurrentUser());
+        
+        // Redirigir al catálogo
         this.router.navigate(['/catalogo']);
       },
       error: (error) => {
