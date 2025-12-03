@@ -117,9 +117,7 @@ export class Chatbot implements OnInit {
                         handled = true;
                         this.scrollToBottom();
                     }
-                }
 
-                for (let m of messages) {
                     if (m.card) {
                         this.messages.push({
                             sender: 'bot',
@@ -134,12 +132,23 @@ export class Chatbot implements OnInit {
                         handled = true;
                         this.scrollToBottom();
                     }
-                }
-
-                for (let m of messages) {
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
                         this.renderRichContent(rich);
+                        handled = true;
+                        this.scrollToBottom();
+                    }
+                    const payload = m.payload;
+                    if (payload?.fields?.redirect) {
+                        console.log("Redirect detectado:", payload.fields.redirect);
+
+                        setTimeout(() => {
+                            if (payload.fields.redirect.stringValue === "registro") {
+                                window.location.href = "/registro";
+                                
+                                
+                            }
+                        }, 2000); 
                         handled = true;
                         this.scrollToBottom();
                     }
