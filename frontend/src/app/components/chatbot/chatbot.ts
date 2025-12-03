@@ -94,10 +94,12 @@ export class Chatbot implements OnInit, AfterViewChecked {
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
+        // Llamada al backend
+;
         fetch('http://localhost:3000/api/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: messageToSend })
+            body: JSON.stringify({text:messageToSend})
         })
             .then(res => res.json())
             .then(data => {
@@ -141,6 +143,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
                 }
             });
+
+
+
+            
     }
 
     renderRichContent(groups: any[]) {
