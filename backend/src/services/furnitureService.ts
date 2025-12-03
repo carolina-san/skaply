@@ -234,7 +234,9 @@ export class FurnitureService {
               'reference_number', p.reference_number,
               'file_uri', p.file_uri,
               'color_id', p.color_id,
-              'quantity', sp.quantity
+              'quantity', sp.quantity,
+			        'axis', fp.exploded_axis,
+              'distance', fp.exploded_distance
             )
           ) FILTER (WHERE p.id IS NOT NULL) AS parts,
           json_agg(
@@ -246,6 +248,7 @@ export class FurnitureService {
         FROM Step s
         LEFT JOIN Step_Part sp ON sp.stepId = s.id
         LEFT JOIN Part p ON p.id = sp.part_id
+		    LEFT JOIN Furniture_Part fp ON fp.part_id = p.id AND fp.furniture_id = s.furniture_id
         LEFT JOIN Step_Tool st ON st.stepId = s.id
         LEFT JOIN Tool t ON t.id = st.tool_id
         WHERE s.furniture_id = $1
