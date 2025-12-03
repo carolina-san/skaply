@@ -27,6 +27,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterUser {
+  email: string;
+  password: string;
+  company_name: string;
+  cif: string;
+  tax_address: string;
+  telephone: string;
+}
+
 export interface LoginResponse {
   user: Omit<User, 'password'>;
   token: string;

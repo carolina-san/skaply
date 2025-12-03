@@ -18,6 +18,7 @@ export const routes: Routes = [
     {path: 'motor', component: Motor},
     {path: 'registro', component: Registro},
     {path: 'login', component: Login},
+    {path: 'login/success', component: Login}, // Maneja el callback de Google OAuth
     {path: 'profile', component: Profile},
     {path: 'cookies', component: Cookies},
     {path: 'marco-legal', component: MarcoLegal}

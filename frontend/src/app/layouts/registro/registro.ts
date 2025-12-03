@@ -19,8 +19,9 @@ export class Registro {
       cif: ['', Validators.required],
       tax_address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      telephone: ['', Validators.required]
-    });
+      telephone: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+    })
   }
 
   submit() {
@@ -35,6 +36,7 @@ export class Registro {
       tax_address: this.form.value.tax_address!,
       email: this.form.value.email!,
       telephone: this.form.value.telephone!,
+      password: this.form.value.password!,
     };
 
     this.api.registerProvider(payload).subscribe({

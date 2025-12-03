@@ -1,6 +1,10 @@
 -- CAMBIOS:
 --      - Creado tabla "Color"
 --      - Relacionado tabla "Color" con "Furniture" y "Part"
+--      - Agregado soporte para Google OAuth en tabla "User":
+--          * Campo "google_id" (VARCHAR(255) UNIQUE) 
+--          * Campo "password" ahora es nullable
+--          * Índice optimizado para consultas por google_id
 
 
 
@@ -31,7 +35,9 @@ CREATE TABLE "User" (
     image_url TEXT,
     active BOOLEAN DEFAULT TRUE,
     new_user BOOLEAN DEFAULT FALSE,
-    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password VARCHAR(200), -- Nullable for Google OAuth users
+    google_id VARCHAR(255) UNIQUE -- Google OAuth ID
 );
 
 -- ============================
@@ -171,3 +177,9 @@ CREATE TABLE KPIs (
     n_reviews INTEGER DEFAULT 0,
     provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL
 );
+
+-- ============================
+-- INDEXES for Google OAuth
+-- ============================
+-- Index for Google ID lookups (only where google_id is not null for performance)
+CREATE INDEX idx_user_google_id ON "User"(google_id) WHERE google_id IS NOT NULL;

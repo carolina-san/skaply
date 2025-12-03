@@ -12,27 +12,16 @@ export class IssueService{
         }
     }
 
-    async postChatbotIssues(issue: Issue){
-        try{
-            const result = await pool.query(`INSERT INTO public.issue(description,date,user_email,furniture_id) 
-            VALUES ($1,$2,$3,$4)`,[issue.description,issue.date,issue.user_email,issue.furniture_id]);
-            return result;
-        }catch(error){
-            throw new Error('Error posting an issue from the chatbot');
-        }
-    }
-
-    async postIssue(furnitureId: number, issueData: Omit<Issue, 'furniture_id'>): Promise<Issue> {
+    async postIssue(issue: Issue): Promise<Issue> {
         try {
             const result = await pool.query(
                 `INSERT INTO issue (description, date, user_email, furniture_id) 
                  VALUES ($1, $2, $3, $4) 
                  RETURNING *`,
-                [issueData.description, new Date(), issueData.user_email, furnitureId]
+                [issue.description, issue.date || new Date(), issue.user_email, issue.furniture_id]
             );
             return result.rows[0];
-        }
-        catch (error) {
+        } catch (error) {
             throw new Error('Error posting an issue');
         }
     }
