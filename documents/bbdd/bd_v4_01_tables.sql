@@ -31,7 +31,8 @@ CREATE TABLE "User" (
     image_url TEXT,
     active BOOLEAN DEFAULT TRUE,
     new_user BOOLEAN DEFAULT FALSE,
-    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password varchar(200) NOT NULL
 );
 
 -- ============================
