@@ -7,6 +7,8 @@ import { Motor } from './layouts/motor/motor';
 import { Registro } from './layouts/registro/registro';
 import { Login } from './layouts/login/login';
 import { Profile } from './layouts/profile/profile';
+import { Cookies } from './layouts/cookies/cookies';
+import { MarcoLegal } from './layouts/marco-legal/marco-legal';
 
 export const routes: Routes = [
     {path: '', component: Landing},
@@ -16,5 +18,7 @@ export const routes: Routes = [
     {path: 'motor', component: Motor},
     {path: 'registro', component: Registro},
     {path: 'login', component: Login},
-    {path: 'profile', component: Profile}
+    {path: 'profile', component: Profile},
+    {path: 'cookies', component: Cookies},
+    {path: 'marco-legal', component: MarcoLegal}
 ];

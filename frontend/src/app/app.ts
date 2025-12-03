@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterModule } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { AuthLayout } from './layouts/auth-layout/auth-layout';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { Header } from './components/header/header';
@@ -12,7 +12,7 @@ import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Home, Header, Menu, ResScanner, Viewer3D, RouterModule],
+  imports: [RouterOutlet, Home, Header, Menu, ResScanner, Viewer3D],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

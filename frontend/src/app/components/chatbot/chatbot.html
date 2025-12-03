@@ -72,8 +72,9 @@
             </div>
         </div>
 
-        <div class="p-4 fixed bottom-[4rem] right-1">
-            <button class="btn-azul-chatbot" >
+        <!-- Botón de incidencia movido dentro del chat visible y con posición relativa -->
+        <div class="relative p-4">
+            <button class="btn-azul-chatbot absolute -top-16 right-0" (click)="abrirIncidencia()">
                 <span class="material-symbols-rounded w-7 h-7">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path
@@ -81,6 +82,7 @@
                     </svg></span>
             </button>
         </div>
+
         <div class="flex items-center bg-white rounded-full justify-between py-1 pl-3 pr-1">
             <input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
                 (keydown.enter)="sendMessage()" class="input-chat" />

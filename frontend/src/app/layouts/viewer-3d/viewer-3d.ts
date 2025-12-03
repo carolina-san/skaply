@@ -18,26 +18,20 @@ export class Viewer3D implements OnInit {
 
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
+
+
   isIncidenciaModalOpen = false;
   constructor(private route: ActivatedRoute) {} 
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    console.log('🧩 ID recibido del mueble:', id);
 
-    // Aquí puedes decidir qué modelo cargar según el ID
-    // Ejemplo:
-    // this.modelPath = `/assets/models/${id}.glb`;
-    // this.furnitureViewer?.loadModel(this.modelPath);
   }
 
   abrirModalIncidencia() {
     this.isIncidenciaModalOpen = true;
-    this.resetIncidenciaForm();
   }
 
   resetIncidenciaForm() {
-    // Lógica para enviar la incidencia
     this.isIncidenciaModalOpen = false;
   }
 

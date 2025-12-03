@@ -31,6 +31,7 @@ export class ChatbotController {
 
         try {
             const userMessage = req.body.text;
+            const ref = req.body.ref;
 
             if (!userMessage) {
                 res.status(400).json({ fulfillmentText: 'No recibí ningún mensaje.' });
@@ -43,13 +44,26 @@ export class ChatbotController {
                 sessionId
             );
 
-            const request = {
+            const request: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentRequest = {
                 session: sessionPath,
                 queryInput: {
                     text: {
-                        text: userMessage,
+                        text: userMessage +' '+ ref,
                         languageCode: 'es'
                     }
+                },
+                queryParams: {
+                    contexts: [{
+                        name: `${sessionPath}/contexts/prueba-context`,
+                        lifespanCount: 3,
+                        parameters: {
+                            fields: {
+                                furniture_ref: {
+                                    stringValue: ref || ''
+                                }
+                            }
+                        }
+                    }]
                 }
             };
 

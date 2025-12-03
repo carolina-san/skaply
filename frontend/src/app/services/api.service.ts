@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilterOptions } from '../types';  
+import { FilterOptions, Issue } from '../types'; //filter 
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +49,10 @@ export class ApiService {
 
   deleteProvider(providerId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/providers/${providerId}`);
+  }
+
+  postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {
+    return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
   
   //CHATBOT
