@@ -4,11 +4,13 @@ export class AuthService {
 
   async checkUser(email:string){
     try{  
-      const result = await pool.query(`Select email from "User" 
-        where email = $1'  `,[email]);
-      return result;
+      const result = await pool.query(`SELECT email FROM "User" 
+        WHERE email = $1`,[email]);
+      // Return true if user does NOT exist (can register)
+      return result.rows.length === 0;
     }catch(error){
-      throw new Error('User does not exists');
+      console.error('Error checking user:', error);
+      throw new Error('Error checking if user exists');
     }
   }
 
@@ -19,16 +21,17 @@ export class AuthService {
 
   async register(reqUser: RegisterUser) {
     try{
-      const date = Date.now().toString()
+      const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email,cif, company_name, telephone, tax_address, role, fecha_alta, password) 
-        VALUES ($1,$2,$3,$4,$5,'provider',$6,$7)`,[reqUser.email,reqUser.cif,reqUser.company_name,
-          reqUser.telephone,reqUser.tax_address,date,reqUser.password]);
-        return result;
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password) 
+        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7)`,
+        [reqUser.email, reqUser.cif, reqUser.company_name,
+         reqUser.telephone, reqUser.tax_address, date, reqUser.password]);
+      return result;
     }catch(error){
-      throw new Error('Method not implemented');
+      console.error('Error registering user:', error);
+      throw new Error('Error creating user in database');
     }
-
   }
 
   async logout(token: string) {
