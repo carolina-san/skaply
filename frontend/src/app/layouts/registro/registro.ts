@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Footer } from '../../components/footer/footer';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-registro',
-  imports: [Footer, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './registro.html',
   styleUrl: './registro.css'
 })
