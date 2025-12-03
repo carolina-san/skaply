@@ -57,12 +57,11 @@ export class Chatbot implements OnInit {
         this.newMessage = '';
 
         // Llamada al backend
-        const requestBody = JSON.stringify({ text: messageToSend , ref:this.furnitureRef});
-        console.log('body chatbot send', requestBody);
+;
         fetch('http://localhost:3000/api/chatbot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: requestBody
+            body: JSON.stringify({text:messageToSend})
         })
             .then(res => res.json())
             .then(data => {

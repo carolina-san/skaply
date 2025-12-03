@@ -21,4 +21,13 @@ export class ToolService{
             throw new Error('No tools found for this furniture');
         }
     }
+
+    async getHealthTool(){
+        try{
+           const result =  await pool.query('select name from tool where id = 3') 
+           return result;
+        }catch(error){
+            throw new Error('Error fetching the master tool for health endpoint');
+        }
+    }
 }
