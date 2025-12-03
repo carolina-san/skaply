@@ -54,9 +54,20 @@ export class ApiService {
   postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
-  
-  //CHATBOT
+
   enviarMensajeChatbot(text: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/chatbot`, { text });
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot`, { text, sessionId });
+  }
+
+  iniciarMontaje(furniture_ref: string): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    console.log("Mueble recibido", furniture_ref);
+    return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
+  }
+
+  resetMontaje(): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });
   }
 }

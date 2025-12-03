@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Menu } from '../menu/menu';
 import { Location, CommonModule } from '@angular/common';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-header',
@@ -16,7 +17,7 @@ export class Header {
   currentRoute: string = '';
   scrolled = false;
   
-  constructor(private router: Router, private location: Location) {
+  constructor(private router: Router, private location: Location, private apiService: ApiService) {
 
      this.router.events.subscribe(() => {
       this.currentRoute = this.router.url;
@@ -36,11 +37,16 @@ export class Header {
   }
 
   finMontaje(){
-    fetch("http://localhost:3000/api/chatbot/reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId: '123456' })
-    });
+    if(this.currentRoute.includes('viewer-3d')){
+      this.apiService.resetMontaje().subscribe({
+        next: (res) => {
+          console.log("Montaje finalizado:", res);
+        },
+        error: (err) => {
+          console.error("Error finalizando montaje:", err);
+        }
+      });
+    }
   }
   scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -31,7 +31,7 @@
             </button>
         </header>
 
-        <div #messagesContainer class="flex-1 overflow-y-auto p-4 bg-beige scrollbar-hide">
+        <div #messagesContainer class="flex-1 overflow-y-auto p-4 bg-beige scrollbar-hide ">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
@@ -73,7 +73,7 @@
         </div>
 
         <!-- Botón de incidencia movido dentro del chat visible y con posición relativa -->
-        <div class="relative p-4">
+        <div class="relative py-2">
             <button class="btn-azul-chatbot absolute -top-16 right-0" (click)="abrirIncidencia()">
                 <span class="material-symbols-rounded w-7 h-7">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">

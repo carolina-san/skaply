@@ -150,12 +150,14 @@
 
       <!-- IMAGEN -->
       <div class="w-full  sm:max-w-[40%] flex">
-        <img src="assets/imgs/ikea.jpg" [alt]="selectedFurniture?.name"
-          class="w-full object-cover rounded-tl-xl lg:rounded-bl-xl">
+        <img src="assets/imgs/ikea.jpg" loading="lazy"
+          class="w-full h-full object-cover max-h-[85vh] sm:max-h-none sm:h-auto aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
+
       </div>
 
       <!-- TEXTO -->
-      <div class="w-full sm:w-[55%] flex flex-col p-5 justify-between">
+      <div class="flex flex-col p-5 gap-5 w-full overflow-y-auto max-h-[85vh]">
+
 
 
         <div class="flex items-center gap-4 mb-2">
@@ -170,7 +172,7 @@
             REF: {{ selectedFurniture?.reference_number }}
           </span>
         </div>
-        <div>
+        <div class="mt-auto">
           <h2 class="text-4xl font-extrabold text-marron-oscuro ">
             {{ selectedFurniture?.name }}
           </h2>
@@ -188,7 +190,8 @@
 
 
         <!-- BOTÓN -->
-        <button class="btn-azul flex items-center justify-between border border-marron-oscuro" (click)="goToViewer3D()">
+        <button class="btn-azul mt-auto flex items-center justify-between border border-marron-oscuro"
+          (click)="goToViewer3D()">
           Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
             class="w-7 h-7">
             <path

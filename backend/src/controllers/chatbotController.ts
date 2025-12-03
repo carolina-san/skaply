@@ -38,7 +38,7 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = '123456';
+            const sessionId = req.body.sessionId || "default";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
@@ -48,7 +48,7 @@ export class ChatbotController {
                 session: sessionPath,
                 queryInput: {
                     text: {
-                        text: userMessage +' '+ ref,
+                        text: userMessage,
                         languageCode: 'es'
                     }
                 },
@@ -121,7 +121,7 @@ export class ChatbotController {
                 return;
             }
 
-            const sessionId = "123456";
+            const sessionId = req.body.sessionId || "default";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId
@@ -155,9 +155,9 @@ export class ChatbotController {
 
     resetMontaje = async (req: Request, res: Response): Promise<void> => {
         try {
-            
 
-            const sessionId = '123456';
+
+            const sessionId = req.body.sessionId || "default";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
                 this.projectId,
                 sessionId

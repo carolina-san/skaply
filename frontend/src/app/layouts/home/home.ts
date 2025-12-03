@@ -80,14 +80,16 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-
-    fetch("http://localhost:3000/api/chatbot/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        furniture_ref: this.selectedFurniture.reference_number,
-      })
+     this.apiService.iniciarMontaje(this.selectedFurniture.reference_number)
+    .subscribe({
+      next: (res) => {
+        console.log("Montaje iniciado:", res);
+      },
+      error: (err) => {
+        console.error("Error iniciando montaje:", err);
+      }
     });
+   
 
     this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
     this.closeFurnitureModal();

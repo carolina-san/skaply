@@ -18,20 +18,19 @@ interface ChatMessage {
     styleUrls: ['./chatbot.css']
 })
 
-export class Chatbot implements OnInit, AfterViewChecked {
+export class Chatbot implements OnInit {
     chatVisible: boolean = false;
     isDesktop: boolean = false;
     inMontajeMode: boolean = false;
     messages: ChatMessage[] = [];
     newMessage: string = '';
     isMobile: boolean = false;
+    sessionId: string = '';
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
     constructor(private route: ActivatedRoute, private api: ApiService) { }
-    ngAfterViewChecked(): void {
-        this.scrollToBottom();
-    }
+
 
     abrirIncidencia() {
         this.abrirModalIncidencia.emit();
@@ -39,9 +38,12 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
     scrollToBottom(): void {
         if (this.messagesContainer) {
-            this.messagesContainer.nativeElement.scrollTo({
-                top: this.messagesContainer.nativeElement.scrollHeight,
-                behavior: 'smooth'  // <-- scroll suave
+            setTimeout(() => {
+                const container = this.messagesContainer.nativeElement;
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
             });
         }
     }
@@ -49,7 +51,16 @@ export class Chatbot implements OnInit, AfterViewChecked {
     ngOnInit() {
         this.checkScreenSize();
         const furnitureRef = this.route.snapshot.paramMap.get('ref');
+        let saved = sessionStorage.getItem('chatbot_session');
 
+        if (!saved) {
+            saved = Math.random().toString(36).substring(2) + Date.now();
+            sessionStorage.setItem('chatbot_session', saved);
+        }
+
+        this.sessionId = saved;
+
+        console.log("SESSION ID:", this.sessionId);
         if (furnitureRef) {
             this.inMontajeMode = true;
             this.messages.push({
@@ -91,52 +102,53 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (!this.newMessage.trim()) return;
 
         this.messages.push({ sender: 'user', text: this.newMessage });
-
+        this.scrollToBottom();
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
         this.api.enviarMensajeChatbot(messageToSend)
-        .subscribe(data => {
-            const messages = data.fulfillmentMessages || [];
-            let handled = false;
+            .subscribe(data => {
+                const messages = data.fulfillmentMessages || [];
+                let handled = false;
 
-            for (let m of messages) {
-                if (m.message === "text" && m.text?.text?.[0]) {
-                    this.messages.push({ sender: 'bot', text: m.text.text[0] });
-                    handled = true;
-                    break;
+                for (let m of messages) {
+                    if (m.message === "text" && m.text?.text?.[0]) {
+                        this.messages.push({ sender: 'bot', text: m.text.text[0] });
+                        handled = true;
+                        this.scrollToBottom();
+                    }
                 }
-            }
 
-            for (let m of messages) {
-                if (m.card) {
-                    this.messages.push({
-                        sender: 'bot',
-                        rich: {
-                            type: 'card',
-                            title: m.card.title,
-                            subtitle: m.card.subtitle || '',
-                            imageUri: m.card.imageUri || '',
-                            buttons: m.card.buttons || []
-                        }
-                    });
-                    handled = true;
+                for (let m of messages) {
+                    if (m.card) {
+                        this.messages.push({
+                            sender: 'bot',
+                            rich: {
+                                type: 'card',
+                                title: m.card.title,
+                                subtitle: m.card.subtitle || '',
+                                imageUri: m.card.imageUri || '',
+                                buttons: m.card.buttons || []
+                            }
+                        });
+                        handled = true;
+                        this.scrollToBottom();
+                    }
                 }
-            }
 
-            for (let m of messages) {
-                const rich = m.payload?.fields?.richContent?.listValue?.values;
-                if (rich) {
-                    this.renderRichContent(rich);
-                    handled = true;
-                    break;
+                for (let m of messages) {
+                    const rich = m.payload?.fields?.richContent?.listValue?.values;
+                    if (rich) {
+                        this.renderRichContent(rich);
+                        handled = true;
+                        this.scrollToBottom();
+                    }
                 }
-            }
 
-            if (!handled) {
-                this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
-            }
-        });
+                if (!handled) {
+                    this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
+                }
+            });
     }
 
     renderRichContent(groups: any[]) {
