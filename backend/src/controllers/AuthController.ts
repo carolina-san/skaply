@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { AuthService } from '@/services/authService';
+import { AuthService } from '@/services/AuthService';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import passport from 'passport';
 import { RegisterUser } from '@/types';
 export class AuthController {
   private authService: AuthService;
@@ -99,4 +100,42 @@ export class AuthController {
       res.status(500).json({ error: 'Token refresh failed' });
     }
   };
+
+  // Google OAuth methods
+  googleAuth = passport.authenticate('google', {
+    scope: ['profile', 'email']
+  });
+
+  googleCallback = [
+    passport.authenticate('google', { 
+      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=google_auth_failed`,
+      session: false 
+    }),
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        const user = req.user as any;
+        
+        if (!user) {
+          res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=no_user_data`);
+          return;
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ 
+          emailuser: user.email, 
+          role: 'provider',
+          company_name: user.company_name,
+          loginMethod: 'google'
+        }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
+
+        // Redirect to frontend with token
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+        res.redirect(`${frontendUrl}/login/success?token=${token}&email=${encodeURIComponent(user.email)}`);
+        
+      } catch (error) {
+        console.error('Google callback error:', error);
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=callback_failed`);
+      }
+    }
+  ];
 }

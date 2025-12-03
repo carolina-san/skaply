@@ -10,6 +10,7 @@ import apiRoutes from '@/routes';
 import chatbotRoutes from './routes/chatbot';
 import { connectDB } from '@/config/database';
 import corsMiddleware from './config/cors';
+import './config/passport'; // Initialize passport configuration
 
 
 dotenv.config();

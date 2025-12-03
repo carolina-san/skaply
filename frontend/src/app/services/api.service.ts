@@ -70,4 +70,18 @@ export class ApiService {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });
   }
+
+  // Métodos de autenticación
+  login(email: string, password: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/login`, { email, password });
+  }
+
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/register`, userData);
+  }
+
+  // Google OAuth - simplemente redirige al backend
+  loginWithGoogle(): void {
+    window.location.href = `${this.apiUrl}/auth/google`;
+  }
 }
