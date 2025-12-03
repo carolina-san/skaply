@@ -41,6 +41,7 @@ export class Home implements OnInit {
   resetFilterToggle: boolean = false;
   isFurnitureModalOpen = false;
   selectedFurniture: Furniture | null = null;
+  isIncidenciaModalOpen = false;
 
   constructor(
     private apiService: ApiService,
@@ -54,6 +55,26 @@ export class Home implements OnInit {
     this.loadColors();
     window.addEventListener("scroll", () => {
       this.scrolled = window.scrollY > 70;
+    });
+  }
+
+  abrirModalIncidencia() {
+    this.isIncidenciaModalOpen = true;
+  }
+
+  resetIncidenciaForm() {
+    this.isIncidenciaModalOpen = false;
+  }
+
+  enviarIncidencia(description: string, date: string, user_email: string) {
+    if (!this.selectedFurniture) return;
+    this.apiService.postIssue(this.selectedFurniture.id, { description, date, user_email }).subscribe({
+      next: (response) => {
+        alert('Incidencia enviada con éxito.');
+      },
+      error: (error) => {
+        alert('Error al enviar la incidencia.');
+      }
     });
   }
 

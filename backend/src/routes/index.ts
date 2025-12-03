@@ -7,7 +7,6 @@ import categoryRoutes from './categories';
 import chatbotRoutes from './chatbot'
 import colorRoutes from './colors';
 
-
 const router = Router();
 
 // Health check

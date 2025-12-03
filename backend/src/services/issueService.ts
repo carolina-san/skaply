@@ -22,4 +22,18 @@ export class IssueService{
         }
     }
 
+    async postIssue(furnitureId: number, issueData: Omit<Issue, 'furniture_id'>): Promise<Issue> {
+        try {
+            const result = await pool.query(
+                `INSERT INTO issue (description, date, user_email, furniture_id) 
+                 VALUES ($1, $2, $3, $4) 
+                 RETURNING *`,
+                [issueData.description, new Date(), issueData.user_email, furnitureId]
+            );
+            return result.rows[0];
+        }
+        catch (error) {
+            throw new Error('Error posting an issue');
+        }
+    }
 }
