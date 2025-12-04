@@ -305,7 +305,7 @@ export class ChatbotController {
                 date: new Date().toISOString()
             };
 
-            await this.issueService.postChatbotIssues(issue);
+            await this.issueService.postIssue(issue);
 
             res.status(200).json({
                 fulfillmentText: "Tu incidencia ha sido creada con éxito y será atendida pronto. Gracias."

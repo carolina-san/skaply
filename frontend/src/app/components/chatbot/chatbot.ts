@@ -18,7 +18,7 @@ interface ChatMessage {
     styleUrls: ['./chatbot.css']
 })
 
-export class Chatbot implements OnInit {
+export class Chatbot implements OnInit, AfterViewChecked {
     chatVisible: boolean = false;
     isDesktop: boolean = false;
     inMontajeMode: boolean = false;
@@ -26,6 +26,7 @@ export class Chatbot implements OnInit {
     newMessage: string = '';
     isMobile: boolean = false;
     sessionId: string = '';
+    private shouldScroll = false;
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
@@ -78,7 +79,12 @@ export class Chatbot implements OnInit {
             this.chatVisible = true;
         }
     }
-
+    ngAfterViewChecked() {
+    if (this.shouldScroll) {
+        this.scrollToBottom();
+        this.shouldScroll = false;
+    }
+}
     toggleChat() {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
@@ -115,7 +121,6 @@ export class Chatbot implements OnInit {
                     if (m.message === "text" && m.text?.text?.[0]) {
                         this.messages.push({ sender: 'bot', text: m.text.text[0] });
                         handled = true;
-                        this.scrollToBottom();
                     }
 
                     if (m.card) {
@@ -130,13 +135,11 @@ export class Chatbot implements OnInit {
                             }
                         });
                         handled = true;
-                        this.scrollToBottom();
                     }
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
                         this.renderRichContent(rich);
                         handled = true;
-                        this.scrollToBottom();
                     }
                     const payload = m.payload;
                     if (payload?.fields?.redirect) {
@@ -150,13 +153,13 @@ export class Chatbot implements OnInit {
                             }
                         }, 2000); 
                         handled = true;
-                        this.scrollToBottom();
                     }
                 }
 
                 if (!handled) {
                     this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
                 }
+                 this.shouldScroll = true;
             });
     }
 

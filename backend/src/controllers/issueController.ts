@@ -41,7 +41,7 @@ export class IssueController{
             res.status(400).json({error: 'Missing required fields'});
             return;
         }
-        const newIssue = await this.issueService.postIssue(furnitureId, { description, user_email, date: new Date().toISOString() });
+        const newIssue = await this.issueService.postIssue( { description, user_email, date: new Date().toISOString(), furniture_id: furnitureId } );
         res.status(201).json({ data: newIssue });
     } catch (error) {
         res.status(500).json({ error: 'Failed to create issue' });
