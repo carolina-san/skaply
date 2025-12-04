@@ -1,18 +1,27 @@
 import { Component } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-registro',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './registro.html',
   styleUrl: './registro.css'
 })
 export class Registro {
-  form: any;
+  form: FormGroup;
+  loading: boolean = false;
+  error: string = '';
+  success: string = '';
+
   constructor(
     private fb: FormBuilder,
-    private api: ApiService
+    private api: ApiService,
+    private authService: AuthService,
+    private router: Router
   ) {
     this.form = this.fb.group({
       company_name: ['', Validators.required],
@@ -26,28 +35,50 @@ export class Registro {
 
   submit() {
     if (this.form.invalid) {
-      alert("Rellena todos los campos correctamente");
+      this.error = 'Por favor, completa todos los campos correctamente';
       return;
     }
 
+    this.loading = true;
+    this.error = '';
+    this.success = '';
+
     const payload = {
-      company_name: this.form.value.company_name!,
-      cif: this.form.value.cif!,
-      tax_address: this.form.value.tax_address!,
-      email: this.form.value.email!,
-      telephone: this.form.value.telephone!,
-      password: this.form.value.password!,
+      email: this.form.value.email,
+      password: this.form.value.password,
+      company_name: this.form.value.company_name,
+      cif: this.form.value.cif,
+      tax_address: this.form.value.tax_address,
+      telephone: this.form.value.telephone
     };
 
-    this.api.registerProvider(payload).subscribe({
-      next: (res) => {
-        console.log("Proveedor registrado:", res);
-        alert("Solicitud enviada correctamente");
+    this.api.register(payload).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.success = 'Registro exitoso. Redirigiendo al login...';
+        
+        // Redirigir al login después de 2 segundos
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
       },
-      error: (err) => {
-        console.error(err);
-        alert("Error al registrar proveedor");
+      error: (error) => {
+        this.loading = false;
+        console.error('Registration error:', error);
+        
+        // Manejar diferentes tipos de errores
+        if (error.status === 409) {
+          this.error = 'Ya existe una cuenta con este email';
+        } else if (error.status === 400) {
+          this.error = 'Datos inv\u00e1lidos. Verifica los campos';
+        } else {
+          this.error = 'Error al registrar la cuenta. Int\u00e9ntalo de nuevo';
+        }
       }
     });
+  }
+
+  onGoogleRegister(): void {
+    this.api.loginWithGoogle();
   }
 }

@@ -19,7 +19,18 @@ export class AuthController {
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      const validPass = await bcrypt.compare(password, comparePass.rows[0].password);
+      // Verificar si la contraseña ya está hasheada o es texto plano (para desarrollo)
+      let validPass = false;
+      
+      if (comparePass.rows[0].password.startsWith('$2b$')) {
+        // Contraseña hasheada con bcrypt
+        validPass = await bcrypt.compare(password, comparePass.rows[0].password);
+      } else {
+        // Contraseña en texto plano (solo para desarrollo)
+        validPass = password === comparePass.rows[0].password;
+        console.warn('⚠️  WARNING: Using plain text password comparison. Hash passwords in production!');
+      }
+      
       if (!validPass) {
         res.status(401).json({ error: 'Invalid password' });
         return;

@@ -46,19 +46,26 @@ export class Login implements OnInit {
 
     this.apiService.login(this.email, this.password).subscribe({
       next: (response) => {
-        // Guardar token en localStorage (igual que Google OAuth)
-        this.authService.setToken(response.data.token);
+        this.loading = false;
         
-        // Verificar que se guardó correctamente
-        console.log('Token saved to localStorage:', this.authService.getToken());
-        console.log('User data:', this.authService.getCurrentUser());
+        // Guardar token en localStorage
+        this.authService.setToken(response.data.token);
         
         // Redirigir al catálogo
         this.router.navigate(['/catalogo']);
       },
       error: (error) => {
-        this.error = 'Email o contraseña incorrectos';
         this.loading = false;
+        console.error('Login error:', error);
+        
+        // Manejar diferentes tipos de errores
+        if (error.status === 404) {
+          this.error = 'Usuario no encontrado';
+        } else if (error.status === 401) {
+          this.error = 'Contraseña incorrecta';
+        } else {
+          this.error = 'Error al iniciar sesión. Inténtalo de nuevo';
+        }
       }
     });
   }

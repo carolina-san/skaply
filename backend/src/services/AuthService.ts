@@ -36,10 +36,10 @@ export class AuthService {
     try{
       const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password) 
-        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7)`,
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, new_user) 
+        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8)`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, date, reqUser.password]);
+         reqUser.telephone, reqUser.tax_address, date, reqUser.password, true]);
       return result;
     }catch(error){
       console.error('Error registering user:', error);
@@ -71,10 +71,10 @@ export class AuthService {
     try {
       const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, google_id) 
-        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8) RETURNING id`,
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, google_id, new_user) 
+        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8, $9) RETURNING id`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId]);
+         reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId, true]);
       return { id: result.rows[0].id };
     } catch (error) {
       console.error('Error registering Google user:', error);

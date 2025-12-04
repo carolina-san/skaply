@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { Menu } from '../menu/menu';
 import { Location, CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -17,8 +18,12 @@ export class Header {
   currentRoute: string = '';
   scrolled = false;
   
-  constructor(private router: Router, private location: Location, private apiService: ApiService) {
-
+  constructor(
+    private router: Router, 
+    private location: Location, 
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {
      this.router.events.subscribe(() => {
       this.currentRoute = this.router.url;
     });
@@ -49,8 +54,17 @@ export class Header {
     }
   }
   scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
- 
- 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Verificar si hay sesión iniciada
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  // Cerrar sesión
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/catalogo']);
+  }
 }

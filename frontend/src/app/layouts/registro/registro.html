@@ -1,8 +1,27 @@
 <div class="flex flex-col items-center mb-10 px-6 mt-30 text-azul-claro w-full max-w-lg mx-auto" [formGroup]="form">
 
     <h1 class="text-4xl font-bold mb-6 text-center">
-        Solicita ser proveedor
+        Registrarse
     </h1>
+
+    <!-- Mensajes de estado -->
+    <div *ngIf="error" class="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded transition-all duration-300">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            {{ error }}
+        </div>
+    </div>
+
+    <div *ngIf="success" class="w-full mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded transition-all duration-300">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            {{ success }}
+        </div>
+    </div>
 
     <div class="w-full relative mb-3">
         <span class="material-symbols-rounded iconos-registro">
@@ -11,7 +30,7 @@
                     d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
             </svg>
         </span>
-        <input type="text" formControlName="company_name" placeholder="Nombre de empresa" class="btn-registro">
+        <input type="text" formControlName="company_name" placeholder="Nombre de empresa" class="btn-registro" [disabled]="loading">
     </div>
 
 
@@ -22,7 +41,7 @@
                     d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm0-80h640v-440H600q0 33-23.5 56.5T520-520h-80q-33 0-56.5-23.5T360-600H160v440Zm80-80h240v-18q0-17-9.5-31.5T444-312q-20-9-40.5-13.5T360-330q-23 0-43.5 4.5T276-312q-17 8-26.5 22.5T240-258v18Zm320-60h160v-60H560v60Zm-200-60q25 0 42.5-17.5T420-420q0-25-17.5-42.5T360-480q-25 0-42.5 17.5T300-420q0 25 17.5 42.5T360-360Zm200-60h160v-60H560v60ZM440-600h80v-200h-80v200Zm40 220Z" />
             </svg>
         </span>
-        <input type="text" formControlName="cif" placeholder="CIF / Nº Fiscal" class="btn-registro">
+        <input type="text" formControlName="cif" placeholder="CIF / Nº Fiscal" class="btn-registro" [disabled]="loading">
     </div>
 
     <div class="w-full relative mb-3">
@@ -32,7 +51,7 @@
                     d="M160-80q-33 0-56.5-23.5T80-160v-440q0-33 23.5-56.5T160-680h200v-120q0-33 23.5-56.5T440-880h80q33 0 56.5 23.5T600-800v120h200q33 0 56.5 23.5T880-600v440q0 33-23.5 56.5T800-80H160Zm0-80h640v-440H600q0 33-23.5 56.5T520-520h-80q-33 0-56.5-23.5T360-600H160v440Zm80-80h240v-18q0-17-9.5-31.5T444-312q-20-9-40.5-13.5T360-330q-23 0-43.5 4.5T276-312q-17 8-26.5 22.5T240-258v18Zm320-60h160v-60H560v60Zm-200-60q25 0 42.5-17.5T420-420q0-25-17.5-42.5T360-480q-25 0-42.5 17.5T300-420q0 25 17.5 42.5T360-360Zm200-60h160v-60H560v60ZM440-600h80v-200h-80v200Zm40 220Z" />
             </svg>
         </span>
-        <input type="text" formControlName="tax_address" placeholder="Dirección Fiscal" class="btn-registro">
+        <input type="text" formControlName="tax_address" placeholder="Dirección Fiscal" class="btn-registro" [disabled]="loading">
     </div>
 
     <div class="w-full relative mb-3">
@@ -42,14 +61,14 @@
                     d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z" />
             </svg>
         </span>
-        <input type="email" formControlName="email" placeholder="E-mail" class="btn-registro">
+        <input type="email" formControlName="email" placeholder="E-mail" class="btn-registro" [disabled]="loading">
     </div>
 
     <div class="w-full relative mb-3">
         <span class="material-symbols-rounded iconos-registro">
             phone
         </span>
-        <input type="tel" formControlName="telephone" placeholder="Teléfono" class="btn-registro">
+        <input type="tel" formControlName="telephone" placeholder="Teléfono" class="btn-registro" [disabled]="loading">
     </div>
 
     <div class="w-full relative mb-3">
@@ -59,7 +78,7 @@
                     d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z" />
             </svg>
         </span>
-        <input type="password" formControlName="password" placeholder="Contraseña" class="btn-registro">
+        <input type="password" formControlName="password" placeholder="Contraseña" class="btn-registro" [disabled]="loading">
     </div>
 
     <!-- <div class="w-full relative mb-5">
@@ -73,8 +92,15 @@
             class="btn-registro">
     </div> -->
 
-    <button (click)="submit()" class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full py-3 mb-6">
-        Enviar solicitud
+    <button 
+        (click)="submit()" 
+        class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full py-3 mb-6 transition-all duration-300 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        [disabled]="loading || form.invalid">
+        <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ loading ? 'Registrando...' : 'Registrarse' }}
     </button>
 
 
@@ -84,7 +110,10 @@
         <span class="flex-1 h-px bg-beige"></span>
     </div>
 
-    <button class="w-full border bg-beige rounded-full py-3 flex items-center justify-center gap-2">
+    <button 
+        (click)="onGoogleRegister()"
+        class="w-full border bg-beige rounded-full py-3 flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+        [disabled]="loading">
         <img src="assets/imgs/google.png" class="h-5 w-5">
         <span class="text-marron-oscuro">Continuar con Google</span>
     </button>
