@@ -5,8 +5,11 @@
 
   <!-- Imagen del mueble -->
   <div class="relative w-full aspect-[5/4] overflow-hidden ">
-    <img [src]="'assets/imgs/ikea.jpg'" [alt]="furniture.name"
-      class="w-full h-full object-cover">
+    <img [src]="furniture.image_url" 
+      alt="{{ furniture.name }}" 
+      class="w-full h-full object-cover object-center 
+      transition-transform duration-400 
+      group-hover:scale-105" />
   </div>
 
   <!-- Contenido -->

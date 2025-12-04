@@ -65,6 +65,7 @@ CREATE TABLE Furniture (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     file_uri TEXT NOT NULL,
+    image_url TEXT,
     reference_number VARCHAR(100),
     difficulty diff NOT NULL,
     category_id INTEGER REFERENCES Category(id) ON DELETE SET NULL,

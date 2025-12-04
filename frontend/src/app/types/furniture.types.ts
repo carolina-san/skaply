@@ -12,6 +12,7 @@ export interface Furniture {
     short_description: string;
     provider_id: number;
     provider_name?: string;
+    image_url?: string;
     // category_id: number;
     // category_name: number;
 }

@@ -8,5 +8,6 @@ export interface Furniture {
   category: number;
   provider: number;
   short_description: string;
+  image_url: string;
 }
 

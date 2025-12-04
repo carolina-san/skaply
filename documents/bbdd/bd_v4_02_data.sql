@@ -99,12 +99,12 @@ INSERT INTO Tool (name,image_url) VALUES
 -- ============================
 -- 7. Insertar muebles
 -- ============================
-INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_id,difficulty, color_id, short_description) VALUES
-('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3, 'Silla de madera cómoda y resistente'),
-('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4, 'Mesa de comedor grande y elegante'),
-('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5, 'Sofa gris de tres plazas con cojines suaves'),
-('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable'),
-('silla.stl', 'Silla azul','F008', 1, 4,'low', 3, 'Silla azul apilable y ligera');
+INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_id,difficulty, color_id, short_description, image_url) VALUES
+('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3, 'Silla de madera cómoda y resistente', 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4, 'Mesa de comedor grande y elegante','https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5, 'Sofa gris de tres plazas con cojines suaves','https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable','https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+('silla.stl', 'Silla azul','F008', 1, 4,'low', 3, 'Silla azul apilable y ligera', 'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
 --         |- pieza2 x1 -|
