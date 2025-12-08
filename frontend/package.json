@@ -28,6 +28,7 @@
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "@elevenlabs/elevenlabs-js": "^2.26.0",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/three": "^0.180.0",
     "html5-qrcode": "^2.3.8",

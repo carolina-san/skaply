@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { TextToSpeechService } from '../../services/text-to-speech.service';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -27,10 +28,20 @@ export class Chatbot implements OnInit, AfterViewChecked {
     isMobile: boolean = false;
     sessionId: string = '';
     private shouldScroll = false;
+    
+    // Propiedades para TTS
+    ttsEnabled: boolean = true;
+    ttsVolume: number = 0.8;
+    isPlaying: boolean = false;
+    
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
-    constructor(private route: ActivatedRoute, private api: ApiService) { }
+    constructor(
+        private route: ActivatedRoute, 
+        private api: ApiService,
+        private tts: TextToSpeechService
+    ) { }
 
 
     abrirIncidencia() {
@@ -62,17 +73,27 @@ export class Chatbot implements OnInit, AfterViewChecked {
         this.sessionId = saved;
 
         console.log("SESSION ID:", this.sessionId);
+        
+        // Cargar configuración de TTS
+        this.loadTTSSettings();
+        
         if (furnitureRef) {
             this.inMontajeMode = true;
+            const welcomeMessage = `¡Hola! Has iniciado el montaje del mueble ${furnitureRef}. Si necesitas ayuda, no dudes en preguntar.`;
             this.messages.push({
                 sender: 'bot',
-                text: `¡Hola! Has iniciado el montaje del mueble ${furnitureRef}. Si necesitas ayuda, no dudes en preguntar.`
+                text: welcomeMessage
             });
+            // Leer mensaje de bienvenida en voz alta
+            this.speakMessage(welcomeMessage);
         } else if (!this.inMontajeMode) {
+            const welcomeMessage = `¡Hola! Soy Allen, el asistente virtual de Skäply. ¿En qué puedo ayudarte hoy?`;
             this.messages.push({
                 sender: 'bot',
-                text: `¡Hola! Soy Allen, el asistente virtual de Skäply. ¿En qué puedo ayudarte hoy?`
+                text: welcomeMessage
             });
+            // Leer mensaje de bienvenida en voz alta
+            this.speakMessage(welcomeMessage);
         }
 
         if (this.inMontajeMode && this.isDesktop) {
@@ -119,7 +140,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
                 for (let m of messages) {
                     if (m.message === "text" && m.text?.text?.[0]) {
-                        this.messages.push({ sender: 'bot', text: m.text.text[0] });
+                        const botMessage = m.text.text[0];
+                        this.messages.push({ sender: 'bot', text: botMessage });
+                        // Leer respuesta del bot en voz alta
+                        this.speakMessage(botMessage);
                         handled = true;
                     }
 
@@ -157,7 +181,9 @@ export class Chatbot implements OnInit, AfterViewChecked {
                 }
 
                 if (!handled) {
-                    this.messages.push({ sender: 'bot', text: 'No entiendo esa consulta.' });
+                    const fallbackMessage = 'No entiendo esa consulta.';
+                    this.messages.push({ sender: 'bot', text: fallbackMessage });
+                    this.speakMessage(fallbackMessage);
                 }
                  this.shouldScroll = true;
             });
@@ -201,5 +227,75 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
     openLink(url: string) {
         window.open(url, '_blank');
+    }
+
+    // Métodos para Text-to-Speech
+    
+    /**
+     * Carga la configuración de TTS desde el servicio
+     */
+    loadTTSSettings() {
+        const settings = this.tts.getSettings();
+        this.ttsEnabled = settings.isEnabled;
+        this.ttsVolume = settings.volume;
+        this.isPlaying = settings.isPlaying;
+    }
+
+    /**
+     * Reproduce un mensaje usando text-to-speech
+     */
+    async speakMessage(text: string) {
+        if (!this.ttsEnabled || !text) return;
+        
+        try {
+            this.isPlaying = true;
+            await this.tts.speak(text);
+        } catch (error) {
+            console.error('Error al reproducir mensaje:', error);
+        } finally {
+            this.isPlaying = false;
+        }
+    }
+
+    /**
+     * Activa/desactiva el text-to-speech
+     */
+    toggleTTS() {
+        this.ttsEnabled = !this.ttsEnabled;
+        this.tts.setEnabled(this.ttsEnabled);
+        
+        if (!this.ttsEnabled) {
+            this.stopSpeaking();
+        }
+    }
+
+    /**
+     * Detiene la reproducción actual
+     */
+    stopSpeaking() {
+        this.tts.stop();
+        this.isPlaying = false;
+    }
+
+    /**
+     * Ajusta el volumen del TTS
+     */
+    onVolumeChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        this.ttsVolume = parseFloat(target.value);
+        this.tts.setVolume(this.ttsVolume);
+    }
+
+    /**
+     * Reproduce nuevamente el último mensaje del bot
+     */
+    replayLastBotMessage() {
+        const lastBotMessage = this.messages
+            .filter(m => m.sender === 'bot' && m.text)
+            .pop();
+        
+        if (lastBotMessage && lastBotMessage.text) {
+            this.speakMessage(lastBotMessage.text);
+        }
     }
 }
