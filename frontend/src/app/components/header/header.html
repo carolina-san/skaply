@@ -6,7 +6,7 @@
     'header-compact': scrolled
   }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
-  <button *ngIf="currentRoute !== '/'" (click)="goBack()"
+  <button *ngIf="!isHome" (click)="goBack()"
     class="absolute w-6 h-6 left-5 md:left-10 text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
     <span class="material-symbols-rounded">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
@@ -20,7 +20,7 @@
     <!-- Logo normal -->
     <img src="assets/skaply_azul.svg" alt="logo normal"
       class="w-full h-auto hover:scale-105 transition-all duration-400"
-      [ngClass]="{'logo-normal':currentRoute == '/'}" />
+      [ngClass]="{'logo-normal':isHome}" />
 
     <!-- Logo reducido -->
     <img *ngIf="currentRoute == '/'" src="assets/reducido.svg" alt="logo reducido"
@@ -33,7 +33,7 @@
   <!-- Botones de autenticación -->
   <div class="hidden lg:flex items-center gap-3 absolute lg:right-20">
     <!-- Botón de login (si no hay sesión) -->
-    <a *ngIf="currentRoute !== '/' && currentRoute !== '/profile' && !isLoggedIn()" href="/login" class="flex items-center justify-center
+    <a *ngIf="!isHome && currentRoute !== '/profile' && !isLoggedIn()" href="/login" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
       hover:bg-beige transition duration-300 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
@@ -43,7 +43,7 @@
     </a>
 
     <!-- Botón de logout (si hay sesión iniciada) -->
-    <button *ngIf="currentRoute !== '/' && currentRoute !== '/profile' && isLoggedIn()" (click)="logout()" class="flex items-center justify-center
+    <button *ngIf="!isHome && currentRoute !== '/profile' && isLoggedIn()" (click)="logout()" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-white font-semibold
       hover:bg-beige transition duration-300 cursor-pointer" title="Cerrar sesión">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
