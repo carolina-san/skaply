@@ -1,12 +1,20 @@
-// Configuración de Eleven Labs Text-to-Speech
+// =====================================================
+// CONFIGURACIÓN DE ELEVEN LABS TEXT-TO-SPEECH
+// =====================================================
+
 export const elevenLabsConfig = {
+  // ⚡ ACTIVAR/DESACTIVAR ELEVEN LABS
+  // true  = Usa Eleven Labs (voz premium)
+  // false = Usa voz nativa del navegador (gratuita)
+  ENABLED: false,
+  
   // Reemplaza con tu API key de Eleven Labs
   // Puedes obtener tu API key en: https://elevenlabs.io/app/settings/api-keys
   API_KEY: 'sk_b7bb71c8bf337889ce0049e373617c5a251dbd437ce18297',
   
   // Voice ID por defecto (Diego - Voz masculina joven en español)
   // Puedes cambiar por cualquier otra voz disponible en tu cuenta
-  DEFAULT_VOICE_ID: 'nPczCjzI2devNBz1zQrb',
+  DEFAULT_VOICE_ID: 'JBFqnCBsd6RMkjVDRZzb',
   
   // Configuración de la voz optimizada para voz masculina joven
   VOICE_SETTINGS: {

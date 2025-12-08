@@ -20,7 +20,7 @@ export class TextToSpeechService {
   }
 
   /**
-   * Convierte texto a voz usando Eleven Labs
+   * Convierte texto a voz usando Eleven Labs o voz nativa
    */
   async speak(text: string): Promise<void> {
     if (!this.isEnabled || !text.trim()) {
@@ -34,21 +34,27 @@ export class TextToSpeechService {
       // Si hay audio reproduciéndose, lo detenemos
       this.stop();
 
-      // Llamar a la API de Eleven Labs
-      const audioBlob = await this.generateSpeech(cleanText);
-      
-      // Crear y reproducir el audio
-      const audioUrl = URL.createObjectURL(audioBlob);
-      this.currentAudio = new Audio(audioUrl);
-      this.currentAudio.volume = this.volume;
-      
-      // Limpiar URL cuando termine
-      this.currentAudio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        this.currentAudio = null;
-      };
+      // Verificar si Eleven Labs está habilitado y configurado
+      if (elevenLabsConfig.ENABLED && elevenLabsConfig.API_KEY && elevenLabsConfig.API_KEY !== 'tu_api_key_aqui') {
+        // Llamar a la API de Eleven Labs
+        const audioBlob = await this.generateSpeech(cleanText);
+        
+        // Crear y reproducir el audio
+        const audioUrl = URL.createObjectURL(audioBlob);
+        this.currentAudio = new Audio(audioUrl);
+        this.currentAudio.volume = this.volume;
+        
+        // Limpiar URL cuando termine
+        this.currentAudio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          this.currentAudio = null;
+        };
 
-      await this.currentAudio.play();
+        await this.currentAudio.play();
+      } else {
+        // Usar la API nativa del navegador
+        this.speakWithNativeAPI(cleanText);
+      }
       
     } catch (error) {
       console.error('Error al generar audio con Eleven Labs:', error);
@@ -189,5 +195,14 @@ export class TextToSpeechService {
    */
   isAvailable(): boolean {
     return true; // Siempre disponible porque tenemos fallback nativo
+  }
+
+  /**
+   * Verifica si Eleven Labs está habilitado y configurado
+   */
+  isElevenLabsEnabled(): boolean {
+    return Boolean(elevenLabsConfig.ENABLED && 
+                  elevenLabsConfig.API_KEY && 
+                  elevenLabsConfig.API_KEY !== 'tu_api_key_aqui');
   }
 }
