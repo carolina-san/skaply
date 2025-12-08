@@ -23,12 +23,12 @@
       [ngClass]="{'logo-normal':isHome}" />
 
     <!-- Logo reducido -->
-    <img *ngIf="currentRoute == '/'" src="assets/reducido.svg" alt="logo reducido"
+    <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
       class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
   </div>
 
   <!-- Menú si está en la landing -->
-  <app-menu *ngIf="currentRoute == '/'"></app-menu>
+  <app-menu *ngIf="isHome"></app-menu>
 
   <!-- Botones de autenticación -->
   <div class="hidden lg:flex items-center gap-3 absolute lg:right-20">

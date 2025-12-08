@@ -80,17 +80,7 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-     this.apiService.iniciarMontaje(this.selectedFurniture.reference_number)
-    .subscribe({
-      next: (res) => {
-        console.log("Montaje iniciado:", res);
-      },
-      error: (err) => {
-        console.error("Error iniciando montaje:", err);
-      }
-    });
-   
-
+    
     this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
     this.closeFurnitureModal();
     this.selectedFurniture = null;

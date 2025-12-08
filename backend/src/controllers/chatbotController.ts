@@ -195,6 +195,38 @@ export class ChatbotController {
         }
     };
 
+    sendWelcomeEvent = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const sessionId = req.body.sessionId || "default";
+            const sessionPath = this.sessionClient.projectAgentSessionPath(
+                this.projectId,
+                sessionId
+            );
+
+            const request = {
+                session: sessionPath,
+                queryInput: {
+                    event: {
+                        name: "DEFAULT_WELCOME_INTENT",
+                        languageCode: "es"
+                    }
+                }
+            };
+
+            const [responses] = await this.sessionClient.detectIntent(request);
+            const result = responses.queryResult;
+
+            res.json({
+                fulfillmentText: result?.fulfillmentText ?? "",
+                fulfillmentMessages: result?.fulfillmentMessages ?? []
+            });
+
+        } catch (error) {
+            console.error("Error en sendWelcomeEvent:", error);
+            res.status(500).json({ message: "Error enviando evento de bienvenida" });
+        }
+    };
+
     private getProviders = async (req: Request, res: Response): Promise<void> => {
         const result = await this.providerService.getAllProvidersChatbot();
 

@@ -8,5 +8,6 @@ router.post('/',chatbotController.handleChatbot);
 router.post('/webhook', chatbotController.handleWebhook);
 router.post('/start', chatbotController.inicioMontaje);
 router.post('/reset', chatbotController.resetMontaje);
+router.post('/welcome', chatbotController.sendWelcomeEvent);
 
 export default router;
