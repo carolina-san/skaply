@@ -145,27 +145,22 @@
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
   </section>
 
+  <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full ">
-
+    <div class="flex flex-col sm:flex-row w-full">
       <!-- IMAGEN -->
       <div class="w-full  sm:max-w-[40%] flex">
         <img [src]="selectedFurniture?.image_url" loading="lazy"
           class="w-full h-full object-cover max-h-[85vh] sm:max-h-none sm:h-auto aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
-
       </div>
-
       <!-- TEXTO -->
       <div class="flex flex-col p-5 gap-5 w-full overflow-y-auto max-h-[85vh]">
-
-
-
         <div class="flex items-center gap-4 mb-2">
           <span class="px-3 py-1 text-xs font-bold rounded-full" [ngClass]="{
-    'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
-    'bg-orange-100 text-orange-600': selectedFurniture?.difficulty === 'medium',
-    'bg-red-100 text-red-600': selectedFurniture?.difficulty === 'high'
-  }">
+            'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
+            'bg-orange-100 text-orange-600': selectedFurniture?.difficulty === 'medium',
+            'bg-red-100 text-red-600': selectedFurniture?.difficulty === 'high'
+          }">
             {{ difficultyLabels[selectedFurniture?.difficulty || 'low'] }}
           </span>
           <span class="text-xs text-gray-500">
@@ -190,7 +185,7 @@
 
 
         <!-- BOTÓN -->
-        <button class="btn-azul mt-auto flex items-center justify-between border border-marron-oscuro"
+        <button class="btn-azul flex items-center justify-between border border-marron-oscuro"
           (click)="goToViewer3D()">
           Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
             class="w-7 h-7">
@@ -198,14 +193,9 @@
               d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
           </svg>
         </button>
-
       </div>
-
     </div>
-
   </app-modal>
-
-
 
   <!-- Filter Panel -->
   <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors"
