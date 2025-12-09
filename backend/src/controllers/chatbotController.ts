@@ -89,7 +89,6 @@ export class ChatbotController {
                 case "get.providers":
                     await this.getProviders(req, res);
                     return;
-
                 case "get.tools":
                     await this.getTools(req, res);
                     return;
@@ -108,6 +107,9 @@ export class ChatbotController {
                 case "get.dificultad":
                     await this.getDificultad(req, res);
                     return;
+                case "get.reference":
+                    await this.comprobarReferencia(req, res);
+                    return;
                 default:
                     res.status(200).json({
                         fulfillmentText: "No entiendo esa consulta. (backend)"
@@ -123,7 +125,6 @@ export class ChatbotController {
     inicioMontaje = async (req: Request, res: Response): Promise<void> => {
         try {
             const { furniture_ref } = req.body;
-            console.log("Referencia de mueble recibida:", furniture_ref);
             if (!furniture_ref) {
                 res.status(400).json({ message: "No se recibió el mueble" });
                 return;
@@ -451,7 +452,7 @@ export class ChatbotController {
                 refCtx?.parameters?.furniture_ref;
         }
         if (!ref) {
-             res.status(200).json({
+            res.status(200).json({
                 fulfillmentText: "Dime la referencia del mueble del que quieres saber la dificultad.",
                 outputContexts: [
                     {
@@ -473,6 +474,56 @@ export class ChatbotController {
         res.status(200).json({
             fulfillmentText: `La dificultad de montaje del mueble con referencia "${ref}" es: ${dificultad}.`
         });
+    }
+
+    private comprobarReferencia = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const outputContexts = req.body.queryResult.outputContexts || [];
+            const parameters = req.body.queryResult.parameters || {};
+            const session = req.body.session || "";
+
+            // Buscar contexto del montaje
+            const montajeContext = outputContexts.find((c: any) =>
+                c.name.endsWith("/contexts/montaje_context")
+            );
+
+            const furnitureRef =
+                montajeContext?.parameters?.furniture_ref ||
+                parameters?.furniture_ref;
+
+
+            if (furnitureRef) {
+                res.status(200).json({
+                    fulfillmentText: `Perfecto, voy a registrar la incidencia del mueble actual ${furnitureRef}. ¿Cuál es la descripción del problema?`,
+                    outputContexts: [
+                        {
+                            name: `${session}/contexts/flow`,
+                            lifespanCount: 5,
+                            parameters: {
+                                furniture_ref: furnitureRef
+                            }
+                        },
+                        {
+                            name: `${session}/contexts/awaiting_issue_desc`,
+                            lifespanCount: 1
+                        }
+                    ]
+                });
+            } else {
+                res.status(200).json({
+                    fulfillmentText: "Para registrar la incidencia, necesito saber qué mueble es. ¿Cuál es su referencia?",
+                    outputContexts: [
+                        {
+                            name: `${session}/contexts/awaiting_issue_ref`,
+                            lifespanCount: 5
+                        }
+                    ]
+                });
+            }
+        } catch (error) {
+            console.error("Error en comprobarReferencia:", error);
+            res.status(500).json({ fulfillmentText: "Error al procesar la incidencia" });
+        }
     }
 
 
