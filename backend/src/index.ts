@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 
 import { errorHandler } from '@middleware/errorHandler';
-import { notFound } from '@middleware/notFound';
 import apiRoutes from '@/routes';
 import chatbotRoutes from './routes/chatbot';
 import { connectDB } from '@/config/database';
@@ -30,7 +29,6 @@ app.use('/api', apiRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
 // Error handling
-app.use(notFound);
 app.use(errorHandler);
 
 app.listen(PORT, async () => {
@@ -40,16 +38,16 @@ app.listen(PORT, async () => {
 
 
 // Log inicial del api
-const syslog =  require('syslog-client');
+const syslog = require('syslog-client');
 // const client = syslog.createClient('localhost');
 
 const client = syslog.createClient('127.0.0.1', {
-  transport: syslog.Transport.Udp, 
+  transport: syslog.Transport.Udp,
   port: 514                         // puerto estándar de syslog
 });
 
 
-client.log('Api is inicialized 2',{
+client.log('Api is inicialized 2', {
   facility: syslog.Facility.Local0,
   severity: syslog.Severity.Informational,
   tag: 'skaply_api'

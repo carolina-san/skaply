@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { ApiError } from '../utils/ApiError';
 
 // Extender la interfaz Request para incluir la información del usuario
 declare global {
@@ -20,10 +21,9 @@ export const authMiddleware = (
 ): void => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
-      res.status(401).json({ error: 'Access denied. No token provided.' });
-      return;
+      throw new ApiError('UNAUTHORIZED', 'Access denied. No token provided.');
     }
 
     // Verificar el JWT token
@@ -34,15 +34,29 @@ export const authMiddleware = (
 
     // Agregar la información del usuario al request
     req.user = decoded;
-    
+
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({ error: 'Invalid token.' });
+      next(new ApiError('UNAUTHORIZED', 'Invalid token'));
     } else if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ error: 'Token expired.' });
+      next(new ApiError('UNAUTHORIZED', 'Token expired'));
     } else {
-      res.status(401).json({ error: 'Token verification failed.' });
+      next(new ApiError('UNAUTHORIZED', 'Token verification failed'));
     }
   }
+};
+
+export const authorize = (allowedRoles: string[]) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
+    }
+
+    next();
+  };
 };

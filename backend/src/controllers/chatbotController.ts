@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { ApiError } from '@/utils/ApiError';
 import * as dialogflow from '@google-cloud/dialogflow';
 import { ProviderService } from '@/services/ProviderService';
 import { ToolService } from '@/services/toolService';
@@ -27,14 +28,14 @@ export class ChatbotController {
         });
     }
 
-    handleChatbot = async (req: Request, res: Response): Promise<void> => {
-
+    handleChatbot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const userMessage = req.body.text;
             const ref = req.body.ref;
 
             if (!userMessage) {
-                res.status(400).json({ fulfillmentText: 'No recibí ningún mensaje.' });
+                // res.status(400).json({ fulfillmentText: 'No recibí ningún mensaje.' });
+                next(new ApiError('BAD_REQUEST', 'No recibí ningún mensaje.'));
                 return;
             }
 
@@ -78,11 +79,11 @@ export class ChatbotController {
 
         } catch (err) {
             console.error(err);
-            res.status(500).json({ fulfillmentText: 'Error al conectar con Dialogflow.' });
+            next(new ApiError('INTERNAL_SERVER', 'Error al conectar con Dialogflow.'));
         }
     };
 
-    handleWebhook = async (req: Request, res: Response): Promise<void> => {
+    handleWebhook = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const action: string = req.body.queryResult.action;
             switch (action) {
@@ -94,7 +95,7 @@ export class ChatbotController {
                     await this.getTools(req, res);
                     return;
                 case "issue.complete":
-                    await this.completeIssue(req, res);
+                    await this.completeIssue(req, res, next);
                     return;
                 case "get.provider.by.name":
                     await this.getProviderByName(req, res);
@@ -116,16 +117,16 @@ export class ChatbotController {
             }
         } catch (error) {
             console.error("Error en ChatbotController:", error);
-            res.status(500).json({ fulfillmentText: "Error interno" });
+            next(new ApiError('INTERNAL_SERVER', "Error interno en el webhook"));
         }
     };
 
-    inicioMontaje = async (req: Request, res: Response): Promise<void> => {
+    inicioMontaje = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { furniture_ref } = req.body;
             console.log("Referencia de mueble recibida:", furniture_ref);
             if (!furniture_ref) {
-                res.status(400).json({ message: "No se recibió el mueble" });
+                next(new ApiError('BAD_REQUEST', "No se recibió el mueble"));
                 return;
             }
 
@@ -157,11 +158,11 @@ export class ChatbotController {
 
         } catch (error) {
             console.error("Error en el inicio de montaje:", error);
-            res.status(500).json({ message: "Error al enviar evento a Dialogflow" });
+            next(new ApiError('INTERNAL_SERVER', "Error al enviar evento a Dialogflow"));
         }
     };
 
-    resetMontaje = async (req: Request, res: Response): Promise<void> => {
+    resetMontaje = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
 
 
@@ -191,11 +192,11 @@ export class ChatbotController {
 
         } catch (error) {
             console.error("Error en resetMontaje:", error);
-            res.status(500).json({ message: "Error enviando RESET_MONTAJE" });
+            next(new ApiError('INTERNAL_SERVER', "Error enviando RESET_MONTAJE"));
         }
     };
 
-    sendWelcomeEvent = async (req: Request, res: Response): Promise<void> => {
+    sendWelcomeEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const sessionId = req.body.sessionId || "default";
             const sessionPath = this.sessionClient.projectAgentSessionPath(
@@ -223,7 +224,7 @@ export class ChatbotController {
 
         } catch (error) {
             console.error("Error en sendWelcomeEvent:", error);
-            res.status(500).json({ message: "Error enviando evento de bienvenida" });
+            next(new ApiError('INTERNAL_SERVER', "Error enviando evento de bienvenida"));
         }
     };
 
@@ -322,14 +323,15 @@ export class ChatbotController {
         });
     };
 
-    private completeIssue = async (req: Request, res: Response): Promise<void> => {
+    private completeIssue = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
             c.name.endsWith("/contexts/flow")
         );
         if (!ctx) {
-            res.status(400).json({
-                fulfillmentText: "Faltan datos para crear la incidencia."
-            });
+            // NOTE: Here we might use ApiError, but Dialogflow expects a 200 with text usually.
+            // If we throw error, Dialogflow receives 400/500 and shows generic error.
+            // Keeping it consistent with "ApiError" request:
+            next(new ApiError('BAD_REQUEST', "Faltan datos para crear la incidencia (Contexto no encontrado)"));
             return;
         }
 
@@ -353,9 +355,7 @@ export class ChatbotController {
 
         } catch (err) {
             console.error(err);
-            res.status(500).json({
-                fulfillmentText: "Error al registrar la incidencia."
-            });
+            next(new ApiError('INTERNAL_SERVER', "Error al registrar la incidencia"));
         }
     };
 
@@ -451,7 +451,7 @@ export class ChatbotController {
                 refCtx?.parameters?.furniture_ref;
         }
         if (!ref) {
-             res.status(200).json({
+            res.status(200).json({
                 fulfillmentText: "Dime la referencia del mueble del que quieres saber la dificultad.",
                 outputContexts: [
                     {
