@@ -1,267 +1,331 @@
-<div class="w-full h-full rounded-3xl shadow-2xl flex flex-col p-2 sm:p-4 border transition-colors duration-300"
-     [class.bg-skaply-ui-dark]="backgroundColor() === 'dark' && !isARActive()"
-     [class.text-white]="backgroundColor() === 'dark'"
-     [class.border-skaply-light/10]="backgroundColor() === 'dark'"
-     [class.bg-gray-100]="backgroundColor() === 'light' && !isARActive()"
-     [class.text-gray-800]="backgroundColor() === 'light'"
-     [class.border-gray-300]="backgroundColor() === 'light'"
-     [class.bg-transparent]="isARActive()">
-     
+<div
+  class="w-full h-full rounded-3xl flex flex-col p-2 sm:p-4 border-0 shadow-none bg-transparent transition-colors duration-300"
+  [class.bg-transparent]="true" [class.border-0]="true" [class.shadow-none]="true">
+
+
   <!-- AR Permission Overlay -->
   @if (arFlowState() !== 'idle') {
-    <div class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-         [class.bg-skaply-ui-dark/70]="backgroundColor() === 'dark'"
-         [class.bg-gray-100/70]="backgroundColor() === 'light'">
-      <div class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center border"
-           [class.bg-skaply-light]="backgroundColor() === 'dark'"
-           [class.text-white]="backgroundColor() === 'dark'"
-           [class.border-skaply-dark]="backgroundColor() === 'dark'"
-           [class.bg-white]="backgroundColor() === 'light'"
-           [class.text-gray-800]="backgroundColor() === 'light'"
-           [class.border-gray-200]="backgroundColor() === 'light'">
-        
-        @if (arFlowState() === 'requesting') {
-          <h3 class="text-xl font-bold text-skaply-accent mb-2">Ver en tu espacio</h3>
-          <p class="mb-6" [class.text-skaply-muted]="backgroundColor() === 'dark'" [class.text-gray-600]="backgroundColor() === 'light'">
-            Para usar la Realidad Aumentada, Skäply necesita permiso para acceder a tu cámara. Tu imagen no se guarda ni se comparte.
-          </p>
-          <div class="flex justify-center space-x-4">
-            <button (click)="cancelARPermissionRequest()" class="px-6 py-2 font-semibold rounded-full transition-colors"
-                    [class.bg-white/10]="backgroundColor() === 'dark'"
-                    [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                    [class.bg-black/5]="backgroundColor() === 'light'"
-                    [class.hover:bg-black/10]="backgroundColor() === 'light'">
-              Cancelar
-            </button>
-            <button (click)="proceedWithARPermission()" class="px-6 py-2 bg-skaply-accent text-skaply-dark font-semibold rounded-full hover:bg-skaply-accent-dim transition-transform duration-200 transform hover:scale-105">
-              Permitir
-            </button>
-          </div>
-        } @else if (arFlowState() === 'denied') {
-          <h3 class="text-xl font-bold text-red-400 mb-2">Acceso denegado</h3>
-          <p class="mb-6" [class.text-skaply-muted]="backgroundColor() === 'dark'" [class.text-gray-600]="backgroundColor() === 'light'">
-            No se pudo acceder a la cámara. Para usar la Realidad Aumentada, necesitas conceder permiso en la configuración de tu navegador.
-          </p>
-          <div class="flex justify-center space-x-4">
-            <button (click)="closeARDeniedMessage()" class="px-6 py-2 font-semibold rounded-full transition-colors"
-                    [class.bg-white/10]="backgroundColor() === 'dark'"
-                    [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                    [class.bg-black/5]="backgroundColor() === 'light'"
-                    [class.hover:bg-black/10]="backgroundColor() === 'light'">
-              Entendido
-            </button>
-            <button (click)="retryARPermission()" class="px-6 py-2 bg-skaply-accent text-skaply-dark font-semibold rounded-full hover:bg-skaply-accent-dim transition-transform duration-200 transform hover:scale-105">
-              Reintentar
-            </button>
-          </div>
-        }
+  <div class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+    [class.bg-beige-oscuro/70]="backgroundColor() === 'dark'" [class.bg-beige/70]="backgroundColor() === 'light'">
+
+    <div class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center border"
+      [class.bg-beige]="backgroundColor() === 'light'" [class.text-marron-oscuro]="backgroundColor() === 'light'"
+      [class.border-marron-claro]="backgroundColor() === 'light'" [class.bg-beige-oscuro]="backgroundColor() === 'dark'"
+      [class.text-white]="backgroundColor() === 'dark'" [class.border-marron-claro/20]="backgroundColor() === 'dark'">
+
+      @if (arFlowState() === 'requesting') {
+      <h3 class="text-xl font-bold text-azul-medio mb-2">Ver en tu espacio</h3>
+      <p class="mb-6 text-sm" [class.text-azul-claro]="backgroundColor() === 'dark'"
+        [class.text-marron-oscuro/70]="backgroundColor() === 'light'">
+        Para usar la Realidad Aumentada necesitamos acceso a tu cámara. No se guarda ni se comparte.
+      </p>
+      <div class="flex justify-center space-x-4">
+        <button (click)="cancelARPermissionRequest()" class="px-6 py-2 font-semibold rounded-full transition-colors"
+          [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
+          [class.bg-marron-claro/10]="backgroundColor() === 'light'"
+          [class.hover:bg-marron-claro/20]="backgroundColor() === 'light'">
+          Cancelar
+        </button>
+
+        <button (click)="proceedWithARPermission()"
+          class="px-6 py-2 bg-azul-medio text-white font-semibold rounded-full hover:brightness-110 transition-transform duration-200 transform hover:scale-105">
+          Permitir
+        </button>
       </div>
+      } @else if (arFlowState() === 'denied') {
+      <h3 class="text-xl font-bold text-red-400 mb-2">Acceso denegado</h3>
+
+      <p class="mb-6 text-sm" [class.text-azul-claro]="backgroundColor() === 'dark'"
+        [class.text-marron-oscuro/70]="backgroundColor() === 'light'">
+        Para usar AR necesitas conceder permiso a la cámara en la configuración del navegador.
+      </p>
+      <div class="flex justify-center space-x-4">
+        <button (click)="closeARDeniedMessage()" class="px-6 py-2 font-semibold rounded-full transition-colors"
+          [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
+          [class.bg-marron-claro/10]="backgroundColor() === 'light'"
+          [class.hover:bg-marron-claro/20]="backgroundColor() === 'light'">
+          Entendido
+        </button>
+
+        <button (click)="retryARPermission()"
+          class="px-6 py-2 bg-azul-medio text-white font-semibold rounded-full hover:brightness-110 transition-transform duration-200 transform hover:scale-105">
+          Reintentar
+        </button>
+      </div>
+      }
     </div>
+  </div>
   }
 
   <!-- Header -->
   @if (showHeader() && !isARActive()) {
-    <header class="flex justify-between items-start p-2 relative z-30">
-      <div>
-        <div class="flex items-center space-x-2 text-sm"
-            [class.text-gray-300]="backgroundColor() === 'dark'"
-            [class.text-gray-600]="backgroundColor() === 'light'">
-          <span class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
-          <span>MÓDULO CUBO 1.0</span>
-        </div>
-        @if (isolatedPart()) {
-          <p class="font-semibold mt-1">Inspeccionando pieza</p>
-        } @else if (isSimulating()) {
-          <p class="font-semibold mt-1">Demostración automática</p>
-        } @else if (mode() === 'final') {
-          <p class="font-semibold mt-1">Resultado Final</p>
-        } @else if (isManualComplete()) {
-          <p class="font-semibold mt-1">¡Listo! Estructura completada.</p>
-        } @else {
-          <p class.bind="stepDescriptions[currentStep()] ? (backgroundColor() === 'dark' ? 'text-white' : 'text-gray-800') : (backgroundColor() === 'dark' ? 'text-gray-500' : 'text-gray-400')" class="font-semibold mt-1 text-sm sm:text-base transition-colors">
-            {{ stepDescriptions[currentStep()] || 'Cargando paso...' }}
-          </p>
-        }
+  <header class="flex justify-between items-start p-2 relative z-30 top-20">
+    <div>
+      <div class="flex items-center space-x-2 text-sm" [class.text-gray-300]="backgroundColor() === 'dark'"
+        [class.text-gray-600]="backgroundColor() === 'light'">
+        <span class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
+        <span>MÓDULO CUBO 1.0</span>
       </div>
-      <div class="flex items-center space-x-2">
-        <button (click)="toggleBackgroundColor()" title="Cambiar tema"
-                class="flex items-center justify-center w-9 h-9 rounded-full transition-colors"
-                [class.bg-white/10]="backgroundColor() === 'dark'"
-                [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                [class.bg-black/5]="backgroundColor() === 'light'"
-                [class.hover:bg-black/10]="backgroundColor() === 'light'">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.477-1.122-.297-.287-.703-.465-1.17-.465-1.1 0-2-.9-2-2s.9-2 2-2c.467 0 .873.178 1.17.465.297.287.477.685.477 1.122 0 .942.722 1.688 1.648 1.688 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
-        </button>
-        <button (click)="toggleAR()" class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors"
-                [class.bg-white/10]="backgroundColor() === 'dark'"
-                [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                [class.bg-black/5]="backgroundColor() === 'light'"
-                [class.hover:bg-black/10]="backgroundColor() === 'light'">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-          <span>Ver en AR</span>
-        </button>
-      </div>
-    </header>
+      @if (isolatedPart()) {
+      <p class="font-semibold mt-1">Inspeccionando pieza</p>
+      } @else if (isSimulating()) {
+      <p class="font-semibold mt-1">Demostración automática</p>
+      } @else if (mode() === 'final') {
+      <p class="font-semibold mt-1">Resultado Final</p>
+      } @else if (isManualComplete()) {
+      <p class="font-semibold mt-1">¡Listo! Estructura completada.</p>
+      } @else {
+      <p class="font-semibold mt-1 text-sm sm:text-base transition-colors text-beige">
+        {{ stepDescriptions[currentStep()] || 'Cargando paso...' }}
+      </p>
+
+      }
+    </div>
+    <div class="flex items-center space-x-2">
+      <button (click)="toggleBackgroundColor()" title="Cambiar tema"
+        class="flex items-center justify-center w-9 h-9 rounded-full transition-colors"
+        [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
+        [class.bg-black/5]="backgroundColor() === 'light'" [class.hover:bg-black/10]="backgroundColor() === 'light'">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <path
+            d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.477-1.122-.297-.287-.703-.465-1.17-.465-1.1 0-2-.9-2-2s.9-2 2-2c.467 0 .873.178 1.17.465.297.287.477.685.477 1.122 0 .942.722 1.688 1.648 1.688 5.5 0 10-4.5 10-10S17.5 2 12 2z" />
+        </svg>
+      </button>
+      <button (click)="toggleAR()"
+        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors"
+        [class.bg-beige/50]="true"
+        [class.text-marron-oscuro]="true"
+        [class.hover:bg-white/90]="true">
+
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+          <circle cx="12" cy="13" r="3"></circle>
+        </svg>
+        <span>Ver en AR</span>
+      </button>
+    </div>
+  </header>
   }
 
   <!-- Canvas Container -->
   <div class="flex-1 relative">
     @if(isARActive()) {
-      <video #video playsinline class="absolute top-0 left-0 w-full h-full object-cover"></video>
+    <video #video playsinline class="absolute top-0 left-0 w-full h-full object-cover"></video>
     }
-    <canvas #canvas class="absolute top-0 left-0 w-full h-full block active:cursor-grabbing" 
-            [class.bg-transparent]="isARActive()"
-            [class.z-10]="isARActive()"
-            style="cursor: grab;"></canvas>
-    
+    <canvas #canvas class="absolute top-0 left-0 w-full h-full block active:cursor-grabbing"
+      [class.bg-transparent]="isARActive()" [class.z-10]="isARActive()" style="cursor: grab;"></canvas>
+
     @if(isARActive()) {
-      <div class="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-        <button (click)="toggleAR()" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
-          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          <span>Salir de AR</span>
-        </button>
-      </div>
-      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 text-center">
-        <p class="text-white text-sm bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">Mueve el mueble para colocarlo en tu espacio.</p>
-      </div>
+    <div class="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+      <button (click)="toggleAR()"
+        class="px-4 py-2 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Salir de AR</span>
+      </button>
+    </div>
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 text-center">
+      <p class="text-white text-sm bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm pointer-events-none">Mueve el
+        mueble para colocarlo en tu espacio.</p>
+    </div>
     } @else {
-      @if (isolatedPart(); as part) {
-        <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-          <button (click)="exitIsolation()" class="px-4 py-2 bg-skaply-accent text-skaply-dark font-semibold rounded-full hover:bg-skaply-accent-dim transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            <span>Ver todo</span>
-          </button>
-        </div>
+    @if (isolatedPart(); as part) {
+    <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+      <button (click)="exitIsolation()"
+        class="px-4 py-2 bg-skaply-accent text-skaply-dark font-semibold rounded-full hover:bg-skaply-accent-dim transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Ver todo</span>
+      </button>
+    </div>
 
-        <div class="absolute bottom-4 left-4 max-w-xs p-4 backdrop-blur-md rounded-lg shadow-lg transition-colors"
-            [class.bg-black/50]="backgroundColor() === 'dark'"
-            [class.border-white/10]="backgroundColor() === 'dark'"
-            [class.bg-white/50]="backgroundColor() === 'light'"
-            [class.border-black/10]="backgroundColor() === 'light'">
-          <h3 class="font-bold text-lg text-skaply-accent">{{ part.name }}</h3>
-          <p class="text-sm mt-1" 
-            [class.text-skaply-muted]="backgroundColor() === 'dark'"
-            [class.text-gray-700]="backgroundColor() === 'light'">{{ part.description }}</p>
-        </div>
-      }
+    <div class="absolute bottom-4 left-4 max-w-xs p-4 backdrop-blur-md rounded-lg shadow-lg transition-colors"
+      [class.bg-black/50]="backgroundColor() === 'dark'" [class.border-white/10]="backgroundColor() === 'dark'"
+      [class.bg-white/50]="backgroundColor() === 'light'" [class.border-black/10]="backgroundColor() === 'light'">
+      <h3 class="font-bold text-lg text-skaply-accent">{{ part.name }}</h3>
+      <p class="text-sm mt-1" [class.text-skaply-muted]="backgroundColor() === 'dark'"
+        [class.text-gray-700]="backgroundColor() === 'light'">{{ part.description }}</p>
+    </div>
+    }
 
-      <div class="absolute bottom-6 right-4 flex items-end space-x-2">
-        <div class="flex items-center space-x-2 px-3 py-1.5 backdrop-blur-sm rounded-full text-xs pointer-events-none"
-            [class.bg-black/40]="backgroundColor() === 'dark'"
-            [class.text-gray-300]="backgroundColor() === 'dark'"
-            [class.bg-white/40]="backgroundColor() === 'light'"
-            [class.text-gray-700]="backgroundColor() === 'light'">
-          <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path><path d="m12 12 4 10 3-1-4-10z"></path></svg>
-          <span>Arrastra para girar | Mantén sobre pieza para aislar</span>
-        </div>
-        <div class="flex flex-col space-y-2">
-          @if (isCameraMoved()) {
-            <button (click)="resetCameraPosition()" title="Centrar vista" class="w-9 h-9 flex items-center justify-center backdrop-blur-sm rounded-full transition-colors"
-                    [class.bg-black/40]="backgroundColor() === 'dark'"
-                    [class.text-gray-300]="backgroundColor() === 'dark'"
-                    [class.hover:bg-black/60]="backgroundColor() === 'dark'"
-                    [class.hover:text-white]="backgroundColor() === 'dark'"
-                    [class.bg-white/40]="backgroundColor() === 'light'"
-                    [class.text-gray-700]="backgroundColor() === 'light'"
-                    [class.hover:bg-white/60]="backgroundColor() === 'light'"
-                    [class.hover:text-black]="backgroundColor() === 'light'">
-              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="5" y2="12"></line><line x1="19" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="22"></line><circle cx="12" cy="12" r="7"></circle></svg>
-            </button>
-          }
-        </div>
+    <div class="absolute bottom-6 right-4 flex items-end space-x-2">
+      <div class="flex items-center space-x-2 px-3 py-1.5 backdrop-blur-sm rounded-full text-xs pointer-events-none"
+        [class.bg-black/40]="backgroundColor() === 'dark'" [class.text-gray-300]="backgroundColor() === 'dark'"
+        [class.bg-white/40]="backgroundColor() === 'light'" [class.text-gray-700]="backgroundColor() === 'light'">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path>
+          <path d="m12 12 4 10 3-1-4-10z"></path>
+        </svg>
+        <span>Arrastra para girar | Mantén sobre pieza para aislar</span>
       </div>
+      <div class="flex flex-col space-y-2">
+        @if (isCameraMoved()) {
+        <button (click)="resetCameraPosition()" title="Centrar vista"
+          class="w-9 h-9 flex items-center justify-center backdrop-blur-sm rounded-full transition-colors"
+          [class.bg-black/40]="backgroundColor() === 'dark'" [class.text-gray-300]="backgroundColor() === 'dark'"
+          [class.hover:bg-black/60]="backgroundColor() === 'dark'"
+          [class.hover:text-white]="backgroundColor() === 'dark'" [class.bg-white/40]="backgroundColor() === 'light'"
+          [class.text-gray-700]="backgroundColor() === 'light'"
+          [class.hover:bg-white/60]="backgroundColor() === 'light'"
+          [class.hover:text-black]="backgroundColor() === 'light'">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="2" y1="12" x2="5" y2="12"></line>
+            <line x1="19" y1="12" x2="22" y2="12"></line>
+            <line x1="12" y1="2" x2="12" y2="5"></line>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+            <circle cx="12" cy="12" r="7"></circle>
+          </svg>
+        </button>
+        }
+      </div>
+    </div>
     }
   </div>
 
   <!-- Footer Controls -->
   @if(showFooterControls() && !isARActive()) {
-    <footer class="flex flex-col items-center justify-center px-2 pt-2 pb-4 space-y-3 min-h-[110px] flex-shrink-0" 
-            [class.pointer-events-none]="areControlsDisabled()"
-            [class.opacity-60]="areControlsDisabled()"
-            [class.opacity-50]="isolatedPart() !== null">
-      <!-- Mode Toggle -->
-      <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors"
-           [class.bg-white/10]="backgroundColor() === 'dark'"
-           [class.bg-black/10]="backgroundColor() === 'light'">
-        <button (click)="setMode('manual')" class="px-4 py-1 rounded-full transition-all duration-200" [class.bg-skaply-accent]="mode() === 'manual'" [class.text-skaply-dark]="mode() === 'manual'" [class.text-skaply-muted]="mode() !== 'manual' && backgroundColor() === 'dark'" [class.text-gray-500]="mode() !== 'manual' && backgroundColor() === 'light'">
-          Manual
-        </button>
-        <button (click)="setMode('simulation')" class="px-4 py-1 rounded-full transition-all duration-200" [class.bg-skaply-accent]="mode() === 'simulation'" [class.text-skaply-dark]="mode() === 'simulation'" [class.text-skaply-muted]="mode() !== 'simulation' && backgroundColor() === 'dark'" [class.text-gray-500]="mode() !== 'simulation' && backgroundColor() === 'light'">
-          Simulación
-        </button>
-        <button (click)="setMode('final')" class="px-4 py-1 rounded-full transition-all duration-200" [class.bg-skaply-accent]="mode() === 'final'" [class.text-skaply-dark]="mode() === 'final'" [class.text-skaply-muted]="mode() !== 'final' && backgroundColor() === 'dark'" [class.text-gray-500]="mode() !== 'final' && backgroundColor() === 'light'">
-          Resultado
-        </button>
-      </div>
-  
-      <!-- Dynamic Controls Area -->
-      <div class="w-full flex items-center justify-between min-h-[52px]">
-        @if (mode() === 'manual') {
-          <button (click)="prevStep()" [disabled]="isManualFirstStep()" class="w-12 h-12 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                  [class.bg-black/10]="backgroundColor() === 'light'" [class.hover:bg-black/20]="backgroundColor() === 'light'">
-            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          </button>
-          
-          <div class="flex-grow flex flex-col items-center mx-2 sm:mx-4">
-            <div class="w-full max-w-xs rounded-full h-1.5"
-                 [class.bg-white/20]="backgroundColor() === 'dark'"
-                 [class.bg-black/10]="backgroundColor() === 'light'">
-              <div 
-                class="bg-skaply-accent h-1.5 rounded-full transition-all duration-300 ease-in-out" 
-                [style.width.%]="(manualStep() + 1) / totalSteps * 100">
-              </div>
-            </div>
-            <span class="text-xs mt-2 font-mono tracking-widest"
-                  [class.text-gray-400]="backgroundColor() === 'dark'"
-                  [class.text-gray-500]="backgroundColor() === 'light'">PASO {{ manualStep() + 1 }} / {{ totalSteps }}</span>
+  <footer class="flex flex-col items-center justify-center px-2 pt-2 pb-4 space-y-3 min-h-[110px] flex-shrink-0"
+    [class.pointer-events-none]="areControlsDisabled()" [class.opacity-60]="areControlsDisabled()"
+    [class.opacity-50]="isolatedPart() !== null">
+    <!-- Mode Toggle -->
+    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors"
+      [class.bg-white/10]="backgroundColor() === 'dark'" [class.bg-black/10]="backgroundColor() === 'light'">
+      <button (click)="setMode('final')" class="px-4 py-1 rounded-full transition-all duration-200"
+        [class.bg-skaply-accent]="mode() === 'final'" [class.text-skaply-dark]="mode() === 'final'"
+        [class.text-skaply-muted]="mode() !== 'final' && backgroundColor() === 'dark'"
+        [class.text-gray-500]="mode() !== 'final' && backgroundColor() === 'light'">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+          <path
+            d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
+        </svg>
+        Mueble
+      </button>
+      <button class="btn-opciones-mueble" (click)="setMode('manual')"
+        class="px-4 py-1 rounded-full transition-all duration-200" [class.bg-skaply-accent]="mode() === 'manual'"
+        [class.text-skaply-dark]="mode() === 'manual'"
+        [class.text-skaply-muted]="mode() !== 'manual' && backgroundColor() === 'dark'"
+        [class.text-gray-500]="mode() !== 'manual' && backgroundColor() === 'light'">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+          <path
+            d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
+        </svg>
+        Paso a paso
+      </button>
+      <button (click)="setMode('simulation')" class="px-4 py-1 rounded-full transition-all duration-200"
+        [class.bg-skaply-accent]="mode() === 'simulation'" [class.text-skaply-dark]="mode() === 'simulation'"
+        [class.text-skaply-muted]="mode() !== 'simulation' && backgroundColor() === 'dark'"
+        [class.text-gray-500]="mode() !== 'simulation' && backgroundColor() === 'light'">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+          <path
+            d="M701-535q14-9 14-25t-14-25L506-710q-15-10-30.5-1.5T460-685v250q0 18 15.5 26.5T506-410l195-125ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-520q0-17 11.5-28.5T120-720q17 0 28.5 11.5T160-680v520h520q17 0 28.5 11.5T720-120q0 17-11.5 28.5T680-80H160Zm160-720v480-480Z" />
+        </svg>
+        Simulación
+      </button>
+    </div>
+
+    <!-- Dynamic Controls Area -->
+    <div class="w-full flex items-center justify-between min-h-[52px]">
+      @if (mode() === 'manual') {
+      <button (click)="prevStep()" [disabled]="isManualFirstStep()"
+        class="w-12 h-12 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
+        [class.bg-black/10]="backgroundColor() === 'light'" [class.hover:bg-black/20]="backgroundColor() === 'light'">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+
+      <div class="flex-grow flex flex-col items-center mx-2 sm:mx-4">
+        <div class="w-full max-w-xs rounded-full h-1.5" [class.bg-white/20]="backgroundColor() === 'dark'"
+          [class.bg-black/10]="backgroundColor() === 'light'">
+          <div class="bg-skaply-accent h-1.5 rounded-full transition-all duration-300 ease-in-out"
+            [style.width.%]="(manualStep() + 1) / totalSteps * 100">
           </div>
-    
-          @if (!isManualComplete()) {
-            <button (click)="nextStep()" class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
-              <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
+        </div>
+        <span class="text-xs mt-2 font-mono tracking-widest" [class.text-gray-400]="backgroundColor() === 'dark'"
+          [class.text-gray-500]="backgroundColor() === 'light'">PASO {{ manualStep() + 1 }} / {{ totalSteps }}</span>
+      </div>
+
+      @if (!isManualComplete()) {
+      <button (click)="nextStep()"
+        class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+      } @else {
+      <button (click)="reset()"
+        class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 2v6h6"></path>
+          <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
+          <path d="M21 22v-6h-6"></path>
+          <path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path>
+        </svg>
+      </button>
+      }
+      } @else if (mode() === 'simulation') {
+      <!-- Simulation Controls -->
+      <div class="w-full flex items-center justify-center space-x-4">
+        <button (click)="togglePause()"
+          class="w-12 h-12 flex items-center justify-center rounded-full transition-colors"
+          [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
+          [class.bg-black/10]="backgroundColor() === 'light'" [class.hover:bg-black/20]="backgroundColor() === 'light'">
+          @if(isSimulationPaused()) {
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
           } @else {
-            <button (click)="reset()" class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
-              <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"></path><path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path><path d="M21 22v-6h-6"></path><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path></svg>
-            </button>
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
           }
-        } @else if (mode() === 'simulation') {
-          <!-- Simulation Controls -->
-          <div class="w-full flex items-center justify-center space-x-4">
-            <button (click)="togglePause()" class="w-12 h-12 flex items-center justify-center rounded-full transition-colors"
-                    [class.bg-white/10]="backgroundColor() === 'dark'" [class.hover:bg-white/20]="backgroundColor() === 'dark'"
-                    [class.bg-black/10]="backgroundColor() === 'light'" [class.hover:bg-black/20]="backgroundColor() === 'light'">
-              @if(isSimulationPaused()) {
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              } @else {
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-              }
-            </button>
-            
-            <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors"
-                 [class.bg-white/10]="backgroundColor() === 'dark'"
-                 [class.bg-black/10]="backgroundColor() === 'light'">
-              @for(speed of simulationSpeeds; track speed) {
-                <button (click)="setSimulationSpeed(speed)" 
-                        class="px-3 py-1 rounded-full transition-colors duration-200 text-xs w-12"
-                        [class.bg-skaply-accent]="simulationSpeed() === speed"
-                        [class.text-skaply-dark]="simulationSpeed() === speed"
-                        [class.text-skaply-muted]="simulationSpeed() !== speed && backgroundColor() === 'dark'"
-                        [class.text-gray-500]="simulationSpeed() !== speed && backgroundColor() === 'light'">
-                  {{speed}}x
-                </button>
-              }
-            </div>
-          </div>
-        } @else {
-           <div class="w-full flex items-center justify-center text-sm"
-                [class.text-gray-400]="backgroundColor() === 'dark'"
-                [class.text-gray-500]="backgroundColor() === 'light'">
-             Rotación automática activada
-           </div>
-        }
+        </button>
+
+        <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors"
+          [class.bg-white/10]="backgroundColor() === 'dark'" [class.bg-black/10]="backgroundColor() === 'light'">
+          @for(speed of simulationSpeeds; track speed) {
+          <button (click)="setSimulationSpeed(speed)"
+            class="px-3 py-1 rounded-full transition-colors duration-200 text-xs w-12"
+            [class.bg-skaply-accent]="simulationSpeed() === speed"
+            [class.text-skaply-dark]="simulationSpeed() === speed"
+            [class.text-skaply-muted]="simulationSpeed() !== speed && backgroundColor() === 'dark'"
+            [class.text-gray-500]="simulationSpeed() !== speed && backgroundColor() === 'light'">
+            {{speed}}x
+          </button>
+          }
+        </div>
       </div>
-    </footer>
+      } @else {
+      <div class="w-full flex items-center justify-center text-sm" [class.text-gray-400]="backgroundColor() === 'dark'"
+        [class.text-gray-500]="backgroundColor() === 'light'">
+        Rotación automática activada
+      </div>
+      }
+    </div>
+  </footer>
   }
 </div>

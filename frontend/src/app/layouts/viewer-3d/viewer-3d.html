@@ -1,10 +1,9 @@
 <div class="fixed h-screen font-sans relative bg-marron-oscuro overflow-hidden">
-    <main class="relative top-28 flex flex-col justify-start pt-20">
 
-        <app-furniture-viewer></app-furniture-viewer>
+    <app-interactive-assembly></app-interactive-assembly>
 
-        <!-- Panel de información de controles -->
-        <div class="ml-4 bg-beige rounded-2xl px-3 py-1.5 text-xs w-fit mb-3">
+    <!-- Panel de información de controles -->
+    <!-- <div class="ml-4 bg-beige rounded-2xl px-3 py-1.5 text-xs w-fit mb-3">
             <div class="flex items-center gap-1 text-marron-oscuro whitespace-nowrap">
                 <span class="material-symbols-rounded text-sm">mouse</span>
                 <span>Clic + arrastrar para rotar | Rueda para zoom</span>
@@ -21,25 +20,24 @@
                 <span class="material-symbols-rounded text-lg group-hover:scale-110 transition-transform duration-300">grid_view</span>
                 <span class="text-[10px]">Wireframe</span>
             </button>
-        </div>
+        </div> -->
 
-        <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
-        <app-modal [(open)]="isIncidenciaModalOpen">
-            <h2 class="text-2xl font-semibold mb-4 text-marron-oscuro">Reportar Incidencia</h2>
-            <form (ngSubmit)="resetIncidenciaForm()" >
-                <div class="mb-4">
-                    <label for="description" class="block text-marron-oscuro font-medium mb-2">Descripción de la incidencia:</label>
-                    <textarea id="description" name="description" required
-                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-marron-oscuro"></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" (click)="isIncidenciaModalOpen = false"
-                        class="bg-gray-300 text-marron-oscuro px-4 py-2 rounded mr-2 hover:bg-gray-400 transition">Cancelar</button>
-                    <button type="submit"
-                        class="bg-marron-oscuro text-white px-4 py-2 rounded hover:bg-marron-secundario transition disabled:opacity-50">Enviar</button>
-                </div>
-            </form>
-        </app-modal>
-        <app-menu-viewer></app-menu-viewer>
-    </main>
+    <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
+    <app-modal [(open)]="isIncidenciaModalOpen">
+        <h2 class="text-2xl font-semibold mb-4 text-marron-oscuro">Reportar Incidencia</h2>
+        <form (ngSubmit)="resetIncidenciaForm()">
+            <div class="mb-4">
+                <label for="description" class="block text-marron-oscuro font-medium mb-2">Descripción de la
+                    incidencia:</label>
+                <textarea id="description" name="description" required
+                    class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-marron-oscuro"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" (click)="isIncidenciaModalOpen = false"
+                    class="bg-gray-300 text-marron-oscuro px-4 py-2 rounded mr-2 hover:bg-gray-400 transition">Cancelar</button>
+                <button type="submit"
+                    class="bg-marron-oscuro text-white px-4 py-2 rounded hover:bg-marron-secundario transition disabled:opacity-50">Enviar</button>
+            </div>
+        </form>
+    </app-modal>
 </div>

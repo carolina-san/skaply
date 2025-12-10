@@ -13,36 +13,40 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./header.css']
 })
 export class Header {
-  
+
   showBackButton = true;
   currentRoute: string = '';
   scrolled = false;
-  
+
   constructor(
-    private router: Router, 
-    private location: Location, 
+    private router: Router,
+    private location: Location,
     private apiService: ApiService,
     private authService: AuthService
   ) {
-     this.router.events.subscribe(() => {
+    this.router.events.subscribe(() => {
       this.currentRoute = this.router.url;
     });
   }
- 
+
 
   ngOnInit() {
     window.addEventListener("scroll", () => {
-      this.scrolled = window.scrollY > 30; 
+      this.scrolled = window.scrollY > 30;
     });
   }
   goBack(): void {
-    
+
     this.finMontaje(); // Elimina el contexto del mueble (comprobar si sale de un montaje)
     this.location.back();
   }
 
-  finMontaje(){
-    if(this.currentRoute.includes('viewer-3d')){
+  get isHome(): boolean {
+    return this.router.url.split('?')[0] === '/';
+  }
+  
+  finMontaje() {
+    if (this.currentRoute.includes('viewer-3d')) {
       this.apiService.resetMontaje().subscribe({
         next: (res) => {
           console.log("Montaje finalizado:", res);

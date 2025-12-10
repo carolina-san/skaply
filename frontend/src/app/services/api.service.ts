@@ -71,6 +71,11 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });
   }
 
+  sendWelcomeEvent(): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot/welcome`, { sessionId });
+  }
+
   // Métodos de autenticación
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/login`, { email, password });

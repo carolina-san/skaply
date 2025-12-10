@@ -85,7 +85,6 @@ export class ChatbotController {
     handleWebhook = async (req: Request, res: Response): Promise<void> => {
         try {
             const action: string = req.body.queryResult.action;
-            console.log(req.body.session);
             switch (action) {
                 case "get.providers":
                     await this.getProviders(req, res);
@@ -100,9 +99,18 @@ export class ChatbotController {
                 case "get.provider.by.name":
                     await this.getProviderByName(req, res);
                     return;
+                case "get.furniture.info":
+                    await this.getFurnitureInfo(req, res);
+                    return;
+                case "set.reference":
+                    await this.setReference(req, res);
+                    return;
+                case "get.dificultad":
+                    await this.getDificultad(req, res);
+                    return;
                 default:
                     res.status(200).json({
-                        fulfillmentText: "No entiendo esa consulta."
+                        fulfillmentText: "No entiendo esa consulta. (backend)"
                     });
                     return;
             }
@@ -184,6 +192,38 @@ export class ChatbotController {
         } catch (error) {
             console.error("Error en resetMontaje:", error);
             res.status(500).json({ message: "Error enviando RESET_MONTAJE" });
+        }
+    };
+
+    sendWelcomeEvent = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const sessionId = req.body.sessionId || "default";
+            const sessionPath = this.sessionClient.projectAgentSessionPath(
+                this.projectId,
+                sessionId
+            );
+
+            const request = {
+                session: sessionPath,
+                queryInput: {
+                    event: {
+                        name: "DEFAULT_WELCOME_INTENT",
+                        languageCode: "es"
+                    }
+                }
+            };
+
+            const [responses] = await this.sessionClient.detectIntent(request);
+            const result = responses.queryResult;
+
+            res.json({
+                fulfillmentText: result?.fulfillmentText ?? "",
+                fulfillmentMessages: result?.fulfillmentMessages ?? []
+            });
+
+        } catch (error) {
+            console.error("Error en sendWelcomeEvent:", error);
+            res.status(500).json({ message: "Error enviando evento de bienvenida" });
         }
     };
 
@@ -317,6 +357,163 @@ export class ChatbotController {
                 fulfillmentText: "Error al registrar la incidencia."
             });
         }
+    };
+
+    private getFurnitureInfo = async (req: Request, res: Response): Promise<void> => {
+        let ref = req.body.queryResult.parameters?.furniture_ref;
+
+        if (!ref) {
+            const ctxMontaje = req.body.queryResult.outputContexts?.find(
+                (c: any) => c.name.endsWith("/contexts/montaje_context")
+            );
+            const refCtx = req.body.queryResult.outputContexts?.find(
+                (c: any) => c.name.endsWith("/contexts/pedir_referencia_context")
+            );
+
+            ref =
+                ctxMontaje?.parameters?.furniture_ref ||
+                refCtx?.parameters?.furniture_ref;
+        }
+
+        if (!ref) {
+            res.status(200).json({
+                fulfillmentText: "Dime la referencia del mueble del que quieres información.",
+                outputContexts: [
+                    {
+                        name: `${req.body.session}/contexts/pedir_referencia_context`,
+                        lifespanCount: 2,
+                        parameters: {}
+                    },
+                    {
+                        name: `${req.body.session}/contexts/info_mueble_context`,
+                        lifespanCount: 2
+                    }
+                ]
+            });
+            return;
+        }
+
+        try {
+            const furniture = await this.furnitureService.getFurnitureIdByRef(ref);
+            const furnitureData = await this.furnitureService.getFurnitureById(furniture);
+
+            if (furnitureData.rows.length === 0) {
+                res.status(200).json({
+                    fulfillmentText: `No encontré el mueble con referencia "${ref}".`
+                });
+                return;
+            }
+
+            const furnitureDetails = furnitureData.rows[0];
+            const difficulty = await this.furnitureService.getFurnitureDifficulty(furniture);
+
+            res.status(200).json({
+                fulfillmentMessages: [
+                    {
+                        card: {
+                            title: furnitureDetails.name,
+                            subtitle: `Referencia: ${furnitureDetails.reference_number}`,
+                            imageUri: furnitureDetails.image_url || "https://via.placeholder.com/300",
+                            formattedText: `
+**Detalles del Mueble**
+
+• **Descripción:** ${furnitureDetails.short_description || 'N/A'}
+• **Categoría:** ${furnitureDetails.category_name}
+• **Proveedor:** ${furnitureDetails.provider_name}
+• **Color:** ${furnitureDetails.color_name}
+• **Dificultad:** ${difficulty}
+• **Pasos de montaje:** ${furnitureDetails.total_steps || 'N/A'}
+• **ID:** ${furnitureDetails.id}`
+                        }
+                    }
+                ]
+            });
+        } catch (error) {
+            console.error('Error fetching furniture info:', error);
+            res.status(200).json({
+                fulfillmentText: `Error al obtener la información del mueble con referencia "${ref}".`
+            });
+        }
+    };
+
+    private getDificultad = async (req: Request, res: Response): Promise<void> => {
+        let ref = req.body.queryResult.parameters?.furniture_ref;
+        if (!ref) {
+            const ctxMontaje = req.body.queryResult.outputContexts?.find(
+                (c: any) => c.name.endsWith("/contexts/montaje_context")
+            );
+            const refCtx = req.body.queryResult.outputContexts?.find(
+                (c: any) => c.name.endsWith("/contexts/pedir_referencia_context")
+            );
+
+            ref =
+                ctxMontaje?.parameters?.furniture_ref ||
+                refCtx?.parameters?.furniture_ref;
+        }
+        if (!ref) {
+             res.status(200).json({
+                fulfillmentText: "Dime la referencia del mueble del que quieres saber la dificultad.",
+                outputContexts: [
+                    {
+                        name: `${req.body.session}/contexts/pedir_referencia_context`,
+                        lifespanCount: 2,
+                        parameters: {}
+                    },
+                    {
+                        name: `${req.body.session}/contexts/dificultad_mueble_context`,
+                        lifespanCount: 2
+                    }
+                ]
+            });
+            return;
+        }
+        const id = await this.furnitureService.getFurnitureIdByRef(ref);
+        const dificultad = await this.furnitureService.getFurnitureDifficulty(id);
+
+        res.status(200).json({
+            fulfillmentText: `La dificultad de montaje del mueble con referencia "${ref}" es: ${dificultad}.`
+        });
+    }
+
+
+    private setReference = async (req: Request, res: Response): Promise<void> => {
+        const outputContexts = req.body.queryResult.outputContexts || [];
+
+        const hasInfoContext = outputContexts.some((c: any) =>
+            c.name.endsWith("/contexts/info_mueble_context")
+        );
+
+        const hasMontajeContext = outputContexts.some((c: any) =>
+            c.name.endsWith("/contexts/montaje_context")
+        );
+
+        const hasDificultadContext = outputContexts.some((c: any) =>
+            c.name.endsWith("/contexts/dificultad_mueble_context")
+        );
+
+        // Si estamos en contexto de información del mueble, llamamos a getFurnitureInfo
+        if (hasInfoContext) {
+            await this.getFurnitureInfo(req, res);
+            return;
+        }
+
+        if (hasDificultadContext) {
+            await this.getDificultad(req, res);
+            return;
+        }
+
+        // Si estamos en contexto de montaje, confirmamos la referencia
+        if (hasMontajeContext) {
+            res.status(200).json({
+                fulfillmentText: `Perfecto, ya tengo la referencia del montaje. ¿Continuamos?`
+            });
+            return;
+        }
+
+        // En cualquier otro caso, preguntamos qué quiere hacer con la referencia
+        res.status(200).json({
+            fulfillmentText: `Has indicado una referencia. ¿Qué quieres hacer con ella?`
+        });
     };
 
 }

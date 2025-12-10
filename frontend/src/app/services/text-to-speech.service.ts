@@ -5,7 +5,7 @@ import { elevenLabsConfig } from '../config/elevenlabs.config';
   providedIn: 'root'
 })
 export class TextToSpeechService {
-  private isEnabled = true;
+  private isEnabled = false;
   private volume = 0.8;
   private currentAudio: HTMLAudioElement | null = null;
 
@@ -14,7 +14,7 @@ export class TextToSpeechService {
     const savedSettings = localStorage.getItem('tts-settings');
     if (savedSettings) {
       const settings = JSON.parse(savedSettings);
-      this.isEnabled = settings.isEnabled ?? true;
+      this.isEnabled = settings.isEnabled ?? false;
       this.volume = settings.volume ?? 0.8;
     }
   }

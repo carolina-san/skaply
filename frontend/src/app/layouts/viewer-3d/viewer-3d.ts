@@ -5,11 +5,12 @@ import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
 import { Modal } from '../../components/modal/modal';
+import { InteractiveAssemblyComponent } from '../../components/interactive-assembly/interactive-assembly.component';
 
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, Chatbot, FurnitureViewer, MenuViewer, Modal],
+  imports: [CommonModule, RouterModule, Chatbot, InteractiveAssemblyComponent, MenuViewer, Modal],
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })

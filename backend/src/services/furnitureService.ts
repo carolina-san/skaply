@@ -1,4 +1,5 @@
 import pool from '@config/database';
+import { Difficulty } from '@/types/common.types';
 
 export class FurnitureService {
   
@@ -70,7 +71,7 @@ export class FurnitureService {
               cl.name AS color_name,
               cl.hex AS color_hex,
               f.difficulty,
-              f.short_description
+              f.short_description,
               COUNT(*) AS total_steps
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
@@ -89,8 +90,10 @@ export class FurnitureService {
               f.provider_id, 
               p.company_name, 
               f.color_id, 
-              f.short_description,
-              cl.name;`,
+              cl.name,
+              cl.hex,
+              f.difficulty,
+              f.short_description`,
           [id]);
         return result;
     }catch(error){
@@ -223,6 +226,33 @@ export class FurnitureService {
       throw new Error('Error fetching the furniture id by the ref provided');
     }
   }
+
+  async getFurnitureDifficulty(furnitureId: number): Promise<string> {
+    try {
+      const result = await pool.query(
+        'SELECT difficulty FROM furniture WHERE id = $1',
+        [furnitureId]
+      );
+      if (result.rows.length === 0) {
+        throw new Error('Furniture not found');
+      }
+
+      const difficulty = result.rows[0].difficulty.toLowerCase();
+      
+      // Map database values to Difficulty enum
+      const difficultyMap: { [key: string]: string } = {
+        'low': Difficulty.LOW,
+        'medium': Difficulty.MEDIUM,
+        'high': Difficulty.HIGH
+      };
+      
+      return difficultyMap[difficulty] || result.rows[0].difficulty;
+
+    } catch (error) {
+      throw new Error('Error fetching furniture difficulty');
+    }
+  }
+
 
     // Devuelve toda la iformación necesaria para el motor gráfico
   async getFurnitureAssembly(furnitureId: number) {

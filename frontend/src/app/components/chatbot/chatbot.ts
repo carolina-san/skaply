@@ -28,6 +28,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     isMobile: boolean = false;
     sessionId: string = '';
     private shouldScroll = false;
+    private welcomeEventSent: boolean = false;
     
     // Propiedades para TTS
     ttsEnabled: boolean = true;
@@ -79,21 +80,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
         
         if (furnitureRef) {
             this.inMontajeMode = true;
-            const welcomeMessage = `¡Hola! Has iniciado el montaje del mueble ${furnitureRef}. Si necesitas ayuda, no dudes en preguntar.`;
-            this.messages.push({
-                sender: 'bot',
-                text: welcomeMessage
-            });
-            // Leer mensaje de bienvenida en voz alta
-            this.speakMessage(welcomeMessage);
-        } else if (!this.inMontajeMode) {
-            const welcomeMessage = `¡Hola! Soy Allen, el asistente virtual de Skäply. ¿En qué puedo ayudarte hoy?`;
-            this.messages.push({
-                sender: 'bot',
-                text: welcomeMessage
-            });
-            // Leer mensaje de bienvenida en voz alta
-            this.speakMessage(welcomeMessage);
+            // Iniciar montaje automáticamente cuando se detecta referencia en URL
+            this.iniciarMontajeAutomatico(furnitureRef);
         }
 
         if (this.inMontajeMode && this.isDesktop) {
@@ -109,6 +97,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
     toggleChat() {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
+            
+            // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
+            if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
+                this.sendWelcomeEvent();
+                this.welcomeEventSent = true;
+            }
+            
         }
     }
 
@@ -297,5 +292,76 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (lastBotMessage && lastBotMessage.text) {
             this.speakMessage(lastBotMessage.text);
         }
+    }
+
+    sendWelcomeEvent() {
+        this.api.sendWelcomeEvent()
+            .subscribe(
+                data => {
+                    const messages = data.fulfillmentMessages || [];
+                    let handled = false;
+
+                    for (let m of messages) {
+                        if (m.message === "text" && m.text?.text?.[0]) {
+                            const botMessage = m.text.text[0];
+                            this.messages.push({ sender: 'bot', text: botMessage });
+                            this.speakMessage(botMessage);
+                            handled = true;
+                        }
+
+                        if (m.card) {
+                            this.messages.push({
+                                sender: 'bot',
+                                rich: {
+                                    type: 'card',
+                                    title: m.card.title,
+                                    subtitle: m.card.subtitle || '',
+                                    imageUri: m.card.imageUri || '',
+                                    buttons: m.card.buttons || []
+                                }
+                            });
+                            handled = true;
+                        }
+                    }
+                    this.shouldScroll = true;
+                },
+                error => {
+                    console.error('Error enviando welcome event:', error);
+                }
+            );
+    }
+
+    iniciarMontajeAutomatico(furnitureRef: string) {
+        this.api.iniciarMontaje(furnitureRef)
+            .subscribe({
+                next: (res) => {
+                    console.log("Montaje iniciado automáticamente:", res);
+                    // Mostrar la respuesta de Dialogflow en el chatbot
+                    const messages = res.fulfillmentMessages || [];
+                    for (let m of messages) {
+                        if (m.message === "text" && m.text?.text?.[0]) {
+                            const botMessage = m.text.text[0];
+                            this.messages.push({ sender: 'bot', text: botMessage });
+                            this.speakMessage(botMessage);
+                        }
+                        if (m.card) {
+                            this.messages.push({
+                                sender: 'bot',
+                                rich: {
+                                    type: 'card',
+                                    title: m.card.title,
+                                    subtitle: m.card.subtitle || '',
+                                    imageUri: m.card.imageUri || '',
+                                    buttons: m.card.buttons || []
+                                }
+                            });
+                        }
+                    }
+                    this.shouldScroll = true;
+                },
+                error: (err) => {
+                    console.error("Error iniciando montaje automáticamente:", err);
+                }
+            });
     }
 }
