@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 
 import { errorHandler } from '@middleware/errorHandler';
 import apiRoutes from '@/routes';
-import chatbotRoutes from './routes/chatbot';
 import { connectDB } from '@/config/database';
 import corsMiddleware from './config/cors';
 import './config/passport'; // Initialize passport configuration
@@ -26,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api', apiRoutes);
-app.use('/api/chatbot', chatbotRoutes);
+
 
 // Error handling
 app.use(errorHandler);
