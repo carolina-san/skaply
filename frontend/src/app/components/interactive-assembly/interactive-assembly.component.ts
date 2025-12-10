@@ -2,32 +2,33 @@
 
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
+import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
 
 interface AssemblyPart {
-  object: THREE.Object3D;
-  startPosition: THREE.Vector3;
-  targetPosition: THREE.Vector3;
+  object: RenderableObject;
+  startPosition: Vector3;
+  targetPosition: Vector3;
   appearStep: number;
   joinStep: number;
   name: string;
   description: string;
-  arrow?: THREE.ArrowHelper;
+  arrow?: RenderableObject;
 }
+
+import { ThreeEngineAdapter } from '../../engine-facade/three-adapter';
 
 @Component({
   selector: 'app-interactive-assembly',
   imports: [CommonModule],
+  providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './interactive-assembly.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
+
+  constructor(private engine: EngineFacade) { }
 
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
@@ -43,7 +44,7 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
   mode = signal<'manual' | 'simulation' | 'final'>('manual');
   isARActive = signal(false);
   arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
-  
+
   currentStep = computed(() => {
     switch (this.mode()) {
       case 'manual':
@@ -56,12 +57,12 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
         return 0;
     }
   });
-  
+
   isSimulating = computed(() => this.mode() === 'simulation');
-  
+
   isManualFirstStep = computed(() => this.manualStep() === 0);
   isManualComplete = computed(() => this.manualStep() === this.totalSteps - 1);
-  
+
   isSimulationPaused = signal(false);
   simulationSpeed = signal(1);
   readonly simulationSpeeds = [0.5, 1, 1.5, 2];
@@ -82,36 +83,38 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     "Paso 10: Fija el panel superior con los tornillos."
   ];
 
-  private renderer!: THREE.WebGLRenderer;
-  private scene!: THREE.Scene;
-  private camera!: THREE.PerspectiveCamera;
-  private controls!: OrbitControls;
-  private composer!: EffectComposer;
-  private outlinePass!: OutlinePass;
-  private raycaster = new THREE.Raycaster();
-  private pointer = new THREE.Vector2();
-  
+  /* 
+   * Engine facade abstracts these details
+   */
+  // private renderer!: THREE.WebGLRenderer;
+  // private scene!: THREE.Scene;
+  // private camera!: THREE.PerspectiveCamera;
+  // private controls!: OrbitControls;
+  // private composer!: EffectComposer;
+  // private outlinePass!: OutlinePass;
+  // private raycaster = new THREE.Raycaster();
+  // private pointer = new THREE.Vector2();
+
   private parts: AssemblyPart[] = [];
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
   private isolationTimer: any = null;
-  private lastHoveredObject: THREE.Object3D | null = null;
-  
+  private lastHoveredObject: RenderableObject | null = null;
+
   private simulationDirection = signal<'forward' | 'backward'>('forward');
   private lastStepTime = 0;
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
 
-  private onControlsChange = () => {
-    if (!this.controls) return;
-    const threshold = 0.01;
-    const isAtInitialState =
-        this.controls.object.position.distanceTo(this.controls.position0) < threshold &&
-        this.controls.target.distanceTo(this.controls.target0) < threshold &&
-        Math.abs(this.camera.zoom - this.controls.zoom0) < threshold;
+  // private onControlsChange = () => { ... } managed by facade loop mostly or we can re-implement listener if facade exposes events
+  // For now simple check in animate or just assume moved if interactions happen?
+  // The original code used a listener. Facade doesn't expose event listener yet.
+  // We can add a 'checkCameraMoved' to facade or just checking in animate.
+  // For this refactor I'll simplify: we won't track "isCameraMoved" exactly as before unless I add getCamera props.
+  // But wait, the facade has `getCamera()` as escape hatch.
 
-    this.isCameraMoved.set(!isAtInitialState);
-  };
+  private initialCameraState: any = null; // Store initial state manually if needed
+
 
   ngAfterViewInit(): void {
     this.resizeObserver = new ResizeObserver(entries => {
@@ -120,9 +123,9 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
         this.initThree();
         this.createFurniture();
         this.animate();
-        
+
         if (this.autoStartSimulation()) {
-            this.setMode('simulation');
+          this.setMode('simulation');
         }
 
         this.resizeObserver.disconnect();
@@ -136,12 +139,9 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
       cancelAnimationFrame(this.animationFrameId);
     }
     this.stopAR();
-    this.renderer?.dispose();
-    window.removeEventListener('resize', this.onWindowResize);
-    this.renderer?.domElement.removeEventListener('mousemove', this.onPointerMove);
-    this.controls?.removeEventListener('change', this.onControlsChange);
     this.resizeObserver?.disconnect();
-    if(this.isolationTimer) clearTimeout(this.isolationTimer);
+    this.engine.dispose();
+    if (this.isolationTimer) clearTimeout(this.isolationTimer);
   }
 
   nextStep(): void {
@@ -158,11 +158,11 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
-    this.controls.target.set(0, 1, 0); // Reset camera target
+    this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
   }
 
   resetCameraPosition(): void {
-    this.controls?.reset();
+    this.engine.resetControls();
   }
 
   public toggleSimulation(): void {
@@ -177,10 +177,13 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-    this.controls.autoRotate = newMode === 'simulation' || newMode === 'final';
+
+    // Auto rotate logic
+    const shouldRotate = newMode === 'simulation' || newMode === 'final';
+    this.engine.toggleControls(true, shouldRotate);
 
     this.exitIsolation();
-    
+
     if (newMode === 'simulation') {
       this.simulationStep.set(0);
       this.isSimulationPaused.set(false);
@@ -189,7 +192,7 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     } else if (newMode === 'final') {
       // Instantly move all parts to their final position
       this.parts.forEach(part => {
-        part.object.position.copy(part.targetPosition);
+        part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
     }
   }
@@ -208,19 +211,19 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
 
   public toggleAR(): void {
     if (this.isARActive()) {
-        this.stopAR();
-        this.arFlowState.set('idle');
+      this.stopAR();
+      this.arFlowState.set('idle');
     } else {
-        this.arFlowState.set('requesting');
+      this.arFlowState.set('requesting');
     }
   }
-  
+
   async proceedWithARPermission(): Promise<void> {
     try {
-        await this.startAR();
-        this.arFlowState.set('idle');
+      await this.startAR();
+      this.arFlowState.set('idle');
     } catch (error) {
-        this.arFlowState.set('denied');
+      this.arFlowState.set('denied');
     }
   }
 
@@ -238,259 +241,215 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
 
   private async startAR(): Promise<void> {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error('getUserMedia not supported on this browser!');
-        throw new Error('getUserMedia not supported');
+      console.error('getUserMedia not supported on this browser!');
+      throw new Error('getUserMedia not supported');
     }
 
     try {
-        // Ensure the model is fully assembled by switching to 'final' mode.
-        this.setMode('final');
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        this.videoStream = stream;
-        
-        this.isARActive.set(true);
-        this.controls.autoRotate = false; // Disable auto-rotation for AR mode
+      // Ensure the model is fully assembled by switching to 'final' mode.
+      this.setMode('final');
 
-        if (this.scene) {
-            this.scene.background = null;
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      this.videoStream = stream;
+
+      this.isARActive.set(true);
+      // Disable auto-rotation for AR mode
+      this.engine.toggleControls(true, false);
+
+      // Make background transparent
+      this.engine.setBackground(null);
+
+      // Defer video setup to avoid race conditions with view rendering
+      setTimeout(() => {
+        if (this.videoRef?.nativeElement) {
+          this.videoRef.nativeElement.srcObject = this.videoStream;
+          this.videoRef.nativeElement.play();
         }
-
-        // Defer video setup to avoid race conditions with view rendering
-        setTimeout(() => {
-            if (this.videoRef?.nativeElement) {
-                this.videoRef.nativeElement.srcObject = this.videoStream;
-                this.videoRef.nativeElement.play();
-            }
-        }, 0);
+      }, 0);
 
     } catch (error) {
-        console.error('Error accessing camera for AR:', error);
-        // Clean up state if permission is denied or another error occurs
-        this.stopAR(); 
-        // Propagate error to be handled by the permission flow
-        throw error;
+      console.error('Error accessing camera for AR:', error);
+      // Clean up state if permission is denied or another error occurs
+      this.stopAR();
+      // Propagate error to be handled by the permission flow
+      throw error;
     }
   }
 
   private stopAR(): void {
     this.isARActive.set(false);
     if (this.videoStream) {
-        this.videoStream.getTracks().forEach(track => track.stop());
-        this.videoStream = null;
+      this.videoStream.getTracks().forEach(track => track.stop());
+      this.videoStream = null;
     }
     if (this.videoRef?.nativeElement) {
-        this.videoRef.nativeElement.srcObject = null;
+      this.videoRef.nativeElement.srcObject = null;
     }
-    this.controls.autoRotate = this.mode() === 'final' || this.isSimulating();
+    const shouldRotate = this.mode() === 'final' || this.isSimulating();
+    this.engine.toggleControls(true, shouldRotate);
   }
 
   private initThree(): void {
-    this.scene = new THREE.Scene();
-    
     const canvas = this.canvasRef.nativeElement;
     const container = canvas.parentElement!;
     const { width, height } = container.getBoundingClientRect();
 
-    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    this.camera.position.set(2.5, 2.5, 4);
-    this.camera.lookAt(0, 1, 0);
+    this.engine.init(canvas, width, height);
 
-    this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-    this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.shadowMap.enabled = true;
-
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
-    this.controls.minDistance = 3;
-    this.controls.maxDistance = 15;
-    this.controls.target.set(0, 1, 0);
-    this.controls.autoRotate = false;
-    this.controls.autoRotateSpeed = 0.5;
-    this.controls.saveState();
-    this.controls.addEventListener('change', this.onControlsChange);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    this.scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    directionalLight.position.set(8, 10, 5);
-    directionalLight.castShadow = true;
-    this.scene.add(directionalLight);
-
-    const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
-    this.scene.add(hemisphereLight);
-
-    this.composer = new EffectComposer(this.renderer);
-    const renderPass = new RenderPass(this.scene, this.camera);
-    this.composer.addPass(renderPass);
-
-    this.outlinePass = new OutlinePass(new THREE.Vector2(width, height), this.scene, this.camera);
-    this.outlinePass.edgeStrength = 5;
-    this.outlinePass.edgeGlow = 0.5;
-    this.outlinePass.edgeThickness = 1;
-    this.outlinePass.visibleEdgeColor.set('#00ffff');
-    this.outlinePass.hiddenEdgeColor.set('#00ffff');
-    this.composer.addPass(this.outlinePass);
-    
     this.onPointerMove = this.onPointerMove.bind(this);
-    this.renderer.domElement.addEventListener('mousemove', this.onPointerMove);
+    canvas.addEventListener('mousemove', this.onPointerMove);
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 
   private createPart(
-    object: THREE.Object3D,
-    startPos: THREE.Vector3,
-    targetPos: THREE.Vector3,
+    object: RenderableObject,
+    startPos: Vector3,
+    targetPos: Vector3,
     appearStep: number,
     joinStep: number,
     name: string,
     description: string
   ): AssemblyPart {
-    object.position.copy(startPos);
+    object.setPosition(startPos.x, startPos.y, startPos.z);
     object.castShadow = true;
     object.receiveShadow = true;
-    this.scene.add(object);
+    this.engine.addToScene(object);
     return { object, startPosition: startPos, targetPosition: targetPos, appearStep, joinStep, name, description };
   }
-  
-  private createSidePanelWithHoles(dowelHolePositions: { z: number }[], screwHolePositions: { z: number }[]): THREE.Group {
-      const woodMaterial = new THREE.MeshStandardMaterial({ color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 });
-      const holeMaterial = new THREE.MeshStandardMaterial({ color: 0x4F4A45, roughness: 0.9 });
 
-      const group = new THREE.Group();
-      const panelGeo = new THREE.BoxGeometry(0.1, 2, 2);
-      const panelMesh = new THREE.Mesh(panelGeo, woodMaterial);
-      group.add(panelMesh);
+  private createSidePanelWithHoles(dowelHolePositions: { z: number }[], screwHolePositions: { z: number }[]): RenderableObject {
+    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
+    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
 
-      const holeGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.12, 12);
-      dowelHolePositions.forEach(p => {
-          const bottomHole = new THREE.Mesh(holeGeo.clone(), holeMaterial);
-          bottomHole.position.set(0, -0.94, p.z);
-          bottomHole.rotation.z = Math.PI / 2;
-          group.add(bottomHole);
+    const group = this.engine.createGroup();
 
-          const topHole = new THREE.Mesh(holeGeo.clone(), holeMaterial);
-          topHole.position.set(0, 0.94, p.z);
-          topHole.rotation.z = Math.PI / 2;
-          group.add(topHole);
-      });
-      
-      const pilotHoleGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.1, 12);
-      screwHolePositions.forEach(p => {
-        const pilotHole = new THREE.Mesh(pilotHoleGeo, holeMaterial);
-        pilotHole.position.set(0, 0.95, p.z);
-        group.add(pilotHole);
-      });
+    const panelMesh = this.engine.createMesh({ type: 'box', args: [0.1, 2, 2] }, woodMaterial);
+    group.add(panelMesh);
 
-      return group;
+    const holeGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
+    dowelHolePositions.forEach(p => {
+      const bottomHole = this.engine.createMesh(holeGeo, holeMaterial);
+      bottomHole.setPosition(0, -0.94, p.z);
+      bottomHole.setRotation(0, 0, Math.PI / 2);
+      group.add(bottomHole);
+
+      const topHole = this.engine.createMesh(holeGeo, holeMaterial);
+      topHole.setPosition(0, 0.94, p.z);
+      topHole.setRotation(0, 0, Math.PI / 2);
+      group.add(topHole);
+    });
+
+    const pilotHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.045, 0.045, 0.1, 12] };
+    screwHolePositions.forEach(p => {
+      const pilotHole = this.engine.createMesh(pilotHoleGeo, holeMaterial);
+      pilotHole.setPosition(0, 0.95, p.z);
+      group.add(pilotHole);
+    });
+
+    return group;
   }
-  
-  private createTopPanelWithHoles(dowelHolePositions: {x: number, y: number, z: number}[], screwHolePositions: {x: number, z: number}[]): THREE.Group {
-      const woodMaterial = new THREE.MeshStandardMaterial({ color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 });
-      const holeMaterial = new THREE.MeshStandardMaterial({ color: 0x4F4A45, roughness: 0.9 });
 
-      const group = new THREE.Group();
-      const panelGeo = new THREE.BoxGeometry(2.2, 0.1, 2.2);
-      const panelMesh = new THREE.Mesh(panelGeo, woodMaterial);
-      group.add(panelMesh);
-      
-      const dowelHoleGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.12, 12);
-      dowelHolePositions.forEach(p => {
-          const holeMesh = new THREE.Mesh(dowelHoleGeo, holeMaterial);
-          holeMesh.position.set(p.x, 0, p.z);
-          group.add(holeMesh);
-      });
+  private createTopPanelWithHoles(dowelHolePositions: { x: number, y: number, z: number }[], screwHolePositions: { x: number, z: number }[]): RenderableObject {
+    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
+    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
 
-      const screwHoleGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.12, 12);
-      screwHolePositions.forEach(p => {
-          const holeMesh = new THREE.Mesh(screwHoleGeo, holeMaterial);
-          holeMesh.position.set(p.x, 0, p.z);
-          group.add(holeMesh);
-      });
-      
-      return group;
+    const group = this.engine.createGroup();
+    const panelMesh = this.engine.createMesh({ type: 'box', args: [2.2, 0.1, 2.2] }, woodMaterial);
+    group.add(panelMesh);
+
+    const dowelHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
+    dowelHolePositions.forEach(p => {
+      const holeMesh = this.engine.createMesh(dowelHoleGeo, holeMaterial);
+      holeMesh.setPosition(p.x, 0, p.z);
+      group.add(holeMesh);
+    });
+
+    const screwHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.045, 0.045, 0.12, 12] };
+    screwHolePositions.forEach(p => {
+      const holeMesh = this.engine.createMesh(screwHoleGeo, holeMaterial);
+      holeMesh.setPosition(p.x, 0, p.z);
+      group.add(holeMesh);
+    });
+
+    return group;
   }
 
   private createFurniture(): void {
-    const woodMaterial = new THREE.MeshStandardMaterial({ color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 });
-    const screwMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.4, metalness: 0.9 });
-    const holeMaterial = new THREE.MeshStandardMaterial({ color: 0x4F4A45, roughness: 0.9 });
-    const dowelGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8);
+    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
+    const screwMaterial: MaterialConfig = { type: 'standard', color: 0x374151, roughness: 0.4, metalness: 0.9 };
+    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
+    const dowelArgs = [0.03, 0.03, 0.2, 8];
     let step = 0;
 
-    const baseGeo = new THREE.BoxGeometry(2, 0.1, 2);
-    const baseMesh = new THREE.Mesh(baseGeo, woodMaterial);
-    this.parts.push(this.createPart(baseMesh, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 0, 0, 'Panel Base', 'Panel inferior de madera (100x100x2cm)'));
-    
-    const baseDowelPositions = [ { x: 0.9, z: -0.9 }, { x: -0.9, z: -0.9 }, { x: 0.9, z: 0.9 }, { x: -0.9, z: 0.9 }];
-    const holeGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.12, 12);
+    const baseMesh = this.engine.createMesh({ type: 'box', args: [2, 0.1, 2] }, woodMaterial);
+    this.parts.push(this.createPart(baseMesh, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, 0, 0, 'Panel Base', 'Panel inferior de madera (100x100x2cm)'));
+
+    const baseDowelPositions = [{ x: 0.9, z: -0.9 }, { x: -0.9, z: -0.9 }, { x: 0.9, z: 0.9 }, { x: -0.9, z: 0.9 }];
+    const holeGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
+
     baseDowelPositions.forEach(p => {
-        const holeMesh = new THREE.Mesh(holeGeo, holeMaterial);
-        holeMesh.position.set(p.x, 0.04, p.z);
-        baseMesh.add(holeMesh);
-        
-        const dowelMesh = new THREE.Mesh(dowelGeo, woodMaterial);
-        const partDowel = this.createPart(dowelMesh, new THREE.Vector3(p.x, 0.5, p.z), new THREE.Vector3(p.x, 0.15, p.z), step, step + 1, 'Tarugo de Madera', 'Cilindro de madera de haya (Ø6x30mm)');
-        partDowel.arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.2, 0), 0.3, 0x00ffff);
-        partDowel.object.add(partDowel.arrow);
-        this.parts.push(partDowel);
+      const holeMesh = this.engine.createMesh(holeGeo, holeMaterial);
+      holeMesh.setPosition(p.x, 0.04, p.z);
+      baseMesh.add(holeMesh);
+
+      const dowelMesh = this.engine.createMesh({ type: 'cylinder', args: dowelArgs }, woodMaterial);
+      const partDowel = this.createPart(dowelMesh, { x: p.x, y: 0.5, z: p.z }, { x: p.x, y: 0.15, z: p.z }, step, step + 1, 'Tarugo de Madera', 'Cilindro de madera de haya (Ø6x30mm)');
+      partDowel.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.3, 0x00ffff);
+      partDowel.object.add(partDowel.arrow);
+      this.parts.push(partDowel);
     });
     step += 2;
 
-    const sidePanelDowelHolePositions = [{z: 0.9}, {z: -0.9}];
-    const screwPositions = [ { x: 0.95, z: 0.8 }, { x: -0.95, z: 0.8 }, { x: 0.95, z: -0.8 }, { x: -0.95, z: -0.8 } ];
+    const sidePanelDowelHolePositions = [{ z: 0.9 }, { z: -0.9 }];
+    const screwPositions = [{ x: 0.95, z: 0.8 }, { x: -0.95, z: 0.8 }, { x: 0.95, z: -0.8 }, { x: -0.95, z: -0.8 }];
     const sidePanelScrewHolePositions = screwPositions.map(p => ({ z: p.z })).filter((value, index, self) => self.findIndex(v => v.z === value.z) === index);
-    
+
     const rightPanel = this.createSidePanelWithHoles(sidePanelDowelHolePositions, sidePanelScrewHolePositions);
-    const partRight = this.createPart(rightPanel, new THREE.Vector3(1.5, 1.05, 0), new THREE.Vector3(0.95, 1.05, 0), step, step+1, 'Panel Lateral Derecho', 'Panel lateral de madera (100x100x5cm)');
-    partRight.arrow = new THREE.ArrowHelper(new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0.4, 0, 0), 0.35, 0x00ffff);
+    const partRight = this.createPart(rightPanel, { x: 1.5, y: 1.05, z: 0 }, { x: 0.95, y: 1.05, z: 0 }, step, step + 1, 'Panel Lateral Derecho', 'Panel lateral de madera (100x100x5cm)');
+    partRight.arrow = this.engine.createArrowHelper({ x: -1, y: 0, z: 0 }, { x: 0.4, y: 0, z: 0 }, 0.35, 0x00ffff);
     partRight.object.add(partRight.arrow);
     this.parts.push(partRight);
 
     const leftPanel = this.createSidePanelWithHoles(sidePanelDowelHolePositions, sidePanelScrewHolePositions);
-    const partLeft = this.createPart(leftPanel, new THREE.Vector3(-1.5, 1.05, 0), new THREE.Vector3(-0.95, 1.05, 0), step, step+1, 'Panel Lateral Izquierdo', 'Panel lateral de madera (100x100x5cm)');
-    partLeft.arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-0.4, 0, 0), 0.35, 0x00ffff);
+    const partLeft = this.createPart(leftPanel, { x: -1.5, y: 1.05, z: 0 }, { x: -0.95, y: 1.05, z: 0 }, step, step + 1, 'Panel Lateral Izquierdo', 'Panel lateral de madera (100x100x5cm)');
+    partLeft.arrow = this.engine.createArrowHelper({ x: 1, y: 0, z: 0 }, { x: -0.4, y: 0, z: 0 }, 0.35, 0x00ffff);
     partLeft.object.add(partLeft.arrow);
     this.parts.push(partLeft);
     step += 2;
 
-    const backPanelGeo = new THREE.BoxGeometry(1.8, 2, 0.1);
-    const backPanelMesh = new THREE.Mesh(backPanelGeo, woodMaterial);
-    const partBack = this.createPart(backPanelMesh, new THREE.Vector3(0, 1.05, -1.5), new THREE.Vector3(0, 1.05, -0.95), step, step+1, 'Panel Trasero', 'Panel fino de contrachapado (90x100cm)');
-    partBack.arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, -0.4), 0.35, 0x00ffff);
+    const backPanelMesh = this.engine.createMesh({ type: 'box', args: [1.8, 2, 0.1] }, woodMaterial);
+    const partBack = this.createPart(backPanelMesh, { x: 0, y: 1.05, z: -1.5 }, { x: 0, y: 1.05, z: -0.95 }, step, step + 1, 'Panel Trasero', 'Panel fino de contrachapado (90x100cm)');
+    partBack.arrow = this.engine.createArrowHelper({ x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -0.4 }, 0.35, 0x00ffff);
     partBack.object.add(partBack.arrow);
     this.parts.push(partBack);
     step += 2;
-    
+
     const topDowelPositions = [
-        { x: 0.95, y: 2.05, z: 0.9 }, { x: 0.95, y: 2.05, z: -0.9 },
-        { x: -0.95, y: 2.05, z: 0.9 }, { x: -0.95, y: 2.05, z: -0.9 }
+      { x: 0.95, y: 2.05, z: 0.9 }, { x: 0.95, y: 2.05, z: -0.9 },
+      { x: -0.95, y: 2.05, z: 0.9 }, { x: -0.95, y: 2.05, z: -0.9 }
     ];
     topDowelPositions.forEach(p => {
-        const dowelMesh = new THREE.Mesh(dowelGeo, woodMaterial);
-        const partDowel = this.createPart(dowelMesh, new THREE.Vector3(p.x, p.y + 0.5, p.z), new THREE.Vector3(p.x, p.y, p.z), step, step+1, 'Tarugo de Madera Superior', 'Cilindro de madera de haya (Ø6x30mm)');
-        partDowel.arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.2, 0), 0.3, 0x00ffff);
-        partDowel.object.add(partDowel.arrow);
-        this.parts.push(partDowel);
+      const dowelMesh = this.engine.createMesh({ type: 'cylinder', args: dowelArgs }, woodMaterial);
+      const partDowel = this.createPart(dowelMesh, { x: p.x, y: p.y + 0.5, z: p.z }, { x: p.x, y: p.y, z: p.z }, step, step + 1, 'Tarugo de Madera Superior', 'Cilindro de madera de haya (Ø6x30mm)');
+      partDowel.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.3, 0x00ffff);
+      partDowel.object.add(partDowel.arrow);
+      this.parts.push(partDowel);
     });
     step += 2;
 
     const topPanel = this.createTopPanelWithHoles(topDowelPositions, screwPositions);
-    const partTop = this.createPart(topPanel, new THREE.Vector3(0, 2.8, 0), new THREE.Vector3(0, 2.1, 0), step, step+1, 'Panel Superior', 'Panel superior de madera (110x110x2cm)');
-    partTop.arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.2, 0), 0.6, 0x00ffff);
+    const partTop = this.createPart(topPanel, { x: 0, y: 2.8, z: 0 }, { x: 0, y: 2.1, z: 0 }, step, step + 1, 'Panel Superior', 'Panel superior de madera (110x110x2cm)');
+    partTop.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.6, 0x00ffff);
     partTop.object.add(partTop.arrow);
     this.parts.push(partTop);
 
-    const screwGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 12);
+    const screwGeoArgs = [0.04, 0.04, 0.3, 12];
     screwPositions.forEach(p => {
-        const screwMesh = new THREE.Mesh(screwGeo, screwMaterial);
-        const partScrew = this.createPart(screwMesh, new THREE.Vector3(p.x, 2.8, p.z), new THREE.Vector3(p.x, 2.0, p.z), step, step+1, 'Tornillo de Montaje', 'Tornillo de acero (Ø8x40mm)');
-        partScrew.arrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.25, 0), 0.4, 0x00ffff);
-        partScrew.object.add(partScrew.arrow);
-        this.parts.push(partScrew);
+      const screwMesh = this.engine.createMesh({ type: 'cylinder', args: screwGeoArgs }, screwMaterial);
+      const partScrew = this.createPart(screwMesh, { x: p.x, y: 2.8, z: p.z }, { x: p.x, y: 2.0, z: p.z }, step, step + 1, 'Tornillo de Montaje', 'Tornillo de acero (Ø8x40mm)');
+      partScrew.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.25, z: 0 }, 0.4, 0x00ffff);
+      partScrew.object.add(partScrew.arrow);
+      this.parts.push(partScrew);
     });
     step += 2;
     this.totalSteps = step;
@@ -525,69 +484,91 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
 
   private animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
-    
+
+    // Check for camera movement
+    const isMoved = this.engine.checkControlsState();
+    if (this.isCameraMoved() !== isMoved) {
+      this.isCameraMoved.set(isMoved);
+    }
+
     if (this.isSimulating()) {
       this.runSimulation();
     }
-    
+
     const step = this.currentStep();
     const isolated = this.isolatedPart();
 
     if (isolated) {
       this.parts.forEach(part => {
-        part.object.visible = part === isolated;
+        part.object.setVisible(part === isolated);
         if (part.arrow) {
-          part.arrow.visible = false;
+          part.arrow.setVisible(false);
         }
       });
-      const meshesToHighlight: THREE.Object3D[] = [];
-      isolated.object.traverse(child => {
-        if (child instanceof THREE.Mesh) {
-          meshesToHighlight.push(child);
-        }
-      });
-      this.outlinePass.selectedObjects = meshesToHighlight;
+      // Facade way to highlight - pass the RenderableObject
+      this.engine.setHighlight([isolated.object]);
     } else {
-      const meshesToHighlight: THREE.Object3D[] = [];
+      const partsToHighlight: RenderableObject[] = [];
       this.parts
         .filter(part => {
-          const isMovingToTarget = part.object.position.distanceTo(part.targetPosition) > 0.01;
+          const currentPos = part.object.getPosition();
+          // simple distance check
+          const dx = currentPos.x - part.targetPosition.x;
+          const dy = currentPos.y - part.targetPosition.y;
+          const dz = currentPos.z - part.targetPosition.z;
+          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          const isMovingToTarget = dist > 0.01;
           return part.appearStep === step || (part.joinStep === step && isMovingToTarget);
         })
         .forEach(part => {
-          part.object.traverse(child => {
-            if (child instanceof THREE.Mesh) {
-              meshesToHighlight.push(child);
-            }
-          });
+          partsToHighlight.push(part.object);
         });
-      this.outlinePass.selectedObjects = meshesToHighlight;
+
+      this.engine.setHighlight(partsToHighlight);
 
       this.parts.forEach(part => {
         if (part.arrow) {
           if (step === part.appearStep) {
-            part.arrow.visible = true;
+            part.arrow.setVisible(true);
           } else if (step === part.joinStep) {
-            const distanceToTarget = part.object.position.distanceTo(part.targetPosition);
-            part.arrow.visible = distanceToTarget > 0.01;
+            const currentPos = part.object.getPosition();
+            const dx = currentPos.x - part.targetPosition.x;
+            const dy = currentPos.y - part.targetPosition.y;
+            const dz = currentPos.z - part.targetPosition.z;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            part.arrow.setVisible(dist > 0.01);
           } else {
-            part.arrow.visible = false;
+            part.arrow.setVisible(false);
           }
         }
 
         const target = step >= part.joinStep ? part.targetPosition : part.startPosition;
         if (this.mode() !== 'final') {
-          part.object.position.lerp(target, 0.08);
+          // Lerp implementation
+          const currentPos = part.object.getPosition();
+          const alpha = 0.08;
+          const newX = currentPos.x + (target.x - currentPos.x) * alpha;
+          const newY = currentPos.y + (target.y - currentPos.y) * alpha;
+          const newZ = currentPos.z + (target.z - currentPos.z) * alpha;
+          part.object.setPosition(newX, newY, newZ);
         }
 
         const hasAppeared = step >= part.appearStep;
-        const distanceToStart = part.object.position.distanceTo(part.startPosition);
-        part.object.visible = hasAppeared || distanceToStart > 0.01;
+
+        const currentPos = part.object.getPosition();
+        const start = part.startPosition;
+        const distStart = Math.sqrt(
+          Math.pow(currentPos.x - start.x, 2) +
+          Math.pow(currentPos.y - start.y, 2) +
+          Math.pow(currentPos.z - start.z, 2)
+        );
+
+        part.object.setVisible(hasAppeared || distStart > 0.01);
       });
     }
 
-    this.controls.update();
-    this.composer.render();
+    this.engine.render();
   }
 
   private onWindowResize(): void {
@@ -596,25 +577,21 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     if (!container) return;
 
     const { width, height } = container.getBoundingClientRect();
-    if(width > 0 && height > 0) {
-      this.camera.aspect = width / height;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(width, height);
-      this.composer.setSize(width, height);
-      this.outlinePass.resolution.set(width, height);
+    if (width > 0 && height > 0) {
+      this.engine.resize(width, height);
     }
   }
 
   private isolatePart(part: AssemblyPart): void {
     this.isolatedPart.set(part);
-    const worldPosition = new THREE.Vector3();
-    part.object.getWorldPosition(worldPosition);
-    this.controls.target.copy(worldPosition);
+    // Move controls target to object position
+    const pos = part.object.getPosition();
+    this.engine.setCameraProps(this.engine.getCamera().position, { x: pos.x, y: pos.y, z: pos.z });
   }
 
   private onPointerMove(event: MouseEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
-    
+
     const canvas = this.canvasRef.nativeElement;
     if (this.isolationTimer) {
       clearTimeout(this.isolationTimer);
@@ -625,37 +602,36 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
       canvas.style.cursor = 'grab';
       return;
     }
-    
+
     const rect = canvas.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const visibleObjects = this.parts
-      .filter(p => this.currentStep() >= p.appearStep)
-      .map(p => p.object);
-    const intersects = this.raycaster.intersectObjects(visibleObjects, true);
+    // Normalize x, y to -1 to 1
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    if (intersects.length > 0) {
-      let hoveredObjectRoot = intersects[0].object;
-      while (hoveredObjectRoot.parent && !(hoveredObjectRoot.parent instanceof THREE.Scene)) {
-        hoveredObjectRoot = hoveredObjectRoot.parent;
-      }
-      
-      canvas.style.cursor = 'pointer';
+    // Raycast using facade
+    const hitObject = this.engine.raycast(x, y);
 
-      if (this.lastHoveredObject !== hoveredObjectRoot) {
-          this.lastHoveredObject = hoveredObjectRoot;
+    if (hitObject) {
+      // We found an object.
+      // logic: find which Part owns this object.
+      const part = this.parts.find(p => p.object === hitObject || p.object.nativeObject === hitObject.nativeObject); // naive check
+
+      if (part && this.currentStep() >= part.appearStep) {
+        canvas.style.cursor = 'pointer';
+        if (this.lastHoveredObject !== hitObject) {
+          this.lastHoveredObject = hitObject;
           this.isolationTimer = setTimeout(() => {
-            const part = this.parts.find(p => p.object === hoveredObjectRoot);
-            if (part) {
-              this.isolatePart(part);
-            }
+            this.isolatePart(part);
           }, 1000);
+        }
+      } else {
+        canvas.style.cursor = 'grab';
+        this.lastHoveredObject = null;
       }
     } else {
       canvas.style.cursor = 'grab';
       this.lastHoveredObject = null;
     }
+
   }
 }
