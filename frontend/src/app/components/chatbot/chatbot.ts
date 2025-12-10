@@ -36,6 +36,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     isPlaying: boolean = false;
     
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+    @ViewChild('messageInput') private messageInput!: ElementRef<HTMLInputElement>;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
     constructor(
@@ -73,14 +74,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
         this.sessionId = saved;
 
-        console.log("SESSION ID:", this.sessionId);
-        
-        // Cargar configuración de TTS
         this.loadTTSSettings();
         
         if (furnitureRef) {
             this.inMontajeMode = true;
-            // Iniciar montaje automáticamente cuando se detecta referencia en URL
             this.iniciarMontajeAutomatico(furnitureRef);
         }
 
@@ -104,6 +101,12 @@ export class Chatbot implements OnInit, AfterViewChecked {
                 this.welcomeEventSent = true;
             }
             
+            // Hacer focus en el input cuando se abre el chatbot
+            if (this.chatVisible) {
+                setTimeout(() => {
+                    this.messageInput?.nativeElement?.focus();
+                }, 100);
+            }
         }
     }
 
@@ -162,7 +165,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     }
                     const payload = m.payload;
                     if (payload?.fields?.redirect) {
-                        console.log("Redirect detectado:", payload.fields.redirect);
 
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "registro") {
@@ -176,11 +178,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
                 }
 
                 if (!handled) {
-                    const fallbackMessage = 'No entiendo esa consulta.';
+                    const fallbackMessage = 'No puedo procesar esa consulta. Prueba otra vez';
                     this.messages.push({ sender: 'bot', text: fallbackMessage });
                     this.speakMessage(fallbackMessage);
                 }
                  this.shouldScroll = true;
+                 this.messageInput?.nativeElement?.focus();
+                 
             });
     }
 
@@ -218,6 +222,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     handleChipClick(text: string) {
         this.newMessage = text;
         this.sendMessage();
+        
     }
 
     openLink(url: string) {
@@ -335,8 +340,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
         this.api.iniciarMontaje(furnitureRef)
             .subscribe({
                 next: (res) => {
-                    console.log("Montaje iniciado automáticamente:", res);
-                    // Mostrar la respuesta de Dialogflow en el chatbot
                     const messages = res.fulfillmentMessages || [];
                     for (let m of messages) {
                         if (m.message === "text" && m.text?.text?.[0]) {
