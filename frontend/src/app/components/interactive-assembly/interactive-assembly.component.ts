@@ -3,6 +3,8 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
+import { ApiService } from '../../services/api.service';
+import { Furniture } from '../../types';
 
 interface AssemblyPart {
   object: RenderableObject;
@@ -28,7 +30,12 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
 
-  constructor(private engine: EngineFacade) { }
+  constructor(private engine: EngineFacade, private apiService: ApiService) { }
+  furnitures: Furniture[] = [];
+
+  getFurnitureById(idFurniture: number) {
+    return this.furnitures.find(furniture => furniture.id === idFurniture);
+  }
 
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
