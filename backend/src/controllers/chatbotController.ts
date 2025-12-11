@@ -52,19 +52,6 @@ export class ChatbotController {
                         text: userMessage,
                         languageCode: 'es'
                     }
-                },
-                queryParams: {
-                    contexts: [{
-                        name: `${sessionPath}/contexts/prueba-context`,
-                        lifespanCount: 3,
-                        parameters: {
-                            fields: {
-                                furniture_ref: {
-                                    stringValue: ref || ''
-                                }
-                            }
-                        }
-                    }]
                 }
             };
 
@@ -297,6 +284,7 @@ export class ChatbotController {
         const ctx = req.body.queryResult.outputContexts?.find(
             (c: any) => c.name.endsWith("/contexts/montaje_context")
         );
+    console.log("montaje_context completo en get tools:", JSON.stringify(ctx, null, 2));
 
         const ref = ctx?.parameters?.furniture_ref;
 
@@ -361,20 +349,20 @@ export class ChatbotController {
     };
 
     private getFurnitureInfo = async (req: Request, res: Response): Promise<void> => {
-        let ref = req.body.queryResult.parameters?.furniture_ref;
+        const parameters = req.body.queryResult.parameters || {};
+        const outputContexts = req.body.queryResult.outputContexts || [];
+        
+        let ref = parameters.furniture_ref2 && parameters.furniture_ref2.trim() !== ""
+            ? parameters.furniture_ref2
+            : undefined;
 
         if (!ref) {
-            const ctxMontaje = req.body.queryResult.outputContexts?.find(
-                (c: any) => c.name.endsWith("/contexts/montaje_context")
+            const montajeCtx = outputContexts.find((c: any) =>
+                c.name.endsWith("/contexts/montaje_context")
             );
-            const refCtx = req.body.queryResult.outputContexts?.find(
-                (c: any) => c.name.endsWith("/contexts/pedir_referencia_context")
-            );
-
-            ref =
-                ctxMontaje?.parameters?.furniture_ref ||
-                refCtx?.parameters?.furniture_ref;
+            ref = montajeCtx?.parameters?.furniture_ref;
         }
+
 
         if (!ref) {
             res.status(200).json({
@@ -438,19 +426,15 @@ export class ChatbotController {
     };
 
     private getDificultad = async (req: Request, res: Response): Promise<void> => {
-        let ref = req.body.queryResult.parameters?.furniture_ref;
+        let ref = req.body.queryResult.parameters?.furniture_ref2;
+
         if (!ref) {
-            const ctxMontaje = req.body.queryResult.outputContexts?.find(
+            const ctx = req.body.queryResult.outputContexts?.find(
                 (c: any) => c.name.endsWith("/contexts/montaje_context")
             );
-            const refCtx = req.body.queryResult.outputContexts?.find(
-                (c: any) => c.name.endsWith("/contexts/pedir_referencia_context")
-            );
-
-            ref =
-                ctxMontaje?.parameters?.furniture_ref ||
-                refCtx?.parameters?.furniture_ref;
+            ref = ctx?.parameters?.furniture_ref;
         }
+
         if (!ref) {
             res.status(200).json({
                 fulfillmentText: "Dime la referencia del mueble del que quieres saber la dificultad.",
@@ -468,12 +452,20 @@ export class ChatbotController {
             });
             return;
         }
-        const id = await this.furnitureService.getFurnitureIdByRef(ref);
-        const dificultad = await this.furnitureService.getFurnitureDifficulty(id);
 
-        res.status(200).json({
-            fulfillmentText: `La dificultad de montaje del mueble con referencia "${ref}" es: ${dificultad}.`
-        });
+        try {
+            const id = await this.furnitureService.getFurnitureIdByRef(ref);
+            const dificultad = await this.furnitureService.getFurnitureDifficulty(id);
+
+            res.status(200).json({
+                fulfillmentText: `La dificultad de montaje del mueble con referencia "${ref}" es: ${dificultad}.`
+            });
+        } catch (error) {
+            console.error("Error en getDificultad:", error);
+            res.status(200).json({
+                fulfillmentText: `No encontré el mueble con referencia "${ref}".`
+            });
+        }
     }
 
     private comprobarReferencia = async (req: Request, res: Response): Promise<void> => {
@@ -542,7 +534,6 @@ export class ChatbotController {
             c.name.endsWith("/contexts/dificultad_mueble_context")
         );
 
-        // Si estamos en contexto de información del mueble, llamamos a getFurnitureInfo
         if (hasInfoContext) {
             await this.getFurnitureInfo(req, res);
             return;
@@ -553,7 +544,6 @@ export class ChatbotController {
             return;
         }
 
-        // Si estamos en contexto de montaje, confirmamos la referencia
         if (hasMontajeContext) {
             res.status(200).json({
                 fulfillmentText: `Perfecto, ya tengo la referencia del montaje. ¿Continuamos?`
@@ -561,7 +551,6 @@ export class ChatbotController {
             return;
         }
 
-        // En cualquier otro caso, preguntamos qué quiere hacer con la referencia
         res.status(200).json({
             fulfillmentText: `Has indicado una referencia. ¿Qué quieres hacer con ella?`
         });
