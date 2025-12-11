@@ -78,7 +78,7 @@
         </div>
 
         <!-- Controles de Text-to-Speech -->
-        <div class="flex items-center justify-between bg-white rounded-lg p-2 mb-2 border border-gray-200">
+        <div class="flex items-center justify-between bg-white rounded-full p-1">
             <!-- Toggle TTS -->
             <div class="flex items-center space-x-2">
                 <button (click)="toggleTTS()" class="p-1 rounded-full transition-colors duration-200"
@@ -89,12 +89,6 @@
                             d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
                     </svg>
                 </button>
-
-                <!-- Indicador de reproducción -->
-                <div *ngIf="isPlaying" class="flex items-center text-blue-600 text-sm">
-                    <div class="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-1"></div>
-                    Reproduciendo...
-                </div>
 
                 <!-- Botón para repetir último mensaje -->
                 <button (click)="replayLastBotMessage()" class="p-1 text-gray-600 hover:text-blue-600 transition-colors"
@@ -127,8 +121,8 @@
 
         <!-- Botón de incidencia movido dentro del chat visible y con posición relativa -->
         <div class="relative py-2" *ngIf="!isCatalogPage">
-            <button class="btn-azul-chatbot absolute -top-16 right-0" (click)="abrirIncidencia()">
-                <span class="material-symbols-rounded w-7 h-7">
+            <button class="btn-azul-chatbot absolute -top-23 right-0" (click)="abrirIncidencia()">
+                <span class="material-symbols-rounded w-6 h-6">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path
                             d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />
