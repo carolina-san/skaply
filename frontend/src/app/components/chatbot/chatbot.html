@@ -6,7 +6,10 @@
   }">
 
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
-        class="absolute flex bottom-40 lg:bottom-5 right-4 bg-beige text-marron-oscuro items-center justify-center p-4 rounded-full shadow-lg hover:scale-110 transition-transform"
+    [ngClass]="{
+          'bottom-5': isCatalogPage,
+        }"
+        class="absolute bottom-40 flex right-4 bg-beige text-marron-oscuro items-center justify-center p-4 rounded-full shadow-lg hover:scale-110 transition-transform"
         (click)="toggleChat()">
         <span class="material-symbols-rounded w-6 h-6">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">

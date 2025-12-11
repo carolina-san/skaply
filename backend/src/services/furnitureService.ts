@@ -100,6 +100,57 @@ export class FurnitureService {
         throw new Error('Unable to fetch the furniture included in the parameters');
     }
   }
+
+  async getFurnitureByIdOrReference(identifier: string){
+    try{
+        // Intentar buscar por ID numérico primero
+        const numId = parseInt(identifier);
+        const isNumeric = !isNaN(numId) && identifier === numId.toString();
+        
+        const result = await pool.query(`
+          SELECT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.image_url,
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name,
+              cl.hex AS color_hex,
+              f.difficulty,
+              f.short_description,
+              COUNT(*) AS total_steps
+          FROM public.furniture f
+          INNER JOIN Step s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id
+          WHERE ${isNumeric ? 'f.id = $1' : 'f.reference_number = $1'}
+          GROUP BY 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.image_url,
+              f.reference_number, 
+              f.category_id, 
+              c.name, 
+              f.provider_id, 
+              p.company_name, 
+              f.color_id, 
+              cl.name,
+              cl.hex,
+              f.difficulty,
+              f.short_description`,
+          [isNumeric ? numId : identifier]);
+        return result;
+    }catch(error){
+        throw new Error('Unable to fetch the furniture included in the parameters');
+    }
+  }
  
   async getFurnitureParts(id:number){
     try{

@@ -32,12 +32,15 @@ export class FurnitureController {
 
   getFurnitureById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseInt(req.params.id || '0');
-      if (isNaN(id)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid furniture ID'));
+      const identifier = req.params.id;
+      
+      if (!identifier) {
+        next(new ApiError('BAD_REQUEST', 'Furniture ID or reference is required'));
         return;
       }
-      const result = await this.furnitureService.getFurnitureById(id);
+
+      // Intentar buscar por ID o referencia
+      const result = await this.furnitureService.getFurnitureByIdOrReference(identifier);
 
       if (result.rows.length === 0) {
         next(new ApiError('NOT_FOUND', 'Furniture not found'));

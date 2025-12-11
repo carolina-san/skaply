@@ -31,14 +31,16 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
 
   constructor(private engine: EngineFacade, private apiService: ApiService) { }
+
+  furnitureId = input<number | string>();
   furnitures: Furniture[] = [];
+
+  controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
+  autoStartSimulation = input<boolean>(false);
 
   getFurnitureById(idFurniture: number) {
     return this.furnitures.find(furniture => furniture.id === idFurniture);
   }
-
-  controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
-  autoStartSimulation = input<boolean>(false);
 
   showHeader = computed(() => this.controlsMode() === 'interactive');
   showFooterControls = computed(() => this.controlsMode() !== 'hidden');

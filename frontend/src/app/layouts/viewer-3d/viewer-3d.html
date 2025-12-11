@@ -1,6 +1,6 @@
 <div class="fixed h-screen font-sans relative bg-marron-oscuro overflow-hidden">
 
-    <app-interactive-assembly></app-interactive-assembly>
+    <app-interactive-assembly [furnitureId]="furnitureId"></app-interactive-assembly>
 
     <!-- Panel de información de controles -->
     <!-- <div class="ml-4 bg-beige rounded-2xl px-3 py-1.5 text-xs w-fit mb-3">
@@ -24,20 +24,63 @@
 
     <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
     <app-modal [(open)]="isIncidenciaModalOpen">
-        <h2 class="text-2xl font-semibold mb-4 text-marron-oscuro">Reportar Incidencia</h2>
-        <form (ngSubmit)="resetIncidenciaForm()">
-            <div class="mb-4">
-                <label for="description" class="block text-marron-oscuro font-medium mb-2">Descripción de la
-                    incidencia:</label>
-                <textarea id="description" name="description" required
-                    class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-marron-oscuro"></textarea>
-            </div>
-            <div class="flex justify-end">
-                <button type="button" (click)="isIncidenciaModalOpen = false"
-                    class="bg-gray-300 text-marron-oscuro px-4 py-2 rounded mr-2 hover:bg-gray-400 transition">Cancelar</button>
-                <button type="submit"
-                    class="bg-marron-oscuro text-white px-4 py-2 rounded hover:bg-marron-secundario transition disabled:opacity-50">Enviar</button>
-            </div>
-        </form>
+
+        <div class="p-6 sm:p-8 space-y-6">
+
+            <!-- TÍTULO -->
+            <h2 class="text-3xl font-bold text-marron-oscuro text-center sm:text-left">
+                Reportar Incidencia
+            </h2>
+
+            <!-- FORMULARIO -->
+            <form (ngSubmit)="enviarIncidencia()" #incidenciaForm="ngForm" class="space-y-5">
+
+                <!-- DESCRIPCIÓN -->
+                <div class="space-y-2">
+                    <label for="descripcion" class="block text-marron-oscuro font-medium">
+                        Descripción de la incidencia: 
+                    </label>
+
+                    <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
+                        placeholder="Describe el problema que encontraste..." class="w-full p-3 rounded-lg border border-gray-300 bg-white
+                 focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+        </textarea>
+                </div>
+
+                <!-- EMAIL -->
+                <div class="space-y-2">
+                    <label for="email" class="block text-marron-oscuro font-medium">
+                        Email (opcional):
+                    </label>
+
+                    <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="tu@email.com"
+                        class="w-full p-3 rounded-lg border border-gray-300 bg-white
+                 focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+
+                    <p class="text-xs text-gray-600">
+                        Si deseas recibir respuesta sobre esta incidencia.
+                    </p>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="flex justify-end gap-3 pt-3">
+
+                    <button type="button" (click)="isIncidenciaModalOpen = false" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700
+                 hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-marron-oscuro text-white
+                 hover:bg-marron-claro transition shadow-sm" [disabled]="!incidenciaForm.form.valid">
+                        Enviar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
     </app-modal>
+
 </div>
