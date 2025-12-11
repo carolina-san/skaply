@@ -1,86 +1,67 @@
-<div class="fixed h-screen font-sans relative bg-marron-oscuro overflow-hidden">
+<div class="fixed h-screen font-sans relative bg-marron-oscuro overflow-hidden flex">
 
+  <!-- Contenedor principal: ocupa el espacio restante -->
+  <div class="flex-1 h-full">
     <app-interactive-assembly [furnitureId]="furnitureId"></app-interactive-assembly>
+  </div>
 
-    <!-- Panel de información de controles -->
-    <!-- <div class="ml-4 bg-beige rounded-2xl px-3 py-1.5 text-xs w-fit mb-3">
-            <div class="flex items-center gap-1 text-marron-oscuro whitespace-nowrap">
-                <span class="material-symbols-rounded text-sm">mouse</span>
-                <span>Clic + arrastrar para rotar | Rueda para zoom</span>
-            </div>
-        </div>
-
-        <div class="flex gap-2 max-w-[10rem] ml-4 mb-4">
-            <button (click)="resetCamera()" class="btn-canvas">
-                <span class="material-symbols-rounded text-lg group-hover:scale-110 transition-transform duration-300">3d_rotation</span>
-                <span class="text-[10px]">Resetear</span>
-            </button>
-
-            <button (click)="toggleWireframe()" class="btn-canvas">
-                <span class="material-symbols-rounded text-lg group-hover:scale-110 transition-transform duration-300">grid_view</span>
-                <span class="text-[10px]">Wireframe</span>
-            </button>
-        </div> -->
-
+  <!-- Chatbot fijo en desktop -->
+  <div class="hidden lg:block w-96 h-full">
     <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
-    <app-modal [(open)]="isIncidenciaModalOpen">
+  </div>
 
-        <div class="p-6 sm:p-8 space-y-6">
+  <!-- Chatbot overlay en móvil -->
+  <div class="lg:hidden fixed bottom-5 right-4 z-50">
+    <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
+  </div>
 
-            <!-- TÍTULO -->
-            <h2 class="text-3xl font-bold text-marron-oscuro text-center sm:text-left">
-                Reportar Incidencia
-            </h2>
+  <!-- Modal de incidencia -->
+  <app-modal [(open)]="isIncidenciaModalOpen">
+    <div class="p-6 sm:p-8 space-y-6">
 
-            <!-- FORMULARIO -->
-            <form (ngSubmit)="enviarIncidencia()" #incidenciaForm="ngForm" class="space-y-5">
+      <!-- TÍTULO -->
+      <h2 class="text-3xl font-bold text-marron-oscuro text-center sm:text-left">
+        Reportar Incidencia
+      </h2>
 
-                <!-- DESCRIPCIÓN -->
-                <div class="space-y-2">
-                    <label for="descripcion" class="block text-marron-oscuro font-medium">
-                        Descripción de la incidencia: 
-                    </label>
+      <!-- FORMULARIO -->
+      <form (ngSubmit)="enviarIncidencia()" #incidenciaForm="ngForm" class="space-y-5">
 
-                    <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
-                        placeholder="Describe el problema que encontraste..." class="w-full p-3 rounded-lg border border-gray-300 bg-white
-                 focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
-        </textarea>
-                </div>
-
-                <!-- EMAIL -->
-                <div class="space-y-2">
-                    <label for="email" class="block text-marron-oscuro font-medium">
-                        Email (opcional):
-                    </label>
-
-                    <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="tu@email.com"
-                        class="w-full p-3 rounded-lg border border-gray-300 bg-white
-                 focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
-
-                    <p class="text-xs text-gray-600">
-                        Si deseas recibir respuesta sobre esta incidencia.
-                    </p>
-                </div>
-
-                <!-- BOTONES -->
-                <div class="flex justify-end gap-3 pt-3">
-
-                    <button type="button" (click)="isIncidenciaModalOpen = false" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700
-                 hover:bg-gray-300 transition">
-                        Cancelar
-                    </button>
-
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-marron-oscuro text-white
-                 hover:bg-marron-claro transition shadow-sm" [disabled]="!incidenciaForm.form.valid">
-                        Enviar
-                    </button>
-
-                </div>
-
-            </form>
-
+        <!-- DESCRIPCIÓN -->
+        <div class="space-y-2">
+          <label for="descripcion" class="block text-marron-oscuro font-medium">Descripción de la incidencia:</label>
+          <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
+            placeholder="Describe el problema que encontraste..." 
+            class="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+          </textarea>
         </div>
 
-    </app-modal>
+        <!-- EMAIL -->
+        <div class="space-y-2">
+          <label for="email" class="block text-marron-oscuro font-medium">Email (opcional):</label>
+          <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="tu@email.com"
+            class="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+          <p class="text-xs text-gray-600">
+            Si deseas recibir respuesta sobre esta incidencia.
+          </p>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="flex justify-end gap-3 pt-3">
+          <button type="button" (click)="isIncidenciaModalOpen = false" 
+                  class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+            Cancelar
+          </button>
+          <button type="submit" 
+                  class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm"
+                  [disabled]="!incidenciaForm.form.valid">
+            Enviar
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </app-modal>
 
 </div>
