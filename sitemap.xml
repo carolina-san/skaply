@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+   <!-- Sitemap de skaply -->
+   <sitemap>
+      <loc>https://skaply.ovh/sitemap-main.xml</loc>
+   </sitemap>
+
+   <!-- Sitemap de la web corporativa -->
+   <sitemap>
+      <loc>https://skaply.ovh/lynk/sitemap_index.xml</loc>
+   </sitemap>
+
+</sitemapindex>
