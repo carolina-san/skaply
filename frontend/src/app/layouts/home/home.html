@@ -202,22 +202,6 @@
     [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
-  <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
-  <app-modal [(open)]="isIncidenciaModalOpen">
-    <h2 class="text-2xl font-semibold mb-4 text-marron-oscuro">Reportar Incidencia</h2>
-    <form (ngSubmit)="resetIncidenciaForm()">
-      <div class="mb-4">
-        <label for="description" class="block text-marron-oscuro font-medium mb-2">Descripción de la incidencia:</label>
-        <textarea id="description" name="description" required
-          class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-marron-oscuro"></textarea>
-      </div>
-      <div class="flex justify-end">
-        <button type="button" (click)="isIncidenciaModalOpen = false"
-          class="bg-gray-300 text-marron-oscuro px-4 py-2 rounded mr-2 hover:bg-gray-400 transition">Cancelar</button>
-        <button type="submit"
-          class="bg-marron-oscuro text-white px-4 py-2 rounded hover:bg-marron-secundario transition disabled:opacity-50">Enviar</button>
-      </div>
-    </form>
-  </app-modal>
+  <app-chatbot></app-chatbot>
 </main>
 <app-footer></app-footer>

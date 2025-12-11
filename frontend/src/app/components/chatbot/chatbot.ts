@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { TextToSpeechService } from '../../services/text-to-speech.service';
 
@@ -29,21 +29,29 @@ export class Chatbot implements OnInit, AfterViewChecked {
     sessionId: string = '';
     private shouldScroll = false;
     private welcomeEventSent: boolean = false;
-    
+    isCatalogPage = false;
+
     // Propiedades para TTS
     ttsEnabled: boolean = true;
     ttsVolume: number = 0.8;
     isPlaying: boolean = false;
-    
+
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @ViewChild('messageInput') private messageInput!: ElementRef<HTMLInputElement>;
     @Output() abrirModalIncidencia = new EventEmitter<void>();
 
     constructor(
-        private route: ActivatedRoute, 
+        private route: ActivatedRoute,
         private api: ApiService,
-        private tts: TextToSpeechService
-    ) { }
+        private tts: TextToSpeechService,
+        private router: Router
+    ) {
+        this.router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                this.isCatalogPage = event.url.includes('catalogo');
+            }
+        });
+    }
 
 
     abrirIncidencia() {
@@ -75,7 +83,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
         this.sessionId = saved;
 
         this.loadTTSSettings();
-        
+
         if (furnitureRef) {
             this.inMontajeMode = true;
             this.iniciarMontajeAutomatico(furnitureRef);
@@ -86,21 +94,21 @@ export class Chatbot implements OnInit, AfterViewChecked {
         }
     }
     ngAfterViewChecked() {
-    if (this.shouldScroll) {
-        this.scrollToBottom();
-        this.shouldScroll = false;
+        if (this.shouldScroll) {
+            this.scrollToBottom();
+            this.shouldScroll = false;
+        }
     }
-}
     toggleChat() {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
-            
+
             // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
             if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
                 this.sendWelcomeEvent();
                 this.welcomeEventSent = true;
             }
-            
+
             // Hacer focus en el input cuando se abre el chatbot
             if (this.chatVisible) {
                 setTimeout(() => {
@@ -169,10 +177,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "registro") {
                                 window.location.href = "/registro";
-                                
-                                
+
+
                             }
-                        }, 2000); 
+                        }, 2000);
                         handled = true;
                     }
                 }
@@ -182,9 +190,9 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     this.messages.push({ sender: 'bot', text: fallbackMessage });
                     this.speakMessage(fallbackMessage);
                 }
-                 this.shouldScroll = true;
-                 this.messageInput?.nativeElement?.focus();
-                 
+                this.shouldScroll = true;
+                this.messageInput?.nativeElement?.focus();
+
             });
     }
 
@@ -222,7 +230,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     handleChipClick(text: string) {
         this.newMessage = text;
         this.sendMessage();
-        
+
     }
 
     openLink(url: string) {
@@ -230,7 +238,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     // Métodos para Text-to-Speech
-    
+
     /**
      * Carga la configuración de TTS desde el servicio
      */
@@ -246,7 +254,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
      */
     async speakMessage(text: string) {
         if (!this.ttsEnabled || !text) return;
-        
+
         try {
             this.isPlaying = true;
             await this.tts.speak(text);
@@ -263,7 +271,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     toggleTTS() {
         this.ttsEnabled = !this.ttsEnabled;
         this.tts.setEnabled(this.ttsEnabled);
-        
+
         if (!this.ttsEnabled) {
             this.stopSpeaking();
         }
@@ -293,7 +301,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
         const lastBotMessage = this.messages
             .filter(m => m.sender === 'bot' && m.text)
             .pop();
-        
+
         if (lastBotMessage && lastBotMessage.text) {
             this.speakMessage(lastBotMessage.text);
         }

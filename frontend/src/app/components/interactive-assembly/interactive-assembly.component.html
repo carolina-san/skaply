@@ -220,9 +220,7 @@
     <div class="w-full flex items-center justify-between min-h-[52px]">
       @if (mode() === 'manual') {
       <button (click)="prevStep()" [disabled]="isManualFirstStep()"
-        class="w-12 h-12 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        [class.bg-beige]="backgroundColor() === 'dark'" [class.hover:bg-beige]="backgroundColor() === 'dark'"
-        [class.bg-marron-oscuro]="backgroundColor() === 'light'" [class.hover:bg-marron-oscuro]="backgroundColor() === 'light'">
+        class="w-12 h-12 flex items-center bg-azul-claro justify-center rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -243,7 +241,7 @@
 
       @if (!isManualComplete()) {
       <button (click)="nextStep()"
-        class="w-12 h-12 flex items-center justify-center bg-azul-claro rounded-full hover:bg-marron-claro transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
+        class="w-12 h-12 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -252,7 +250,7 @@
       </button>
       } @else {
       <button (click)="reset()"
-        class="w-12 h-12 flex items-center justify-center bg-skaply-accent/80 rounded-full hover:bg-skaply-accent transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
+        class="w-12 h-12 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 2v6h6"></path>
