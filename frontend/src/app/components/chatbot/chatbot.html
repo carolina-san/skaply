@@ -66,38 +66,33 @@
                     <p>{{ msg.rich.subtitle }}</p>
                 </div>
 
-                <!-- Botones -->
-                <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
-                    <button *ngFor="let opt of msg.rich.options"
-                        class="bg-white px-3 py-1 m-1 rounded-full hover:bg-blue-600 transition"
-                        (click)="handleChipClick(opt.text)">
-                        {{ opt.text }}
-                    </button>
-                </div>
-
-                <!-- Contenedor combinado info + list + description (múltiples items en un mensaje) -->
                 <div *ngIf="msg.rich?.items" class="msg-bot space-y-4">
                     <div *ngFor="let item of msg.rich.items">
-                        <!-- Info: titulo y subtitulo -->
                         <div *ngIf="item.type === 'info'">
                             <h4 class="font-bold text-lg text-marron-oscuro">{{ item.title }}</h4>
                             <p>{{ item.subtitle }}</p>
                         </div>
 
-                        <!-- List: elementos con título y descripción -->
                         <div *ngIf="item.type === 'list'">
                             <h4 class="font-bold text-md text-marron-oscuro">{{ item.title }}</h4>
                             <p class="text-sm">{{ item.subtitle }}</p>
                             <hr class="border-gray-300 mt-2"/>
                         </div>
                         
-                        <!-- Description: lista de instrucciones -->
                         <div *ngIf="item.type === 'description'">
                             <ul class="space-y-2">
                                 <li *ngFor="let text of item.text" class=" text-gray-700">{{ text }}</li>
                             </ul>
                         </div>
                     </div>
+                </div>
+
+                <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
+                    <button *ngFor="let opt of msg.rich.options"
+                        class="bg-white px-3 py-1 m-1 rounded-full hover:bg-marron-claro transition"
+                        (click)="handleChipClick(opt.text)">
+                        {{ opt.text }}
+                    </button>
                 </div>
 
                 <!-- Fallback: Description individual (compatible con mapeo anterior) -->

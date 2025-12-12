@@ -196,6 +196,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
         groups.forEach(group => {
             const list = group.listValue?.values || [];
             const items: any[] = [];
+            let chips: any = null;
 
             list.forEach((item: any) => {
                 const fields = item.structValue?.fields;
@@ -220,12 +221,22 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     }
                 });
 
-                items.push(parsed);
+                // Separar chips del resto de items
+                if (parsed.type === 'chips') {
+                    chips = parsed;
+                } else {
+                    items.push(parsed);
+                }
             });
 
-            // Un solo mensaje con todos los items del grupo
+            // Mensaje con items (info, list, description)
             if (items.length > 0) {
                 this.messages.push({ sender: 'bot', rich: { items } });
+            }
+
+            // Mensaje separado para chips
+            if (chips) {
+                this.messages.push({ sender: 'bot', rich: chips });
             }
         });
     }

@@ -263,7 +263,7 @@ export class FurnitureService {
       }
   }
 
-  async getFurnitureIdByRef(ref:number){
+  async getFurnitureIdByRef(ref:string): Promise<number> {
     try{
       const result = await pool.query(`SELECT id FROM furniture 
         WHERE reference_number = $1`, [ref]);
