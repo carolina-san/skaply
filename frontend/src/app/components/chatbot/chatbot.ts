@@ -195,6 +195,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
     renderRichContent(groups: any[]) {
         groups.forEach(group => {
             const list = group.listValue?.values || [];
+            const items: any[] = [];
+
             list.forEach((item: any) => {
                 const fields = item.structValue?.fields;
                 if (!fields) return;
@@ -218,8 +220,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     }
                 });
 
-                this.messages.push({ sender: 'bot', rich: parsed });
+                items.push(parsed);
             });
+
+            // Un solo mensaje con todos los items del grupo
+            if (items.length > 0) {
+                this.messages.push({ sender: 'bot', rich: { items } });
+            }
         });
     }
 

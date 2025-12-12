@@ -36,7 +36,7 @@
             </button>
         </header>
 
-<div #messagesContainer class="flex-1 overflow-y-auto p-0 scrollbar-hide pb-10">
+        <div #messagesContainer class="flex-1 overflow-y-auto p-0 scrollbar-hide pb-11">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
@@ -73,6 +73,42 @@
                         (click)="handleChipClick(opt.text)">
                         {{ opt.text }}
                     </button>
+                </div>
+
+                <!-- Contenedor combinado info + list + description (múltiples items en un mensaje) -->
+                <div *ngIf="msg.rich?.items" class="msg-bot space-y-4">
+                    <div *ngFor="let item of msg.rich.items">
+                        <!-- Info: titulo y subtitulo -->
+                        <div *ngIf="item.type === 'info'">
+                            <h4 class="font-bold text-lg text-marron-oscuro">{{ item.title }}</h4>
+                            <p>{{ item.subtitle }}</p>
+                        </div>
+
+                        <!-- List: elementos con título y descripción -->
+                        <div *ngIf="item.type === 'list'">
+                            <h4 class="font-bold text-md text-marron-oscuro">{{ item.title }}</h4>
+                            <p class="text-sm">{{ item.subtitle }}</p>
+                            <hr class="border-gray-300 mt-2"/>
+                        </div>
+                        
+                        <!-- Description: lista de instrucciones -->
+                        <div *ngIf="item.type === 'description'">
+                            <ul class="space-y-2">
+                                <li *ngFor="let text of item.text" class=" text-gray-700">{{ text }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback: Description individual (compatible con mapeo anterior) -->
+                <div *ngIf="msg.rich?.type === 'description' && !msg.rich?.items"
+                    class="msg-bot bg-white border-l-4 border-marron-oscuro p-4 rounded-md shadow mb-2">
+                    <ul class="space-y-2">
+                        <li *ngFor="let item of msg.rich.text" class="flex gap-2 text-sm text-gray-700">
+                            <span class="min-w-fit">{{ item.split(':')[0] }}:</span>
+                            <span>{{ item.split(':')[1]?.trim() }}</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
