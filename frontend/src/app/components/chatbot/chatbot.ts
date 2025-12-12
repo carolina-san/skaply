@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { TextToSpeechService } from '../../services/text-to-speech.service';
+import { VoiceControls } from '../voice-controls/voice-controls';
 
 interface ChatMessage {
     sender: 'user' | 'bot';
@@ -14,7 +15,7 @@ interface ChatMessage {
 @Component({
     selector: 'app-chatbot',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, VoiceControls],
     templateUrl: './chatbot.html',
     styleUrls: ['./chatbot.css']
 })
@@ -31,9 +32,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
     private welcomeEventSent: boolean = false;
     isCatalogPage = false;
 
-    // Propiedades para TTS
-    ttsEnabled: boolean = true;
-    ttsVolume: number = 0.8;
     isPlaying: boolean = false;
 
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
@@ -81,8 +79,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
         }
 
         this.sessionId = saved;
-
-        this.loadTTSSettings();
 
         if (furnitureRef) {
             this.inMontajeMode = true;
@@ -237,23 +233,12 @@ export class Chatbot implements OnInit, AfterViewChecked {
         window.open(url, '_blank');
     }
 
-    // Métodos para Text-to-Speech
-
-    /**
-     * Carga la configuración de TTS desde el servicio
-     */
-    loadTTSSettings() {
-        const settings = this.tts.getSettings();
-        this.ttsEnabled = settings.isEnabled;
-        this.ttsVolume = settings.volume;
-        this.isPlaying = settings.isPlaying;
-    }
-
     /**
      * Reproduce un mensaje usando text-to-speech
      */
     async speakMessage(text: string) {
-        if (!this.ttsEnabled || !text) return;
+        const settings = this.tts.getSettings();
+        if (!settings.isEnabled || !text) return;
 
         try {
             this.isPlaying = true;
@@ -266,45 +251,18 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     /**
-     * Activa/desactiva el text-to-speech
+     * Detiene la reproducción de TTS
      */
-    toggleTTS() {
-        this.ttsEnabled = !this.ttsEnabled;
-        this.tts.setEnabled(this.ttsEnabled);
-
-        if (!this.ttsEnabled) {
-            this.stopSpeaking();
-        }
-    }
-
-    /**
-     * Detiene la reproducción actual
-     */
-    stopSpeaking() {
+    onStopSpeaking() {
         this.tts.stop();
         this.isPlaying = false;
     }
 
     /**
-     * Ajusta el volumen del TTS
+     * Maneja el evento de reproducción desde voice-controls
      */
-    onVolumeChange(event: Event) {
-        const target = event.target as HTMLInputElement;
-        this.ttsVolume = parseFloat(target.value);
-        this.tts.setVolume(this.ttsVolume);
-    }
-
-    /**
-     * Reproduce nuevamente el último mensaje del bot
-     */
-    replayLastBotMessage() {
-        const lastBotMessage = this.messages
-            .filter(m => m.sender === 'bot' && m.text)
-            .pop();
-
-        if (lastBotMessage && lastBotMessage.text) {
-            this.speakMessage(lastBotMessage.text);
-        }
+    onSpeak(text: string) {
+        this.speakMessage(text);
     }
 
     sendWelcomeEvent() {

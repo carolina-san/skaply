@@ -6,3 +6,4 @@ export * from './card-furniture/card-furniture';
 export * from './scanner/scanner';
 export * from './interactive-assembly/interactive-assembly.component';
 export * from './modal/modal';
+export * from './voice-controls/voice-controls';

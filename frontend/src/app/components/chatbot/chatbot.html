@@ -75,51 +75,17 @@
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Controles de Text-to-Speech -->
-        <div class="flex items-center justify-between bg-white rounded-full p-1">
-            <!-- Toggle TTS -->
-            <div class="flex items-center space-x-2">
-                <button (click)="toggleTTS()" class="p-1 rounded-full transition-colors duration-200"
-                    [ngClass]="ttsEnabled ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'"
-                    title="Activar/desactivar lectura en voz alta">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                    </svg>
-                </button>
-
-                <!-- Botón para repetir último mensaje -->
-                <button (click)="replayLastBotMessage()" class="p-1 text-gray-600 hover:text-blue-600 transition-colors"
-                    title="Repetir último mensaje del bot">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
-                    </svg>
-                </button>
-
-                <!-- Botón para detener -->
-                <button (click)="stopSpeaking()" class="p-1 text-gray-600 hover:text-red-600 transition-colors"
-                    title="Detener reproducción">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M6 6h12v12H6z" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Control de volumen -->
-            <div class="flex items-center space-x-2" *ngIf="ttsEnabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" viewBox="0 0 24 24"
-                    fill="currentColor">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                </svg>
-                <input type="range" min="0" max="1" step="0.1" [value]="ttsVolume" (input)="onVolumeChange($event)"
-                    class="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+            <div class="absolute bottom-20 left-5">
+                <app-voice-controls 
+                    [messages]="messages"
+                    [isPlaying]="isPlaying"
+                    (speak)="onSpeak($event)"
+                    (stop)="onStopSpeaking()">
+                </app-voice-controls>
             </div>
         </div>
 
-        <!-- Botón de incidencia movido dentro del chat visible y con posición relativa -->
         <div class="relative py-2" *ngIf="!isCatalogPage">
             <button class="btn-azul-chatbot absolute -top-23 right-0" (click)="abrirIncidencia()">
                 <span class="material-symbols-rounded w-6 h-6">
