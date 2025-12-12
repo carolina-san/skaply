@@ -8,5 +8,10 @@
 }
 
 .input-chat{
-    @apply flex bg-transparent outline-none text-gray-800 placeholder-gray-400;
+    @apply flex h-10 bg-transparent outline-none text-gray-800 placeholder-gray-400;
+}
+
+.btn-incidencia {
+  @apply bg-azul-claro text-marron-oscuro shadow-sm h-9 w-9 rounded-full hover:bg-azul-medio 
+     transition-colors duration-400 border border-marron-oscuro/60;
 }

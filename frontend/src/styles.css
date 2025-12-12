@@ -36,7 +36,9 @@ section {
   font-weight: 500;
 }
 
-
+button{
+  cursor:pointer;
+}
 
 @theme {
   --color-marron-secundario: #2f1b17;
@@ -93,9 +95,7 @@ section {
   transform: translateX(7px);
 }
 
-.btn-azul-chatbot {
-  @apply bg-azul-claro text-marron-oscuro p-2 h-12 w-12 rounded-full hover:bg-marron-claro/80 hover:text-beige transition-colors cursor-pointer;
-}
+
 
 .btn-escaneo {
   @apply fixed bottom-10 right-6 h-12 w-12 bg-azul-claro p-3 rounded-full shadow-2xl hover:scale-110 transition-transform z-50;

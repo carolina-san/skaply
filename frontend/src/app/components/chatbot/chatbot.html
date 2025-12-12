@@ -20,11 +20,11 @@
     </button>
 
 
-    <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-5 py-4 "
+    <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 "
         [ngClass]="{
     'rounded-t-3xl': !inMontajeMode || isMobile}">
 
-        <header class="flex justify-between items-center">
+        <header class="flex justify-between items-center px-2 mb-2">
             <h2 class="text-2xl font-semibold text-marron-oscuro">Allen</h2>
             <button (click)="toggleChat()" class="btn-hover-marron" [ngClass]="{
     'hidden': inMontajeMode && isDesktop}">
@@ -36,7 +36,7 @@
             </button>
         </header>
 
-        <div #messagesContainer class="flex-1 overflow-y-auto p-4 bg-beige scrollbar-hide ">
+<div #messagesContainer class="flex-1 overflow-y-auto p-0 scrollbar-hide pb-10">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
@@ -75,35 +75,32 @@
                     </button>
                 </div>
             </div>
-
-            <div class="absolute bottom-20 left-5">
-                <app-voice-controls 
-                    [messages]="messages"
-                    [isPlaying]="isPlaying"
-                    (speak)="onSpeak($event)"
-                    (stop)="onStopSpeaking()">
-                </app-voice-controls>
-            </div>
         </div>
 
-        <div class="relative py-2" *ngIf="!isCatalogPage">
-            <button class="btn-azul-chatbot absolute -top-23 right-0" (click)="abrirIncidencia()">
-                <span class="material-symbols-rounded w-6 h-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
-                        <path
-                            d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />
-                    </svg></span>
+        <!-- Controles de voz e incidencia - overlay flotante semitransparente -->
+        <div class="absolute bottom-17 left-0 right-0 flex items-center justify-between gap-2 py-1 px-4 bg-transparent">
+            <app-voice-controls [messages]="messages" [isPlaying]="isPlaying" (speak)="onSpeak($event)"
+                (stop)="onStopSpeaking()">
+            </app-voice-controls>
+
+            <button *ngIf="!isCatalogPage" class="btn-incidencia " (click)="abrirIncidencia()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                    <path
+                        d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />
+                </svg>
             </button>
         </div>
 
-        <div class="flex items-center bg-white rounded-full justify-between py-1 pl-3 pr-1">
+
+
+        <div class="flex items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
             <input #messageInput type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
                 (keydown.enter)="sendMessage()" class="input-chat" focused />
 
             <button
-                class="p-2 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition"
+                class="p-2 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
                 (click)="sendMessage()">
-                <span class="material-symbols-rounded w-7 h-7">
+                <span class="material-symbols-rounded w-6 h-6">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                         <path
                             d="M792-443 176-183q-20 8-38-3.5T120-220v-520q0-22 18-33.5t38-3.5l616 260q25 11 25 37t-25 37ZM200-280l474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
