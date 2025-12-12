@@ -45,8 +45,14 @@ export class Header {
     return this.router.url.split('?')[0] === '/';
   }
   
+  isInAssembly(): boolean {
+    const isInAssembly = this.currentRoute.includes('viewer-3d');
+    const desktop = window.innerWidth >= 1024;
+    return isInAssembly && desktop;
+  }
+
   finMontaje() {
-    if (this.currentRoute.includes('viewer-3d')) {
+    if (this.isInAssembly()) {
       this.apiService.resetMontaje().subscribe({
         next: (res) => {
           console.log("Montaje finalizado:", res);

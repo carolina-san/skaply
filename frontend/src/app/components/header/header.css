@@ -25,3 +25,7 @@
   @apply py-2  bg-marron-oscuro/70 ; /* se reduce al hacer scroll */
 
 }
+
+.header-assembly {
+  @apply w-3/4; /* ancho del header en modo montaje */
+}

@@ -1,5 +1,5 @@
 <div class="fixed right-0 bottom-0 transition-all duration-400 z-40" [ngClass]="{
-    ' top-0 h-[85vh] mt-23': inMontajeMode && isDesktop,     
+    ' top-0 h-screen': inMontajeMode && isDesktop,     
     'w-1/4  ':  isDesktop,                    
     ' w-full sm:w-96  h-[85vh] ': !inMontajeMode || !isDesktop,
     'h-20': !chatVisible && (!inMontajeMode || isMobile)

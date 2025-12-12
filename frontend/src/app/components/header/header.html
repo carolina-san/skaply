@@ -3,7 +3,8 @@
     'backdrop-blur-lg': currentRoute !== '/profile',
     'backdrop-blur-none bg-transparent': currentRoute === '/profile',
     'header-expanded': !scrolled,
-    'header-compact': scrolled
+    'header-compact': scrolled,
+    'header-assembly': isInAssembly()
   }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
   <button *ngIf="!isHome" (click)="goBack()"
@@ -33,7 +34,7 @@
   <!-- Botones de autenticación -->
   <div class="hidden lg:flex items-center gap-3 absolute lg:right-20">
     <!-- Botón de login (si no hay sesión) -->
-    <a *ngIf="!isHome && currentRoute !== '/profile' && !isLoggedIn()" href="/login" class="flex items-center justify-center
+    <a *ngIf="!isHome && currentRoute !== '/profile' && !isInAssembly() && !isLoggedIn()" href="/login" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
       hover:bg-beige transition duration-300 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">

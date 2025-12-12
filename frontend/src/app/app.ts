@@ -9,10 +9,11 @@ import { Home } from './layouts/home/home';
 import { Menu } from './components/menu/menu';
 import { ResScanner } from './layouts/res-scanner/res-scanner';
 import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
+import { Chatbot } from './components/chatbot/chatbot';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Home, Header, Menu, ResScanner, Viewer3D],
+  imports: [RouterOutlet, Home, Header, Menu, ResScanner, Viewer3D,Chatbot],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
