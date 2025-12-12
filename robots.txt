@@ -1,0 +1,33 @@
+User-agent: *
+
+# --- Bloqueos de seguridad del WordPress en /lynk/ ---
+Disallow: /lynk/wp-admin/
+Disallow: /lynk/wp-includes/
+Disallow: /lynk/cgi-bin/
+Disallow: /lynk/wp-content/plugins/
+Disallow: /lynk/wp-content/cache/
+Disallow: /lynk/wp-content/themes/
+Disallow: /lynk/wp-content/private/
+
+# --- Permitir archivos necesarios ---
+Allow: /lynk/wp-admin/admin-ajax.php
+Allow: /lynk/wp-content/uploads/
+
+# --- Bloqueo de páginas sensibles de WordPress ---
+Disallow: /lynk/wp-login.php
+Disallow: /lynk/wp-register.php
+Disallow: /lynk/xmlrpc.php
+Disallow: /lynk/readme.html
+Disallow: /lynk/license.txt
+Disallow: /lynk/trackback/
+Disallow: /lynk/feed/
+Disallow: /lynk/comments/
+Disallow: /lynk/search/
+Disallow: /lynk/?s=
+Disallow: /lynk/?replytocom=
+Disallow: /lynk/author/
+
+# --- Sitemaps (principal + corporativa lynk) ---
+Sitemap: https://skaply.ovh/sitemap.xml
+Sitemap: https://skaply.ovh/sitemap_main.xml
+Sitemap: https://skaply.ovh/lynk/sitemap_index.xml
