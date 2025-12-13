@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-cookies',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './cookies.html',
   styleUrl: './cookies.css'
 })
 export class Cookies {
-
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }

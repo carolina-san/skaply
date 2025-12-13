@@ -9,6 +9,7 @@ import { Login } from './layouts/login/login';
 import { Profile } from './layouts/profile/profile';
 import { Cookies } from './layouts/cookies/cookies';
 import { MarcoLegal } from './layouts/marco-legal/marco-legal';
+import { Privacy } from './layouts/privacy/privacy';
 
 export const routes: Routes = [
     {path: '', component: Landing},
@@ -21,5 +22,6 @@ export const routes: Routes = [
     {path: 'login/success', component: Login}, // Maneja el callback de Google OAuth
     {path: 'profile', component: Profile},
     {path: 'cookies', component: Cookies},
-    {path: 'marco-legal', component: MarcoLegal}
+    {path: 'marco-legal', component: MarcoLegal},
+    {path: 'privacy', component: Privacy}
 ];

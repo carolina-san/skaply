@@ -1,0 +1,38 @@
+.container {
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.prose {
+  line-height: 1.8;
+  color: #333;
+}
+
+.prose h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.prose h1 {
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.prose ul, .prose ol {
+  margin: 1rem 0;
+}
+
+.prose li {
+  margin: 0.5rem 0;
+}
+
+.prose a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
