@@ -65,6 +65,9 @@ button{
    CLASES COMPONENTES PERSONALIZADAS
    =================================
 */
+.fondo {
+    @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
+}
 
 /*Clases de botones*/
 .btn-primary {

@@ -1,38 +1,13 @@
-.container {
-  background-color: #f9fafb;
-  min-height: 100vh;
+@import "../../../styles.css";
+h2{
+  @apply text-marron-oscuro text-3xl border-b-2 border-beige-oscuro  mb-4;
 }
-
-.prose {
-  line-height: 1.8;
-  color: #333;
+h3{
+  @apply text-marron-oscuro text-xl font-bold mt-4 mb-1;
 }
-
-.prose h2 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
-  color: #1f2937;
+section{
+  @apply bg-beige p-6 rounded-2xl mb-6;
 }
-
-.prose h1 {
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.prose ul, .prose ol {
-  margin: 1rem 0;
-}
-
-.prose li {
-  margin: 0.5rem 0;
-}
-
-.prose a {
-  color: #3b82f6;
-  text-decoration: none;
-}
-
-.prose a:hover {
-  text-decoration: underline;
+.list{
+  @apply list-disc list-inside space-y-1;
 }
