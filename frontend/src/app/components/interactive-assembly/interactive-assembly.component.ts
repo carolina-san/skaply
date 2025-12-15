@@ -107,8 +107,6 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
   private parts: AssemblyPart[] = [];
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
-  private isolationTimer: any = null;
-  private lastHoveredObject: RenderableObject | null = null;
 
   private simulationDirection = signal<'forward' | 'backward'>('forward');
   private lastStepTime = 0;
@@ -150,7 +148,6 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     this.stopAR();
     this.resizeObserver?.disconnect();
     this.engine.dispose();
-    if (this.isolationTimer) clearTimeout(this.isolationTimer);
   }
 
   nextStep(): void {
@@ -306,7 +303,9 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     this.engine.init(canvas, width, height);
 
     this.onPointerMove = this.onPointerMove.bind(this);
+    this.onDoubleClick = this.onDoubleClick.bind(this);
     canvas.addEventListener('mousemove', this.onPointerMove);
+    canvas.addEventListener('dblclick', this.onDoubleClick);
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 
@@ -598,14 +597,31 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     this.engine.setCameraProps(this.engine.getCamera().position, { x: pos.x, y: pos.y, z: pos.z });
   }
 
+  private onDoubleClick(event: MouseEvent): void {
+    if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
+
+    const canvas = this.canvasRef.nativeElement;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    const hitObject = this.engine.raycast(x, y);
+
+    if (hitObject) {
+      console.log('Hit object:', hitObject);
+      const part = this.findPartForObject(hitObject);
+      console.log('Found part:', part?.name);
+
+      if (part && this.currentStep() >= part.appearStep) {
+        this.isolatePart(part);
+      }
+    }
+  }
+
   private onPointerMove(event: MouseEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
 
     const canvas = this.canvasRef.nativeElement;
-    if (this.isolationTimer) {
-      clearTimeout(this.isolationTimer);
-      this.isolationTimer = null;
-    }
 
     if (this.isolatedPart()) {
       canvas.style.cursor = 'grab';
@@ -613,34 +629,39 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
     }
 
     const rect = canvas.getBoundingClientRect();
-    // Normalize x, y to -1 to 1
     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    // Raycast using facade
     const hitObject = this.engine.raycast(x, y);
 
     if (hitObject) {
-      // We found an object.
-      // logic: find which Part owns this object.
-      const part = this.parts.find(p => p.object === hitObject || p.object.nativeObject === hitObject.nativeObject); // naive check
-
+      const part = this.findPartForObject(hitObject);
       if (part && this.currentStep() >= part.appearStep) {
         canvas.style.cursor = 'pointer';
-        if (this.lastHoveredObject !== hitObject) {
-          this.lastHoveredObject = hitObject;
-          this.isolationTimer = setTimeout(() => {
-            this.isolatePart(part);
-          }, 1000);
-        }
       } else {
         canvas.style.cursor = 'grab';
-        this.lastHoveredObject = null;
       }
     } else {
       canvas.style.cursor = 'grab';
-      this.lastHoveredObject = null;
     }
+  }
 
+  // Helper to find which AssemblyPart owns a RenderableObject (walking up hierarchy if needed)
+  private findPartForObject(inputObj: RenderableObject): AssemblyPart | undefined {
+    return this.parts.find(p => {
+      // 1. Check direct equality
+      if (p.object === inputObj) return true;
+
+      // 2. Check native hierarchy (if inputObj is a child of p.object)
+      // We assume nativeObject has a .parent property (standard in basic 3D engines like Three.js)
+      let current = inputObj.nativeObject;
+      const target = p.object.nativeObject;
+
+      while (current) {
+        if (current === target) return true;
+        current = current.parent;
+      }
+      return false;
+    });
   }
 }
