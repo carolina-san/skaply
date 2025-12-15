@@ -17,11 +17,11 @@
     <h3 >2.1 Cookies Técnicas (Esenciales)</h3>
     <p><strong>Obligatorio:</strong> Sí - Se establecen sin consentimiento previo</p>
     <ul class="list-disc list-inside space-y-2">
-      <li>Mantienen tu sesión activa</li>
-      <li>Recordar tus preferencias de login</li>
+      <li><strong>auth_token:</strong> Autenticación y mantenimiento de sesión</li>
       <li>Funcionalidades de seguridad</li>
+      <li>Acceso seguro a la plataforma</li>
     </ul>
-    <p class="mt-2"><strong>Duración:</strong> Durante la sesión o hasta 30 días</p>
+    <p class="mt-2"><strong>Duración:</strong> Hasta 30 días</p>
 
     <h3 >2.2 Cookies de Analítica</h3>
     <p><strong>Obligatorio:</strong> No - Requieren consentimiento</p>
@@ -32,76 +32,55 @@
     </ul>
     <p class="mt-2"><strong>Proveedor:</strong> Google LLC</p>
     <p><strong>Duración:</strong> Hasta 2 años</p>
-    <p><a href="https://policies.google.com/privacy" class="text-blue-500 hover:underline">Política de Privacidad de Google</a></p>
-
-    <h3 >2.3 Cookies de Publicidad</h3>
-    <p><strong>Obligatorio:</strong> No - Requieren consentimiento</p>
-    <ul class="list-disc list-inside space-y-2">
-      <li>Rastreo de comportamiento del usuario</li>
-      <li>Publicidad personalizada</li>
-      <li>Remarketing y retargeting</li>
-    </ul>
-    <p class="mt-2"><strong>Proveedores:</strong> Google Ads, Facebook Pixel</p>
-    <p><strong>Duración:</strong> Hasta 1 año</p>
-
-    <h3 >2.4 Cookies de Redes Sociales</h3>
-    <p><strong>Obligatorio:</strong> No - Requieren consentimiento</p>
-    <ul class="list-disc list-inside space-y-2">
-      <li>Integración con plataformas sociales</li>
-      <li>Compartir contenido en redes</li>
-      <li>Botones de "Me gusta" y similares</li>
-    </ul>
-    <p class="mt-2"><strong>Proveedores:</strong> Facebook, Instagram, LinkedIn</p>
+    <p><a href="https://policies.google.com/privacy" class="underline hover:text-beige-oscuro transition-all">Política de Privacidad de Google</a></p>
   </section>
 
   <section>
     <h2 >3. Tabla Resumen de Cookies</h2>
-    <table class="w-full border-collapse border border-gray-300 mt-4">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="border border-gray-300 px-4 py-2">Cookie</th>
-          <th class="border border-gray-300 px-4 py-2">Tipo</th>
-          <th class="border border-gray-300 px-4 py-2">Duración</th>
-          <th class="border border-gray-300 px-4 py-2">Proveedor</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="border border-gray-300 px-4 py-2">sessionid</td>
-          <td class="border border-gray-300 px-4 py-2">Técnica</td>
-          <td class="border border-gray-300 px-4 py-2">Sesión</td>
-          <td class="border border-gray-300 px-4 py-2">Skaply</td>
-        </tr>
-        <tr>
-          <td class="border border-gray-300 px-4 py-2">_ga</td>
-          <td class="border border-gray-300 px-4 py-2">Analítica</td>
-          <td class="border border-gray-300 px-4 py-2">2 años</td>
-          <td class="border border-gray-300 px-4 py-2">Google</td>
-        </tr>
-        <tr>
-          <td class="border border-gray-300 px-4 py-2">fbp</td>
-          <td class="border border-gray-300 px-4 py-2">Publicidad</td>
-          <td class="border border-gray-300 px-4 py-2">1 año</td>
-          <td class="border border-gray-300 px-4 py-2">Facebook</td>
-        </tr>
-        <tr>
-          <td class="border border-gray-300 px-4 py-2">preferences</td>
-          <td class="border border-gray-300 px-4 py-2">Técnica</td>
-          <td class="border border-gray-300 px-4 py-2">30 días</td>
-          <td class="border border-gray-300 px-4 py-2">Skaply</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto mt-4 bg-white rounded-lg">
+      <table class="w-full border-collapse border border-gray-300 min-w-full">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Cookie</th>
+            <th class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Tipo</th>
+            <th class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Duración</th>
+            <th class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Proveedor</th>
+            <th class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Propósito</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          <tr>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base font-semibold">auth_token</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Técnica (Esencial)</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">30 días</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Skaply</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Autenticación y sesión de usuario</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base font-semibold">_ga</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Analítica</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">2 años</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Google</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Identificador universal de Google Analytics</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base font-semibold">_ga_J0HVY0D3M3</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Analítica</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">2 años</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Google</td>
+            <td class="border border-gray-300 px-2 md:px-4 py-2 text-sm md:text-base">Sesión y conteo de visitantes en GA4</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section>
     <h2 >4. Consentimiento</h2>
-    <p><strong>Cookies Esenciales:</strong> Se utilizan sin requerir tu consentimiento, ya que son necesarias para el funcionamiento básico de la plataforma.</p>
+    <p><strong>Cookies Esenciales:</strong> Se utilizan sin requerir tu consentimiento, ya que son necesarias para el funcionamiento básico de la plataforma (autenticación y sesión).</p>
     <p class="mt-4"><strong>Cookies No Esenciales:</strong> Requieren tu consentimiento explícito. Al aceptar el banner de cookies, consientes a:</p>
-    <ul class="list-disc list-inside space-y-2">
-      <li>Cookies de Analítica</li>
-      <li>Cookies de Publicidad</li>
-      <li>Cookies de Redes Sociales</li>
+    <ul class="list">
+      <li>Cookies de Analítica de Google (_ga y _ga_J0HVY0D3M3)</li>
     </ul>
     <p class="mt-4">Puedes cambiar tu consentimiento en cualquier momento accediendo a las preferencias de cookies.</p>
   </section>
@@ -112,7 +91,7 @@
     <h3 >5.1 A través de tu Navegador</h3>
     
     <h4 class="font-bold mt-3">Google Chrome:</h4>
-    <ol class="list-decimal list-inside space-y-1">
+    <ol class="list-decimal">
       <li>Abre Chrome y ve a Configuración</li>
       <li>Haz clic en "Privacidad y seguridad"</li>
       <li>Selecciona "Cookies y otros datos de sitios"</li>
@@ -120,21 +99,21 @@
     </ol>
 
     <h4 class="font-bold mt-3">Mozilla Firefox:</h4>
-    <ol class="list-decimal list-inside space-y-1">
+    <ol class="list-decimal">
       <li>Abre Firefox y ve a Preferencias</li>
       <li>Ve a "Privacidad y seguridad"</li>
       <li>Bajo "Cookies y datos de sitios", elige tu opción</li>
     </ol>
 
     <h4 class="font-bold mt-3">Safari:</h4>
-    <ol class="list-decimal list-inside space-y-1">
+    <ol class="list-decimal">
       <li>Abre Safari y ve a Preferencias</li>
       <li>Haz clic en la pestaña "Privacidad"</li>
       <li>Configura opciones de cookies</li>
     </ol>
 
     <h4 class="font-bold mt-3">Microsoft Edge:</h4>
-    <ol class="list-decimal list-inside space-y-1">
+    <ol class="list-decimal">
       <li>Abre Edge y ve a Configuración</li>
       <li>Selecciona "Privacidad"</li>
       <li>Configura preferencias de cookies</li>
@@ -147,15 +126,11 @@
   <section>
     <h2 >6. Cookies de Terceros</h2>
     <p>Google Analytics es un servicio proporcionado por Google que nos ayuda a entender cómo usan los usuarios nuestra plataforma:</p>
-    <ul class="list-disc list-inside space-y-2">
+    <ul class="list">
       <li><strong>Proveedor:</strong> Google LLC</li>
-      <li><strong>Sitio:</strong> <a href="https://www.google.com" class="text-blue-500 hover:underline">www.google.com</a></li>
-      <li><strong>Política de Privacidad:</strong> <a href="https://policies.google.com/privacy" class="text-blue-500 hover:underline">Google Privacy Policy</a></li>
-    </ul>
-    <p class="mt-4">Facebook Pixel permite a Facebook mostrar anuncios relevantes:</p>
-    <ul class="list-disc list-inside space-y-2">
-      <li><strong>Proveedor:</strong> Meta Platforms, Inc.</li>
-      <li><strong>Política:</strong> <a href="https://www.facebook.com/privacy" class="text-blue-500 hover:underline">Facebook Privacy Policy</a></li>
+      <li><strong>Cookies utilizadas:</strong> _ga y _ga_J0HVY0D3M3</li>
+      <li><strong>Sitio: </strong> <a href="https://www.google.com" class="underline hover:text-beige-oscuro transition-all">www.google.com</a></li>
+      <li><strong>Política de Privacidad: </strong> <a href="https://policies.google.com/privacy" class="underline hover:text-beige-oscuro transition-all">Google Privacy Policy</a></li>
     </ul>
   </section>
 
