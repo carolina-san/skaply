@@ -7,6 +7,18 @@
  *     responses:
  *       200:
  *         description: List of providers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Providers fetched successfully'
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Provider'
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -26,6 +38,16 @@
  *     responses:
  *       200:
  *         description: Provider details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Provider fetched successfully'
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
  *       404:
  *         description: Provider not found
  *         content:

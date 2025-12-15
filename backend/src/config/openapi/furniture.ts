@@ -7,6 +7,18 @@
  *     responses:
  *       200:
  *         description: List of furniture
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Database connected successfully'
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Furniture'
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -20,6 +32,18 @@
  *     responses:
  *       200:
  *         description: Filtered list of furniture
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Furniture fetched'
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Furniture'
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -39,6 +63,19 @@
  *     responses:
  *       200:
  *         description: Furniture details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Furniture fetched'
+ *                 data:
+ *                   type: array
+ *                   description: "Returns an array with the furniture"
+ *                   items:
+ *                     $ref: '#/components/schemas/Furniture'
  *       404:
  *         description: Furniture not found
  *         content:

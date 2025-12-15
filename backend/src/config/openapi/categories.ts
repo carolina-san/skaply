@@ -7,6 +7,15 @@
  *     responses:
  *       200:
  *         description: List of categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Category'
  *       500:
  *         description: Internal Server Error
  *         content:

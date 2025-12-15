@@ -18,6 +18,10 @@
  *     responses:
  *       200:
  *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
  *       400:
  *         description: Bad Request
  *         content:
@@ -40,16 +44,45 @@
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - company_name
+ *               - cif
+ *               - tax_address
+ *               - telephone
  *             properties:
  *               email:
  *                 type: string
+ *                 example: 'provider@example.com'
  *               password:
  *                 type: string
- *               name:
+ *                 example: 'SecurePass123!'
+ *               company_name:
  *                 type: string
+ *                 example: 'Muebles SA'
+ *               cif:
+ *                 type: string
+ *                 example: 'B12345678'
+ *               tax_address:
+ *                 type: string
+ *                 example: 'Calle Industria 4, Madrid'
+ *               telephone:
+ *                 type: string
+ *                 example: '+34600123456'
  *     responses:
  *       201:
  *         description: Registration successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'User registered successfully'
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad Request
  *         content:
