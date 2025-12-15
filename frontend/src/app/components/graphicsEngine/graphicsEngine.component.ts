@@ -301,6 +301,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     const { width, height } = container.getBoundingClientRect();
 
     this.engine.init(canvas, width, height);
+    this.engine.setControlsAutoRotateSpeed(1.0);
 
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onDoubleClick = this.onDoubleClick.bind(this);
