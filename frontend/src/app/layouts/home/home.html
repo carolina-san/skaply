@@ -161,6 +161,14 @@
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
   </section>
 
+  <!-- Spinner mientras cargan los muebles -->
+  <section *ngIf="isLoadingFurnitures" class="flex items-center justify-center py-20 page-main">
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-12 h-12 border-4 border-beige border-t-marron-oscuro rounded-full animate-spin"></div>
+      <p class="text-beige text-lg font-medium">Cargando muebles...</p>
+    </div>
+  </section>
+
   <!-- Mensaje cuando no hay muebles -->
   <section *ngIf="furnitures.length === 0 && !isLoadingFurnitures" class="flex items-center justify-center py-20 page-main">
     <div class="text-center">
