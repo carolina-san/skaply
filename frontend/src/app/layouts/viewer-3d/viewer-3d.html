@@ -19,15 +19,12 @@
   <app-modal [(open)]="isIncidenciaModalOpen">
     <div class="p-6 sm:p-8 space-y-6">
 
-      <!-- TÍTULO -->
       <h2 class="text-3xl font-bold text-marron-oscuro text-center sm:text-left">
         Reportar Incidencia
       </h2>
 
-      <!-- FORMULARIO -->
+      <!-- formulario incidencia (descripcion e email) -->
       <form (ngSubmit)="enviarIncidencia()" #incidenciaForm="ngForm" class="space-y-5">
-
-        <!-- DESCRIPCIÓN -->
         <div class="space-y-2">
           <label for="descripcion" class="block text-marron-oscuro font-medium">Descripción de la incidencia:</label>
           <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
@@ -36,7 +33,6 @@
           </textarea>
         </div>
 
-        <!-- EMAIL -->
         <div class="space-y-2">
           <label for="email" class="block text-marron-oscuro font-medium">Email (opcional):</label>
           <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="tu@email.com"
@@ -46,7 +42,6 @@
           </p>
         </div>
 
-        <!-- BOTONES -->
         <div class="flex justify-end gap-3 pt-3">
           <button type="button" (click)="isIncidenciaModalOpen = false" 
                   class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
@@ -58,10 +53,7 @@
             Enviar
           </button>
         </div>
-
       </form>
-
     </div>
   </app-modal>
-
 </div>
