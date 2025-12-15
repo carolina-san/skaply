@@ -4,6 +4,6 @@ export * from './footer/footer';
 export * from './filter-panel/filter-panel';
 export * from './card-furniture/card-furniture';
 export * from './scanner/scanner';
-export * from './interactive-assembly/interactive-assembly.component';
+export * from './graphicsEngine/graphicsEngine.component';
 export * from './modal/modal';
 export * from './voice-controls/voice-controls';

@@ -6,13 +6,13 @@ import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
 import { Modal } from '../../components/modal/modal';
-import { InteractiveAssemblyComponent } from '../../components/interactive-assembly/interactive-assembly.component';
+import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, Chatbot, InteractiveAssemblyComponent, MenuViewer, Modal],
+  imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, MenuViewer, Modal],
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })
@@ -25,11 +25,11 @@ export class Viewer3D implements OnInit {
   descripcionIncidencia: string = '';
   emailIncidencia: string = '';
   isIncidenciaModalOpen = false;
-  
+
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private apiService: ApiService
-  ) {} 
+  ) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -46,7 +46,7 @@ export class Viewer3D implements OnInit {
 
   enviarIncidencia() {
     console.log('🚀 Iniciando envío de incidencia. FurnitureId actual:', this.furnitureId);
-    
+
     if (!this.descripcionIncidencia || !this.descripcionIncidencia.trim()) {
       alert('Por favor, describe la incidencia');
       return;
@@ -64,7 +64,7 @@ export class Viewer3D implements OnInit {
     this.apiService.getFurnitureById(this.furnitureId).subscribe({
       next: (response) => {
         console.log('✅ Respuesta de la API:', response);
-        
+
         let furniture = null;
         if (response && response.data) {
           if (Array.isArray(response.data) && response.data.length > 0) {
