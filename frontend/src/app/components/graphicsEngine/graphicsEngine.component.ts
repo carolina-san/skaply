@@ -17,16 +17,16 @@ interface AssemblyPart {
   arrow?: RenderableObject;
 }
 
-import { ThreeEngineAdapter } from '../../engine-facade/three-adapter';
+import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
 
 @Component({
-  selector: 'app-interactive-assembly',
+  selector: 'app-graphics-engine',
   imports: [CommonModule],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
-  templateUrl: './interactive-assembly.component.html',
+  templateUrl: './graphicsEngine.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
+export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
 

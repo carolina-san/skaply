@@ -5,7 +5,7 @@ import { AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/cor
 import { Menu } from '../../components/menu/menu';
 import { Router } from '@angular/router';
 import { Footer } from '../../components/footer/footer';
-import { InteractiveAssemblyComponent } from '../../components/interactive-assembly/interactive-assembly.component';
+import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { DemoLanding } from '../../components/demo-landing/demo-landing';
 
 @Component({
@@ -14,16 +14,16 @@ import { DemoLanding } from '../../components/demo-landing/demo-landing';
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })
-export class Landing implements AfterViewInit{
- 
+export class Landing implements AfterViewInit {
+
   constructor(private router: Router) { }
-  
+
   acceder() {
-     this.router.navigate(['/catalogo']);
+    this.router.navigate(['/catalogo']);
   }
 
   goToMotor() {
-     this.router.navigate(['/motor']);
+    this.router.navigate(['/motor']);
   }
   @ViewChildren('card') cards!: QueryList<ElementRef>;
   @ViewChildren('fadeSlide') fadeSlides!: QueryList<ElementRef>;
@@ -43,5 +43,5 @@ export class Landing implements AfterViewInit{
     this.cards.forEach(card => observer.observe(card.nativeElement));
     this.fadeSlides.forEach(slide => observer.observe(slide.nativeElement));
   }
-   
+
 }
