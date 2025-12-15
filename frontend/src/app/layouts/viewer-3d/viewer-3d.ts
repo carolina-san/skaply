@@ -22,6 +22,8 @@ export class Viewer3D implements OnInit {
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
   furnitureId: string = '';
+  furnitureName: string = '';
+  furnitureLoading: boolean = false;
   descripcionIncidencia: string = '';
   emailIncidencia: string = '';
   isIncidenciaModalOpen = false;
@@ -37,9 +39,46 @@ export class Viewer3D implements OnInit {
       if (params['ref']) {
         this.furnitureId = params['ref'];
         console.log('🔍 Furniture ID capturado de la ruta:', this.furnitureId, 'Tipo:', typeof this.furnitureId);
+        this.loadFurnitureName();
       } else {
         console.warn('⚠️ No se encontró el parámetro "ref" en la ruta');
         console.log('Parámetros disponibles:', Object.keys(params));
+      }
+    });
+  }
+
+  loadFurnitureName() {
+    if (!this.furnitureId) return;
+    
+    this.furnitureLoading = true;
+    console.log('📡 Obteniendo información del mueble:', this.furnitureId);
+    
+    this.apiService.getFurnitureById(this.furnitureId).subscribe({
+      next: (response) => {
+        console.log('✅ Respuesta del mueble:', response);
+        
+        let furniture = null;
+        if (response && response.data) {
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            furniture = response.data[0];
+          } else if (!Array.isArray(response.data)) {
+            furniture = response.data;
+          }
+        }
+
+        if (furniture && furniture.name) {
+          this.furnitureName = furniture.name;
+          console.log('✅ Nombre del mueble cargado:', this.furnitureName);
+        } else {
+          this.furnitureName = 'Mueble';
+          console.warn('⚠️ No se encontró el nombre del mueble');
+        }
+        this.furnitureLoading = false;
+      },
+      error: (err) => {
+        console.error('❌ Error al cargar información del mueble:', err);
+        this.furnitureName = 'Mueble desconocido';
+        this.furnitureLoading = false;
       }
     });
   }

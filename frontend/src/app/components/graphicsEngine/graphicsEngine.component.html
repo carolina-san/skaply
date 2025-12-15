@@ -57,6 +57,13 @@
   @if (showHeader() && !isARActive()) {
   <header class="flex justify-between items-start p-2 relative z-30 top-20">
     <div>
+      <!-- Nombre del mueble -->
+      @if (furnitureName()) {
+      <p class="font-semibold text-base sm:text-xl transition-colors text-azul-claro mb-2">
+        {{ furnitureName() }}
+      </p>
+      }
+      
       <div class="flex items-center space-x-2 text-sm"></div>
       @if (isolatedPart()) {
       <p class="font-semibold mt-1 text-beige">Inspeccionando pieza</p>
@@ -187,7 +194,7 @@
     <!-- Mode Toggle -->
     <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors"
       [class.bg-beige]="backgroundColor() === 'dark'" [class.bg-marron-oscuro]="backgroundColor() === 'light'">
-      <button (click)="setMode('final')" class="px-4 py-1 rounded-full transition-all duration-200"
+      <button (click)="setMode('final')" class="btn-opciones-mueble"
         [class.text-marron-oscuro]="mode() === 'final'"
         [class.bg-azul-claro]="mode() === 'final'">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
@@ -205,7 +212,7 @@
         </svg>
         Paso a paso
       </button>
-      <button (click)="setMode('simulation')" class="px-4 py-1 rounded-full transition-all duration-200"
+      <button (click)="setMode('simulation')" class="btn-opciones-mueble"
         [class.text-marron-oscuro]="mode() === 'simulation'"
         [class.bg-azul-claro]="mode() === 'simulation'">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
@@ -235,8 +242,7 @@
             [style.width.%]="(manualStep() + 1) / totalSteps * 100">
           </div>
         </div>
-        <span class="text-xs mt-2 font-mono tracking-widest" [class.text-gray-400]="backgroundColor() === 'dark'"
-          [class.text-azul-claro]="backgroundColor() === 'light'">PASO {{ manualStep() + 1 }} / {{ totalSteps }}</span>
+        <span class="text-xs text-azul-claro mt-2 font-mono tracking-widest">PASO {{ manualStep() + 1 }} / {{ totalSteps }}</span>
       </div>
 
       @if (!isManualComplete()) {

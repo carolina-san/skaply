@@ -109,7 +109,7 @@ button{
 }
 
 .btn-opciones-mueble {
-  @apply flex flex-col items-center px-7 py-1 rounded-3xl text-marron-oscuro transition-colors;
+  @apply flex flex-col px-4 py-1 rounded-full transition-all duration-200 items-center;
 }
 
 .btn-opciones-mueble:hover {

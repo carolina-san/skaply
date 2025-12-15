@@ -33,6 +33,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   constructor(private engine: EngineFacade, private apiService: ApiService) { }
 
   furnitureId = input<number | string>();
+  furnitureName = input<string>('');
   furnitures: Furniture[] = [];
 
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
