@@ -8,3 +8,9 @@ h3{
 section{
   @apply bg-beige p-6 rounded-2xl mb-6;
 }
+.list{
+  @apply list-disc list-inside space-y-1;
+}
+.list-decimal{
+  @apply list-decimal list-inside space-y-1;
+}
