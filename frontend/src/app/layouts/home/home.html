@@ -1,5 +1,5 @@
 <main class="pt-35 flex flex-col fondo">
-  <h1 class="text-5xl font-bold text-azul-claro mb-3 text-left page-main">Catálogo de Muebles</h1>
+  <h1 class="sm:text-5xl text-3xl font-bold text-azul-claro mb-3 text-left page-main">Catálogo de Muebles</h1>
   <!-- Barra de búsqueda y filtros -->
   <div class="sticky top-[57px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
     [class.busqueda-expanded]="!scrolled" [class.busqueda-compact]="scrolled">
@@ -114,11 +114,11 @@
       <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2"
         [ngClass]="scrolled ? 'mb-2' : 'mb-3'">
         <p class="text-beige text-lg font-semibold">
-          Resultado de la búsqueda:
+          Resultado búsqueda:
           <span class="text-azul-claro">{{ previousSearchText }}</span>
         </p>
         <span (click)="clearSearch()"
-          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
+          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-marron-oscuro hover:bg-beige/40 rounded-full flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
             fill="currentColor">
             <path
