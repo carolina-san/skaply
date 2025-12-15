@@ -115,7 +115,7 @@ export class ThreeEngineAdapter extends EngineFacade {
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.05;
+        this.controls.dampingFactor = 0.2;
         this.controls.minDistance = 3;
         this.controls.maxDistance = 15;
         this.controls.target.set(0, 1, 0);
