@@ -149,13 +149,17 @@ export class Home implements OnInit {
       this.hasSearched = false;
       return;
     }
+    
+    // Mantener filtros y categoría activos, solo agregar búsqueda
     const filters: FilterOptions = {
-      search: searchTerm
+      ...this.activeFilters,
+      search: searchTerm,
+      category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : this.activeFilters.category_ids
     };
+    
     this.apiService.getFilteredFurniture(filters).subscribe({
       next: (response) => {
         this.furnitures = response.data || [];
-        this.selectedCategoryId = null;
         this.hasSearched = true;
         this.previousSearchText = searchTerm;
       },
