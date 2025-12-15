@@ -162,12 +162,10 @@
   </section>
 
   <!-- Mensaje cuando no hay muebles -->
-  <section *ngIf="furnitures.length === 0" class="flex items-center justify-center py-20 page-main">
+  <section *ngIf="furnitures.length === 0 && !isLoadingFurnitures" class="flex items-center justify-center py-20 page-main">
     <div class="text-center">
-      <svg xmlns="http://www.w3.org/2000/svg" height="64px" viewBox="0 -960 960 960" width="64px" fill="#8B6F47" class="mx-auto mb-4 opacity-50">
-        <path d="M440-120v-80h-80q-17 0-28.5-11.5T320-240v-200q0-33 23.5-56.5T400-520h160q33 0 56.5 23.5T640-440v200q0 17-11.5 28.5T600-200h-80v80q0 17-11.5 28.5T480-80q-17 0-28.5-11.5T440-120Zm40-280q-17 0-28.5-11.5T440-440q0-17 11.5-28.5T480-480q17 0 28.5 11.5T520-440q0 17-11.5 28.5T480-400Z" />
-      </svg>
-      <h2 class="text-2xl font-bold text-marron-oscuro mb-2">No hay muebles disponibles</h2>
+      
+      <h2 class="text-3xl font-bold text-azul-claro mb-2">No hay muebles disponibles</h2>
       <p class="text-beige text-lg">
         No hay muebles que coincidan con los filtros seleccionados.
       </p>

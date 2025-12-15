@@ -42,6 +42,7 @@ export class Home implements OnInit {
   isFurnitureModalOpen = false;
   selectedFurniture: Furniture | null = null;
   isIncidenciaModalOpen = false;
+  isLoadingFurnitures = false;
 
   constructor(
     private apiService: ApiService,
@@ -96,12 +97,15 @@ export class Home implements OnInit {
   }
 
   obtenerCatalogo() {
+    this.isLoadingFurnitures = true;
     this.apiService.getFurnitures().subscribe(data => {
       console.log('Catálogo de muebles:', data);
       this.furnitures = data.data || []; //muebles al array
+      this.isLoadingFurnitures = false;
     }, error => {
       console.error('Error al obtener el catálogo de muebles:', error);
       this.furnitures = [];
+      this.isLoadingFurnitures = false;
     });
   }
 
@@ -157,15 +161,18 @@ export class Home implements OnInit {
       category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : this.activeFilters.category_ids
     };
     
+    this.isLoadingFurnitures = true;
     this.apiService.getFilteredFurniture(filters).subscribe({
       next: (response) => {
         this.furnitures = response.data || [];
         this.hasSearched = true;
         this.previousSearchText = searchTerm;
+        this.isLoadingFurnitures = false;
       },
       error: (error) => {
         console.error('Error al buscar muebles:', error);
         this.furnitures = [];
+        this.isLoadingFurnitures = false;
       }
     });
   }
@@ -254,15 +261,18 @@ export class Home implements OnInit {
       ...filters,
       category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : filters.category_ids
     };
+    this.isLoadingFurnitures = true;
     this.apiService.getFilteredFurniture(completeFilters).subscribe({
       next: (response) => {
         this.furnitures = response.data || [];
         this.calculateActiveFilters(filters);
         this.activeFilters = filters;
+        this.isLoadingFurnitures = false;
       },
       error: (error) => {
         console.error('Error al filtrar muebles:', error);
         this.furnitures = [];
+        this.isLoadingFurnitures = false;
       }
     });
   }
@@ -358,13 +368,16 @@ export class Home implements OnInit {
         const categoryFilters: FilterOptions = {
           category_ids: [this.selectedCategoryId]
         };
+        this.isLoadingFurnitures = true;
         this.apiService.getFilteredFurniture(categoryFilters).subscribe({
           next: (response) => {
             this.furnitures = response.data || [];
+            this.isLoadingFurnitures = false;
           },
           error: (error) => {
             console.error('Error al cargar muebles de la categoría:', error);
             this.furnitures = [];
+            this.isLoadingFurnitures = false;
           }
         });
       } else {
@@ -382,13 +395,16 @@ export class Home implements OnInit {
       ...this.activeFilters,
       category_ids: this.selectedCategoryId ? [this.selectedCategoryId] : []
     };
+    this.isLoadingFurnitures = true;
     this.apiService.getFilteredFurniture(completeFilters).subscribe({
       next: (response) => {
         this.furnitures = response.data || [];
+        this.isLoadingFurnitures = false;
       },
       error: (error) => {
         console.error('Error al actualizar muebles tras quitar filtro:', error);
         this.furnitures = [];
+        this.isLoadingFurnitures = false;
       }
     });
   }
