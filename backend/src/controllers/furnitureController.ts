@@ -15,11 +15,6 @@ export class FurnitureController {
       // Example database query
       const result = await this.furnitureService.getAllFurniture();
 
-      if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'No furnitures found'));
-        return;
-      }
-
       res.status(200).json({
         message: 'Database connected successfully',
         data: result.rows
@@ -134,11 +129,6 @@ export class FurnitureController {
         color_ids,
         search
       });
-
-      if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'No furniture matches the filters'));
-        return;
-      }
 
       res.status(200).json({
         message: 'Furniture fetched',
