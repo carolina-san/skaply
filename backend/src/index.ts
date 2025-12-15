@@ -8,6 +8,8 @@ import { errorHandler } from '@middleware/errorHandler';
 import apiRoutes from '@/routes';
 import { connectDB } from '@/config/database';
 import corsMiddleware from './config/cors';
+import { apiReference } from '@scalar/express-api-reference';
+import { swaggerSpec } from '@/config/openapi/swagger';
 import './config/passport'; // Initialize passport configuration
 
 
@@ -17,11 +19,32 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+        'img-src': ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+      },
+    },
+  })
+);
 app.use(corsMiddleware);
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Documentation
+app.use(
+  '/api/docs',
+  apiReference({
+    spec: {
+      content: swaggerSpec,
+    },
+  })
+);
 
 // Routes
 app.use('/api', apiRoutes);

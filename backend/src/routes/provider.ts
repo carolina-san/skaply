@@ -9,6 +9,6 @@ const providerController = new ProviderController();
 router.get('/', providerController.getProviders);
 router.get('/:id', providerController.getProviderById);
 //router.put('/:id', authMiddleware, providerController.updateProvider);
-router.delete('/:id', authMiddleware, providerController.deleteProvider);
+router.delete('/:id', authMiddleware, authorize(['admin']), providerController.deleteProvider);
 
 export default router;
