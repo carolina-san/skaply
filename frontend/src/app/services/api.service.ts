@@ -23,7 +23,9 @@ export class ApiService {
   }
 
   getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
+    console.log('Filters sent to API Service:', filters);
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
+
   }
 
   getCategories(): Observable<any> {

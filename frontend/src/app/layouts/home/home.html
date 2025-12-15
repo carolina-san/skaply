@@ -4,7 +4,7 @@
   <div class="sticky top-[57px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
     [class.busqueda-expanded]="!scrolled" [class.busqueda-compact]="scrolled">
     <section class="w-full  flex gap-3 items-center flex-shrink-0 transition-all duration-300"
-      [ngClass]="scrolled ? 'mb-2' : 'mb-6'">
+      [ngClass]="scrolled ? 'mb-2' : 'mb-3'">
       <div class="relative flex-1">
         <span (mousedown)="onSearch()" class="btn-busqueda absolute left-1 ">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -26,7 +26,7 @@
 
       <!-- Botón de filtros -->
       <button (click)="openFilterModal()"
-        class="btn-filtros-home   h-10 w-10 rounded-full shadow-lg flex items-center justify-center ">
+        class="btn-filtros-home relative h-10 w-10 rounded-full shadow-lg flex items-center justify-center ">
         <span class="material-symbols-rounded text-xl">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
             fill="currentColor">
@@ -34,7 +34,7 @@
               d="M480-120q-17 0-28.5-11.5T440-160v-160q0-17 11.5-28.5T480-360q17 0 28.5 11.5T520-320v40h280q17 0 28.5 11.5T840-240q0 17-11.5 28.5T800-200H520v40q0 17-11.5 28.5T480-120Zm-320-80q-17 0-28.5-11.5T120-240q0-17 11.5-28.5T160-280h160q17 0 28.5 11.5T360-240q0 17-11.5 28.5T320-200H160Zm160-160q-17 0-28.5-11.5T280-400v-40H160q-17 0-28.5-11.5T120-480q0-17 11.5-28.5T160-520h120v-40q0-17 11.5-28.5T320-600q17 0 28.5 11.5T360-560v160q0 17-11.5 28.5T320-360Zm160-80q-17 0-28.5-11.5T440-480q0-17 11.5-28.5T480-520h320q17 0 28.5 11.5T840-480q0 17-11.5 28.5T800-440H480Zm160-160q-17 0-28.5-11.5T600-640v-160q0-17 11.5-28.5T640-840q17 0 28.5 11.5T680-800v40h120q17 0 28.5 11.5T840-720q0 17-11.5 28.5T800-680H680v40q0 17-11.5 28.5T640-600Zm-480-80q-17 0-28.5-11.5T120-720q0-17 11.5-28.5T160-760h320q17 0 28.5 11.5T520-720q0 17-11.5 28.5T480-680H160Z" />
           </svg></span>
         <span *ngIf="activeFiltersCount > 0"
-          class="absolute -top-1 -right-1 bg-azul-claro text-white text-xs w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
+          class="absolute -top-[5px] -right-[5px] bg-azul-claro text-marron-oscuro  w-5 h-5 rounded-full flex shadow-md items-center justify-center text-md !font-extrabold">
           {{ activeFiltersCount }}
         </span>
       </button>
@@ -44,8 +44,72 @@
     <div [ngClass]="scrolled ? 'mb-1' : 'mb-6'">
 
       <!-- Búsqueda activa -->
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-5  mb-3 ">
+        <div *ngIf="(hasSearched || activeFiltersCount > 0) &&  selectedCategoryId !== null"
+          class="flex gap-2 items-center text-azul-claro text-lg font-semibold">
 
-      <!-- <div *ngIf="hasSearched && previousSearchText" class="mb-4"> -->
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+            fill="currentColor">
+            <path
+              d="M600-160H160q-25 0-36-22t4-42l192-256-192-256q-15-20-4-42t36-22h440q19 0 36 8.5t28 23.5l180 240q16 21 16 48t-16 48L664-192q-11 15-28 23.5t-36 8.5Z" />
+          </svg>
+          <span>{{ getCategoryName(selectedCategoryId) }}</span>
+        </div>
+        <!-- Filtros activos -->
+        <div *ngIf="(hasSearched && previousSearchText) || (!hasSearched && activeFiltersCount > 0)"
+          class="flex flex-wrap gap-2">
+
+          <!-- Filtros de color -->
+          <div *ngFor="let colorId of activeFilters.color_ids"
+            class="filtro-activo">
+            <span class="text-sm">
+              {{ getColorName(colorId) }}
+            </span>
+            <span (click)="removeColorFilter(colorId)"
+              class="m-0 cursor-pointer hover:bg-beige-oscuro rounded-full transition-colors h-5 w-5">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"
+                fill="currentColor">
+                <path
+                  d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
+              </svg>
+            </span>
+          </div>
+
+          <!-- Filtros de dificultad -->
+          <div *ngFor="let difficulty of activeFilters.difficulties"
+            class="filtro-activo">
+            <span class="text-sm ">
+              {{ getDifficultyLabel(difficulty) }}
+            </span>
+            <span (click)="removeDifficultyFilter(difficulty)"
+              class=" cursor-pointer hover:bg-beige-oscuro rounded-full transition-colors h-5 w-5">
+              <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"
+                fill="currentColor">
+                <path
+                  d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
+              </svg>
+            </span>
+          </div>
+
+          <!-- Filtros de proveedor -->
+          <div *ngFor="let providerId of activeFilters.provider_ids"
+            class="filtro-activo">
+            <span class="text-sm ">
+              {{ getProviderName(providerId) }}
+            </span>
+            <span (click)="removeProviderFilter(providerId)"
+              class=" cursor-pointer hover:bg-beige-oscuro rounded-full transition-colors h-5 w-5">
+              <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960"
+                fill="currentColor">
+                <path
+                  d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
+              </svg>
+            </span>
+          </div>
+
+        </div>
+      </div>
+
 
       <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2"
         [ngClass]="scrolled ? 'mb-2' : 'mb-3'">
@@ -62,84 +126,10 @@
           </svg>
         </span>
       </div>
-
-      <div *ngIf="!hasSearched && selectedCategoryId !== null && activeFiltersCount > 0"
-        class="flex items-center gap-2 mb-3">
-        <p class="text-beige text-lg font-semibold">
-          Categoría seleccionada:
-          <span class="text-azul-claro">{{ getCategoryName(selectedCategoryId) }}</span>
-        </p>
-        <span (click)="clearSearch()"
-          class="material-symbols-rounded text-beige text-xl cursor-pointer hover:text-red-600 transition-colors flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="currentColor">
-            <path
-              d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-          </svg>
-        </span>
-      </div>
-
-      <!-- Filtros activos -->
-      <div
-        *ngIf="(hasSearched && previousSearchText) || (!hasSearched && activeFiltersCount > 0)"
-        class="flex flex-wrap gap-2">
-
-        <!-- Filtros de color -->
-        <div *ngFor="let colorId of activeFilters.color_ids"
-          class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getColorName(colorId) }}
-          </span>
-          <span (click)="removeColorFilter(colorId)"
-            class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="currentColor">
-            <path
-              d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-          </svg>
-          </span>
-        </div>
-
-        <!-- Filtros de dificultad -->
-        <div *ngFor="let difficulty of activeFilters.difficulties"
-          class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getDifficultyLabel(difficulty) }}
-          </span>
-          <span (click)="removeDifficultyFilter(difficulty)"
-            class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="currentColor">
-            <path
-              d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-          </svg>
-          </span>
-        </div>
-
-        <!-- Filtros de proveedor -->
-        <div *ngFor="let providerId of activeFilters.provider_ids"
-          class="flex items-center gap-2 px-3 py-1 border-2 border-marron-oscuro rounded-full bg-beige">
-          <span class="text-marron-oscuro text-sm font-medium">
-            {{ getProviderName(providerId) }}
-          </span>
-          <span (click)="removeProviderFilter(providerId)"
-            class="material-symbols-rounded text-marron-oscuro text-base cursor-pointer hover:text-red-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="currentColor">
-            <path
-              d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-          </svg>
-          </span>
-        </div>
-
-      </div>
     </div>
 
-    <!-- </div> -->
-
     <!-- Carrusel de filtros de categorías -->
-    <div *ngIf="!hasSearched && activeFiltersCount === 0"
-      class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div *ngIf="!hasSearched && activeFiltersCount === 0" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
       <button (click)="filterByCategory(null)" class="btn-filtros-home whitespace-nowrap"
         [class.!bg-azul-claro]="selectedCategoryId === null">
         <!-- [class.!text-white]="selectedCategoryId === null" > -->
@@ -154,7 +144,8 @@
   </div>
 
   <!-- Grid de muebles-->
-  <section *ngIf="furnitures.length > 0" class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6 page-main">
+  <section *ngIf="furnitures.length > 0"
+    class="grid py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6 page-main">
     <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
     <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
@@ -170,9 +161,10 @@
   </section>
 
   <!-- Mensaje cuando no hay muebles -->
-  <section *ngIf="furnitures.length === 0 && !isLoadingFurnitures" class="flex items-center justify-center py-20 page-main">
+  <section *ngIf="furnitures.length === 0 && !isLoadingFurnitures"
+    class="flex items-center justify-center py-20 page-main">
     <div class="text-center">
-      
+
       <h2 class="text-3xl font-bold text-azul-claro mb-2">No hay muebles disponibles</h2>
       <p class="text-beige text-lg">
         No hay muebles que coincidan con los filtros seleccionados.
@@ -220,8 +212,7 @@
 
 
         <!-- BOTÓN -->
-        <button class="btn-azul flex items-center justify-between border border-marron-oscuro"
-          (click)="goToViewer3D()">
+        <button class="btn-azul flex items-center justify-between border border-marron-oscuro" (click)="goToViewer3D()">
           Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
             class="w-7 h-7">
             <path

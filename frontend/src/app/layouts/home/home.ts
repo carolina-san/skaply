@@ -12,7 +12,7 @@ import {
   Modal
 } from '../../components';
 import { ApiService } from '../../services/api.service';
-import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types'; // tipos
+import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
 
 @Component({
@@ -81,7 +81,6 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-    
     this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
     this.closeFurnitureModal();
     this.selectedFurniture = null;
@@ -96,30 +95,60 @@ export class Home implements OnInit {
     this.isFurnitureModalOpen = false;
   }
 
+  /**
+   * Función central para cargar el catálogo.
+   * Construye los filtros basados en el estado actual y llama a getFilteredFurniture
+   */
   obtenerCatalogo() {
+    const filters: FilterOptions = {
+      ...this.activeFilters,
+      category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : (this.activeFilters.category_ids || [])
+    };
+
+    // Agregar búsqueda si está activa
+    if (this.hasSearched && this.previousSearchText.trim() !== '') {
+      filters.search = this.previousSearchText.trim();
+    }
+
     this.isLoadingFurnitures = true;
-    this.apiService.getFurnitures().subscribe(data => {
-      console.log('Catálogo de muebles:', data);
-      this.furnitures = data.data || []; //muebles al array
-      this.isLoadingFurnitures = false;
-    }, error => {
-      console.error('Error al obtener el catálogo de muebles:', error);
-      this.furnitures = [];
-      this.isLoadingFurnitures = false;
-    });
+    if (filters.category_ids?.length === 0 && !filters.difficulties?.length && !filters.provider_ids?.length && !filters.color_ids?.length && !filters.search) {
+      this.apiService.getFurnitures().subscribe({
+        next: (response) => {
+          this.furnitures = response.data || [];
+          this.isLoadingFurnitures = false;
+        },
+        error: (error) => {
+          console.error('Error al obtener el catálogo de muebles:', error);
+          this.furnitures = [];
+          this.isLoadingFurnitures = false;
+        }
+      });
+    } else {
+      this.apiService.getFilteredFurniture(filters).subscribe({
+        next: (response) => {
+          this.furnitures = response.data || [];
+          this.isLoadingFurnitures = false;
+        },
+        error: (error) => {
+          console.error('Error al obtener el catálogo de muebles:', error);
+          this.furnitures = [];
+          this.isLoadingFurnitures = false;
+        }
+      });
+    }
+
   }
 
   obtenerCategorias() {
     this.apiService.getCategories().subscribe(data => {
       console.log('Categorías:', data);
-      this.categories = data.data; //categorias al array
+      this.categories = data.data;
     }, error => {
       console.error('Error al obtener las categorías:', error);
     });
   }
 
   loadProviders() {
-    console.log('Llamo a loadProviders');
     this.apiService.getProviders().subscribe({
       next: (response) => {
         this.providers = Object.values(response.data);
@@ -131,60 +160,34 @@ export class Home implements OnInit {
   }
 
   loadColors() {
-    console.log('Llamo a loadColors');
     this.apiService.getColors().subscribe({
       next: (response) => {
         this.colors = Object.values(response.data);
       },
       error: (error) => {
-        console.error('Error al cargar proveedores:', error);
+        console.error('Error al cargar colores:', error);
       }
     });
   }
 
   onSearch() {
     const searchTerm = this.searchText.trim();
-    console.log('Llamo a onSearch conpreviousSearchText: ' + searchTerm);
     this.searchInput.nativeElement.blur();
+
     if (searchTerm === '') {
-      this.selectedCategoryId = null;
-      this.resetFiltersPanel();
-      this.obtenerCatalogo();
-      this.hasSearched = false;
+      this.clearSearch();
       return;
     }
-    
-    // Mantener filtros y categoría activos, solo agregar búsqueda
-    const filters: FilterOptions = {
-      ...this.activeFilters,
-      search: searchTerm,
-      category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : this.activeFilters.category_ids
-    };
-    
-    this.isLoadingFurnitures = true;
-    this.apiService.getFilteredFurniture(filters).subscribe({
-      next: (response) => {
-        this.furnitures = response.data || [];
-        this.hasSearched = true;
-        this.previousSearchText = searchTerm;
-        this.isLoadingFurnitures = false;
-      },
-      error: (error) => {
-        console.error('Error al buscar muebles:', error);
-        this.furnitures = [];
-        this.isLoadingFurnitures = false;
-      }
-    });
+
+    this.hasSearched = true;
+    this.previousSearchText = searchTerm;
+    this.obtenerCatalogo();
   }
 
   clearSearch() {
     this.searchText = '';
     this.previousSearchText = '';
     this.hasSearched = false;
-    this.selectedCategoryId = null;
-    //this.activeFilters = {};
-    //this.activeFiltersCount = 0;
-    this.resetFiltersPanel();
     this.obtenerCatalogo();
   }
 
@@ -195,13 +198,7 @@ export class Home implements OnInit {
   }
 
   onSearchBlur() {
-    setTimeout(() => {
-      if (!this.hasSearched) {
-        this.searchText = '';
-      } else if (this.searchText.trim() !== this.previousSearchText) {
-        this.searchText = this.previousSearchText;
-      }
-    }, 100);
+    this.searchText = '';
   }
 
   openFilterModal() {
@@ -213,24 +210,9 @@ export class Home implements OnInit {
   }
 
   onApplyFilters(filters: FilterOptions) {
-    if (this.hasSearched && this.previousSearchText.trim() !== '') {
-      filters.search = this.previousSearchText.trim();
-    }
     this.activeFilters = { ...filters };
-    this.applyFiltersWithCategory(filters);
-  }
-
-  resetFiltersPanel() {
-    this.activeFilters = {
-      color_ids: [],
-      difficulties: [],
-      provider_ids: [],
-      category_ids: []
-    };
-    this.activeFiltersCount = 0;
-    this.isFilterModalOpen = false;
-    this.resetFilterToggle = true;
-    setTimeout(() => this.resetFilterToggle = false, 10);
+    this.calculateActiveFilters(this.activeFilters);
+    this.obtenerCatalogo();
   }
 
   calculateActiveFilters(filters: FilterOptions) {
@@ -245,68 +227,34 @@ export class Home implements OnInit {
       return;
     }
     this.selectedCategoryId = categoryId;
-    // "Ver todo"
-    if (categoryId === null) {
-      this.obtenerCatalogo();
-      return;
-    }
-    const filters: FilterOptions = {
-      category_ids: [categoryId]
-    };
-    this.applyFiltersWithCategory(filters);
-  }
-
-  private applyFiltersWithCategory(filters: FilterOptions) {
-    const completeFilters: FilterOptions = {
-      ...filters,
-      category_ids: this.selectedCategoryId !== null ? [this.selectedCategoryId] : filters.category_ids
-    };
-    this.isLoadingFurnitures = true;
-    this.apiService.getFilteredFurniture(completeFilters).subscribe({
-      next: (response) => {
-        this.furnitures = response.data || [];
-        this.calculateActiveFilters(filters);
-        this.activeFilters = filters;
-        this.isLoadingFurnitures = false;
-      },
-      error: (error) => {
-        console.error('Error al filtrar muebles:', error);
-        this.furnitures = [];
-        this.isLoadingFurnitures = false;
-      }
-    });
+    this.obtenerCatalogo();
   }
 
   onQrScanned(code: string) {
     console.log('Código QR escaneado:', code);
 
-    //Si el QR contiene un ID de mueble
     if (code.includes('furniture')) {
       const furnitureId = code.split('/').pop();
       this.apiService.getFurnitureById(furnitureId!).subscribe({
         next: (response) => {
           const furniture = response.data;
           alert(`Mueble escaneado: ${furniture.name}`);
-          // Aquí podrías navegar a la página del mueble o mostrar más detalles
-        }
-        , error: (error) => {
+        },
+        error: (error) => {
           console.error('Error al obtener el mueble escaneado:', error);
         }
       });
     }
-    //Si es una clave de configuración
     else if (code.startsWith('CONFIG:')) {
       const configKey = code.replace('CONFIG:', '');
       this.processConfiguration(configKey);
     }
-    //Mostrar el código
     else {
       alert(`Código escaneado: ${code}`);
     }
   }
 
   processConfiguration(configKey: string) {
-    // Implementa tu lógica de configuración
     console.log('Procesando configuración:', configKey);
   }
 
@@ -321,7 +269,6 @@ export class Home implements OnInit {
   getCategoryName(id: number): string {
     return this.categories.find(c => c.id === id)?.name || 'Categoría';
   }
-
 
   getDifficultyLabel(value: 'low' | 'medium' | 'high'): string {
     return this.difficultyLabels[value] || 'Dificultad';
@@ -356,56 +303,6 @@ export class Home implements OnInit {
 
   private updateFiltersAfterRemoval() {
     this.calculateActiveFilters(this.activeFilters);
-    const hasAnyFilter =
-      (this.activeFilters.color_ids?.length || 0) > 0 ||
-      (this.activeFilters.difficulties?.length || 0) > 0 ||
-      (this.activeFilters.provider_ids?.length || 0) > 0;
-    
-    // Si no hay filtros adicionales y no hay búsqueda
-    if (!hasAnyFilter && !this.hasSearched) {
-      // Si hay una categoría seleccionada, mantenerla y cargar solo esa categoría
-      if (this.selectedCategoryId !== null) {
-        const categoryFilters: FilterOptions = {
-          category_ids: [this.selectedCategoryId]
-        };
-        this.isLoadingFurnitures = true;
-        this.apiService.getFilteredFurniture(categoryFilters).subscribe({
-          next: (response) => {
-            this.furnitures = response.data || [];
-            this.isLoadingFurnitures = false;
-          },
-          error: (error) => {
-            console.error('Error al cargar muebles de la categoría:', error);
-            this.furnitures = [];
-            this.isLoadingFurnitures = false;
-          }
-        });
-      } else {
-        // Si no hay categoría ni filtros, resetear todo y cargar el catálogo completo
-        this.resetFiltersPanel();
-        this.obtenerCatalogo();
-      }
-      return;
-    }
-    
-    if (this.hasSearched && this.previousSearchText.trim() !== '') {
-      this.activeFilters.search = this.previousSearchText.trim();
-    }
-    const completeFilters: FilterOptions = {
-      ...this.activeFilters,
-      category_ids: this.selectedCategoryId ? [this.selectedCategoryId] : []
-    };
-    this.isLoadingFurnitures = true;
-    this.apiService.getFilteredFurniture(completeFilters).subscribe({
-      next: (response) => {
-        this.furnitures = response.data || [];
-        this.isLoadingFurnitures = false;
-      },
-      error: (error) => {
-        console.error('Error al actualizar muebles tras quitar filtro:', error);
-        this.furnitures = [];
-        this.isLoadingFurnitures = false;
-      }
-    });
+    this.obtenerCatalogo();
   }
 }

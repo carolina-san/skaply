@@ -28,3 +28,6 @@
   backdrop-filter: blur(12px);
 }
 
+.filtro-activo{
+  @apply flex items-center gap-1 px-3 py-1 rounded-full bg-beige text-marron-oscuro ;
+}
