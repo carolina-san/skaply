@@ -44,11 +44,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
         private tts: TextToSpeechService,
         private router: Router
     ) {
-        this.router.events.subscribe(event => {
-            if (event instanceof NavigationEnd) {
-                this.isCatalogPage = event.url.includes('catalogo');
-            }
-        });
+        this.isCatalogPage = this.router.url.split('?')[0].includes('catalogo');
     }
 
 
