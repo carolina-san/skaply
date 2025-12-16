@@ -66,6 +66,15 @@ export class ChatbotService {
    * Inicia el evento de montaje en Dialogflow
    */
   async initAssembly(furnitureRef: string, sessionId: string): Promise<any> {
+    // Validar que el mueble existe antes de iniciar el montaje
+    try {
+      await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con la referencia "${furnitureRef}". Por favor, verifica la referencia e intenta de nuevo.`
+      };
+    }
+
     const sessionPath = this.sessionClient.projectAgentSessionPath(
       this.projectId,
       sessionId
@@ -295,26 +304,27 @@ export class ChatbotService {
       };
     }
 
-    const furniture = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
-    const furnitureData = await this.furnitureService.getFurnitureById(furniture);
+    try {
+      const furniture = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+      const furnitureData = await this.furnitureService.getFurnitureById(furniture);
 
-    if (furnitureData.rows.length === 0) {
+      if (furnitureData.rows.length === 0) {
+        return {
+          fulfillmentText: `No encontré el mueble con referencia "${furnitureRef}".`
+        };
+      }
+
+      const furnitureDetails = furnitureData.rows[0];
+      const difficulty = await this.furnitureService.getFurnitureDifficulty(furniture);
+
       return {
-        fulfillmentText: `No encontré el mueble con referencia "${furnitureRef}".`
-      };
-    }
-
-    const furnitureDetails = furnitureData.rows[0];
-    const difficulty = await this.furnitureService.getFurnitureDifficulty(furniture);
-
-    return {
-      fulfillmentMessages: [
-        {
-          card: {
-            title: furnitureDetails.name,
-            subtitle: `Referencia: ${furnitureDetails.reference_number}`,
-            imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300',
-            formattedText: `
+        fulfillmentMessages: [
+          {
+            card: {
+              title: furnitureDetails.name,
+              subtitle: `Referencia: ${furnitureDetails.reference_number}`,
+              imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300',
+              formattedText: `
 **Detalles del Mueble**
 
 • **Descripción:** ${furnitureDetails.short_description || 'N/A'}
@@ -324,10 +334,15 @@ export class ChatbotService {
 • **Dificultad:** ${difficulty}
 • **Pasos de montaje:** ${furnitureDetails.total_steps || 'N/A'}
 • **ID:** ${furnitureDetails.id}`
+            }
           }
-        }
-      ]
-    };
+        ]
+      };
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con la referencia "${furnitureRef}". Por favor, verifica la referencia e intenta de nuevo.`
+      };
+    }
   }
 
   /**
@@ -352,12 +367,18 @@ export class ChatbotService {
       };
     }
 
-    const id = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
-    const difficulty = await this.furnitureService.getFurnitureDifficulty(id);
+    try {
+      const id = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+      const difficulty = await this.furnitureService.getFurnitureDifficulty(id);
 
-    return {
-      fulfillmentText: `La dificultad de montaje del mueble con referencia "${furnitureRef}" es: ${difficulty}.`
-    };
+      return {
+        fulfillmentText: `La dificultad de montaje del mueble con referencia "${furnitureRef}" es: ${difficulty}.`
+      };
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con la referencia "${furnitureRef}". Por favor, verifica la referencia e intenta de nuevo.`
+      };
+    }
   }
 
   /**
