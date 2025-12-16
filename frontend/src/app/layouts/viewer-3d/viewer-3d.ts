@@ -4,7 +4,6 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Chatbot } from '../../components/chatbot/chatbot';
 import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
-import { MenuViewer } from '../../components/menu-viewer/menu-viewer';
 import { Modal } from '../../components/modal/modal';
 import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
@@ -12,7 +11,7 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, MenuViewer, Modal],
+  imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, Modal],
   templateUrl: './viewer-3d.html',
   styleUrls: ['./viewer-3d.css']
 })

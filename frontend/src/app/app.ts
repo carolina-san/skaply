@@ -1,20 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { AuthLayout } from './layouts/auth-layout/auth-layout';
-import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { Header } from './components/header/header';
-import { Home } from './layouts/home/home';
-import { Menu } from './components/menu/menu';
-import { ResScanner } from './layouts/res-scanner/res-scanner';
-import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
-import { Chatbot } from './components/chatbot/chatbot';
 import { CookieConsent } from './components/cookie-consent/cookie-consent';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Home, Header, Menu, ResScanner, Viewer3D, Chatbot, CookieConsent],
+  imports: [RouterOutlet, Header,CookieConsent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

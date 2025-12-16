@@ -1,16 +1,13 @@
 import { Component } from '@angular/core';
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
-import { Menu } from '../../components/menu/menu';
 import { Router } from '@angular/router';
 import { Footer } from '../../components/footer/footer';
-import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { DemoLanding } from '../../components/demo-landing/demo-landing';
 
 @Component({
   selector: 'app-landing',
-  imports: [Menu, Footer, CommonModule, DemoLanding],
+  imports: [ Footer, CommonModule, DemoLanding],
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })

@@ -1,14 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import {
-  Header,
   Chatbot,
   Footer,
   FilterPanelComponent,
   CardFurniture,
-  Scanner,
   Modal
 } from '../../components';
 import { ApiService } from '../../services/api.service';
@@ -17,7 +15,7 @@ import { DifficultyLabels } from '../../utils/difficulty-labels';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, Chatbot, RouterLink, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Scanner, Modal],
+  imports: [ Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
