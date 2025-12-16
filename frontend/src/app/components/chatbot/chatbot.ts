@@ -78,7 +78,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
         if (furnitureRef) {
             this.inMontajeMode = true;
-            this.iniciarMontajeAutomatico(furnitureRef);
+            this.autoInitAssembly(furnitureRef);
         }
 
         if (this.inMontajeMode && this.isDesktop) {
@@ -161,18 +161,21 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
                         this.renderRichContent(rich);
+                        if(m.payload?.fields?.message?.stringValue){
+                            this.speakMessage(m.payload.fields.message.stringValue);
+                        }
                         handled = true;
                     }
                     const payload = m.payload;
                     if (payload?.fields?.redirect) {
 
                         setTimeout(() => {
-                            if (payload.fields.redirect.stringValue === "registro") {
-                                window.location.href = "/registro";
+                            if (payload.fields.redirect.stringValue === "register") {
+                                window.location.href = "/register";
 
 
                             }
-                        }, 2000);
+                        }, 4000);
                         handled = true;
                     }
                 }
@@ -193,6 +196,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
             const list = group.listValue?.values || [];
             const items: any[] = [];
             let chips: any = null;
+            let richContentText = ''; // Para acumular el texto a leer
 
             list.forEach((item: any) => {
                 const fields = item.structValue?.fields;
@@ -222,6 +226,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     chips = parsed;
                 } else {
                     items.push(parsed);
+                    // Extraer texto de cada item para leer
+                    if (parsed.title) richContentText += parsed.title + '. ';
+                    if (parsed.subtitle) richContentText += parsed.subtitle + '. ';
+                    if (parsed.description) richContentText += parsed.description + '. ';
                 }
             });
 
@@ -233,6 +241,11 @@ export class Chatbot implements OnInit, AfterViewChecked {
             // Mensaje separado para chips
             if (chips) {
                 this.messages.push({ sender: 'bot', rich: chips });
+            }
+
+            // Leer todo el contenido del rich content
+            if (richContentText.trim()) {
+                this.speakMessage(richContentText.trim());
             }
         });
     }
@@ -316,8 +329,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
             );
     }
 
-    iniciarMontajeAutomatico(furnitureRef: string) {
-        this.api.iniciarMontaje(furnitureRef)
+    autoInitAssembly(furnitureRef: string) {
+        this.api.initAssembly(furnitureRef)
             .subscribe({
                 next: (res) => {
                     const messages = res.fulfillmentMessages || [];

@@ -47,7 +47,7 @@ export class Header {
   
   finMontaje() {
     if (this.currentRoute.includes('viewer-3d')) {
-      this.apiService.resetMontaje().subscribe({
+      this.apiService.resetAssembly().subscribe({
         next: (res) => {
           console.log("Montaje finalizado:", res);
         },

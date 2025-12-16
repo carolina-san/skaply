@@ -60,12 +60,12 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/chatbot`, { text, sessionId });
   }
 
-  iniciarMontaje(furniture_ref: string): Observable<any> {
+  initAssembly(furniture_ref: string): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
   }
 
-  resetMontaje(): Observable<any> {
+  resetAssembly(): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });
   }
