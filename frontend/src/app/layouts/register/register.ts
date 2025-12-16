@@ -6,12 +6,11 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-registro',
+  selector: 'app-register',
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './registro.html',
-  styleUrl: './registro.css'
+  templateUrl: './register.html'
 })
-export class Registro {
+export class Register {
   form: FormGroup;
   loading: boolean = false;
   error: string = '';

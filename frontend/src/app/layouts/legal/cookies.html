@@ -146,16 +146,14 @@
     <strong>Dirección:</strong> Carretera San Vicente del Raspeig s/n 03690 San Vicente del Raspeig, Alicante, España</p>
   </section>
 
+  <button *ngIf="showScrollButton" (click)="scrollToTop()"
+    class="fixed flex items-center justify-center bottom-6 right-6 bg-azul-claro text-marron-oscuro font-bold py-3 px-4 h-15 w-15 rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-300 z-50">
 
-<button *ngIf="showScrollButton" (click)="scrollToTop()"
-  class="fixed flex items-center justify-center bottom-6 right-6 bg-azul-claro text-marron-oscuro font-bold py-3 px-4 h-15 w-15 rounded-full shadow-lg hover:bg-opacity-90 transition-all duration-300 z-50">
-
-  <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960" fill="currentColor">
-    <path
-      d="M440-647 244-451q-12 12-28 11.5T188-452q-11-12-11.5-28t11.5-28l264-264q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l264 264q11 11 11 27.5T772-452q-12 12-28.5 12T715-452L520-647v447q0 17-11.5 28.5T480-160q-17 0-28.5-11.5T440-200v-447Z" />
-  </svg>
-</button>
+    <svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 -960 960 960" fill="currentColor">
+      <path
+        d="M440-647 244-451q-12 12-28 11.5T188-452q-11-12-11.5-28t11.5-28l264-264q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l264 264q11 11 11 27.5T772-452q-12 12-28.5 12T715-452L520-647v447q0 17-11.5 28.5T480-160q-17 0-28.5-11.5T440-200v-447Z" />
+    </svg>
+  </button>
 </main>
-
 
 <app-footer></app-footer>
