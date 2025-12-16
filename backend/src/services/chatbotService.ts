@@ -231,7 +231,7 @@ export class ChatbotService {
     return {
       fulfillmentMessages: [
         {
-          text: { text: [`Para montar este mueble necesitas:`] }
+          text: { text: [`Para montar este mueble necesitas las siguientes herramientas`] }
         },
         ...result.rows.map((t: any) => ({
           card: {

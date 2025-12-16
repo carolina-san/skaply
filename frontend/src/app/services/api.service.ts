@@ -55,7 +55,7 @@ export class ApiService {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
 
-  enviarMensajeChatbot(text: string): Observable<any> {
+  sendChatbotMessage(text: string): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot`, { text, sessionId });
   }

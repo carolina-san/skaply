@@ -131,7 +131,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
         const messageToSend = this.newMessage;
         this.newMessage = '';
 
-        this.api.enviarMensajeChatbot(messageToSend)
+        this.api.sendChatbotMessage(messageToSend)
             .subscribe(data => {
                 const messages = data.fulfillmentMessages || [];
                 let handled = false;
