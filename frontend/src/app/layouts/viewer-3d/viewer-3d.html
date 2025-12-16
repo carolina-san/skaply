@@ -2,10 +2,11 @@
 
   <!-- Contenedor principal: ocupa el espacio restante -->
   <div class="flex-1 h-full">
-    <app-graphics-engine [furnitureId]="furnitureId" [furnitureName]="furnitureName"></app-graphics-engine>
+    <app-graphics-engine [furnitureId]="furnitureId" [furnitureName]="furnitureName" (arStateChange)="isARActive.set($event)"></app-graphics-engine>
   </div>
 
   <!-- Chatbot fijo en desktop -->
+  @if (!isARActive()) {
   <div class="hidden lg:block w-96 h-full">
     <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
   </div>
@@ -14,6 +15,7 @@
   <div class="lg:hidden fixed bottom-5 right-4 z-50">
     <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
   </div>
+  }
 
   <!-- Modal de incidencia -->
   <app-modal [(open)]="isIncidenciaModalOpen">

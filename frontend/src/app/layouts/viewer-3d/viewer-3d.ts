@@ -27,6 +27,7 @@ export class Viewer3D implements OnInit {
   descripcionIncidencia: string = '';
   emailIncidencia: string = '';
   isIncidenciaModalOpen = false;
+  isARActive = signal(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -35,13 +36,11 @@ export class Viewer3D implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      console.log('📋 Todos los parámetros de la ruta:', params);
       if (params['ref']) {
         this.furnitureId = params['ref'];
-        console.log('🔍 Furniture ID capturado de la ruta:', this.furnitureId, 'Tipo:', typeof this.furnitureId);
         this.loadFurnitureName();
       } else {
-        console.warn('⚠️ No se encontró el parámetro "ref" en la ruta');
+        console.warn('No se encontró el parámetro "ref" en la ruta');
         console.log('Parámetros disponibles:', Object.keys(params));
       }
     });
@@ -49,14 +48,10 @@ export class Viewer3D implements OnInit {
 
   loadFurnitureName() {
     if (!this.furnitureId) return;
-    
     this.furnitureLoading = true;
-    console.log('📡 Obteniendo información del mueble:', this.furnitureId);
-    
+  
     this.apiService.getFurnitureById(this.furnitureId).subscribe({
-      next: (response) => {
-        console.log('✅ Respuesta del mueble:', response);
-        
+      next: (response) => {        
         let furniture = null;
         if (response && response.data) {
           if (Array.isArray(response.data) && response.data.length > 0) {
@@ -68,15 +63,14 @@ export class Viewer3D implements OnInit {
 
         if (furniture && furniture.name) {
           this.furnitureName = furniture.name;
-          console.log('✅ Nombre del mueble cargado:', this.furnitureName);
         } else {
           this.furnitureName = 'Mueble';
-          console.warn('⚠️ No se encontró el nombre del mueble');
+          console.warn('No se encontró el nombre del mueble');
         }
         this.furnitureLoading = false;
       },
       error: (err) => {
-        console.error('❌ Error al cargar información del mueble:', err);
+        console.error('Error al cargar información del mueble:', err);
         this.furnitureName = 'Mueble desconocido';
         this.furnitureLoading = false;
       }
@@ -84,25 +78,20 @@ export class Viewer3D implements OnInit {
   }
 
   enviarIncidencia() {
-    console.log('🚀 Iniciando envío de incidencia. FurnitureId actual:', this.furnitureId);
-
     if (!this.descripcionIncidencia || !this.descripcionIncidencia.trim()) {
       alert('Por favor, describe la incidencia');
       return;
     }
 
     if (!this.furnitureId) {
-      console.error('❌ furnitureId está vacío o undefined');
+      console.error('furnitureId está vacío o undefined');
       alert('No se pudo identificar el mueble. Por favor recarga la página.');
       return;
     }
 
-    console.log('🔍 Buscando mueble con referencia:', this.furnitureId);
-
-    // Primero intentamos obtener el mueble por ID o referencia
+    //intentamos obtener el mueble por ID o referencia
     this.apiService.getFurnitureById(this.furnitureId).subscribe({
       next: (response) => {
-        console.log('✅ Respuesta de la API:', response);
 
         let furniture = null;
         if (response && response.data) {
@@ -118,40 +107,35 @@ export class Viewer3D implements OnInit {
           return;
         }
 
-        console.log('📦 Mueble encontrado con ID:', furniture.id);
-
-        // Ahora enviamos la incidencia con el ID numérico del mueble
+        //enviamos la incidencia con el ID numérico del mueble
         const issue = {
           description: this.descripcionIncidencia.trim(),
           date: new Date().toISOString(),
           user_email: this.emailIncidencia.trim() || 'anonimo@lynk.com'
         };
 
-        console.log('📤 Enviando incidencia:', issue);
-
         this.apiService.postIssue(furniture.id, issue).subscribe({
           next: (response) => {
-            console.log('✅ Incidencia enviada:', response);
+            console.log('Incidencia enviada:', response);
             alert('Incidencia reportada correctamente. Te contactaremos al email proporcionado.');
             this.resetIncidenciaForm();
           },
           error: (err) => {
-            console.error('❌ Error al enviar incidencia:', err);
+            console.error('Error al enviar incidencia:', err);
             alert('Error al reportar la incidencia. Inténtalo de nuevo.');
           }
         });
       },
       error: (err) => {
-        console.error('❌ Error al buscar mueble:', err);
+        console.error('Error al buscar mueble:', err);
         alert('No se encontró el mueble. Verifica la referencia.');
       }
     });
   }
 
   abrirModalIncidencia() {
-    console.log('🔓 Abriendo modal de incidencia. FurnitureId actual:', this.furnitureId);
     if (!this.furnitureId) {
-      console.warn('⚠️ Advertencia: furnitureId está vacío al abrir modal');
+      console.warn('Advertencia: furnitureId está vacío al abrir modal');
     }
     this.isIncidenciaModalOpen = true;
   }
@@ -165,13 +149,11 @@ export class Viewer3D implements OnInit {
   // Array de modelos disponibles
   private modelPaths = [
     '/assets/models/EKET_70332124_35x25x35.glb',
-    // Agrega más rutas aquí
   ];
   private currentModelIndex = 0;
 
   cambiarVista(vista: string): void {
     this.vistaActiva = vista;
-    console.log('Vista cambiada a:', vista);
   }
 
   // Métodos para controlar el visor 3D

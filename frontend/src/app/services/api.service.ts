@@ -1,9 +1,7 @@
-// NOTA: separamos los servicios según entidad?
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilterOptions, Issue } from '../types'; //filter 
+import { FilterOptions, Issue } from '../types';
 
 @Injectable({
   providedIn: 'root'
@@ -64,7 +62,6 @@ export class ApiService {
 
   iniciarMontaje(furniture_ref: string): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
-    console.log("Mueble recibido", furniture_ref);
     return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
   }
 

@@ -1,6 +1,6 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
 import { ApiService } from '../../services/api.service';
@@ -34,6 +34,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
+  arStateChange = output<boolean>();
   furnitures: Furniture[] = [];
 
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
@@ -260,6 +261,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
       this.videoStream = stream;
 
       this.isARActive.set(true);
+      this.arStateChange.emit(true);
       // Disable auto-rotation for AR mode
       this.engine.toggleControls(true, false);
 
@@ -285,6 +287,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   private stopAR(): void {
     this.isARActive.set(false);
+    this.arStateChange.emit(false);
     if (this.videoStream) {
       this.videoStream.getTracks().forEach(track => track.stop());
       this.videoStream = null;

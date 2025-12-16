@@ -141,7 +141,6 @@ export class Home implements OnInit {
 
   obtenerCategorias() {
     this.apiService.getCategories().subscribe(data => {
-      console.log('Categorías:', data);
       this.categories = data.data;
     }, error => {
       console.error('Error al obtener las categorías:', error);
