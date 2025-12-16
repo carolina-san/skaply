@@ -103,6 +103,10 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.checkReference(furnitureRef, session));
                     return;
                 }
+                case 'get.categories':{
+                    res.status(200).json(await this.chatbotService.getCategories());
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No entiendo esa consulta. (backend)'

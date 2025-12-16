@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { TextToSpeechService } from '../../services/text-to-speech.service';
+import { FilterSharingService } from '../../services/filter-sharing.service';
 import { VoiceControls } from '../voice-controls/voice-controls';
 
 interface ChatMessage {
@@ -42,7 +43,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
         private route: ActivatedRoute,
         private api: ApiService,
         private tts: TextToSpeechService,
-        private router: Router
+        private router: Router,
+        private filterSharingService: FilterSharingService
     ) {
         this.isCatalogPage = this.router.url.split('?')[0].includes('catalogo');
     }
@@ -251,9 +253,29 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     handleChipClick(text: string) {
-        this.newMessage = text;
-        this.sendMessage();
-
+        // Obtener todas las categorías para verificar si el chip es una categoría
+        this.api.getCategories().subscribe({
+            next: (response) => {
+                const categories = response.data || [];
+                const selectedCategory = categories.find((c: any) => c.name === text);
+                
+                if (selectedCategory) {
+                    // Es una categoría, navegar al catálogo con el filtro
+                    this.filterSharingService.setSelectedCategory(selectedCategory.id);
+                    this.router.navigate(['/catalogo']);
+                } else {
+                    // No es una categoría, procesar como mensaje normal
+                    this.newMessage = text;
+                    this.sendMessage();
+                }
+            },
+            error: (error) => {
+                // Si hay error, procesar como mensaje normal
+                console.error('Error al obtener categorías:', error);
+                this.newMessage = text;
+                this.sendMessage();
+            }
+        });
     }
 
     openLink(url: string) {

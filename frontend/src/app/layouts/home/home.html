@@ -41,11 +41,11 @@
     </section>
 
     <!-- Resultados de búsqueda y filtros activos -->
-    <div [ngClass]="scrolled ? 'mb-1' : 'mb-6'">
+    <div [ngClass]="scrolled ? 'mb-1' : 'mb-3'">
 
       <!-- Búsqueda activa -->
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-5  mb-3 ">
-        <div *ngIf="(hasSearched || activeFiltersCount > 0) &&  selectedCategoryId !== null"
+        <div *ngIf="(hasSearched || activeFiltersCount > 0)"
           class="flex gap-2 items-center text-azul-claro text-lg font-semibold">
 
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -53,7 +53,7 @@
             <path
               d="M600-160H160q-25 0-36-22t4-42l192-256-192-256q-15-20-4-42t36-22h440q19 0 36 8.5t28 23.5l180 240q16 21 16 48t-16 48L664-192q-11 15-28 23.5t-36 8.5Z" />
           </svg>
-          <span>{{ getCategoryName(selectedCategoryId) }}</span>
+          <span>{{ getCategoryName(selectedCategoryId) }} </span>
         </div>
         <!-- Filtros activos -->
         <div *ngIf="(hasSearched && previousSearchText) || (!hasSearched && activeFiltersCount > 0)"
@@ -112,7 +112,7 @@
 
 
       <div *ngIf="hasSearched && previousSearchText" class="flex items-center gap-2"
-        [ngClass]="scrolled ? 'mb-2' : 'mb-3'">
+        [ngClass]="scrolled ? 'mb-1' : 'mb-3'">
         <p class="text-beige text-lg font-semibold">
           Resultado búsqueda:
           <span class="text-azul-claro">{{ previousSearchText }}</span>

@@ -10,6 +10,7 @@ import {
   Modal
 } from '../../components';
 import { ApiService } from '../../services/api.service';
+import { FilterSharingService } from '../../services/filter-sharing.service';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
 
@@ -44,7 +45,8 @@ export class Home implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    private filterSharingService: FilterSharingService
   ) { }
 
   ngOnInit() {
@@ -52,6 +54,16 @@ export class Home implements OnInit {
     this.obtenerCatalogo();
     this.loadProviders();
     this.loadColors();
+
+    // Suscribirse a los cambios de categoría desde el chatbot
+    this.filterSharingService.selectedCategory$.subscribe(categoryId => {
+      if (categoryId !== null) {
+        this.selectedCategoryId = categoryId;
+        this.obtenerCatalogo();
+        this.filterSharingService.clearSelectedCategory();
+      }
+    });
+
     window.addEventListener("scroll", () => {
       this.scrolled = window.scrollY > 70;
     });
@@ -263,7 +275,8 @@ export class Home implements OnInit {
     return this.providers.find(p => p.id === id)?.company_name || 'Proveedor';
   }
 
-  getCategoryName(id: number): string {
+  getCategoryName(id: number | null): string {
+    if (id === null) return 'Todos los muebles';
     return this.categories.find(c => c.id === id)?.name || 'Categoría';
   }
 

@@ -3,6 +3,7 @@ import { ProviderService } from '@/services/ProviderService';
 import { ToolService } from '@/services/toolService';
 import { IssueService } from '@/services/issueService';
 import { FurnitureService } from '@/services/furnitureService';
+import { CategoryService } from '@/services/categoryService';
 import { Issue } from '@/types';
 import { struct } from 'pb-util';
 
@@ -12,18 +13,21 @@ export class ChatbotService {
   private issueService: IssueService;
   private furnitureService: FurnitureService;
   private sessionClient: dialogflow.SessionsClient;
+  private categoryService: CategoryService;
   private projectId: string;
 
   constructor(
     providerService?: ProviderService,
     toolService?: ToolService,
     issueService?: IssueService,
-    furnitureService?: FurnitureService
+    furnitureService?: FurnitureService,
+    categoryService?: CategoryService
   ) {
     this.providerService = providerService || new ProviderService();
     this.toolService = toolService || new ToolService();
     this.issueService = issueService || new IssueService();
     this.furnitureService = furnitureService || new FurnitureService();
+    this.categoryService = categoryService || new CategoryService();
     this.projectId = 'allen-hmmc';
     this.sessionClient = new dialogflow.SessionsClient({
       keyFilename: 'dialogflow.json'
@@ -430,6 +434,34 @@ export class ChatbotService {
 
     return {
       fulfillmentText: `Has indicado una referencia. ¿Qué quieres hacer con ella?`
+    };
+  }
+  async getCategories(): Promise<any> {
+    const categories = await this.categoryService.getAllCategories();
+    
+    const richContent = [
+      [
+        {
+          title: 'En Skäply puedes encontrar estos tipos de muebles:',
+          type: 'info'
+        },
+        {
+          options: categories.rows.map((c: any) => ({
+            text: c.name
+          })),
+          type: 'chips'
+        }
+      ]
+    ];
+
+    return {
+      fulfillmentMessages: [
+        {
+          payload: {
+            richContent: richContent
+          }
+        }
+      ]
     };
   }
 }
