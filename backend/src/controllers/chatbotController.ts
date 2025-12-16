@@ -115,7 +115,7 @@ export class ChatbotController {
         }
     };
 
-    inicioMontaje = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    initAssembly = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { furniture_ref } = req.body;
             if (!furniture_ref) {
@@ -134,7 +134,7 @@ export class ChatbotController {
         }
     };
 
-    resetMontaje = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    resetAssembly = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const sessionId = req.body.sessionId || 'default';
             const result = await this.chatbotService.resetAssembly(sessionId);
@@ -142,8 +142,8 @@ export class ChatbotController {
             res.json(result);
 
         } catch (error) {
-            console.error('Error en resetMontaje:', error);
-            next(new ApiError('INTERNAL_SERVER', 'Error enviando RESET_MONTAJE'));
+            console.error('Error en resetAssembly:', error);
+            next(new ApiError('INTERNAL_SERVER', 'Error enviando RESET_ASSEMBLY a Dialogflow'));
         }
     };
 
