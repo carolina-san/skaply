@@ -1,0 +1,76 @@
+name: Deploy Lynk ABP 25
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run backend tests
+        run: |
+          if [ -d "backend" ]; then
+            cd backend
+            pnpm run db:generate
+            # pnpm test -- run # Descomenta cuando tengas tests
+          fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            # Cargar NVM y herramientas (Ajusta si no usas NVM)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # Entrar a la carpeta donde clonaste el repo manualmente
+            cd ~/lynk_abp25
+
+            echo "📦 Actualizando código..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "📂 Preparando Backend..."
+            cd backend
+            pnpm install --frozen-lockfile
+            pnpm run db:generate
+            pnpm run db:deploy
+            pnpm run build
+
+            # Reiniciar PM2 (Asegura que el nombre coincida con tu ecosistema)
+            pm2 restart lynk-backend || pm2 start dist/index.js --name "lynk-backend"
+
+            echo "🌐 Preparando Frontend..."
+            cd ../frontend
+            pnpm install --frozen-lockfile
+            pnpm run build:prod
+
+            echo "📁 Publicando en Apache..."
+            # El usuario deploy_user debe tener permisos NOPASSWD para rm y cp en visudo
+            sudo rm -rf /var/www/lynk/*
+            sudo cp -r dist/frontend/browser/* /var/www/lynk/
+            
+            echo "✅ ¡Despliegue de Lynk ABP 25 completado con éxito!"
