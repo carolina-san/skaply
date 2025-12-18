@@ -19,13 +19,22 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        working-directory: backend
         run: npm ci
 
       - name: Generate Prisma Client
-        run: |
-          cd backend
-          npm run db:generate
+        working-directory: backend
+        run: npm run db:generate
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend (optional)
+        working-directory: frontend
+        run: npm run build
+
 
   deploy:
     if: github.ref == 'refs/heads/main'
