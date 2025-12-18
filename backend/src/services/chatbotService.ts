@@ -323,20 +323,33 @@ export class ChatbotService {
             card: {
               title: furnitureDetails.name,
               subtitle: `Referencia: ${furnitureDetails.reference_number}`,
-              imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300',
-              formattedText: `
-**Detalles del Mueble**
-
-• **Descripción:** ${furnitureDetails.short_description || 'N/A'}
-• **Categoría:** ${furnitureDetails.category_name}
-• **Proveedor:** ${furnitureDetails.provider_name}
-• **Color:** ${furnitureDetails.color_name}
-• **Dificultad:** ${difficulty}
-• **Pasos de montaje:** ${furnitureDetails.total_steps || 'N/A'}
-• **ID:** ${furnitureDetails.id}`
+              imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300'
+            }
+          },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "info",
+                    title: "Detalles del Mueble",
+                  },
+                  {
+                    type: "description",
+                    text: [
+                      `Descripción: ${furnitureDetails.short_description || 'N/A'}`,
+                      `Categoría: ${furnitureDetails.category_name}`,
+                      `Proveedor: ${furnitureDetails.provider_name}`,
+                      `Color: ${furnitureDetails.color_name}`,
+                      `Dificultad: ${difficulty}`
+                    ]
+                  }
+                ]
+              ]
             }
           }
         ]
+
       };
     } catch (error) {
       return {
@@ -459,7 +472,7 @@ export class ChatbotService {
   }
   async getCategories(): Promise<any> {
     const categories = await this.categoryService.getAllCategories();
-    
+
     const richContent = [
       [
         {
