@@ -55,6 +55,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   mode = signal<'manual' | 'simulation' | 'final'>('manual');
   isARActive = signal(false);
   arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
+  isSmallScreen = signal(false);
 
   currentStep = computed(() => {
     switch (this.mode()) {
@@ -126,6 +127,9 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
 
   ngAfterViewInit(): void {
+    this.checkScreenSize();
+    window.addEventListener('resize', () => this.checkScreenSize());
+
     this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
@@ -149,6 +153,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     }
     this.stopAR();
     this.resizeObserver?.disconnect();
+    window.removeEventListener('resize', () => this.checkScreenSize());
     this.engine.dispose();
   }
 
@@ -245,6 +250,10 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   closeARDeniedMessage(): void {
     this.arFlowState.set('idle');
+  }
+
+  private checkScreenSize(): void {
+    this.isSmallScreen.set(window.innerWidth < 768);
   }
 
   private async startAR(): Promise<void> {
