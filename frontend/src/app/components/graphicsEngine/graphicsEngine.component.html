@@ -163,23 +163,13 @@
     }
 
     <div class="absolute bottom-6 right-4 flex items-end space-x-2">
-      <div class="flex flex-col space-y-2">
+      <div class="flex flex-col space-y-2" title="Centrar vista">
         @if (isCameraMoved()) {
-        <button (click)="resetCameraPosition()" title="Centrar vista"
-          class="w-9 h-9 flex items-center justify-center backdrop-blur-sm rounded-full transition-colors"
-          [class.bg-marron-oscuro/40]="backgroundColor() === 'dark'" [class.text-gray-300]="backgroundColor() === 'dark'"
-          [class.hover:bg-marron-oscuro/60]="backgroundColor() === 'dark'"
-          [class.hover:text-beige]="backgroundColor() === 'dark'" [class.bg-beige/40]="backgroundColor() === 'light'"
-          [class.text-azul-claro]="backgroundColor() === 'light'"
-          [class.hover:bg-beige/60]="backgroundColor() === 'light'"
-          [class.hover:text-marron-oscuro]="backgroundColor() === 'light'">
-          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="2" y1="12" x2="5" y2="12"></line>
-            <line x1="19" y1="12" x2="22" y2="12"></line>
-            <line x1="12" y1="2" x2="12" y2="5"></line>
-            <line x1="12" y1="19" x2="12" y2="22"></line>
-            <circle cx="12" cy="12" r="7"></circle>
+        <button (click)="resetCameraPosition()" 
+          class="group flex items-center space-x-2 px-4 py-2 bg-azul-claro/90 backdrop-blur-sm rounded-full transition-all duration-200 transform hover:scale-105 hover:bg-azul-claro shadow-lg">
+          <svg class="w-5 h-5 text-marron-oscuro pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"></path>
           </svg>
         </button>
         }
@@ -205,7 +195,7 @@
         </svg>
         Mueble
       </button>
-      <button class="btn-opciones-mueble" (click)="setMode('manual')"
+      <button (click)="setMode('manual')"class="btn-opciones-mueble"
         [class.text-marron-oscuro]="mode() === 'manual'"
         [class.bg-azul-claro]="mode() === 'manual'">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">

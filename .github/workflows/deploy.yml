@@ -64,17 +64,17 @@ jobs:
             pnpm run build
 
             echo "🔄 Reiniciando Backend (PM2 como emilia)..."
-            sudo -u emilia pm2 restart lynk_backend || \
+            sudo -u emilia pm2 restart lynk_backend --update-env || \
             sudo -u emilia pm2 start dist/index.js --name lynk_backend
 
             echo "🌐 Actualizando Frontend..."
             cd ../frontend
             pnpm install --frozen-lockfile
-            pnpm run build:prod
+            pnpm run build
 
-            echo "📁 Desplegando archivos en Apache..."
-            rm -rf /var/www/skaply/*
-            cp -r dist/frontend/browser/* /var/www/skaply/
+            echo "📁 Frontend listo: Apache sirve desde el dist dentro del repo (no se borra nada)."
+            # (opcional) comprobar que existe index.html
+            test -f /var/www/skaply/lynk_abp25/frontend/dist/frontend/browser/index.html
 
             echo "📊 Estado de PM2:"
             sudo -u emilia pm2 status
