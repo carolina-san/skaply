@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+      - develop
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,24 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm ci
 
       - name: Generate Prisma Client
         run: |
           cd backend
-          pnpm run db:generate
+          npm run db:generate
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -59,9 +58,9 @@ jobs:
 
             echo "📂 Actualizando Backend..."
             cd backend
-            pnpm install --frozen-lockfile
-            pnpm run db:generate
-            pnpm run build
+            npm ci
+            npm run db:generate
+            npm run build
 
             echo "🔄 Reiniciando Backend (PM2 como emilia)..."
             sudo -u emilia pm2 restart lynk_backend --update-env || \
@@ -69,11 +68,10 @@ jobs:
 
             echo "🌐 Actualizando Frontend..."
             cd ../frontend
-            pnpm install --frozen-lockfile
-            pnpm run build
+            npm ci
+            npm run build
 
-            echo "📁 Frontend listo: Apache sirve desde el dist dentro del repo (no se borra nada)."
-            # (opcional) comprobar que existe index.html
+            echo "📁 Frontend listo (Apache sirve desde dist dentro del repo)."
             test -f /var/www/skaply/lynk_abp25/frontend/dist/frontend/browser/index.html
 
             echo "📊 Estado de PM2:"
