@@ -70,7 +70,7 @@ jobs:
             echo "🌐 Actualizando Frontend..."
             cd ../frontend
             pnpm install --frozen-lockfile
-            pnpm run build:prod
+            pnpm run build
 
             echo "📁 Frontend listo: Apache sirve desde el dist dentro del repo (no se borra nada)."
             # (opcional) comprobar que existe index.html
