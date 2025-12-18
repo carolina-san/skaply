@@ -9,11 +9,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
@@ -21,19 +24,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run backend tests
+      - name: Generate Prisma Client
         run: |
-          if [ -d "backend" ]; then
-            cd backend
-            pnpm run db:generate
-            # pnpm test -- run # Descomenta cuando tengas tests
-          fi
+          cd backend
+          pnpm run db:generate
 
   deploy:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - name: Deploy via SSH
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH and Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -42,35 +45,45 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
-            # Cargar NVM y herramientas (Ajusta si no usas NVM)
+            echo "🚀 Iniciando despliegue seguro..."
+
+            # Cargar entorno de Node
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            
-            # Entrar a la carpeta donde clonaste el repo manualmente
-            cd ~/lynk_abp25
 
-            echo "📦 Actualizando código..."
+            # 1. Ir a la carpeta del proyecto
+            cd /var/www/skaply/lynk_abp25
+
+            echo "📦 Sincronizando Git..."
             git fetch origin main
             git reset --hard origin/main
 
-            echo "📂 Preparando Backend..."
+            echo "📂 Actualizando Backend..."
             cd backend
             pnpm install --frozen-lockfile
             pnpm run db:generate
-            pnpm run db:deploy
+            # pnpm run db:deploy # Descomenta si usas Prisma Migrations
             pnpm run build
 
-            # Reiniciar PM2 (Asegura que el nombre coincida con tu ecosistema)
-            pm2 restart lynk-backend || pm2 start dist/index.js --name "lynk-backend"
+            # 2. Reiniciar PM2 usando la ruta verificada
+            pm2 restart lynk_backend || pm2 start dist/index.js --name "lynk_backend"
 
-            echo "🌐 Preparando Frontend..."
+            echo "🌐 Actualizando Frontend..."
             cd ../frontend
             pnpm install --frozen-lockfile
             pnpm run build:prod
 
-            echo "📁 Publicando en Apache..."
-            # El usuario deploy_user debe tener permisos NOPASSWD para rm y cp en visudo
-            sudo rm -rf /var/www/lynk/*
-            sudo cp -r dist/frontend/browser/* /var/www/lynk/
+            echo "📁 Desplegando archivos en Apache..."
+            # Limpiamos solo el contenido de skaply, pero NO la carpeta del proyecto
+            # Usamos find para borrar todo excepto la carpeta del código fuente para mayor seguridad
+            sudo find /var/www/skaply/ -maxdepth 1 ! -name 'lynk_abp25' ! -name 'skaply' -exec rm -rf {} +
             
-            echo "✅ ¡Despliegue de Lynk ABP 25 completado con éxito!"
+            # Copiamos el build del frontend a la raíz de skaply
+            sudo cp -r dist/frontend/browser/* /var/www/skaply/
+            
+            # 3. Corregir permisos para que Apache pueda leerlo
+            sudo chown -R www-data:www-data /var/www/skaply/
+            sudo chmod -R 755 /var/www/skaply/
+
+            echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
+            pm2 status
