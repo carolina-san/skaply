@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '@/services/AuthService';
+import { AuthService } from '@/services/authService';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import passport from 'passport';
