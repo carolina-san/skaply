@@ -66,8 +66,8 @@ jobs:
             npm run build
 
             echo "🔄 Reiniciando Backend (PM2 como emilia)..."
-            sudo -u emilia pm2 restart lynk_backend --update-env || \
-            sudo -u emilia pm2 start dist/index.js --name lynk_backend
+            sudo -u emilia pm2 reload ecosystem.config.js --env production || \
+            sudo -u emilia pm2 start ecosystem.config.js --env production
 
             echo "🌐 Actualizando Frontend..."
             cd ../frontend
