@@ -83,14 +83,14 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   isCameraMoved = signal(false);
 
   stepDescriptions = [
-    "Paso 1: Prepara los tarugos inferiores.",
-    "Paso 2: Inserta los tarugos en la base.",
+    "Paso 1: Prepara los tacos inferiores.",
+    "Paso 2: Inserta los tacos en la base.",
     "Paso 3: Prepara los paneles laterales.",
     "Paso 4: Une los paneles laterales a la base.",
     "Paso 5: Prepara el panel trasero.",
     "Paso 6: Desliza el panel trasero en su sitio.",
-    "Paso 7: Prepara los tarugos superiores.",
-    "Paso 8: Inserta los tarugos en los paneles laterales.",
+    "Paso 7: Prepara los tacos superiores.",
+    "Paso 8: Inserta los tacos en los paneles laterales.",
     "Paso 9: Prepara el panel superior y los tornillos.",
     "Paso 10: Fija el panel superior con los tornillos."
   ];
