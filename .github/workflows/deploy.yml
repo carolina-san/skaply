@@ -68,7 +68,7 @@ jobs:
             echo "📂 Actualizando Backend..."
             cd backend
             npm ci
-            npm run db:generate
+            # npm run db:generate
             npm run build
 
             echo "🔄 Reiniciando Backend (PM2 como emilia)..."
