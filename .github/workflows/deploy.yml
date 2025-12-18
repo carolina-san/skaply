@@ -43,40 +43,40 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-    script: |
-      set -e
-      echo "🚀 Iniciando despliegue seguro..."
+          script: |
+            set -e
+            echo "🚀 Iniciando despliegue seguro..."
 
-      # Cargar entorno de Node
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            # Cargar entorno de Node
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-      cd /var/www/skaply/lynk_abp25
+            cd /var/www/skaply/lynk_abp25
 
-      echo "📦 Sincronizando Git..."
-      git fetch origin main
-      git reset --hard origin/main
+            echo "📦 Sincronizando Git..."
+            git fetch origin main
+            git reset --hard origin/main
 
-      echo "📂 Actualizando Backend..."
-      cd backend
-      pnpm install --frozen-lockfile
-      pnpm run db:generate
-      pnpm run build
+            echo "📂 Actualizando Backend..."
+            cd backend
+            pnpm install --frozen-lockfile
+            pnpm run db:generate
+            pnpm run build
 
-      echo "🔄 Reiniciando Backend (PM2 como emilia)..."
-      sudo -u emilia pm2 restart lynk_backend || \
-      sudo -u emilia pm2 start dist/index.js --name lynk_backend
+            echo "🔄 Reiniciando Backend (PM2 como emilia)..."
+            sudo -u emilia pm2 restart lynk_backend || \
+            sudo -u emilia pm2 start dist/index.js --name lynk_backend
 
-      echo "🌐 Actualizando Frontend..."
-      cd ../frontend
-      pnpm install --frozen-lockfile
-      pnpm run build:prod
+            echo "🌐 Actualizando Frontend..."
+            cd ../frontend
+            pnpm install --frozen-lockfile
+            pnpm run build:prod
 
-      echo "📁 Desplegando archivos en Apache..."
-      rm -rf /var/www/skaply/*
-      cp -r dist/frontend/browser/* /var/www/skaply/
+            echo "📁 Desplegando archivos en Apache..."
+            rm -rf /var/www/skaply/*
+            cp -r dist/frontend/browser/* /var/www/skaply/
 
-      echo "📊 Estado de PM2:"
-      sudo -u emilia pm2 status
+            echo "📊 Estado de PM2:"
+            sudo -u emilia pm2 status
 
-      echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
+            echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
