@@ -1,0 +1,82 @@
+name: Deploy Lynk ABP 25
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          pnpm run db:generate
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            echo "🚀 Iniciando despliegue seguro..."
+
+            # Cargar entorno de Node
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            cd /var/www/skaply/lynk_abp25
+
+            echo "📦 Sincronizando Git..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "📂 Actualizando Backend..."
+            cd backend
+            pnpm install --frozen-lockfile
+            pnpm run db:generate
+            pnpm run build
+
+            echo "🔄 Reiniciando Backend (PM2 como emilia)..."
+            sudo -u emilia pm2 restart lynk_backend || \
+            sudo -u emilia pm2 start dist/index.js --name lynk_backend
+
+            echo "🌐 Actualizando Frontend..."
+            cd ../frontend
+            pnpm install --frozen-lockfile
+            pnpm run build:prod
+
+            echo "📁 Desplegando archivos en Apache..."
+            rm -rf /var/www/skaply/*
+            cp -r dist/frontend/browser/* /var/www/skaply/
+
+            echo "📊 Estado de PM2:"
+            sudo -u emilia pm2 status
+
+            echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
