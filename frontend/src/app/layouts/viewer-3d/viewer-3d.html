@@ -1,7 +1,7 @@
 <div class="fixed h-screen relative bg-marron-oscuro overflow-hidden flex">
 
   <!-- Contenedor principal: ocupa el espacio restante -->
-  <div class="flex-1 h-full">
+  <div class=" h-full w-full md:w-[75%]">
     <app-graphics-engine [furnitureId]="furnitureId" [furnitureName]="furnitureName" (arStateChange)="isARActive.set($event)"></app-graphics-engine>
   </div>
 
