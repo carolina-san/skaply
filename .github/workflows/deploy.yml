@@ -43,47 +43,40 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            set -e
-            echo "🚀 Iniciando despliegue seguro..."
+    script: |
+      set -e
+      echo "🚀 Iniciando despliegue seguro..."
 
-            # Cargar entorno de Node
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      # Cargar entorno de Node
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-            # 1. Ir a la carpeta del proyecto
-            cd /var/www/skaply/lynk_abp25
+      cd /var/www/skaply/lynk_abp25
 
-            echo "📦 Sincronizando Git..."
-            git fetch origin main
-            git reset --hard origin/main
+      echo "📦 Sincronizando Git..."
+      git fetch origin main
+      git reset --hard origin/main
 
-            echo "📂 Actualizando Backend..."
-            cd backend
-            pnpm install --frozen-lockfile
-            pnpm run db:generate
-            # pnpm run db:deploy # Descomenta si usas Prisma Migrations
-            pnpm run build
+      echo "📂 Actualizando Backend..."
+      cd backend
+      pnpm install --frozen-lockfile
+      pnpm run db:generate
+      pnpm run build
 
-            # 2. Reiniciar PM2 usando la ruta verificada
-            sudo -u emilia pm2 restart lynk_backend || sudo -u emilia pm2 start dist/index.js --name "lynk_backend"
+      echo "🔄 Reiniciando Backend (PM2 como emilia)..."
+      sudo -u emilia pm2 restart lynk_backend || \
+      sudo -u emilia pm2 start dist/index.js --name lynk_backend
 
-            echo "🌐 Actualizando Frontend..."
-            cd ../frontend
-            pnpm install --frozen-lockfile
-            pnpm run build:prod
+      echo "🌐 Actualizando Frontend..."
+      cd ../frontend
+      pnpm install --frozen-lockfile
+      pnpm run build:prod
 
-            echo "📁 Desplegando archivos en Apache..."
-            # Limpiamos solo el contenido de skaply, pero NO la carpeta del proyecto
-            # Usamos find para borrar todo excepto la carpeta del código fuente para mayor seguridad
-            sudo find /var/www/skaply/ -maxdepth 1 ! -name 'lynk_abp25' ! -name 'skaply' -exec rm -rf {} +
-            
-            # Copiamos el build del frontend a la raíz de skaply
-            sudo cp -r dist/frontend/browser/* /var/www/skaply/
-            
-            # 3. Corregir permisos para que Apache pueda leerlo
-            sudo chown -R www-data:www-data /var/www/skaply/
-            sudo chmod -R 755 /var/www/skaply/
+      echo "📁 Desplegando archivos en Apache..."
+      rm -rf /var/www/skaply/*
+      cp -r dist/frontend/browser/* /var/www/skaply/
 
-            echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
-            pm2 status
+      echo "📊 Estado de PM2:"
+      sudo -u emilia pm2 status
+
+      echo "✅ ¡Despliegue de Lynk ABP 25 completado!"
