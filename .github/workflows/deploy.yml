@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - develop
-
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,10 +22,6 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: npm ci
-
-      - name: Generate Prisma Client
-        working-directory: backend
-        run: npm run db:generate
 
       - name: Install frontend dependencies
         working-directory: frontend
