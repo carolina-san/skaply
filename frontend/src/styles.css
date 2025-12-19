@@ -12,18 +12,15 @@
   font-weight: 600;
   font-style: normal;
 }
-
+html{
+    min-height: 100vh;
+    scroll-behavior: smooth;
+}
 body {
   margin: 0;
   /*OPCIÓN 1: fondo marron y sombra marron oscuro*/
   /*background: radial-gradient(circle at center, var(--color-marron-oscuro) 0%, var(--color-marron-secundario) 80%);*/
   background-color: var(--color-marron-oscuro);
- 
-  min-height: 100vh;
-
-}
-main{
-  min-height: 100vh;
 }
 
 h1,

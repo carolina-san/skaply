@@ -1,32 +1,35 @@
 <!-- BACKDROP -->
-<div [ngClass]="{ 'hidden': !open }"
-     class="fixed inset-0 bg-black/60 z-45"
->
-</div>
+<div
+  [ngClass]="{ 'hidden': !open }"
+  class="fixed inset-0 bg-black/60 z-45"
+></div>
 
 <!-- MODAL WRAPPER -->
-<div [ngClass]="{ 'hidden': !open }"
-     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-0 h-screen safe-area">
+<div
+  [ngClass]="{ 'hidden': !open }"
+  class="fixed left-0 right-0 bottom-0 z-50 flex justify-center
+          sm:h-auto sm:items-center  sm:w-[60%] sm:inset-0 m-auto  modal-wrapper max-h-[90dvh] overflow-hidden"
+>
 
   <!-- MODAL CONTENT -->
   <div
-    class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl 
-          w-full sm:max-w-[60%] sm:w-[60%]
-           overflow-y-auto sm:overflow-hidden relative
-           
-           animate-slide-up  
-           sm:!animate-none     
-  ">
+    class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl
+           w-full sm:w-[60%]
+          pb-[max(0.5rem,env(safe-area-inset-bottom))]
+          sm:pb-0
+           animate-slide-up sm:!animate-none
+           relative"
+  >
 
-    <!-- CLOSE BUTTON -->
-    <button (click)="close()" class="absolute top-2 right-2 w-8 btn-hover-marron !bg-white hover:!bg-beige-oscuro ">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="24px" width="24px" fill="currentColor">
-        <path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-      </svg>
+    <!-- CLOSE -->
+    <button
+      (click)="close()"
+      class="absolute top-2 right-2 w-8 btn-hover-marron bg-white"
+    >
+      ✕
     </button>
 
     <ng-content></ng-content>
 
   </div>
-
 </div>

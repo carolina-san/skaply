@@ -11,11 +11,3 @@
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
-
-/* Safe area para móviles con barra de navegación */
-.safe-area {
-  padding-top: max(0px, env(safe-area-inset-top));
-  padding-bottom: max(0px, env(safe-area-inset-bottom));
-  padding-left: max(0px, env(safe-area-inset-left));
-  padding-right: max(0px, env(safe-area-inset-right));
-}

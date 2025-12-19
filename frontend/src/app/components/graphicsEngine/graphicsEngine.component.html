@@ -5,7 +5,7 @@
 
   <!-- AR Permission Overlay -->
   @if (arFlowState() !== 'idle') {
-  <div class="absolute inset-0  flex items-center justify-center backdrop-blur-sm"
+  <div class="absolute inset-0  flex items-center justify-center backdrop-blur-sm z-80"
     [class.bg-beige-oscuro/70]="backgroundColor() === 'dark'" [class.bg-beige/70]="backgroundColor() === 'light'">
 
     <div class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center border"
@@ -98,7 +98,7 @@
       </button> -->
       @if (mode() === 'final' && isSmallScreen()) {
       <button (click)="toggleAR()"
-        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors"
+        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors z-10"
         [class.bg-beige/90]="true"
         [class.text-marron-oscuro]="true"
         [class.hover:bg-white/90]="true">
