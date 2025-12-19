@@ -18,6 +18,15 @@ body {
   /*OPCIÓN 1: fondo marron y sombra marron oscuro*/
   /*background: radial-gradient(circle at center, var(--color-marron-oscuro) 0%, var(--color-marron-secundario) 80%);*/
   background-color: var(--color-marron-oscuro);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: constant(safe-area-inset-bottom);
+  min-height: 100vh;
+
+}
+main{
+   padding-bottom: env(safe-area-inset-bottom);
+   padding-bottom: constant(safe-area-inset-bottom);
+  min-height: 100vh;
 }
 
 h1,

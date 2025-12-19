@@ -175,16 +175,16 @@
 
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full">
+    <div class="flex flex-col sm:flex-row w-full h-full">
       <!-- IMAGEN -->
-      <div class="w-full  sm:max-w-[40%] flex">
+      <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0">
         <img [src]="selectedFurniture?.image_url" loading="lazy"
-          class="w-full h-full object-cover max-h-[85vh] sm:max-h-none sm:h-auto aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
+          class="w-full h-full sm:h-auto object-cover aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
       </div>
       <!-- TEXTO -->
-      <div class="flex flex-col p-5 gap-5 w-full overflow-y-auto max-h-[85vh]">
-        <div class="flex items-center gap-4 mb-2">
-          <span class="px-3 py-1 text-xs font-bold rounded-full" [ngClass]="{
+      <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full overflow-y-auto flex-1">
+        <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2">
+          <span class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-bold rounded-full" [ngClass]="{
             'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
             'bg-orange-100 text-orange-600': selectedFurniture?.difficulty === 'medium',
             'bg-red-100 text-red-600': selectedFurniture?.difficulty === 'high'
@@ -196,26 +196,26 @@
           </span>
         </div>
         <div class="mt-auto">
-          <h2 class="text-4xl font-extrabold text-marron-oscuro ">
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-marron-oscuro">
             {{ selectedFurniture?.name }}
           </h2>
 
-          <p class="flex items-center gap-2 text-sm font-semibold text-marron-oscuro mt-1">
+          <p class="flex items-center gap-2 text-xs sm:text-sm font-semibold text-marron-oscuro mt-1">
             <span class="w-2 h-2 bg-marron-oscuro rounded-full"></span>
             {{ selectedFurniture?.provider_name }}
           </p>
 
-          <p class="text-md text-marron-oscuro/80 mt-5">
+          <p class="text-sm sm:text-md text-marron-oscuro/80 mt-3 sm:mt-5">
             {{ selectedFurniture?.short_description }}
           </p>
-          <hr class="border-t-1 border-beige-oscuro mt-5">
+          <hr class="border-t-1 border-beige-oscuro mt-3 sm:mt-5">
         </div>
 
 
         <!-- BOTÓN -->
-        <button class="btn-azul flex items-center justify-between border border-marron-oscuro" (click)="goToViewer3D()">
+        <button class="btn-azul flex items-center justify-between border border-marron-oscuro text-sm sm:text-base" (click)="goToViewer3D()">
           Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
-            class="w-7 h-7">
+            class="w-5 sm:w-7 h-5 sm:h-7">
             <path
               d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
           </svg>

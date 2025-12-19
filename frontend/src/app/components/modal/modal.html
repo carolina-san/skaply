@@ -6,13 +6,13 @@
 
 <!-- MODAL WRAPPER -->
 <div [ngClass]="{ 'hidden': !open }"
-     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-0">
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:px-0 h-screen">
 
   <!-- MODAL CONTENT -->
   <div
     class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl 
           w-full sm:max-w-[60%] sm:w-[60%]
-           max-h-[85vh] overflow-hidden relative
+           overflow-y-auto sm:overflow-hidden relative
            
            animate-slide-up  
            sm:!animate-none     
