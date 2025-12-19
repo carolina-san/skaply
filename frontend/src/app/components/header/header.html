@@ -1,7 +1,5 @@
 <header [ngClass]="{
-    'fixed top-0 left-0 transition-all duration-300': true,
-    'w-full': !isViewer3D,
-    'md:w-[75%]': isViewer3D,
+    'fixed w-full top-0 left-0 transition-all duration-300 ': true,
     'backdrop-blur-lg': currentRoute !== '/profile',
     'backdrop-blur-none bg-transparent': currentRoute === '/profile',
     'header-expanded': !scrolled,
