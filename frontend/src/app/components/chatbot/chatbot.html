@@ -41,69 +41,78 @@
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
                 }">
-                <div *ngIf="msg.rich?.type === 'card'" class="msg-bot border p-3 rounded-md shadow mb-2 bg-white">
-                    <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
-                        class="w-full h-32 object-cover rounded-md mb-2">
-                    <h4 class="font-bold">{{ msg.rich.title }}</h4>
-                    <p class="text-sm text-gray-700 whitespace-pre-line">{{ msg.rich.subtitle }}</p>
-                    <div class="mt-2">
-                        <button *ngFor="let btn of msg.rich.buttons"
-                            class="bg-blue-500 text-white px-3 py-1 m-1 rounded hover:bg-blue-600 transition"
-                            (click)="openLink(btn.postback)">
-                            {{ btn.text }}
-                        </button>
-                    </div>
-                </div>
                 <div *ngIf="msg.text" [ngClass]="msg.sender === 'user'
                     ? 'msg-user'
                     : 'msg-bot'">
                     {{ msg.text }}
                 </div>
 
-                <!-- card -->
-                <div *ngIf="msg.rich?.type === 'info'" class="msg-bot">
-                    <h4 class="font-bold">{{ msg.rich.title }}</h4>
-                    <p>{{ msg.rich.subtitle }}</p>
-                </div>
-
-                <div *ngIf="msg.rich?.items" class="msg-bot space-y-4">
-                    <div *ngFor="let item of msg.rich.items">
-                        <div *ngIf="item.type === 'info'">
-                            <h4 class="font-bold text-lg text-marron-oscuro">{{ item.title }}</h4>
-                            <p>{{ item.subtitle }}</p>
+                <!-- Renderizado unificado de richContent: card, info, items, chips -->
+                <div *ngIf="msg.rich && !msg.text" class="msg-bot">
+                    <!-- Cards -->
+                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2">
+                        <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
+                            class="w-full h-32 object-cover rounded-2xl">
+                        <div>
+                            <h4 class="titulo">{{ msg.rich.title }}</h4>
+                            <p class="subtitulo">{{ msg.rich.subtitle }}</p>
                         </div>
-
-                        <div *ngIf="item.type === 'list'">
-                            <h4 class="font-bold text-md text-marron-oscuro">{{ item.title }}</h4>
-                            <p class="text-sm">{{ item.subtitle }}</p>
-                            <hr class="border-gray-300 mt-2"/>
-                        </div>
-                        
-                        <div *ngIf="item.type === 'description'">
-                            <ul class="space-y-2">
-                                <li *ngFor="let text of item.text" class=" text-gray-700">{{ text }}</li>
-                            </ul>
+                        <div class="flex flex-wrap gap-2 justify-end">
+                            <button *ngFor="let btn of msg.rich.buttons"
+                                class=" chip"
+                                (click)="openLink(btn.postback)">
+                                {{ btn.text }}
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <div *ngIf="msg.rich?.type === 'chips'" class="inline-block mt-1">
-                    <button *ngFor="let opt of msg.rich.options"
-                        class="bg-white px-3 py-1 m-1 rounded-full hover:bg-marron-claro transition"
-                        (click)="handleChipClick(opt.text)">
-                        {{ opt.text }}
-                    </button>
-                </div>
+                    <!-- Items type (info, description, list, chips) -->
+                    <div *ngIf="msg.rich.items" class="space-y-2">
+                        <div *ngFor="let item of msg.rich.items">
+                            <!-- Info item -->
+                            <div *ngIf="item.type === 'info'">
+                                <h4 class="titulo">{{ item.title }}</h4>
+                                <p class="subtitulo">{{ item.subtitle }}</p>
+                            </div>
 
-                <!-- Fallback: Description individual (compatible con mapeo anterior) -->
-                <div *ngIf="msg.rich?.type === 'description' && !msg.rich?.items"
-                    class="msg-bot bg-white border-l-4 border-marron-oscuro p-4 rounded-md shadow mb-2">
-                    <ul class="space-y-2">
-                        <li *ngFor="let item of msg.rich.text" class="flex gap-2 text-sm text-gray-700">
-                            <span class="min-w-fit">{{ item.split(':')[0] }}:</span>
-                            <span>{{ item.split(':')[1]?.trim() }}</span>
-                        </li>
-                    </ul>
+                            <!-- Description item -->
+                            <div *ngIf="item.type === 'description'">
+                                <h4 class="titulo">{{ item.title }}</h4>
+                                <ul class="subtitulo ">
+                                    <li *ngFor="let text of item.text">{{ text }}</li>
+                                </ul>
+                            </div>
+
+                            <!-- List item -->
+                            <div *ngIf="item.type === 'list'">
+                                <h4 class="font-bold">{{ item.title }}</h4>
+                                <div *ngIf="item.items && item.items.length > 0" class="text-sm space-y-2 mt-1 ml-2">
+                                    <div *ngFor="let subitem of item.items">
+                                        <p class="titulo">{{ subitem.title }}</p>
+                                        <p class="subtitulo">{{ subitem.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chips item -->
+                            <div *ngIf="item.type === 'chips'" class="flex flex-wrap gap-2">
+                                <button *ngFor="let opt of item.options"
+                                    class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
+                                    (click)="handleChipClick(opt.text)">
+                                    {{ opt.text }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direct chips type (sin items) -->
+                    <div *ngIf="msg.rich.type === 'chips' && !msg.rich.items" class="flex flex-wrap gap-2">
+                        <button *ngFor="let opt of msg.rich.options"
+                            class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
+                            (click)="handleChipClick(opt.text)">
+                            {{ opt.text }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

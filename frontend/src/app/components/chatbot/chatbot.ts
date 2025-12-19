@@ -194,6 +194,19 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     renderRichContent(groups: any[]) {
+        // Detectar si es el formato directo (array de objetos con type, title, etc.)
+        // o el formato Dialogflow (nested listValue.values)
+        const isDirectFormat = groups.length > 0 && 
+                               (groups[0].type !== undefined || 
+                                groups[0].title !== undefined);
+
+        if (isDirectFormat) {
+            // Procesar formato directo
+            this.processDirectRichContent(groups);
+            return;
+        }
+
+        // Procesar formato Dialogflow original
         groups.forEach(group => {
             const list = group.listValue?.values || [];
             const items: any[] = [];
@@ -250,6 +263,48 @@ export class Chatbot implements OnInit, AfterViewChecked {
                 this.speakMessage(richContentText.trim());
             }
         });
+    }
+
+    processDirectRichContent(items: any[]) {
+        const processedItems: any[] = [];
+        let chips: any = null;
+        let richContentText = ''; // Para acumular el texto a leer
+
+        items.forEach((item: any) => {
+            // Hacer copia para no modificar el original
+            const parsed: any = { ...item };
+
+            // Procesar el campo 'items' si existe (para listas anidadas)
+            if (parsed.items && Array.isArray(parsed.items)) {
+                parsed.items = parsed.items.map((subitem: any) => ({ ...subitem }));
+            }
+
+            // Separar chips del resto de items
+            if (parsed.type === 'chips') {
+                chips = parsed;
+            } else {
+                processedItems.push(parsed);
+                // Extraer texto de cada item para leer
+                if (parsed.title) richContentText += parsed.title + '. ';
+                if (parsed.subtitle) richContentText += parsed.subtitle + '. ';
+                if (parsed.description) richContentText += parsed.description + '. ';
+            }
+        });
+
+        // Mensaje con items (info, list, description)
+        if (processedItems.length > 0) {
+            this.messages.push({ sender: 'bot', rich: { items: processedItems } });
+        }
+
+        // Mensaje separado para chips
+        if (chips) {
+            this.messages.push({ sender: 'bot', rich: chips });
+        }
+
+        // Leer todo el contenido del rich content
+        if (richContentText.trim()) {
+            this.speakMessage(richContentText.trim());
+        }
     }
 
     handleChipClick(text: string) {
