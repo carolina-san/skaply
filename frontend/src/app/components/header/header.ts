@@ -44,6 +44,10 @@ export class Header {
   get isHome(): boolean {
     return this.router.url.split('?')[0] === '/';
   }
+
+  get isViewer3D(): boolean {
+    return this.currentRoute.includes('viewer-3d');
+  }
   
   finMontaje() {
     if (this.currentRoute.includes('viewer-3d')) {

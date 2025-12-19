@@ -1,5 +1,7 @@
 <header [ngClass]="{
-    'fixed top-0 left-0 w-full transition-all duration-300': true,
+    'fixed top-0 left-0 transition-all duration-300': true,
+    'w-full': !isViewer3D,
+    'md:w-[75%]': isViewer3D,
     'backdrop-blur-lg': currentRoute !== '/profile',
     'backdrop-blur-none bg-transparent': currentRoute === '/profile',
     'header-expanded': !scrolled,
@@ -31,9 +33,9 @@
   <app-menu *ngIf="isHome"></app-menu>
 
   <!-- Botones de autenticación -->
-  <div class="hidden lg:flex items-center gap-3 absolute lg:right-20">
+  <div *ngIf="!isViewer3D" class="hidden lg:flex items-center gap-3 absolute lg:right-20">
     <!-- Botón de login (si no hay sesión) -->
-    <a *ngIf="!isHome && currentRoute !== '/profile' && !isLoggedIn()" href="/login" class="flex items-center justify-center
+    <a *ngIf="!isHome && currentRoute !== '/profile' && !isLoggedIn() " href="/login" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
       hover:bg-beige transition duration-300 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">

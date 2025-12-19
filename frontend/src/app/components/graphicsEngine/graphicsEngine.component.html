@@ -5,7 +5,7 @@
 
   <!-- AR Permission Overlay -->
   @if (arFlowState() !== 'idle') {
-  <div class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+  <div class="absolute inset-0  flex items-center justify-center backdrop-blur-sm"
     [class.bg-beige-oscuro/70]="backgroundColor() === 'dark'" [class.bg-beige/70]="backgroundColor() === 'light'">
 
     <div class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center border"
@@ -55,7 +55,7 @@
 
   <!-- Header -->
   @if (showHeader() && !isARActive()) {
-  <header class="flex justify-between items-start p-2 relative z-30 top-20">
+  <header class="flex justify-between items-start p-2 relative top-20">
     <div>
       <!-- Nombre del mueble -->
       @if (furnitureName()) {
@@ -162,7 +162,7 @@
     </div>
     }
 
-    <div class="absolute bottom-6 right-4 flex items-end space-x-2">
+    <div class="absolute bottom-6 left-4 flex items-end space-x-2">
       <div class="flex flex-col space-y-2" title="Centrar vista">
         @if (isCameraMoved()) {
         <button (click)="resetCameraPosition()" 
@@ -180,7 +180,7 @@
 
   <!-- Footer Controls -->
   @if(showFooterControls() && !isARActive()) {
-  <footer class="flex flex-col items-center justify-center px-2 pt-2 pb-4 space-y-3 min-h-[110px] flex-shrink-0"
+  <footer class="flex flex-col items-center justify-center px-2 pt-2 pb-4 space-y-3 min-h-[110px] "
     [class.pointer-events-none]="areControlsDisabled()" [class.opacity-60]="areControlsDisabled()"
     [class.opacity-50]="isolatedPart() !== null">
     <!-- Mode Toggle -->
@@ -216,7 +216,7 @@
     </div>
 
     <!-- Dynamic Controls Area -->
-    <div class="w-full flex items-center justify-between min-h-[52px]">
+    <div class="w-full flex items-center justify-between min-h-[52px] z-10">
       @if (mode() === 'manual') {
       <button (click)="prevStep()" [disabled]="isManualFirstStep()"
         class="w-12 h-12 flex items-center bg-azul-claro justify-center rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
