@@ -27,7 +27,7 @@ export class Landing implements AfterViewInit {
   @ViewChildren('fadeSlide') fadeSlides!: QueryList<ElementRef>;
   ngAfterViewInit() {
     this.seo.setSeo({
-      title: `Skäply - Montaje de muebles fácil`,
+      title: `Skäply - Montaje de Muebles fácil`,
       description: `Descubre Skäply, la plataforma para montar tus muebles fácilmente. Catálogo completo, motor 3D interactivo y soporte profesional.`,
       canonical: `https://skaply.ovh/`,
       index: true,
