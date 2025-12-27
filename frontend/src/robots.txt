@@ -13,7 +13,7 @@ Disallow: /lynk/wp-content/private/
 Allow: /lynk/wp-admin/admin-ajax.php
 Allow: /lynk/wp-content/uploads/
 
-# --- Bloqueo de páginas sensibles de WordPress ---
+# --- Bloqueo de paginas de WordPress ---
 Disallow: /lynk/wp-login.php
 Disallow: /lynk/wp-register.php
 Disallow: /lynk/xmlrpc.php
