@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,8 @@ export class Login implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private seo: SeoService
   ) {}
 
   ngOnInit(): void {
@@ -33,6 +35,13 @@ export class Login implements OnInit {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/catalogo']);
     }
+
+    this.seo.setSeo({
+      title: `Inicia sesión - Skäply`,
+      description: `Accede a tu cuenta de Skäply para gestionar tu catálogo de muebles y montajes.`,
+      canonical: `https://skaply.ovh/login`,
+      index: false
+    });
   }
 
   onLogin(): void {

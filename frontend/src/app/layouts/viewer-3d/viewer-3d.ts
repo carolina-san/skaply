@@ -7,6 +7,7 @@ import { FurnitureViewer } from '../../components/furniture-viewer/furniture-vie
 import { Modal } from '../../components/modal/modal';
 import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-viewer-3d',
@@ -30,10 +31,18 @@ export class Viewer3D implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private seo: SeoService
   ) { }
 
   ngOnInit() {
+    this.seo.setSeo({
+      title: `Visualizador 3D de Muebles - Skäply`,
+      description: `Visualiza muebles en 3D, pruébalos en realidad aumentada y reporta problemas directamente desde Skäply.`,
+      canonical: `https://skaply.ovh/3d`,
+      index: true
+    });
+
     this.route.params.subscribe(params => {
       if (params['ref']) {
         this.furnitureId = params['ref'];
@@ -66,11 +75,51 @@ export class Viewer3D implements OnInit {
           this.furnitureName = 'Mueble';
           console.warn('No se encontró el nombre del mueble');
         }
+        
+        this.seo.setSeo({
+          title: `Montaje 3D de ${this.furnitureName} - Skäply`,
+          description: `Visualiza ${this.furnitureName} en 3D, pruébalo en realidad aumentada y reporta problemas directamente desde Skäply.`,
+          canonical: `https://skaply.ovh/viewer-3d/${this.furnitureId}`,
+          index: true,
+          schema: {
+            '@context': 'https://schema.org',
+            '@type': 'HowTo',
+            'name': `Cómo montar ${this.furnitureName}`,
+            'description': `Guía interactiva para montar ${this.furnitureName} con visualización 3D`,
+            'url': `https://skaply.ovh/viewer-3d/${this.furnitureId}`,
+            'step': [
+              {
+                '@type': 'HowToStep',
+                'name': 'Visualizar en 3D',
+                'text': `Explora ${this.furnitureName} en nuestro motor 3D interactivo`
+              },
+              {
+                '@type': 'HowToStep',
+                'name': 'Prueba en Realidad Aumentada',
+                'text': 'Visualiza cómo lucirá el mueble en tu espacio con AR'
+              },
+              {
+                '@type': 'HowToStep',
+                'name': 'Reportar Problemas',
+                'text': 'Notifica cualquier problema o sugerencia sobre el mueble'
+              }
+            ]
+          }
+        });
+        
         this.furnitureLoading = false;
       },
       error: (err) => {
         console.error('Error al cargar información del mueble:', err);
         this.furnitureName = 'Mueble desconocido';
+        
+        this.seo.setSeo({
+          title: `Montaje 3D - Skäply`,
+          description: `Visualiza muebles en 3D, pruébalos en realidad aumentada y reporta problemas directamente desde Skäply.`,
+          canonical: `https://skaply.ovh/viewer-3d`,
+          index: true
+        });
+        
         this.furnitureLoading = false;
       }
     });

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-profile',
@@ -8,14 +9,23 @@ import { CommonModule } from '@angular/common';
   templateUrl: './profile.html',
   styleUrls: ['./profile.css']
 })
-export class Profile {
+export class Profile implements OnInit {
   providers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
 
-  constructor(private apiService: ApiService) {
+  constructor(private apiService: ApiService, private seo: SeoService) {
     this.fetchProviders();
+  }
+
+  ngOnInit() {
+    this.seo.setSeo({
+      title: `Mi Perfil - Skäply`,
+      description: `Gestiona tu perfil y visualiza los proveedores registrados en tu cuenta de Skäply.`,
+      canonical: `https://skaply.ovh/perfil`,
+      index: false
+    });
   }
 
   fetchProviders() {

@@ -14,9 +14,9 @@ import { Privacy } from './layouts/legal/privacy';
 export const routes: Routes = [
     {path: '', component: Landing},
     {path: 'catalogo', component: Home},
-    {path: 'res-scanner', component: ResScanner},
+    //{path: 'res-scanner', component: ResScanner}, no usado actualmente
     {path: 'viewer-3d/:ref', component: Viewer3D},
-    {path: 'motor', component: Motor},
+    //{path: 'motor', component: Motor}, no usado actualmente
     {path: 'register', component: Register},
     {path: 'login', component: Login},
     {path: 'login/success', component: Login}, // Maneja el callback de Google OAuth

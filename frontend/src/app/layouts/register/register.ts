@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-register',
@@ -20,8 +21,16 @@ export class Register {
     private fb: FormBuilder,
     private api: ApiService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private seo: SeoService
   ) {
+    this.seo.setSeo({
+      title: `Regístrate - Skäply`,
+      description: `Crea tu cuenta en Skäply y accede a nuestro catálogo de muebles para montar profesionalmente.`,
+      canonical: `https://skaply.ovh/register`,
+      index: false
+    });
+
     this.form = this.fb.group({
       company_name: ['', Validators.required],
       cif: ['', Validators.required],

@@ -13,13 +13,15 @@ import { ApiService } from '../../services/api.service';
 import { FilterSharingService } from '../../services/filter-sharing.service';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-home',
-  imports: [ Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal],
+  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
+
 export class Home implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
@@ -46,7 +48,8 @@ export class Home implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private filterSharingService: FilterSharingService
+    private filterSharingService: FilterSharingService,
+    private seo: SeoService
   ) { }
 
   ngOnInit() {
@@ -66,6 +69,20 @@ export class Home implements OnInit {
 
     window.addEventListener("scroll", () => {
       this.scrolled = window.scrollY > 70;
+    });
+
+    this.seo.setSeo({
+      title: `Catálogo de muebles disponibles - Skäply`,
+      description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra la pieza perfecta para tu espacio y móntala fácilmente.`,
+      canonical: `https://skaply.ovh/catalogo`,
+      index: true,
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        'name': 'Catálogo de Muebles',
+        'description': 'Explorar catálogo de muebles disponibles',
+        'url': 'https://skaply.ovh/catalogo'
+      }
     });
   }
 
@@ -315,4 +332,6 @@ export class Home implements OnInit {
     this.calculateActiveFilters(this.activeFilters);
     this.obtenerCatalogo();
   }
+
+
 }
