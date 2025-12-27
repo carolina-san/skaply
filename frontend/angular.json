@@ -21,11 +21,13 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              
+              "src/robots.txt",
+              "src/sitemap.xml",
+              "src/sitemap_main.xml" ,
               {
                 "glob": "**/*",
                 "input": "public",
-                "output": "/" 
+                "output": "/"
               }
             ],
             "styles": [

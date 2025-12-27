@@ -10,7 +10,15 @@
    </url>
 
    <url>
-      <loc>https://skaply.ovh/viewer3d</loc>
+      <loc>https://skaply.ovh/viewer-3d</loc>
    </url>
-<!-- Añadir paginas legales -->
+   <url>
+      <loc>https://skaply.ovh/legal-notice</loc>
+   </url>
+   <url>
+      <loc>https://skaply.ovh/privacy</loc>
+   </url>
+   <url>
+      <loc>https://skaply.ovh/cookies</loc>
+   </url>
 </urlset>
