@@ -36,16 +36,19 @@
 
   </section>
 
-  <section class="w-full flex flex-col-reverse lg:flex-row items-center justify-between mt-20 page-main gap-5 fade-slide" #fadeSlide>
+  <section
+    class="w-full flex flex-col-reverse lg:flex-row items-center justify-between mt-20 page-main gap-5 fade-slide"
+    #fadeSlide>
     <div class="h-[300px] lg:h-[400px] w-[100%] lg:w-[50%]">
-      <app-demo-landing ></app-demo-landing>
+      <app-demo-landing></app-demo-landing>
     </div>
     <div class="flex flex-col lg:items-end items-center text-center lg:text-right mt-6 lg:mt-0 gap-5">
       <h2 class="text-3xl md:text-5xl text-azul-claro font-semibold mb-2">Echa un vistazo a nuestra demo 3D</h2>
       <p class="text-beige max-w-md lg:max-w-sm">
-        Descubre cómo Skäply hace que montar muebles sea sencillo, visual e interactivo. Visualiza cada pieza en 3D y sigue las instrucciones paso a paso para un montaje rápido y sin errores.
+        Descubre cómo Skäply hace que montar muebles sea sencillo, visual e interactivo. Visualiza cada pieza en 3D y
+        sigue las instrucciones paso a paso para un montaje rápido y sin errores.
       </p>
-       <button (click)="acceder()" class="flex btn-azul mt-10">
+      <button (click)="acceder()" class="flex btn-azul mt-10">
         Quiero ver más
         <span class="material-symbols-rounded ml-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" class="w-7 h-7">
@@ -195,10 +198,21 @@
     </div>
   </section>
 
+  <section class="w-full mt-20 page-main flex flex-col items-center fade-slide mb-20" #fadeSlide>
+    <h2 class="text-4xl text-azul-claro text-center mb-10">
+      Aprende a usar Skäply
+    </h2>
+
+    <div class="w-full h-[80vh] rounded-xl overflow-hidden shadow-xl">
+      <iframe src="assets/exelearning/index.html" class="w-full h-full border-0" loading="lazy"></iframe>
+    </div>
+  </section>
+
   <section class="w-full flex flex-col page-main justify-center mt-20 pb-20 fade-slide" #fadeSlide>
     <h2 class="text-4xl text-azul-claro text-center">¡Síguenos!</h2>
     <div class="flex flex-row text-beige gap-4 lg:gap-10 justify-center mt-10 items-center text-xl">
-      <p class="text-right text-sm md:text-md w-[50%]">Para saber más de nosotros y <br>estar al tanto de las novedades, <br>síguenos en
+      <p class="text-right text-sm md:text-md w-[50%]">Para saber más de nosotros y <br>estar al tanto de las novedades,
+        <br>síguenos en
         nuestras redes<br>
         sociales y en nuestro blog</p>
       <div class="border-r border-beige/20 self-stretch"></div>
