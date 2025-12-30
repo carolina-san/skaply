@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { FurnitureController } from '../controllers/furnitureController';
+import { FurnitureController } from '../../controllers/furnitureController';
 import { IssueController } from '@/controllers/issueController';
 import { IssueService } from '@/services/issueService';
 import { ReviewController } from '@/controllers/reviewController';
@@ -12,13 +12,11 @@ const issueControllerInstance = new IssueController(issueServiceInstance);
 const reviewServiceInstance = new ReviewService();
 const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
-router.get('/',furnitureController.getFurnitures);
-router.post("/filter", furnitureController.filterFurniture);
+router.get('/',furnitureController.getAllFurniture);
 router.get('/:id',furnitureController.getFurnitureById);
-router.get('/:id/parts',furnitureController.getFurnitureParts);
-router.get('/:id/step/:stepId/parts',furnitureController.getFurnitureStepParts);
 router.get('/:id/issues',issueControllerInstance.getFurnitureIssues);
 router.post('/:id/issues', issueControllerInstance.postIssue);
 router.get('/:id/reviews',reviewControllerInstance.getFurnitureReviews);
 router.get('/:id/assembly',furnitureController.getFurnitureAssembly);
+router.post("/filter", furnitureController.filterFurniture);
 export default router;

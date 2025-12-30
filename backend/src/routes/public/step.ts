@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { StepController } from '../controllers/stepController';
+import { StepController } from '../../controllers/stepController';
 
 
 const router = Router();

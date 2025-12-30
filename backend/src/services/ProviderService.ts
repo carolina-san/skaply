@@ -70,8 +70,40 @@ export class ProviderService {
   //   throw new Error('Method not implemented');
   // }
 
-  // async deleteProvider(id: string) {
-  //   // Delete user logic here
-  //   throw new Error('Method not implemented');
-  // }
+
+  async checkProviderRoleById(providerId: number): Promise<boolean> {
+    const result = await pool.query(
+      `SELECT role FROM "User" WHERE id = $1`,
+      [providerId]
+    );
+
+    if (result.rows.length === 0) {
+      return false; // no existe el usuario
+    }
+
+    return result.rows[0].role === 'provider';
+  }
+
+  async getProviderIdByEmail(email: string): Promise<number | null> {
+    try {
+      const result = await pool.query(
+        `SELECT id FROM "User" WHERE email = $1`,
+        [email]
+      );
+
+      if (result.rows.length === 0) return null;
+      return result.rows[0].id;
+    } catch (error) {
+      throw new Error('Error fetching user ID by email');
+    }
+  }
+
+  async getProviderIdByFurnitureId(furnitureId: number): Promise<number | null> {
+    const result = await pool.query(
+      `SELECT provider_id FROM furniture WHERE id = $1`,
+      [furnitureId]
+    );
+    if (result.rows.length === 0) return null;
+    return result.rows[0].provider_id;
+  }
 }

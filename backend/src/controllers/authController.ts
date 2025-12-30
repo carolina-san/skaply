@@ -18,6 +18,7 @@ export class AuthController {
     const { email, password } = req.body;
     try {
       const comparePass = await this.authService.checkPassword(email);
+      
       if (comparePass.rows.length === 0) {
         throw new ApiError('NOT_FOUND', 'User not found');
       }
@@ -36,8 +37,14 @@ export class AuthController {
         throw new ApiError('UNAUTHORIZED', 'Invalid password');
       }
 
+      const role = await this.authService.checkRole(email);
+
       // Generar token JWT
-      const token = jwt.sign({ emailuser: email, role: 'provider' }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
+      const token = jwt.sign(
+        //{ emailuser: email, role: 'provider' },
+        { emailuser: email, role: role },
+        process.env.JWT_SECRET_KEY as string, 
+        { expiresIn: '24h' });
       res.status(200).json({ message: 'Login successful', data: { email, token } });
     } catch (error) {
       if (error instanceof ApiError) next(error);

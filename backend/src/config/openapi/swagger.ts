@@ -10,12 +10,12 @@ const options: swaggerJSDoc.Options = {
         },
         servers: [
             {
-                url: 'http://localhost:3000/api',
-                description: 'Local server',
-            },
-            {
                 url: 'https://skaply.ovh/api',
                 description: 'Production server',
+            },
+            {
+                url: 'http://localhost:3000/api',
+                description: 'Local server',
             },
         ],
         components: {

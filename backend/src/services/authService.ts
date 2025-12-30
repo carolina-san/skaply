@@ -17,10 +17,22 @@ export class AuthService {
   async checkPassword(email:string){
     try{  
       const result = await pool.query(`SELECT password FROM "User"
-        WHERE email = $1`,[email]);
+        WHERE email = $1`,[email]   
+      );
       return result;
     }catch(error){
       throw new Error('Error checking user password');
+    }
+  }
+
+  async checkRole(email:string){
+    try{  
+      const result = await pool.query(`SELECT role FROM "User"
+        WHERE email = $1`,[email]   
+      );
+      return result.rows[0].role;
+    }catch(error){
+      throw new Error('Error checking user role');
     }
   }
 

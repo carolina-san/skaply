@@ -52,11 +52,9 @@ export const authorize = (allowedRoles: string[]) => {
     if (!req.user) {
       return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
     }
-
     if (!allowedRoles.includes(req.user.role)) {
       return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
     }
-
     next();
   };
 };

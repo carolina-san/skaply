@@ -1,5 +1,6 @@
 import pool from '@config/database';
 import { Difficulty } from '@/types/common.types';
+import { ApiError } from '@/utils/ApiError';
 
 export class FurnitureService {
   
@@ -53,7 +54,6 @@ export class FurnitureService {
     }
   }
 
-  // DUDA: Incluye el número de steps, ¿hacemos que tambien se devuelva el nombre de la categoria y el nombre del provider?
   async getFurnitureById(id:number){
     try{
         const result = await pool.query(`
@@ -151,45 +151,6 @@ export class FurnitureService {
         throw new Error('Unable to fetch the furniture included in the parameters');
     }
   }
- 
-  async getFurnitureParts(id:number){
-    try{
-      const result = await pool.query(`
-      SELECT *
-      FROM 
-        furniture_part fp
-      JOIN
-        part p ON fp.part_id = p.id
-      WHERE
-        fp.furniture_id = $1`
-      ,[id]);
-
-      return result;
-    }catch(error){
-      throw new Error('Error fetching furniture parts')
-    }
-  }
-
-  // ERROR: falla cuando el stepNumber está formado por otro step
-  async getFurnitureStepParts(idFurniture:number, stepNumber:number){
-    try{
-      const result = await pool.query(`
-      SELECT p.id, quantity, file_uri, reference_number, color_id
-      FROM 
-        Step_Part sp
-      JOIN
-        Part p ON sp.part_id = p.id
-	    JOIN
-        Step s ON s.id = sp.stepId
-      WHERE
-        s.furniture_id = $1 AND s.step_number = $2`,
-      [idFurniture, stepNumber]);
-      return result;
-    }catch(error){
-      throw new Error('Error fetching furniture parts')
-    }
-  }
-
 
   async getFilteredFurniture(filters: {
     difficulties?: ('low' | 'medium' | 'high')[];
@@ -305,7 +266,7 @@ export class FurnitureService {
   }
 
 
-    // Devuelve toda la iformación necesaria para el motor gráfico
+  // Devuelve toda la iformación necesaria para el motor gráfico
   async getFurnitureAssembly(furnitureId: number) {
     try {
       const query = `
@@ -361,4 +322,110 @@ export class FurnitureService {
       throw new Error('Error fetching furniture assembly');
     }
   }
+
+async createFurniture(data: {
+    name: string;
+    file_uri: string;
+    difficulty: 'low' | 'medium' | 'high';
+    image_url?: string;
+    reference_number?: string;
+    category_id?: number;
+    provider_id?: number;
+    color_id?: number;
+    short_description?: string;
+  }) {
+    const {
+      name,
+      file_uri,
+      difficulty,
+      image_url,
+      reference_number,
+      category_id,
+      provider_id,
+      color_id,
+      short_description
+    } = data;
+
+    try {
+      // Insertar en DB
+      const result = await pool.query(
+        `INSERT INTO Furniture 
+        (name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        RETURNING *`,
+        [name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description]
+      );
+
+      return result.rows[0];
+    } catch (error: any) {
+      // Detectar errores de claves foráneas
+      if (error.code === '23503') {
+        throw new ApiError('BAD_REQUEST', 'Invalid foreign key (category, provider, or color)');
+      }
+      throw new ApiError('INTERNAL_SERVER', 'Failed to create furniture');
+    }
+  }
+
+  // Validar existencia de category, provider y color
+  async checkResourcesExist(category_id?: number, provider_id?: number, color_id?: number) {
+    if (category_id) {
+      const category = await pool.query('SELECT id FROM Category WHERE id = $1', [category_id]);
+      if (!category.rows.length) throw new ApiError('NOT_FOUND', 'Category not found');
+    }
+    if (provider_id) {
+      const provider = await pool.query('SELECT id FROM "User" WHERE id = $1', [provider_id]);
+      if (!provider.rows.length) throw new ApiError('NOT_FOUND', 'Provider not found');
+    }
+    if (color_id) {
+      const color = await pool.query('SELECT id FROM Color WHERE id = $1', [color_id]);
+      if (!color.rows.length) throw new ApiError('NOT_FOUND', 'Color not found');
+    }
+  }
+
+  async updateFurniture(id: number, data: {
+    name?: string;
+    file_uri?: string;
+    image_url?: string;
+    reference_number?: string;
+    difficulty?: Difficulty;
+    category_id?: number;
+    provider_id?: number;
+    color_id?: number;
+    short_description?: string;
+  }) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let index = 1;
+
+    for (const key in data) {
+      if (data[key as keyof typeof data] !== undefined) {
+        fields.push(`${key} = $${index}`);
+        values.push(data[key as keyof typeof data]);
+        index++;
+      }
+    }
+
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+
+    values.push(id); // último valor para el WHERE
+    const query = `UPDATE Furniture SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`;
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw new Error('Furniture not found');
+    }
+
+    return result.rows[0];
+  }
+
+  async deleteFurniture(id: number) {
+    const result = await pool.query(
+      `DELETE FROM Furniture WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    return result.rows[0];
+  }
+
 }
