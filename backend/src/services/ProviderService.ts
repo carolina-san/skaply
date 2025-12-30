@@ -5,10 +5,14 @@ export class ProviderService {
 
   async getAllProviders() {
     try {
-      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1', [UserRole.PROV]);
+      const result = await pool.query(
+        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url 
+         FROM public."User" WHERE role = $1`,
+        [UserRole.PROV]
+      );
       return result;
     } catch (error) {
-      throw new Error('Method not implemented');
+      throw new Error('Unable to fetch providers');
     }
   }
 
