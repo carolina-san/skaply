@@ -18,6 +18,17 @@ const options: swaggerJSDoc.Options = {
                 description: 'Local server',
             },
         ],
+        tags: [
+            { name: 'Health', description: 'API health check endpoints' },
+            { name: 'Auth', description: 'Authentication endpoints' },
+            { name: 'Providers', description: 'Public provider endpoints' },
+            { name: 'Furniture', description: 'Public furniture endpoints' },
+            { name: 'Categories', description: 'Category endpoints' },
+            { name: 'Colors', description: 'Color endpoints' },
+            { name: 'Chatbot', description: 'Chatbot and assembly assistant endpoints' },
+            { name: 'Private - Furniture', description: 'Protected furniture management endpoints (requires authentication)' },
+            { name: 'Private - Providers', description: 'Protected provider management endpoints (requires authentication)' },
+        ],
         components: {
             schemas: {
                 Error: {

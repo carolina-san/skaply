@@ -127,6 +127,38 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ * /auth/me:
+ *   get:
+ *     summary: Get current user
+ *     description: Returns the authenticated user's information
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'User fetched successfully'
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  * /auth/google:
  *   get:
  *     summary: Google OAuth Login
