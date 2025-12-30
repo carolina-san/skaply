@@ -10,6 +10,7 @@ import {
 } from './public';
 import {
   privateFurnitureRoutes,
+  privateProviderRoutes
 } from './private';
 import { ToolService } from '@/services/toolService';
 import { ApiError } from '@/utils/ApiError';
@@ -41,5 +42,6 @@ router.use('/colors', colorRoutes);
 
 // PRIVATE routes
 router.use('/private/furniture', privateFurnitureRoutes);
+router.use('/private/providers', privateProviderRoutes);
 
 export default router;
