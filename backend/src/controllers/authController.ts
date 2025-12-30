@@ -18,7 +18,7 @@ export class AuthController {
     const { email, password } = req.body;
     try {
       const comparePass = await this.authService.checkPassword(email);
-      
+
       if (comparePass.rows.length === 0) {
         throw new ApiError('NOT_FOUND', 'User not found');
       }
@@ -43,9 +43,18 @@ export class AuthController {
       const token = jwt.sign(
         //{ emailuser: email, role: 'provider' },
         { emailuser: email, role: role },
-        process.env.JWT_SECRET_KEY as string, 
+        process.env.JWT_SECRET_KEY as string,
         { expiresIn: '24h' });
-      res.status(200).json({ message: 'Login successful', data: { email, token } });
+
+      // Configurar cookie HttpOnly
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Solo https en producción
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+      });
+
+      res.status(200).json({ message: 'Login successful', data: { email } });
     } catch (error) {
       if (error instanceof ApiError) next(error);
       else next(new ApiError('INTERNAL_SERVER', 'Error during login process'));
@@ -129,8 +138,8 @@ export class AuthController {
 
   logout = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Implementation here
-      res.status(200).json({ message: 'Logout endpoint' });
+      res.clearCookie('token');
+      res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
       res.status(500).json({ error: 'Logout failed' });
     }
@@ -170,14 +179,25 @@ export class AuthController {
           role: 'provider'
         }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
 
-        // Redirect to frontend with token
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
-        res.redirect(`${frontendUrl}/login/success?token=${token}&email=${encodeURIComponent(user.email)}`);
+        // Set HttpOnly cookie
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+          maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
 
+        // Redirect to frontend without token in URL
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+        res.redirect(`${frontendUrl}/login/success?email=${encodeURIComponent(user.email)}`); // Removed token from URL
       } catch (error) {
         console.error('Google callback error:', error);
         res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=callback_failed`);
       }
     }
   ];
+
+  me = async (req: Request, res: Response): Promise<void> => {
+    res.status(200).json(req.user);
+  };
 }

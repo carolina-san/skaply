@@ -20,7 +20,7 @@ export const authMiddleware = (
   next: NextFunction
 ): void => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
       throw new ApiError('UNAUTHORIZED', 'Access denied. No token provided.');

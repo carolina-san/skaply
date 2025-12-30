@@ -11,7 +11,7 @@ import corsMiddleware from './config/cors';
 import { apiReference } from '@scalar/express-api-reference';
 import { swaggerSpec } from '@/config/openapi/swagger';
 import './config/passport'; // Initialize passport configuration
-
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -19,6 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cookieParser());
 app.use(
   helmet({
     contentSecurityPolicy: {

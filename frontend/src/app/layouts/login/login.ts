@@ -23,7 +23,7 @@ export class Login implements OnInit {
     private authService: AuthService,
     private router: Router,
     private seo: SeoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Verificar si venimos del callback de Google
@@ -56,17 +56,17 @@ export class Login implements OnInit {
     this.apiService.login(this.email, this.password).subscribe({
       next: (response) => {
         this.loading = false;
-        
-        // Guardar token en localStorage
-        this.authService.setToken(response.data.token);
-        
+
+        // Actualizar estado de autenticación (el token ya está en cookie)
+        this.authService.checkAuthStatus();
+
         // Redirigir al catálogo
         this.router.navigate(['/catalogo']);
       },
       error: (error) => {
         this.loading = false;
         console.error('Login error:', error);
-        
+
         // Manejar diferentes tipos de errores
         if (error.status === 404) {
           this.error = 'Usuario no encontrado';
