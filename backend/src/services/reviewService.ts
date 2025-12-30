@@ -1,4 +1,5 @@
 import pool from "@/config/database";
+import { ApiError } from '@/utils/ApiError';
 
 export class ReviewService{
     async getFurnitureReviews(idFurniture:number){
@@ -11,6 +12,9 @@ export class ReviewService{
     }
 
     async createFurnitureReview(furnitureId: number, stars: number, text?: string) {
+        if (stars < 1 || stars > 5) {
+            throw new ApiError('UNPROCESSABLE', 'Stars must be between 1 and 5');
+        }
         try {
             const result = await pool.query(
                 `INSERT INTO review (stars, text, furniture_id) 
@@ -18,9 +22,9 @@ export class ReviewService{
                  RETURNING *`,
                 [stars, text || null, furnitureId]
             );
-            return result;
+            return result.rows[0];
         } catch (error) {
-            throw new Error('Error creating furniture review');
+            throw new ApiError('INTERNAL_SERVER', 'Error creating review');
         }
     }
 
