@@ -6,6 +6,10 @@
   font-style: normal;
 }
 
+@font-face{
+  font-family: 'Poppins';
+  src: url('assets/fonts/Poppins-Bold.ttf') format('truetype');
+}
 @font-face {
   font-family: 'Inter';
   src: url('assets/fonts/inter.ttf') format('truetype');
@@ -25,7 +29,7 @@ body {
 
 h1,
 h2 {
-  font-family: 'Agrandir', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 p,
