@@ -1,22 +1,22 @@
-<div class="fixed bottom-0 left-0 right-0 z-50" *ngIf="showConsent()">
-  <div class="bg-marron-claro shadow-lg rounded-t-2xl p-4 md:p-6 max-w-4xl mx-auto">
+<div class="fixed bottom-0 left-0 right-0 z-50" *ngIf="consentService.showConsentModal()">
+  <div class="bg-beige shadow-lg rounded-t-2xl p-4 md:p-6 max-w-4xl mx-auto  border-1 border-marron-oscuro">
     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex-1">
         <h3 class="text-lg md:text-xl font-bold text-marron-oscuro mb-2">Consentimiento de Cookies</h3>
         <p class="text-sm md:text-base text-gray-700">
           Utilizamos Google Analytics para entender cómo usas nuestra plataforma y mejorar tu experiencia. 
-          <a href="/cookies" class="text-blue-600 hover:underline font-semibold">Leer política completa</a>
+          <a href="/cookies" class="text-marron-oscuro hover:underline font-bolder">Leer política completa</a>
         </p>
       </div>
       <div class="flex gap-3 w-full md:w-auto flex-col md:flex-row">
         <button 
           (click)="rejectAnalytics()"
-          class="px-6 py-2 bg-white border-2 border-marron-oscuro text-marron-oscuro font-bold rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap">
+          class="px-6 py-2 bg-azul-claro border-1 border-marron-oscuro text-marron-oscuro font-bold rounded-xl hover:bg-azul-medio transition-colors whitespace-nowrap">
           Rechazar
         </button>
         <button 
           (click)="acceptAnalytics()"
-          class="px-6 py-2 bg-azul-claro text-marron-oscuro font-bold rounded-lg hover:bg-opacity-90 transition-colors whitespace-nowrap">
+          class="px-6 py-2 bg-white border-1 border-marron-oscuro text-marron-oscuro font-bold rounded-xl hover:bg-gray-300 transition-colors whitespace-nowrap">
           Aceptar
         </button>
       </div>
