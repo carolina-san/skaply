@@ -1,9 +1,10 @@
 import pool from '@config/database';
 import { Difficulty } from '@/types/common.types';
 import { ApiError } from '@/utils/ApiError';
+import QRCode from 'qrcode';
 
 export class FurnitureService {
-  
+
   // Checks if the furniture id is valid
   async furnitureExists(id: number): Promise<boolean> {
     const result = await pool.query(
@@ -25,8 +26,8 @@ export class FurnitureService {
   }
 
   async getAllFurniture() {
-    try{
-        const result = await pool.query(`
+    try {
+      const result = await pool.query(`
           SELECT DISTINCT 
               f.id, 
               f.name, 
@@ -47,16 +48,16 @@ export class FurnitureService {
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`);
-        return result;
-    }catch(error){
+      return result;
+    } catch (error) {
       console.error('getAllFurniture error:', error);
       throw error;
     }
   }
 
-  async getFurnitureById(id:number){
-    try{
-        const result = await pool.query(`
+  async getFurnitureById(id: number) {
+    try {
+      const result = await pool.query(`
           SELECT 
               f.id, 
               f.name, 
@@ -94,20 +95,20 @@ export class FurnitureService {
               cl.hex,
               f.difficulty,
               f.short_description`,
-          [id]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the parameters');
+        [id]);
+      return result;
+    } catch (error) {
+      throw new Error('Unable to fetch the furniture included in the parameters');
     }
   }
 
-  async getFurnitureByIdOrReference(identifier: string){
-    try{
-        // Intentar buscar por ID numérico primero
-        const numId = parseInt(identifier);
-        const isNumeric = !isNaN(numId) && identifier === numId.toString();
-        
-        const result = await pool.query(`
+  async getFurnitureByIdOrReference(identifier: string) {
+    try {
+      // Intentar buscar por ID numérico primero
+      const numId = parseInt(identifier);
+      const isNumeric = !isNaN(numId) && identifier === numId.toString();
+
+      const result = await pool.query(`
           SELECT 
               f.id, 
               f.name, 
@@ -145,10 +146,10 @@ export class FurnitureService {
               cl.hex,
               f.difficulty,
               f.short_description`,
-          [isNumeric ? numId : identifier]);
-        return result;
-    }catch(error){
-        throw new Error('Unable to fetch the furniture included in the parameters');
+        [isNumeric ? numId : identifier]);
+      return result;
+    } catch (error) {
+      throw new Error('Unable to fetch the furniture included in the parameters');
     }
   }
 
@@ -159,7 +160,7 @@ export class FurnitureService {
     color_ids: number[];
     search?: string;
   }) {
-    try{
+    try {
       const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
 
       let sql = `
@@ -219,22 +220,22 @@ export class FurnitureService {
 
       const result = await pool.query(sql, params);
       return result;
-    }catch(error){
-        throw new Error('Error fetching furniture parts')
-      }
+    } catch (error) {
+      throw new Error('Error fetching furniture parts')
+    }
   }
 
-  async getFurnitureIdByRef(ref:string): Promise<number> {
-    try{
+  async getFurnitureIdByRef(ref: string): Promise<number> {
+    try {
       const result = await pool.query(`SELECT id FROM furniture 
         WHERE reference_number = $1`, [ref]);
-      
+
       if (result.rows.length === 0) {
         throw new Error(`Furniture with reference ${ref} not found`);
       }
-      
+
       return result.rows[0].id;
-    }catch(error){
+    } catch (error) {
       throw new Error('Error fetching the furniture id by the ref provided');
     }
   }
@@ -250,14 +251,14 @@ export class FurnitureService {
       }
 
       const difficulty = result.rows[0].difficulty.toLowerCase();
-      
+
       // Map database values to Difficulty enum
       const difficultyMap: { [key: string]: string } = {
         'low': Difficulty.LOW,
         'medium': Difficulty.MEDIUM,
         'high': Difficulty.HIGH
       };
-      
+
       return difficultyMap[difficulty] || result.rows[0].difficulty;
 
     } catch (error) {
@@ -323,7 +324,7 @@ export class FurnitureService {
     }
   }
 
-async createFurniture(data: {
+  async createFurniture(data: {
     name: string;
     file_uri: string;
     difficulty: 'low' | 'medium' | 'high';
@@ -426,6 +427,62 @@ async createFurniture(data: {
       [id]
     );
     return result.rows[0];
+  }
+
+  /**
+   * Genera un código QR para un mueble a partir de su reference_number
+   * @param referenceNumber - Código de referencia del mueble (ej: 'F001')
+   * @returns Objeto con la información del mueble y el QR en formato Data URL (base64)
+   */
+  async generateQRByReference(referenceNumber: string): Promise<{
+    reference_number: string;
+    furniture_name: string;
+    qr_url: string;
+    qr_data_url: string;
+  }> {
+    try {
+      // Buscar el mueble por reference_number
+      const result = await pool.query(
+        `SELECT id, name, reference_number, qr_url 
+         FROM public.furniture 
+         WHERE reference_number = $1`,
+        [referenceNumber]
+      );
+
+      if (result.rows.length === 0) {
+        throw new ApiError('NOT_FOUND', `Furniture with reference '${referenceNumber}' not found`);
+      }
+
+      const furniture = result.rows[0];
+
+      if (!furniture.qr_url) {
+        throw new ApiError('NOT_FOUND', `Furniture '${referenceNumber}' does not have a QR URL configured`);
+      }
+
+      // Generar el código QR como Data URL (base64)
+      const qrDataUrl = await QRCode.toDataURL(furniture.qr_url, {
+        errorCorrectionLevel: 'M',
+        type: 'image/png',
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+
+      return {
+        reference_number: furniture.reference_number,
+        furniture_name: furniture.name,
+        qr_url: furniture.qr_url,
+        qr_data_url: qrDataUrl
+      };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError('INTERNAL_SERVER', 'Error generating QR code');
+    }
   }
 
 }

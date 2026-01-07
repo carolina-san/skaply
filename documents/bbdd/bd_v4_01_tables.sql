@@ -71,7 +71,8 @@ CREATE TABLE Furniture (
     category_id INTEGER REFERENCES Category(id) ON DELETE SET NULL,
     provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL,
     color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL,
-    short_description TEXT
+    short_description TEXT,
+    qr_url VARCHAR(255)
 );
 
 -- ============================
