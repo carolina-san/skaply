@@ -17,7 +17,7 @@ export class Landing implements AfterViewInit {
   constructor(private router: Router, private seo: SeoService) { }
 
   acceder() {
-    this.router.navigate(['/catalog']);
+    this.router.navigate(['/catalogo']);
   }
 
   goToMotor() {

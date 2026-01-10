@@ -83,14 +83,14 @@ export class Home implements OnInit {
     this.seo.setSeo({
       title: `Catálogo de muebles disponibles - Skäply`,
       description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.`,
-      canonical: `https://skaply.ovh/catalog`,
+      canonical: `https://skaply.ovh/catalogo`,
       index: true,
       schema: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         'name': 'Catálogo de Muebles',
         'description': 'Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.',
-        'url': 'https://skaply.ovh/catalog'
+        'url': 'https://skaply.ovh/catalogo'
       }
     });
   }
@@ -143,7 +143,7 @@ export class Home implements OnInit {
 
   /**
    * Abre el modal de un mueble buscándolo por su reference_number
-   * Usado cuando se accede via QR: /catalog?furniture=F001
+   * Usado cuando se accede via QR: /catalogo?furniture=F001
    */
   openFurnitureModalByRef(referenceNumber: string) {
     this.apiService.getFurnitureById(referenceNumber).subscribe({
