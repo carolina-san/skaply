@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   Chatbot,
   Footer,
@@ -48,6 +48,7 @@ export class Home implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
+    private route: ActivatedRoute,
     private filterSharingService: FilterSharingService,
     private seo: SeoService
   ) { }
@@ -57,6 +58,14 @@ export class Home implements OnInit {
     this.obtenerCatalogo();
     this.loadProviders();
     this.loadColors();
+
+    // Verificar si hay un mueble en la URL para abrir su modal automáticamente
+    this.route.queryParams.subscribe(params => {
+      const furnitureRef = params['furniture'];
+      if (furnitureRef) {
+        this.openFurnitureModalByRef(furnitureRef);
+      }
+    });
 
     // Suscribirse a los cambios de categoría desde el chatbot
     this.filterSharingService.selectedCategory$.subscribe(categoryId => {
@@ -108,9 +117,12 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-    this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
-    this.closeFurnitureModal();
+    const ref = this.selectedFurniture.reference_number;
+    // Cerrar modal sin limpiar query params (evita conflicto de navegaciones)
+    this.isFurnitureModalOpen = false;
     this.selectedFurniture = null;
+    // Navegar al visor 3D
+    this.router.navigate(['/viewer-3d', ref]);
   }
 
   openFurnitureModal(furniture: Furniture) {
@@ -120,6 +132,33 @@ export class Home implements OnInit {
 
   closeFurnitureModal() {
     this.isFurnitureModalOpen = false;
+    this.selectedFurniture = null;
+    // Limpiar el query param de la URL al cerrar el modal
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
+  /**
+   * Abre el modal de un mueble buscándolo por su reference_number
+   * Usado cuando se accede via QR: /catalogo?furniture=F001
+   */
+  openFurnitureModalByRef(referenceNumber: string) {
+    this.apiService.getFurnitureById(referenceNumber).subscribe({
+      next: (response) => {
+        if (response.data && response.data.length > 0) {
+          const furniture = response.data[0];
+          this.openFurnitureModal(furniture);
+        } else {
+          console.error('Mueble no encontrado:', referenceNumber);
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar mueble por referencia:', error);
+      }
+    });
   }
 
   /**
