@@ -37,7 +37,7 @@ export class Landing implements AfterViewInit {
         "@id": "https://skaply.ovh/#webapplication",
         "name": "Skäply",
         "url": "https://skaply.ovh",
-        "description": "Guía interactiva 3D para el montaje de muebles. Plataforma todo en uno con catálogo, motor 3D y soporte profesional.",
+        "description": "Guía interactiva 3D para el montaje de muebles. Plataforma todo en uno con catálogo, guía interactiva 3D y soporte profesional.",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "All",
         "creator": {
