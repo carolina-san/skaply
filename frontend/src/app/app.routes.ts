@@ -13,7 +13,7 @@ import { Privacy } from './layouts/legal/privacy';
 
 export const routes: Routes = [
     {path: '', component: Landing},
-    {path: 'catalogo', component: Home},
+    {path: 'catalog', component: Home},
     //{path: 'res-scanner', component: ResScanner}, no usado actualmente
     {path: 'viewer-3d/:ref', component: Viewer3D},
     //{path: 'motor', component: Motor}, no usado actualmente
