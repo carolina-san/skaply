@@ -161,7 +161,7 @@ export class AuthController {
 
   googleCallback = [
     passport.authenticate('google', {
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=google_auth_failed`,
+      failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed`,
       session: false
     }),
     async (req: Request, res: Response): Promise<void> => {
@@ -169,7 +169,7 @@ export class AuthController {
         const user = req.user as any;
 
         if (!user) {
-          res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=no_user_data`);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user_data`);
           return;
         }
 
@@ -188,11 +188,11 @@ export class AuthController {
         });
 
         // Redirect to frontend without token in URL
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+        const frontendUrl = process.env.FRONTEND_URL;
         res.redirect(`${frontendUrl}/login/success?email=${encodeURIComponent(user.email)}`); // Removed token from URL
       } catch (error) {
         console.error('Google callback error:', error);
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=callback_failed`);
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=callback_failed`);
       }
     }
   ];
