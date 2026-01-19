@@ -2,9 +2,11 @@
 
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
+import { Modal } from '../modal/modal';
 
 interface AssemblyPart {
   object: RenderableObject;
@@ -21,7 +23,7 @@ import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
 
 @Component({
   selector: 'app-graphics-engine',
-  imports: [CommonModule],
+  imports: [CommonModule, Modal, FormsModule],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -81,6 +83,10 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   backgroundColor = signal<'dark' | 'light'>('dark');
   isCameraMoved = signal(false);
+  isModalOpen = signal(false);
+  reviewStars = signal(0);
+  reviewText = signal('');
+  isSubmittingReview = signal(false);
 
   stepDescriptions = [
     "Paso 1: Prepara los tacos inferiores.",
@@ -167,6 +173,67 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   reset(): void {
     this.manualStep.set(0);
+  }
+
+  openFinishModal(): void {
+    this.isModalOpen.set(true);
+    this.reviewStars.set(0);
+    this.reviewText.set('');
+  }
+
+  closeModal(): void {
+    this.isModalOpen.set(false);
+    this.reviewStars.set(0);
+    this.reviewText.set('');
+  }
+
+  setRating(stars: number): void {
+    this.reviewStars.set(stars);
+  }
+
+  submitReview(): void {
+    // Obtener y convertir el furniture ID
+    let furnitureId = 1; // ID por defecto
+    const inputId = this.furnitureId();
+    
+    if (inputId) {
+      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
+      if (!isNaN(parsedId) && parsedId > 0) {
+        furnitureId = parsedId;
+      }
+    }
+    
+    const stars = this.reviewStars();
+    const text = this.reviewText().trim();
+
+    console.log('=== Submit Review ===');
+    console.log('Input ID:', inputId);
+    console.log('Furniture ID (parsed):', furnitureId);
+    console.log('Stars:', stars);
+    console.log('Text:', text);
+
+    if (stars === 0) {
+      console.log('Validation failed - stars is 0');
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+
+    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
+      next: (response) => {
+        console.log('Review guardada exitosamente:', response);
+        this.isSubmittingReview.set(false);
+        this.closeModal();
+        alert('¡Gracias por tu reseña!');
+      },
+      error: (error) => {
+        console.error('Error al guardar la review:', error);
+        console.error('Error completo:', JSON.stringify(error, null, 2));
+        this.isSubmittingReview.set(false);
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        alert('Error al guardar la reseña: ' + errorMessage);
+      }
+    });
   }
 
   exitIsolation(): void {
