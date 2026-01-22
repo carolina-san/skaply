@@ -103,4 +103,31 @@ export class AuthService {
       throw new Error('Error finding user by Google ID');
     }
   }
+
+   // PARA BORRAR
+  async registerAdmin(email: string, name: string, hashedPass: string) {
+    try {
+      const date = new Date().toISOString();
+      // Insertamos solo los campos necesarios para un Admin
+      const result = await pool.query(
+        `INSERT INTO "User" 
+        (email, name, role, fecha_alta, password, active, new_user) 
+        VALUES ($1, $2, 'admin', $3, $4, true, false) 
+        RETURNING id, email, name`,
+        [email, name, date, hashedPass]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error in registerAdmin service:', error);
+      throw new Error('Error creating admin in database');
+    }
+  }
+
+
+
+
+
+
+
+
 }

@@ -157,6 +157,9 @@ export class FurnitureController {
 
   updateFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (!req.user) {
+            return next(new ApiError('UNAUTHORIZED', 'No se ha proporcionado autenticación'));
+      }
       const furnitureId = Number(req.params.id);
       if (!furnitureId || isNaN(furnitureId)) {
         return next(new ApiError('BAD_REQUEST', 'Valid furniture ID is required'));

@@ -200,4 +200,43 @@ export class AuthController {
   me = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(req.user);
   };
+
+
+
+
+  // PARA BORRAR
+  registerAdminTest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { email, password, name } = req.body;
+
+    try {
+      // 1. Validaciones básicas
+      if (!email || !password || !name) {
+        return next(new ApiError('BAD_REQUEST', 'Email, password and name are required'));
+      }
+
+      if (password.length < 12) {
+        return next(new ApiError('BAD_REQUEST', 'Security policy: Password must be at least 12 characters'));
+      }
+
+      // 2. Verificar si ya existe
+      const userExists = await this.authService.checkUser(email);
+      if (!userExists) {
+        return next(new ApiError('CONFLICT', 'A user with this email already exists'));
+      }
+
+      // 3. Hashear contraseña (Seguridad)
+      const hashedPass = await bcrypt.hash(password, 10);
+
+      // 4. Guardar en BD
+      const newAdmin = await this.authService.registerAdmin(email, name, hashedPass);
+
+      res.status(201).json({
+        message: 'Admin registered successfully (TEST MODE)',
+        data: newAdmin
+      });
+
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to register admin'));
+    }
+  };
 }
