@@ -173,7 +173,7 @@
 
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full h-full">
+    <div class="flex flex-col sm:flex-row w-full h-full md:max-h-[50vh]">
       <!-- IMAGEN -->
       <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0">
         <img [src]="selectedFurniture?.image_url" loading="lazy"

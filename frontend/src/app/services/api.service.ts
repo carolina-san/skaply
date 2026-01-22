@@ -87,4 +87,13 @@ export class ApiService {
   loginWithGoogle(): void {
     window.location.href = `${this.apiUrl}/auth/google`;
   }
+
+  // Reseñas
+  postReview(furnitureId: number, stars: number, text?: string): Observable<any> {
+    const body: any = { stars };
+    if (text) {
+      body.text = text;
+    }
+    return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
+  }
 }

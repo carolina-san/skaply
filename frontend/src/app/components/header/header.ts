@@ -65,6 +65,10 @@ export class Header {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  goHome(): void {
+    this.router.navigate(['/']);
+  }
+
   // Verificar si hay sesión iniciada
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();

@@ -23,5 +23,6 @@ export const routes: Routes = [
     {path: 'profile', component: Profile},
     {path: 'cookies', component: Cookies},
     {path: 'legal-notice', component: LegalNotice},
-    {path: 'privacy', component: Privacy}
+    {path: 'privacy', component: Privacy},
+    {path: '**', redirectTo: 'catalogo'} // Redirige cualquier ruta no encontrada al catálogo
 ];

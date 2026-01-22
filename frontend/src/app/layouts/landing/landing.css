@@ -38,15 +38,18 @@
 }
 
 .text-gradient {
-  font-family: 'Agrandir', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 9xl;
+  line-height: 1.2;
   background: linear-gradient(270deg, #ffffff, #93bcd2, #ffffff, #93bcd2);
   background-size: 400% 400%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   animation: gradientMove 8s ease infinite;
   display: inline-block;
   font-weight: bold;
+  overflow: visible;
 }
 
 @keyframes gradientMove {
