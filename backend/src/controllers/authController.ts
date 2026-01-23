@@ -22,6 +22,13 @@ export class AuthController {
       if (comparePass.rows.length === 0) {
         throw new ApiError('NOT_FOUND', 'User not found');
       }
+      
+      // Verificar si el usuario está activo
+      const isActive = await this.authService.checkActiveStatus(email);
+      if (!isActive) {
+        throw new ApiError('FORBIDDEN', 'Account pending approval');
+      }
+
       // Verificar si la contraseña ya está hasheada o es texto plano (para desarrollo)
       let validPass = false;
 

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
+import { UserRole } from '@/types/user.types';
 
 export class ProviderController {
 
@@ -10,10 +11,62 @@ export class ProviderController {
     this.providerService = providerService || new ProviderService();
   }
 
+  // PUBLIC ROUTES
+
+  getActiveProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.providerService.getActiveProviders();
+
+      if (result.rows.length === 0) {
+        next(new ApiError('NOT_FOUND', 'No providers found'));
+        return;
+      }
+
+      res.status(200).json({
+        message: 'Providers fetched successfully',
+        data: result.rows
+      });
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
+    }
+  }
+
+  getActiveProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id || '0');
+      if (isNaN(id)) {
+        next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
+        return;
+      }
+      const result = await this.providerService.getActiveProvider(id);
+
+      if (result.rows.length === 0) {
+        next(new ApiError('NOT_FOUND', 'Provider not found'));
+        return;
+      }
+
+      res.status(200).json({
+        message: 'Provider fetched successfully',
+        data: result.rows[0]
+      });
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this provider'));
+    }
+  };
+  
+  // PRIVATE ROUTES
+  
   getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Example database query
-      const result = await this.providerService.getAllProviders();
+      
+      if (!req.user) {
+        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
+      }
+
+      if (req.user.role !== UserRole.ADMIN) {
+        return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
+      }
+      const result = await this.providerService.getProviders();
 
       if (result.rows.length === 0) {
         next(new ApiError('NOT_FOUND', 'No providers found'));
@@ -31,43 +84,34 @@ export class ProviderController {
 
   getProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      
+      if (!req.user) {
+        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
+      }
+
+      if (req.user.role !== UserRole.ADMIN) {
+        return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
+      }
+
       const id = parseInt(req.params.id || '0');
       if (isNaN(id)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-        return;
+        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
       }
-      const result = await this.providerService.getProvider(id);
+
+      const result = await this.providerService.getProviderById(id);
 
       if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'Provider not found'));
-        return;
+        return next(new ApiError('NOT_FOUND', 'Provider not found'));
       }
 
       res.status(200).json({
         message: 'Provider fetched successfully',
         data: result.rows[0]
       });
+
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this provider'));
-    }
-  };
-
-  postProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { company_name, cif, tax_address, email, telephone } = req.body;
-
-      if (!company_name || !cif || !tax_address || !email || !telephone) {
-        next(new ApiError('BAD_REQUEST', 'All fields are required'));
-        return;
-      }
-
-      const result = await this.providerService.createProvider(company_name, cif, tax_address, email, telephone);
-      res.status(201).json({
-        message: 'Provider created successfully',
-        data: result.rows[0]
-      });
-    } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to create provider'));
+      console.error('Error fetching provider by id:', error);
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch provider'));
     }
   };
 
@@ -92,16 +136,4 @@ export class ProviderController {
     }
   };
 
-
-
-
-  //   updateProvider = async (req: Request, res: Response): Promise<void> => {
-  //     try {
-  //       const { id } = req.params;
-  //       // Implementation here
-  //       res.status(200).json({ message: `Update user ${id} endpoint` });
-  //     } catch (error) {
-  //       res.status(500).json({ error: 'Failed to update user' });
-  //     }
-  //   };
 }

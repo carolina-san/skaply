@@ -33,8 +33,12 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/colors`);
   }
 
-  getProviders(): Observable<any> {
+  getActiveProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
     return this.http.get(`${this.apiUrl}/providers`);
+  }
+
+  getProviders(): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+    return this.http.get(`${this.apiUrl}/private/providers`);
   }
 
   registerProvider(data: any): Observable<any> {

@@ -1,5 +1,6 @@
 import pool from '@config/database';
 import { LoginRequest, RegisterUser } from '@/types';
+import { UserRole } from '../types/user.types';
 export class AuthService {
 
   async checkUser(email:string){
@@ -36,6 +37,20 @@ export class AuthService {
     }
   }
 
+  async checkActiveStatus(email:string){
+    try{  
+      const result = await pool.query(`SELECT active FROM "User"
+        WHERE email = $1`,[email]   
+      );
+      if (result.rows.length === 0) {
+        throw new Error('User not found');
+      }
+      return result.rows[0].active;
+    }catch(error){
+      throw new Error('Error checking user active status');
+    }
+  }
+
   async login(reqUser: LoginRequest) {
     try{
       const passwordData = await this.checkPassword(reqUser.email);
@@ -48,10 +63,10 @@ export class AuthService {
     try{
       const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, new_user) 
-        VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8)`,
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, new_user, active) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, date, reqUser.password, true]);
+         reqUser.telephone, reqUser.tax_address, UserRole.PROV, date, reqUser.password, true, false]);
       return result;
     }catch(error){
       console.error('Error registering user:', error);

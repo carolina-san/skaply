@@ -5,7 +5,7 @@ import { authMiddleware, authorize } from '../../middleware/auth';
 const router = Router();
 const providerController = new ProviderController();
 
-router.get('/', providerController.getProviders);
-router.get('/:id', providerController.getProviderById);
+router.get('/', providerController.getActiveProviders);
+router.get('/:id', providerController.getActiveProviderById);
 
 export default router;

@@ -214,7 +214,7 @@ export class Home implements OnInit {
   }
 
   loadProviders() {
-    this.apiService.getProviders().subscribe({
+    this.apiService.getActiveProviders().subscribe({
       next: (response) => {
         this.providers = Object.values(response.data);
       },

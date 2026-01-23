@@ -162,7 +162,7 @@ export class ChatbotService {
    * Obtiene lista de proveedores
    */
   async getProviders(): Promise<any> {
-    const result = await this.providerService.getAllProvidersChatbot();
+    const result = await this.providerService.getAllProvidersChatbot(); // no debería devolver providers que tengan active = false
 
     return {
       fulfillmentMessages: [
