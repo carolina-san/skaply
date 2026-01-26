@@ -70,7 +70,46 @@ export class ProviderService {
     }
   }
 
-  async approveProvider(providerId: number) {
+  async enableProvider(id: number) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET active = true
+        WHERE id = $1
+          AND role = $2
+          AND active = $3
+        RETURNING id, company_name, active
+        `,
+        [id, UserRole.PROV, false]
+      );
+      return result;
+    } catch (error) {
+      console.error('Error enabling provider:', error);
+      throw new Error('Unable to enable provider');
+    }
+  }
+
+  async disableProvider(id: number) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET active = false
+        WHERE id = $1
+          AND role = $2
+          AND active = $3
+        RETURNING id, company_name, active
+        `,
+        [id, UserRole.PROV, true]
+      );
+      return result;
+    } catch (error) {
+      throw new Error('Unable to disable provider');
+    }
+  }
+
+  async approveProvider(providerId: number) { // de momento se está usando new_user bool como estado
     try {
       const result = await pool.query(
         `
@@ -86,7 +125,6 @@ export class ProviderService {
       );
       return result;
     } catch (error) {
-      //console.error('Error approving provider:', error);
       throw new Error('Unable to approve provider');
     }
   }
