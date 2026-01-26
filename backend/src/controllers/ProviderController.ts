@@ -115,6 +115,42 @@ export class ProviderController {
     }
   };
 
+  approveProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
+      }
+
+      if (req.user.role !== UserRole.ADMIN) {
+        return next(new ApiError('FORBIDDEN', 'Only admins can approve providers'));
+      }
+
+      const providerId = Number(req.params.id);
+      if (!providerId || isNaN(providerId)) {
+        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
+      }
+
+      const result = await this.providerService.approveProvider(providerId);
+
+      if (result.rowCount === 0) {
+        return next(
+          new ApiError(
+            'NOT_FOUND',
+            'Provider not found or already approved'
+          )
+        );
+      }
+
+      res.status(200).json({
+        message: 'Provider approved successfully',
+        data: result.rows[0]
+      });
+
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to approve provider'));
+    }
+  };
+
   deleteProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = parseInt(req.params.id || '0');

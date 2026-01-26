@@ -8,6 +8,7 @@ const providerController = new ProviderController();
 
 router.get('/', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviders);
 router.get('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviderById); 
+router.put('/:id/approve', authMiddleware, authorize([UserRole.ADMIN]), providerController.approveProvider);
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);
 
 export default router;

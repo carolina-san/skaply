@@ -70,6 +70,27 @@ export class ProviderService {
     }
   }
 
+  async approveProvider(providerId: number) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET active = $1,
+            new_user = $2
+        WHERE id = $3
+          AND role = $4
+          AND new_user = $5
+        RETURNING id, email, company_name, active, new_user
+        `,
+        [true, false, providerId, UserRole.PROV, true]
+      );
+      return result;
+    } catch (error) {
+      //console.error('Error approving provider:', error);
+      throw new Error('Unable to approve provider');
+    }
+  }
+
   async deleteProvider(id: number) {
     try {
       const result = await pool.query(
