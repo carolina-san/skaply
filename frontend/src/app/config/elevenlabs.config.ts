@@ -6,7 +6,7 @@ export const elevenLabsConfig = {
   // ⚡ ACTIVAR/DESACTIVAR ELEVEN LABS
   // true  = Usa Eleven Labs (voz premium)
   // false = Usa voz nativa del navegador (gratuita)
-  ENABLED: true,
+  ENABLED: false,
 
   // Reemplaza con tu API key de Eleven Labs
   // Puedes obtener tu API key en: https://elevenlabs.io/app/settings/api-keys
