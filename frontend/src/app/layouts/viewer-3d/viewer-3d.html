@@ -31,27 +31,27 @@
           <label for="descripcion" class="block text-marron-oscuro font-medium">Descripción de la incidencia:</label>
           <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
             placeholder="Describe el problema que encontraste..." 
-            class="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+            class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
           </textarea>
         </div>
 
         <div class="space-y-2">
           <label for="email" class="block text-marron-oscuro font-medium">Email (opcional):</label>
-          <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="tu@email.com"
-            class="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
-          <p class="text-xs text-gray-600">
+          <input id="email" type="email" name="email" [(ngModel)]="emailIncidencia" placeholder="ejemplo@email.com"
+            class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+          <p class="text-xs text-marron-oscuro pt-2">
             Si deseas recibir respuesta sobre esta incidencia.
           </p>
         </div>
 
         <div class="flex justify-end gap-3 pt-3">
           <button type="button" (click)="isIncidenciaModalOpen = false" 
-                  class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+                  class="px-4 py-2 rounded-lg bg-azul-claro text-marron-oscuro hover:bg-gray-300 transition">
             Cancelar
           </button>
           <button type="submit" 
-                  class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm"
-                  [disabled]="!incidenciaForm.form.valid">
+                  class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  [disabled]="!isDescripcionValida()">
             Enviar
           </button>
         </div>

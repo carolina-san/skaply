@@ -194,6 +194,10 @@ export class Viewer3D implements OnInit {
     this.isIncidenciaModalOpen = false;
   }
 
+  isDescripcionValida(): boolean {
+    return !!(this.descripcionIncidencia && this.descripcionIncidencia.trim().length > 0);
+  }
+
   // Array de modelos disponibles
   private modelPaths = [
     '/assets/models/EKET_70332124_35x25x35.glb',
