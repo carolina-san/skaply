@@ -51,8 +51,9 @@ INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, imag
 ('gmail.com','Maria','CIF001',null,'123456789','123 User St','','admin', NOW(),'12345'),
 ('lucia@gmail.com','Lucia','CIF002',null,'123456780','456 User St','','admin', NOW(),'12345'),
 ('carlos@gmail.com','Carlos','CIF003',null,'123456781','789 User St','','admin', NOW(),'12345'),
-('ikea@gmail.com',null,'CIF004','Ikea','123456782','101 Provider St', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeJKe0KLma4NjDkp_NoSjOX8kG_F0Z9vwHB_kBTns1J7zBTCHB85k1nGH_CCLFU9HoeM4&usqp=CAU', 'provider', NOW(),'12345'),
-('mueblesbaratos@gmail.com',null,'CIF005','Muebles Baratos','123456783','102 Provider St','https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg','provider', NOW(),'12345');
+('iqua@gmail.com',null,'CIF004','IqUA','123456782','101 Provider St', 'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg', 'provider', NOW(),'12345'),
+('mueblesbaratos@gmail.com',null,'CIF005','Muebles Baratos','123456783','102 Provider St','https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg','provider', NOW(),'12345'),
+('decora@gmail.com',null,'CIF006','Decora','123456783','104 Provider St','https://content.gnoss.ws/carq/imagenes/Documentos/imgsem/4c/4ce8/4ce8d437-612f-43bb-8d8e-d169d1a187e5/2cf38bd4-7d1d-42eb-8982-226c4c4b2c87.jpg','provider', NOW(),'12345');
 
 -- ============================
 -- 3. Insertar categorías

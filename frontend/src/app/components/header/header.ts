@@ -48,6 +48,10 @@ export class Header {
   get isViewer3D(): boolean {
     return this.currentRoute.includes('viewer-3d');
   }
+
+  get isLogin(): boolean {
+    return this.router.url.split('?')[0] === '/login';
+  }
   
   finMontaje() {
     if (this.currentRoute.includes('viewer-3d')) {
@@ -67,6 +71,9 @@ export class Header {
 
   goHome(): void {
     this.router.navigate(['/']);
+  }
+  goLogin(): void {
+    this.router.navigate(['/login']);
   }
 
   // Verificar si hay sesión iniciada

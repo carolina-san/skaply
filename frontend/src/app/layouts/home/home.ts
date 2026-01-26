@@ -82,14 +82,14 @@ export class Home implements OnInit {
 
     this.seo.setSeo({
       title: `Catálogo de muebles disponibles - Skäply`,
-      description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra la pieza perfecta para tu espacio y móntala fácilmente.`,
+      description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.`,
       canonical: `https://skaply.ovh/catalogo`,
       index: true,
       schema: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         'name': 'Catálogo de Muebles',
-        'description': 'Explorar catálogo de muebles disponibles',
+        'description': 'Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.',
         'url': 'https://skaply.ovh/catalogo'
       }
     });

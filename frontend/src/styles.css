@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: 'Agrandir';
-  src: url('assets/fonts/agrandir-bold.ttf') format('truetype');
-  font-style: normal;
-}
+
 
 @font-face{
   font-family: 'Poppins';
