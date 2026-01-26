@@ -9,11 +9,11 @@ body.exe-web-site {
 }
 
 .exe-content a {
-    color: #d76b4a;
+    color: #94adba;
 }
 .exe-content a:hover,
 .exe-content a:focus {
-    color: #993d28;
+    color: #94adba;
 }
 
 #node-content-container.exe-content #node-content {
@@ -43,7 +43,7 @@ body.exe-web-site {
 }
 
 .exe-content .page-title {
-    color: #078e8e;
+    color: #94adba;
     font-size: 1.7rem;
     text-align: left;
 }
@@ -94,7 +94,7 @@ body.exe-web-site {
 }
 
 .exe-content .box-title {
-    color: #054d4d;
+    color: #452621;
     font-size: 1.5rem;
 }
 
@@ -194,11 +194,11 @@ body.siteNav-off #siteFooter {
 
 #siteNav a.active {
     background: #fff;
-    color: #d76b4a;
+    color: #94adba;
 }
 
 #siteNav a.highlighted-link {
-    color: #d76b4a;
+    color: #94adba;
     background: #ededed;
 }
 
@@ -234,7 +234,7 @@ button.toggler {
     display: block;
     width: 40px;
     height: 40px;
-    background: #078e8e url(img/icons.png) no-repeat 0 0;
+    background: #94adba url(img/icons.png) no-repeat 0 0;
     background-size: auto 40px;
     border-radius: 50%;
     z-index: 999;
@@ -276,8 +276,8 @@ body.siteNav-off button#searchBarTogger {
 .nav-buttons a:focus,
 button.toggler:hover,
 button.toggler:focus {
-    background-color: #066d6d;
-    border-color: #066d6d;
+    background-color: #94adba;
+    border-color: #94adba;
 }
 .nav-buttons .nav-button span,
 .box-toggle span,
@@ -384,7 +384,7 @@ button.toggler:focus {
 }
 #exe-client-search-submit {
     text-indent: -999em;
-    background: #078e8e url(img/icons.png) no-repeat -41px -1px;
+    background: #94adba url(img/icons.png) no-repeat -41px -1px;
     background-size: auto 40px;
     width: 38px;
     height: 38px;
@@ -410,7 +410,7 @@ button.toggler:focus {
 }
 #exe-client-search-submit:hover,
 #exe-client-search-submit:focus {
-    background-color: #066d6d;
+    background-color: #94adba;
 }
 #exe-client-search-results-list ul,
 #exe-client-search-results-list li {
@@ -451,7 +451,7 @@ button.toggler:focus {
 #packageLicense a:hover,
 #packageLicense a:focus {
     text-decoration: none;
-    color: #d76b4a;
+    color: #94adba;
 }
 #packageLicense.propietary {
     position: absolute;
@@ -531,8 +531,8 @@ button.toggler:focus {
     margin: 0 0 0 1em;
 }
 #teacher-mode-toggler.form-check-input:checked {
-    background-color: #078e8e;
-    border-color: #078e8e;
+    background-color: #94adba;
+    border-color: #94adba;
     font-size: 0.9em;
     margin-right: 0.6em;
 }
@@ -545,13 +545,13 @@ label[for="teacher-mode-toggler"] {
 
 /* Bootstrap buttons */
 .exe-content .btn-primary {
-    background-color: #066d6d;
-    border-color: #066d6d;
+    background-color: #94adba;
+    border-color: #94adba;
 }
 .exe-content .btn-primary:hover,
 .exe-content .btn-primary:focus {
-    background-color: #078e8e;
-    border-color: #078e8e;
+    background-color: #94adba;
+    border-color: #94adba;
 }
 
 /* Responsive design */
