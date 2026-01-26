@@ -288,6 +288,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                 if (parsed.title) richContentText += parsed.title + '. ';
                 if (parsed.subtitle) richContentText += parsed.subtitle + '. ';
                 if (parsed.description) richContentText += parsed.description + '. ';
+                if (parsed.text) richContentText += parsed.text + '. ';
             }
         });
 
@@ -397,6 +398,15 @@ export class Chatbot implements OnInit, AfterViewChecked {
                             });
                             handled = true;
                         }
+
+                        const rich = m.payload?.fields?.richContent?.listValue?.values;
+                        if (rich) {
+                            this.renderRichContent(rich);
+                            if(m.payload?.fields?.message?.stringValue){
+                                this.speakMessage(m.payload.fields.message.stringValue);
+                            }
+                            handled = true;
+                        }
                     }
                     this.shouldScroll = true;
                 },
@@ -428,6 +438,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                     buttons: m.card.buttons || []
                                 }
                             });
+                        }
+                        const rich = m.payload?.fields?.richContent?.listValue?.values;
+                        if (rich) {
+                            this.renderRichContent(rich);
+                            if(m.payload?.fields?.message?.stringValue){
+                                this.speakMessage(m.payload.fields.message.stringValue);
+                            }
                         }
                     }
                     this.shouldScroll = true;
