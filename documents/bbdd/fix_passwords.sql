@@ -16,6 +16,6 @@ SELECT email, left(password, 20) || '...' as password_preview FROM "User" WHERE 
     'lucia@gmail.com', 
     'carlos@gmail.com',
     'iqua@gmail.com',
-    "decora@gmail.com",
+    'decora@gmail.com',
     'mueblesbaratos@gmail.com'
 );
