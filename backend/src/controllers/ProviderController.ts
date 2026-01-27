@@ -54,7 +54,7 @@ export class ProviderController {
     }
   };
   
-  // PRIVATE ROUTES
+  // PRIVATE ROUTES (ADMIN ONLY)
   
   getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -223,6 +223,61 @@ export class ProviderController {
     }
   };
 
+  updateProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const providerId = Number(req.params.id);
+      if (isNaN(providerId)) {
+        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
+      }
+      const allowedFields = [
+        'email',
+        'cif',
+        'company_name',
+        'telephone',
+        'tax_address'
+      ];
+      const updateData: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      }
+      if (updateData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(updateData.email)) {
+          next(new ApiError('BAD_REQUEST', 'Invalid email format'));
+          return;
+        }
+      }
+      if (updateData.cif) {
+        const cifRegex = /^[a-zA-Z]\d{7}[0-9a-zA-Z]$/;
+        if (!cifRegex.test(updateData.cif)) {
+          next(new ApiError('BAD_REQUEST', 'Invalid CIF format. Must be Letter + 7 digits + Control Character'));
+          return;
+        }
+      }
+      if (updateData.telephone) {
+        const phoneRegex = /^\+?[0-9]{9,15}$/;
+        if (!phoneRegex.test(updateData.telephone)) {
+          return next(new ApiError('BAD_REQUEST', 'Invalid telephone format'));
+        }
+      }
+      if (Object.keys(updateData).length === 0) {
+        return next(new ApiError('BAD_REQUEST', 'No valid fields to update'));
+      }
+      const result = await this.providerService.updateProvider(providerId, updateData);
+      if (result.rows.length === 0) {
+        return next(new ApiError('NOT_FOUND', 'Provider not found or disabled'));
+      }
+      res.status(200).json({
+        message: 'Provider updated successfully',
+        data: result.rows[0]
+      });
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
+    }
+  };
+
   deleteProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = parseInt(req.params.id || '0');
@@ -241,6 +296,47 @@ export class ProviderController {
       res.status(200).json({ message: `Provider ${id} deleted successfully` });
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', 'Failed to delete provider'));
+    }
+  };
+
+  // PRIVATE ROUTES (PROVIDER ONLY)
+
+  updateMyProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
+      }
+      const providerId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
+      if (!providerId) {
+        return next(new ApiError('UNAUTHORIZED', 'User not found'));
+      } 
+      const allowedFields = ['company_name', 'telephone', 'tax_address'];
+      const updateData: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      }
+      // validate telephone format if provided
+      if (updateData.telephone) {
+        const phoneRegex = /^\+?[0-9]{9,15}$/;
+        if (!phoneRegex.test(updateData.telephone)) {
+          return next(new ApiError('BAD_REQUEST', 'Invalid telephone format'));
+        }
+      }
+      if (Object.keys(updateData).length === 0) {
+        return next(new ApiError('BAD_REQUEST', 'No valid fields to update'));
+      }
+      const result = await this.providerService.updateProvider(providerId, updateData);
+      if (result.rows.length === 0) {
+        return next(new ApiError('NOT_FOUND', 'Provider not found or disabled'));
+      }
+      res.status(200).json({
+        message: 'Provider profile updated successfully',
+        data: result.rows[0]
+      });
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider profile'));
     }
   };
 

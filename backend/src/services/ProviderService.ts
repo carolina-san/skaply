@@ -2,6 +2,7 @@ import pool from '@config/database';
 import { UserRole } from '../types/user.types';
 import { UserStatus } from '@/types/user.types';
 import { ApiError } from '@/utils/ApiError';
+import { NextFunction } from 'express';
 
 export class ProviderService {
 
@@ -38,7 +39,7 @@ export class ProviderService {
     }
   }
 
-  // PRIVATE ROUTES
+  // PRIVATE ROUTES (ADMIN ONLY)
   
   async getProviders() {
     try {
@@ -151,6 +152,23 @@ export class ProviderService {
     }
   }
 
+  async updateProvider(providerId: number, data: Record<string, any>) {
+    const fields = Object.keys(data);
+    const values = Object.values(data);
+    const setClause = fields
+      .map((field, index) => `"${field}" = $${index + 1}`)
+      .join(', ');
+    const query = `
+      UPDATE "User"
+      SET ${setClause}
+      WHERE id = $${fields.length + 1}
+        AND role = $${fields.length + 2}
+        AND active = $${fields.length + 3}
+      RETURNING id, email, company_name, cif, telephone, tax_address
+    `;
+    return pool.query(query, [...values, providerId, UserRole.PROV, true]);
+  }
+
   async deleteProvider(id: number) {
     try {
       const result = await pool.query(
@@ -203,8 +221,8 @@ export class ProviderService {
   async getProviderIdByEmail(email: string): Promise<number | null> {
     try {
       const result = await pool.query(
-        `SELECT id FROM "User" WHERE email = $1`,
-        [email]
+        `SELECT id FROM "User" WHERE email = $1 AND role = $2`,
+        [email, UserRole.PROV]
       );
 
       if (result.rows.length === 0) return null;
