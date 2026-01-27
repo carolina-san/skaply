@@ -18,4 +18,6 @@ router.post('/',authMiddleware,authorize([UserRole.ADMIN]), furnitureController.
 router.put('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.updateFurniture);
 router.delete('/:id',authMiddleware,authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.deleteFurniture);
 
-export default router;
+// toso el filtrado de la parte privada
+
+export default router; 

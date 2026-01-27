@@ -45,7 +45,7 @@ export class ApiService {
     const payload = {
       ...data,
       role: 'provider',
-      new_user: true
+      status: 'pending'
     };
     return this.http.post(`${this.apiUrl}/providers`, payload);
   }

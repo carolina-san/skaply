@@ -1,5 +1,6 @@
 import pool from '@config/database';
 import { UserRole } from '../types/user.types';
+import { UserStatus } from '@/types/user.types';
 import { ApiError } from '@/utils/ApiError';
 
 export class ProviderService {
@@ -12,10 +13,10 @@ export class ProviderService {
         `
         SELECT id, email, name, company_name, telephone, image_url
         FROM "User"
-        WHERE role = $1 AND active = $2 AND new_user = $3
+        WHERE role = $1 AND active = $2 AND status = $3
         ORDER BY company_name
         `,
-        [UserRole.PROV, true, false] 
+        [UserRole.PROV, true, UserStatus.APPROVED] 
       );
       return result;
     } catch (error) {
@@ -29,8 +30,8 @@ export class ProviderService {
       const result = await pool.query(`
         SELECT id, email, name, company_name, telephone, image_url 
         FROM public."User" 
-        WHERE role = $1 AND id = $2 AND active = $3 AND new_user = $4`, 
-        [UserRole.PROV, id, true, false]);
+        WHERE role = $1 AND id = $2 AND active = $3 AND status = $4`, 
+        [UserRole.PROV, id, true, UserStatus.APPROVED]);
       return result;
     } catch (error) {
       throw new Error('Unable to fetch the active provider with this id');
@@ -42,7 +43,7 @@ export class ProviderService {
   async getProviders() {
     try {
       const result = await pool.query(
-        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, new_user, fecha_alta 
+        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, status, fecha_alta 
          FROM public."User" 
          WHERE role = $1
          ORDER BY company_name`,
@@ -58,7 +59,7 @@ export class ProviderService {
     try {
       const result = await pool.query(
         `
-        SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, new_user, fecha_alta
+        SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, status, fecha_alta
         FROM "User"
         WHERE role = $1 AND id = $2
         `,
@@ -109,23 +110,44 @@ export class ProviderService {
     }
   }
 
-  async approveProvider(providerId: number) { // de momento se está usando new_user bool como estado
+  async approveProvider(providerId: number) { 
     try {
       const result = await pool.query(
         `
         UPDATE "User"
         SET active = $1,
-            new_user = $2
+            status = $2
         WHERE id = $3
           AND role = $4
-          AND new_user = $5
-        RETURNING id, email, company_name, active, new_user
+          AND status != $2
+        RETURNING id, email, company_name, active, status
         `,
-        [true, false, providerId, UserRole.PROV, true]
+        [true, UserStatus.APPROVED, providerId, UserRole.PROV]
       );
       return result;
     } catch (error) {
       throw new Error('Unable to approve provider');
+    }
+  }
+
+  async rejectProvider(providerId: number) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET active = $1,
+            status = $2
+        WHERE id = $3
+          AND role = $4
+          AND status != $2
+        RETURNING id, email, company_name, active, status
+        `,
+        [false, UserStatus.REJECTED, providerId, UserRole.PROV]
+      );
+      return result;
+    } catch (error) {
+      console.error('Error rejecting provider:', error);
+      throw new Error('Unable to reject provider');
     }
   }
 
@@ -153,7 +175,7 @@ export class ProviderService {
     }
   }
 
-  async getProviderByName(name: string) { // ¿añadir restricción active = true y new_user = false?
+  async getProviderByName(name: string) { // ¿añadir restricción active = true y status = pending?
     try {
       const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
       return result;
@@ -163,7 +185,7 @@ export class ProviderService {
   }
   
   // OTHER ROUTES
-  // chequear active y new_user?
+  // ¿es necesario chequear active y status?
   
   async checkProviderRoleById(providerId: number): Promise<boolean> {
     const result = await pool.query(

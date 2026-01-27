@@ -199,6 +199,30 @@ export class ProviderController {
     }
   };
 
+  rejectProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
+      }
+      const result = await this.providerService.rejectProvider(id);
+      if (result.rows.length === 0) {
+        return next(
+          new ApiError(
+            'CONFLICT',
+            'Provider not found or already rejected'
+          )
+        );
+      }
+      res.status(200).json({
+        message: 'Provider rejected successfully',
+        data: result.rows[0]
+      });
+    } catch (error) {
+      next(new ApiError('INTERNAL_SERVER', 'Failed to reject provider'));
+    }
+  };
+
   deleteProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = parseInt(req.params.id || '0');

@@ -12,13 +12,14 @@
 -- Drop existing tables and types (only for reset purposes)
 -- ============================
 DROP TABLE IF EXISTS  Step_Tool,Assemblystep, Assemblystep_part,Assemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
-DROP TYPE IF EXISTS user_role, diff;
+DROP TYPE IF EXISTS user_role, diff, user_status;
 
 -- ============================
 -- ENUM: user_role
 -- ============================
 CREATE TYPE user_role AS ENUM ('admin', 'user', 'provider');
 CREATE TYPE diff AS ENUM ('low','medium','high');
+CREATE TYPE user_status AS ENUM ('pending', 'approved', 'rejected');
 
 -- ============================
 -- TABLE: User
@@ -34,7 +35,7 @@ CREATE TABLE "User" (
     role user_role NOT NULL,
     image_url TEXT,
     active BOOLEAN DEFAULT TRUE,
-    new_user BOOLEAN DEFAULT FALSE,
+    status user_status,
     fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     password VARCHAR(200), -- Nullable for Google OAuth users
     google_id VARCHAR(255) UNIQUE -- Google OAuth ID

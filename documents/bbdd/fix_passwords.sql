@@ -5,7 +5,8 @@ UPDATE "User" SET password = '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2
     'gmail.com',
     'lucia@gmail.com', 
     'carlos@gmail.com',
-    'ikea@gmail.com',
+    'iqua@gmail.com',
+    'decora@gmail.com',
     'mueblesbaratos@gmail.com'
 );
 
@@ -14,6 +15,7 @@ SELECT email, left(password, 20) || '...' as password_preview FROM "User" WHERE 
     'gmail.com',
     'lucia@gmail.com', 
     'carlos@gmail.com',
-    'ikea@gmail.com',
+    'iqua@gmail.com',
+    "decora@gmail.com",
     'mueblesbaratos@gmail.com'
 );

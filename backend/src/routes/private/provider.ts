@@ -11,14 +11,15 @@ router.get('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerControll
 router.post( '/:id/enable', authMiddleware, authorize([UserRole.ADMIN]), providerController.enableProvider);
 router.post( '/:id/disable', authMiddleware, authorize([UserRole.ADMIN]), providerController.disableProvider);
 router.post('/:id/approve', authMiddleware, authorize([UserRole.ADMIN]), providerController.approveProvider);
+router.post('/:id/reject', authMiddleware, authorize([UserRole.ADMIN]), providerController.rejectProvider);
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);
-
-// CAMBIO DE ESTADO (¿status en lugar de new_user?)
-// POST /providers/:id/approve (HECHO con new_user)
-// POST /providers/:id/reject
 
 // GET /providers?status=PENDING
 // GET /providers?status=REJECTED
 // GET /providers?status=APPROVED
+
+// modificar un proveedor
+// eliminar un proveedor
+
 
 export default router;

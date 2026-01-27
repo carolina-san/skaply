@@ -1,6 +1,8 @@
 import pool from '@config/database';
 import { LoginRequest, RegisterUser } from '@/types';
 import { UserRole } from '../types/user.types';
+import { UserStatus } from '@/types/user.types';
+import { use } from 'passport';
 export class AuthService {
 
   async checkUser(email:string){
@@ -63,10 +65,10 @@ export class AuthService {
     try{
       const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, new_user, active) 
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, status, active) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, UserRole.PROV, date, reqUser.password, true, false]);
+         reqUser.telephone, reqUser.tax_address, UserRole.PROV, date, reqUser.password, UserStatus.PENDING, false]);
       return result;
     }catch(error){
       console.error('Error registering user:', error);
@@ -98,10 +100,10 @@ export class AuthService {
     try {
       const date = new Date().toISOString();
       const result = await pool.query(`INSERT INTO "User" 
-        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, google_id, new_user) 
+        (email, cif, company_name, telephone, tax_address, role, fecha_alta, password, google_id, status) 
         VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8, $9) RETURNING id`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId, true]);
+         reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId, UserStatus.PENDING]);
       return { id: result.rows[0].id };
     } catch (error) {
       console.error('Error registering Google user:', error);
@@ -118,31 +120,5 @@ export class AuthService {
       throw new Error('Error finding user by Google ID');
     }
   }
-
-   // PARA BORRAR
-  async registerAdmin(email: string, name: string, hashedPass: string) {
-    try {
-      const date = new Date().toISOString();
-      // Insertamos solo los campos necesarios para un Admin
-      const result = await pool.query(
-        `INSERT INTO "User" 
-        (email, name, role, fecha_alta, password, active, new_user) 
-        VALUES ($1, $2, 'admin', $3, $4, true, false) 
-        RETURNING id, email, name`,
-        [email, name, date, hashedPass]
-      );
-      return result.rows[0];
-    } catch (error) {
-      console.error('Error in registerAdmin service:', error);
-      throw new Error('Error creating admin in database');
-    }
-  }
-
-
-
-
-
-
-
 
 }
