@@ -1,3 +1,5 @@
+
+<!-- Comportamiento del chatbot según el tamaño -->
 <div class="fixed right-0 bottom-0 transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
     ' top-0 h-screen': inMontajeMode && isDesktop,     
     'w-1/4  ':  isDesktop,                    
@@ -5,6 +7,7 @@
     'h-20': !chatVisible && (!inMontajeMode || isMobile)
   }">
 
+    <!-- Icono del chatbot -->
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
         class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center p-0 shadow-lg hover:scale-110 transition-transform pointer-events-auto "
         [ngClass]="{
@@ -14,7 +17,7 @@
         <img src="assets/imgs/Allen.png" alt="Allen" class="w-15 lg:w-20 h-auto ">
     </button>
 
-
+    <!-- Chatbot abierto y renderizado de rich content -->
     <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto"
         [ngClass]="{
     'rounded-t-3xl': !inMontajeMode || isMobile}">
@@ -47,16 +50,18 @@
                     {{ msg.text }}
                 </div>
 
-                <!-- Renderizado unificado de richContent: card, info, items, chips -->
-                <div *ngIf="msg.rich && !msg.text" class="msg-bot">
+                <!-- Renderizado de richContent -->
+                <div *ngIf="msg.rich && !msg.text" class="">
+
                     <!-- Cards -->
-                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2">
+                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2 msg-bot p-2!">
                         <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
-                            class="w-full h-32 object-cover rounded-2xl">
+                            class="w-full h-28 object-cover rounded-xl">
                         <div>
                             <h4 class="titulo">{{ msg.rich.title }}</h4>
                             <p class="subtitulo">{{ msg.rich.subtitle }}</p>
                         </div>
+                        <!-- Chips dentro de la card -->
                         <div class="flex flex-wrap gap-2 justify-end">
                             <button *ngFor="let btn of msg.rich.buttons"
                                 class=" chip"
@@ -67,16 +72,16 @@
                     </div>
 
                     <!-- Items type (info, description, list, chips) -->
-                    <div *ngIf="msg.rich.items" class="space-y-2">
+                    <div *ngIf="msg.rich.items" class="space-y-2 flex flex-col ">
                         <div *ngFor="let item of msg.rich.items">
                             <!-- Info item -->
-                            <div *ngIf="item.type === 'info'">
+                            <div *ngIf="item.type === 'info'" class="msg-bot">
                                 <h4 class="titulo">{{ item.title }}</h4>
                                 <p class="subtitulo">{{ item.subtitle }}</p>
                             </div>
 
                             <!-- Description item -->
-                            <div *ngIf="item.type === 'description'">
+                            <div *ngIf="item.type === 'description'" class="msg-bot">
                                 <h4 class="titulo">{{ item.title }}</h4>
                                 <ul class="subtitulo ">
                                     <li *ngFor="let text of item.text">{{ text }}</li>
@@ -84,7 +89,7 @@
                             </div>
 
                             <!-- List item -->
-                            <div *ngIf="item.type === 'list'">
+                            <div *ngIf="item.type === 'list'" class="msg-bot">
                                 <h4 class="font-bold">{{ item.title }}</h4>
                                 <div *ngIf="item.items && item.items.length > 0" class="text-sm space-y-2 mt-1 ml-2">
                                     <div *ngFor="let subitem of item.items">
@@ -95,7 +100,7 @@
                             </div>
 
                             <!-- Chips item -->
-                            <div *ngIf="item.type === 'chips'" class="flex flex-wrap gap-2">
+                            <div *ngIf="item.type === 'chips'" class="flex gap-2 ">
                                 <button *ngFor="let opt of item.options"
                                     class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
                                     (click)="handleChipClick(opt.text)">
@@ -104,7 +109,7 @@
                             </div>
 
                             <!-- Button item -->
-                            <div *ngIf="item.type === 'button'" class="flex items-center gap-2">
+                            <div *ngIf="item.type === 'button'" class="flex items-center gap-2 msg-bot">
                                 <button class="chip flex items-center gap-2"
                                     (click)="openLink(item.link)">
                                     <span *ngIf="item.icon?.type" class="material-symbols-rounded">
