@@ -47,7 +47,7 @@ ALTER SEQUENCE color_id_seq RESTART WITH 1;
 -- ============================
 -- 2. Insertar usuarios
 -- ============================
-INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, fecha_alta,password, status) VALUES
+INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, created_at,password, registration_status) VALUES
 ('gmail.com','Maria','CIF001',null,'123456789','123 User St','','admin', NOW(),'12345', null),
 ('lucia@gmail.com','Lucia','CIF002',null,'123456780','456 User St','','admin', NOW(),'12345', null),
 ('carlos@gmail.com','Carlos','CIF003',null,'123456781','789 User St','','admin', NOW(),'12345', null),

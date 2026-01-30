@@ -33,7 +33,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/colors`);
   }
 
-  getActiveProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
+  getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
@@ -41,11 +41,15 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/private/providers`);
   }
 
-  registerProvider(data: any): Observable<any> {
+  // tambien existe register()
+  // el front no debería de enviar datos hardcodeados al back
+  registerProvider(data: any): Observable<any> { 
     const payload = {
-      ...data,
+      ...data,  
       role: 'provider',
-      status: 'pending'
+      registration_status: 'pending',
+      enabled: false,
+      visible: false,
     };
     return this.http.post(`${this.apiUrl}/providers`, payload);
   }
@@ -83,7 +87,7 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/login`, { email, password });
   }
 
-  register(userData: any): Observable<any> {
+  register(userData: any): Observable<any> { // tambien existe registerProvider()
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 

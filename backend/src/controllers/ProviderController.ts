@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
-import { UserRole } from '@/types/user.types';
+import { validateProvider } from '@/utils/provider.utils';
+import { validateProviderData } from '@/utils/auth.utils';
+import { pickFields, validateNotEmptyObject, validateParameterId } from '@/utils/common.utils';
+import { RegistrationStatus, UserRole } from '@/types';
 
 export class ProviderController {
 
@@ -13,69 +16,45 @@ export class ProviderController {
 
   // PUBLIC ROUTES
 
-  getActiveProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getVisibleProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.providerService.getActiveProviders();
-
-      if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'No providers found'));
-        return;
-      }
-
+      const result = await this.providerService.getVisibleProviders();
       res.status(200).json({
         message: 'Providers fetched successfully',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
     }
   }
 
-  getActiveProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getVisibleProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseInt(req.params.id || '0');
-      if (isNaN(id)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-        return;
-      }
-      const result = await this.providerService.getActiveProvider(id);
-
-      if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'Provider not found'));
-        return;
-      }
-
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId, { checkVisible: true });
+      // fetch
+      const result = await this.providerService.getVisibleProviderById(providerId);
+      // response
       res.status(200).json({
         message: 'Provider fetched successfully',
-        data: result.rows[0]
+        data: result
       });
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this provider'));
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this provider'));
     }
   };
   
   // PRIVATE ROUTES (ADMIN ONLY)
-  
+
   getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      
-      if (!req.user) {
-        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
-      }
-
-      if (req.user.role !== UserRole.ADMIN) {
-        return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
-      }
       const result = await this.providerService.getProviders();
-
-      if (result.rows.length === 0) {
-        next(new ApiError('NOT_FOUND', 'No providers found'));
-        return;
-      }
-
       res.status(200).json({
         message: 'Providers fetched successfully',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
@@ -84,151 +63,107 @@ export class ProviderController {
 
   getProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      
-      if (!req.user) {
-        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
-      }
-
-      if (req.user.role !== UserRole.ADMIN) {
-        return next(new ApiError('FORBIDDEN', 'Insufficient permissions'));
-      }
-
-      const id = parseInt(req.params.id || '0');
-      if (isNaN(id)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
-
-      const result = await this.providerService.getProviderById(id);
-
-      if (result.rows.length === 0) {
-        return next(new ApiError('NOT_FOUND', 'Provider not found'));
-      }
-
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId);
+      // fetch
+      const result = await this.providerService.getProviderById(providerId);
+      // response
       res.status(200).json({
         message: 'Provider fetched successfully',
-        data: result.rows[0]
+        data: result
       });
-
+      // error
     } catch (error) {
-      console.error('Error fetching provider by id:', error);
-      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch provider'));
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this provider'));
     }
   };
 
-  enableProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  enableProvider = async (req: Request, res: Response, next: NextFunction): 
+  Promise<void> => {
     try {
-      const id = Number(req.params.id);
-      if (isNaN(id)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
-      const result = await this.providerService.enableProvider(id);
-      if (result.rows.length === 0) {
-        return next(
-          new ApiError(
-            'CONFLICT',
-            'Provider not found or already enabled'
-          )
-        );
-      }
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId, { checkApprovedRegistration: true });
+      // fetch
+      const result = await this.providerService.enableProvider(providerId);
+      // response
       res.status(200).json({
         message: 'Provider enabled successfully',
-        data: result.rows[0]
+        data: result
       });
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to enable provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to enable provider'));
+      }
   };
 
   disableProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = Number(req.params.id);
-      if (isNaN(id)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
-      const result = await this.providerService.disableProvider(id);
-      if (result.rows.length === 0) {
-        return next(
-          new ApiError(
-            'CONFLICT',
-            'Provider not found or already disabled'
-          )
-        );
-      }
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId);
+      // fetch
+      const result = await this.providerService.disableProvider(providerId);
+      // response
       res.status(200).json({
         message: 'Provider disabled successfully',
-        data: result.rows[0]
+        data: result
       });
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to disable provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to disable provider'));
+      }
   };
 
-  approveProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  approveRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.user) {
-        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
-      }
-
-      if (req.user.role !== UserRole.ADMIN) {
-        return next(new ApiError('FORBIDDEN', 'Only admins can approve providers'));
-      }
-
-      const providerId = Number(req.params.id);
-      if (!providerId || isNaN(providerId)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
-
-      const result = await this.providerService.approveProvider(providerId);
-
-      if (result.rowCount === 0) {
-        return next(
-          new ApiError(
-            'NOT_FOUND',
-            'Provider not found or already approved'
-          )
-        );
-      }
-
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId, { checkPendingRegistration: true });
+      // fetch
+      const result = await this.providerService.approveRegistration(providerId);
+      // response
       res.status(200).json({
         message: 'Provider approved successfully',
-        data: result.rows[0]
+        data: result
       });
-
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to approve provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to enable provider\'s registration'));
+      }
   };
 
-  rejectProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
+  rejectRegistration = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = Number(req.params.id);
-      if (isNaN(id)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
-      const result = await this.providerService.rejectProvider(id);
-      if (result.rows.length === 0) {
-        return next(
-          new ApiError(
-            'CONFLICT',
-            'Provider not found or already rejected'
-          )
-        );
-      }
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      const provider = await validateProvider(this.providerService, providerId, { checkPendingRegistration: true });
+      // fetch
+      const result = await this.providerService.rejectRegistration(providerId);
+      // response
       res.status(200).json({
         message: 'Provider rejected successfully',
-        data: result.rows[0]
+        data: result
       });
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to reject provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to reject provider\'s registration'));
+      }
   };
 
   updateProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const providerId = Number(req.params.id);
-      if (isNaN(providerId)) {
-        return next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-      }
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId);
+
+      // allowed filed
       const allowedFields = [
         'email',
         'cif',
@@ -236,108 +171,78 @@ export class ProviderController {
         'telephone',
         'tax_address'
       ];
-      const updateData: Record<string, any> = {};
-      for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-          updateData[field] = req.body[field];
-        }
-      }
-      if (updateData.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(updateData.email)) {
-          next(new ApiError('BAD_REQUEST', 'Invalid email format'));
-          return;
-        }
-      }
-      if (updateData.cif) {
-        const cifRegex = /^[a-zA-Z]\d{7}[0-9a-zA-Z]$/;
-        if (!cifRegex.test(updateData.cif)) {
-          next(new ApiError('BAD_REQUEST', 'Invalid CIF format. Must be Letter + 7 digits + Control Character'));
-          return;
-        }
-      }
-      if (updateData.telephone) {
-        const phoneRegex = /^\+?[0-9]{9,15}$/;
-        if (!phoneRegex.test(updateData.telephone)) {
-          return next(new ApiError('BAD_REQUEST', 'Invalid telephone format'));
-        }
-      }
-      if (Object.keys(updateData).length === 0) {
-        return next(new ApiError('BAD_REQUEST', 'No valid fields to update'));
-      }
+
+      // pick fields and validate
+      const updateData = pickFields(req.body, allowedFields);
+      validateNotEmptyObject(updateData, 'No fields to update');
+      validateProviderData(updateData);
+
+      // fetch
       const result = await this.providerService.updateProvider(providerId, updateData);
-      if (result.rows.length === 0) {
-        return next(new ApiError('NOT_FOUND', 'Provider not found or disabled'));
-      }
+
+      // response
       res.status(200).json({
         message: 'Provider updated successfully',
-        data: result.rows[0]
+        data: result
       });
+
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
+      }
   };
 
   deleteProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = parseInt(req.params.id || '0');
-      if (isNaN(id)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
-        return;
-      }
-
-      const result = await this.providerService.deleteProvider(id);
-
-      if (result.rowCount === 0) {
-        next(new ApiError('NOT_FOUND', 'Provider not found or could not be deleted'));
-        return;
-      }
-
-      res.status(200).json({ message: `Provider ${id} deleted successfully` });
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId);
+      // fetch
+      const result = await this.providerService.deleteProvider(providerId);
+      // response
+      res.status(200).json({ message: `Provider ${providerId} deleted successfully` });
+      // error
     } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to delete provider'));
-    }
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to delete provider'));
+      }
   };
 
   // PRIVATE ROUTES (PROVIDER ONLY)
 
   updateMyProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.user) {
-        return next(new ApiError('UNAUTHORIZED', 'Authentication required'));
-      }
-      const providerId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
-      if (!providerId) {
-        return next(new ApiError('UNAUTHORIZED', 'User not found'));
-      } 
+      // validation
+      const email = req.user?.emailuser;
+      if (!email) {throw new ApiError('UNAUTHORIZED', 'User not authenticated');}
+      const providerId = await this.providerService.getProviderIdByEmail(email);
+      if (!providerId) {throw new ApiError('NOT_FOUND', 'Provider not found'); }
+      await validateProvider(this.providerService, providerId);
+
+      // allowed fields
       const allowedFields = ['company_name', 'telephone', 'tax_address'];
-      const updateData: Record<string, any> = {};
-      for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-          updateData[field] = req.body[field];
-        }
-      }
-      // validate telephone format if provided
-      if (updateData.telephone) {
-        const phoneRegex = /^\+?[0-9]{9,15}$/;
-        if (!phoneRegex.test(updateData.telephone)) {
-          return next(new ApiError('BAD_REQUEST', 'Invalid telephone format'));
-        }
-      }
-      if (Object.keys(updateData).length === 0) {
-        return next(new ApiError('BAD_REQUEST', 'No valid fields to update'));
-      }
+      
+      // pick fields and validate
+      const updateData = pickFields(req.body, allowedFields);
+      validateNotEmptyObject(updateData, 'No fields to update');
+      validateProviderData(updateData);
+
+      console.log("updateData:", updateData);
+      
+      // fetch
       const result = await this.providerService.updateProvider(providerId, updateData);
-      if (result.rows.length === 0) {
-        return next(new ApiError('NOT_FOUND', 'Provider not found or disabled'));
-      }
+
+      // response
       res.status(200).json({
         message: 'Provider profile updated successfully',
-        data: result.rows[0]
+        data: result
       });
-    } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider profile'));
-    }
-  };
 
+      // error
+    } catch (error) {
+        if (error instanceof ApiError) { return next(error); }
+        next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
+      }
+  };
 }
