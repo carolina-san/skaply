@@ -29,6 +29,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/categories`);
   }
 
+  getCategoryByName(name: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories/name/${name}`);
+}
+
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }

@@ -163,7 +163,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
                         this.renderRichContent(rich);
-                        if(m.payload?.fields?.message?.stringValue){
+                        if (m.payload?.fields?.message?.stringValue) {
                             this.speakMessage(m.payload.fields.message.stringValue);
                         }
                         handled = true;
@@ -180,6 +180,32 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         }, 4000);
                         handled = true;
                     }
+                    else if (payload?.fields?.action?.stringValue === "filter.by.category") {
+                        const category= payload.fields.category?.stringValue;
+
+                        if (category) {
+
+                            this.api.getCategoryByName(category).subscribe({
+                                next: (categoryResponse) => {
+                                    console.log('Respuesta cruda API:', categoryResponse); // LOG PARA VER QUÉ LLEGA
+
+                                    const categoryData = categoryResponse.data || [];
+
+                                    if (categoryData.length > 0) {
+                                        console.log('Categoría encontrada ID:', categoryData[0].id);
+                                        this.filterSharingService.setSelectedCategory(categoryData[0].id);
+                                        this.router.navigate(['/catalogo']);
+                                    } else {
+                                        this.speakMessage(`No encontré productos para ${category}`);
+                                    }
+                                },
+                                error: (error) => {
+                                    console.error('Error HTTP al obtener categoría:', error);
+                                }
+                            });
+                            handled = true;
+                        }
+                    }
                 }
 
                 if (!handled) {
@@ -194,19 +220,16 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     renderRichContent(groups: any[]) {
-        // Detectar si es el formato directo (array de objetos con type, title, etc.)
-        // o el formato Dialogflow (nested listValue.values)
-        const isDirectFormat = groups.length > 0 && 
-                               (groups[0].type !== undefined || 
-                                groups[0].title !== undefined);
+        
+        const isDirectFormat = groups.length > 0 &&
+            (groups[0].type !== undefined ||
+                groups[0].title !== undefined);
 
         if (isDirectFormat) {
-            // Procesar formato directo
             this.processDirectRichContent(groups);
             return;
         }
 
-        // Procesar formato Dialogflow original
         groups.forEach(group => {
             const list = group.listValue?.values || [];
             const items: any[] = [];
@@ -312,25 +335,25 @@ export class Chatbot implements OnInit, AfterViewChecked {
         // Enviar el mensaje siempre
         this.newMessage = text;
         this.sendMessage();
-        
+
         // Obtener categorías y colores para verificar si el chip es una categoría o color
         this.api.getCategories().subscribe({
             next: (categoriesResponse) => {
                 const categories = categoriesResponse.data || [];
                 const selectedCategory = categories.find((c: any) => c.name === text);
-                
-                if (selectedCategory) {
-                    // Es una categoría, navegar al catálogo con el filtro
-                    this.filterSharingService.setSelectedCategory(selectedCategory.id);
-                    this.router.navigate(['/catalogo']);
-                    return;
-                }
-                
+
+                // if (selectedCategory) {
+                //     // Es una categoría, navegar al catálogo con el filtro
+                //     this.filterSharingService.setSelectedCategory(selectedCategory.id);
+                //     this.router.navigate(['/catalogo']);
+                //     return;
+                // }
+
                 this.api.getColors().subscribe({
                     next: (colorsResponse) => {
                         const colors = colorsResponse.data || [];
                         const selectedColor = colors.find((c: any) => c.name === text);
-                        
+
                         if (selectedColor) {
                             // Es un color, navegar al catálogo con el filtro de color
                             this.filterSharingService.setSelectedColor(selectedColor.id);
@@ -418,7 +441,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         const rich = m.payload?.fields?.richContent?.listValue?.values;
                         if (rich) {
                             this.renderRichContent(rich);
-                            if(m.payload?.fields?.message?.stringValue){
+                            if (m.payload?.fields?.message?.stringValue) {
                                 this.speakMessage(m.payload.fields.message.stringValue);
                             }
                             handled = true;
@@ -458,7 +481,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         const rich = m.payload?.fields?.richContent?.listValue?.values;
                         if (rich) {
                             this.renderRichContent(rich);
-                            if(m.payload?.fields?.message?.stringValue){
+                            if (m.payload?.fields?.message?.stringValue) {
                                 this.speakMessage(m.payload.fields.message.stringValue);
                             }
                         }
