@@ -56,7 +56,7 @@
                     <!-- Cards -->
                     <div *ngIf="msg.rich.type === 'card'" class="space-y-2 msg-bot p-2!">
                         <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
-                            class="w-full h-28 object-cover rounded-xl">
+                            class="w-full h-25 object-cover rounded-xl">
                         <div>
                             <h4 class="titulo">{{ msg.rich.title }}</h4>
                             <p class="subtitulo">{{ msg.rich.subtitle }}</p>
