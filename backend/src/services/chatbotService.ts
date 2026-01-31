@@ -4,6 +4,7 @@ import { ToolService } from '@/services/toolService';
 import { IssueService } from '@/services/issueService';
 import { FurnitureService } from '@/services/furnitureService';
 import { CategoryService } from '@/services/categoryService';
+import { ColorService } from './colorService';
 import { Issue } from '@/types';
 import { struct } from 'pb-util';
 
@@ -15,19 +16,22 @@ export class ChatbotService {
   private sessionClient: dialogflow.SessionsClient;
   private categoryService: CategoryService;
   private projectId: string;
+  private colorService: ColorService;
 
   constructor(
     providerService?: ProviderService,
     toolService?: ToolService,
     issueService?: IssueService,
     furnitureService?: FurnitureService,
-    categoryService?: CategoryService
+    categoryService?: CategoryService,
+    colorService?: ColorService
   ) {
     this.providerService = providerService || new ProviderService();
     this.toolService = toolService || new ToolService();
     this.issueService = issueService || new IssueService();
     this.furnitureService = furnitureService || new FurnitureService();
     this.categoryService = categoryService || new CategoryService();
+    this.colorService = colorService || new ColorService();
     this.projectId = 'allen-hmmc';
     this.sessionClient = new dialogflow.SessionsClient({
       keyFilename: 'dialogflow.json'
@@ -470,6 +474,35 @@ export class ChatbotService {
       fulfillmentText: `Has indicado una referencia. ¿Qué quieres hacer con ella?`
     };
   }
+  async getCategoryFilters(): Promise<any> {
+    const categories = await this.categoryService.getAllCategories();
+
+    const richContent = [
+      [
+       
+        {
+          options: categories.rows.map((c: any) => ({
+            text: c.name
+          })),
+          type: 'chips'
+        }
+      ]
+    ];
+
+    return {
+      fulfillmentMessages: [
+        {
+          text: { text: ['¿Qué tipo de mueble te interesa?'] }
+        },
+        {
+          payload: {
+            richContent: richContent
+          }
+        }
+      ]
+    };
+  }
+
   async getCategories(): Promise<any> {
     const categories = await this.categoryService.getAllCategories();
 
@@ -490,6 +523,31 @@ export class ChatbotService {
 
     return {
       fulfillmentMessages: [
+        {
+          payload: {
+            richContent: richContent
+          }
+        }
+      ]
+    };
+  }
+  async getColorFilters(): Promise<any> {
+    const colors = await this.colorService.getAllColorsFoundInFurniture();
+    const richContent = [
+      [
+        {
+          options: colors.rows.map((c: any) => ({
+            text: c.name
+          })),
+          type: 'chips'
+        }
+      ]
+    ];
+    return {
+      fulfillmentMessages: [
+        {
+          text: { text: ['¿Qué color de mueble prefieres?'] }
+        },
         {
           payload: {
             richContent: richContent

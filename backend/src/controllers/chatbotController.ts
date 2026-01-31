@@ -107,6 +107,20 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getCategories());
                     return;
                 }
+                case 'get.category.filters': {
+                    res.status(200).json(await this.chatbotService.getCategoryFilters());
+                    return;
+                }
+                case 'get.color.filters': {
+                    res.status(200).json(await this.chatbotService.getColorFilters());
+                    return;
+                }
+                case 'filter.by.category': {
+                    const category = parameters['category'];
+                    const result = await this.chatbotService.getFurnitureInfo(`category:${category}`, session);
+                    res.status(200).json(result);
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No entiendo esa consulta. (backend)'

@@ -309,27 +309,43 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     handleChipClick(text: string) {
-        // Obtener todas las categorías para verificar si el chip es una categoría
+        // Enviar el mensaje siempre
+        this.newMessage = text;
+        this.sendMessage();
+        
+        // Obtener categorías y colores para verificar si el chip es una categoría o color
         this.api.getCategories().subscribe({
-            next: (response) => {
-                const categories = response.data || [];
+            next: (categoriesResponse) => {
+                const categories = categoriesResponse.data || [];
                 const selectedCategory = categories.find((c: any) => c.name === text);
                 
                 if (selectedCategory) {
                     // Es una categoría, navegar al catálogo con el filtro
                     this.filterSharingService.setSelectedCategory(selectedCategory.id);
                     this.router.navigate(['/catalogo']);
-                } else {
-                    // No es una categoría, procesar como mensaje normal
-                    this.newMessage = text;
-                    this.sendMessage();
+                    return;
                 }
+                
+                this.api.getColors().subscribe({
+                    next: (colorsResponse) => {
+                        const colors = colorsResponse.data || [];
+                        const selectedColor = colors.find((c: any) => c.name === text);
+                        
+                        if (selectedColor) {
+                            // Es un color, navegar al catálogo con el filtro de color
+                            this.filterSharingService.setSelectedColor(selectedColor.id);
+                            this.router.navigate(['/catalogo']);
+                        }
+                    },
+                    error: (error) => {
+                        // Si hay error, solo continuar (el mensaje ya fue enviado)
+                        console.error('Error al obtener colores:', error);
+                    }
+                });
             },
             error: (error) => {
-                // Si hay error, procesar como mensaje normal
+                // Si hay error, solo continuar (el mensaje ya fue enviado)
                 console.error('Error al obtener categorías:', error);
-                this.newMessage = text;
-                this.sendMessage();
             }
         });
     }

@@ -76,6 +76,19 @@ export class Home implements OnInit {
       }
     });
 
+    // Suscribirse a los cambios de color desde el chatbot
+    this.filterSharingService.selectedColors$.subscribe(colorIds => {
+      if (colorIds && colorIds.length > 0) {
+        this.activeFilters = {
+          ...this.activeFilters,
+          color_ids: colorIds
+        };
+        this.calculateActiveFilters(this.activeFilters);
+        this.obtenerCatalogo();
+        this.filterSharingService.clearSelectedColors();
+      }
+    });
+
     window.addEventListener("scroll", () => {
       this.scrolled = window.scrollY > 70;
     });
