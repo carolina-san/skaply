@@ -120,6 +120,11 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.filterByColor(color));
                     return;
                 }
+                case 'filter.by.category': {
+                    const category = parameters['furniture_category'];
+                    res.status(200).json(await this.chatbotService.filterByCategory(category));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No entiendo esa consulta. (backend)'

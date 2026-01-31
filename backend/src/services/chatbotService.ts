@@ -573,13 +573,15 @@ export class ChatbotService {
                     {
                       type: "description",
                       text: [
-                        "¡Catálogo filtrado!",
                         `Buscando muebles de color ${colorName}`
                       ]
                     }
                   ]
                 ]
               }
+            },
+            {
+              text: { text: ["¡Catálogo filtrado!"] }
             }
           ]
         };
@@ -592,6 +594,47 @@ export class ChatbotService {
       console.error("Error in filterByColor:", error);
       return {
         fulfillmentText: "Hubo un error al buscar el color."
+      };
+    }
+  }
+
+  async filterByCategory(categoryName: string): Promise<any> {
+    try {
+      const categoryResult = await this.categoryService.getCategoryByName(categoryName);
+
+      if (categoryResult.rows.length > 0) {
+        return {
+          fulfillmentMessages: [
+            {
+              payload: {
+                action: "filter.by.category",
+                category: categoryName,
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      text: [
+                        `Buscando muebles en la categoría ${categoryName}`
+                      ]
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              text: { text: ["¡Catálogo filtrado!"] }
+            }
+          ]
+        };
+      } else {
+        return {
+          fulfillmentText: `Lo siento, no encontré muebles de categoría ${categoryName}.`
+        };
+      }
+    } catch (error) {
+      console.error("Error in filterByCategory:", error);
+      return {
+        fulfillmentText: "Hubo un error al buscar la categoría."
       };
     }
   }

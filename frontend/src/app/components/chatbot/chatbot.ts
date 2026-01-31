@@ -188,6 +188,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                     const categoryData = categoryResponse.data || [];
 
                                     if (categoryData.length > 0) {
+                                        this.filterSharingService.clearSelectedCategory();
+                                        this.filterSharingService.clearSelectedColors();
                                         this.filterSharingService.setSelectedCategory(categoryData[0].id);
                                         this.router.navigate(['/catalogo']);
                                     }
@@ -206,6 +208,8 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                 next: (colorResponse) => {
                                     const colorData = colorResponse.data || [];
                                     if (colorData.length > 0) {
+                                        this.filterSharingService.clearSelectedCategory();
+                                        this.filterSharingService.clearSelectedColors();
                                         this.filterSharingService.setSelectedColor(colorData[0].id);
                                         this.router.navigate(['/catalogo']);
                                     }

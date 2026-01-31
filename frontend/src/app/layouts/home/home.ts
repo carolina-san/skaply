@@ -70,7 +70,10 @@ export class Home implements OnInit {
     // Suscribirse a los cambios de categoría desde el chatbot
     this.filterSharingService.selectedCategory$.subscribe(categoryId => {
       if (categoryId !== null) {
+        // Al seleccionar categoría desde el chatbot, limpiamos otros filtros para 'empezar de cero'
         this.selectedCategoryId = categoryId;
+        this.activeFilters = {};
+        this.calculateActiveFilters(this.activeFilters);
         this.obtenerCatalogo();
         this.filterSharingService.clearSelectedCategory();
       }
@@ -79,9 +82,10 @@ export class Home implements OnInit {
     // Suscribirse a los cambios de color desde el chatbot
     this.filterSharingService.selectedColors$.subscribe(colorIds => {
       if (colorIds && colorIds.length > 0) {
+        // Al seleccionar color desde el chatbot, limpiamos categoría y otros filtros
+        this.selectedCategoryId = null; // Limpiar categoría seleccionada
         this.activeFilters = {
-          ...this.activeFilters,
-          color_ids: colorIds
+          color_ids: colorIds // Solo mantener los nuevos colores
         };
         this.calculateActiveFilters(this.activeFilters);
         this.obtenerCatalogo();
