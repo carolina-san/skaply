@@ -170,7 +170,6 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     }
                     const payload = m.payload;
                     if (payload?.fields?.redirect) {
-
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
                                 window.location.href = "/register";
@@ -181,27 +180,37 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         handled = true;
                     }
                     else if (payload?.fields?.action?.stringValue === "filter.by.category") {
-                        const category= payload.fields.category?.stringValue;
+                        const category = payload.fields.category?.stringValue;
 
                         if (category) {
-
                             this.api.getCategoryByName(category).subscribe({
                                 next: (categoryResponse) => {
-                                    console.log('Respuesta cruda API:', categoryResponse); // LOG PARA VER QUÉ LLEGA
-
                                     const categoryData = categoryResponse.data || [];
 
                                     if (categoryData.length > 0) {
-                                        console.log('Categoría encontrada ID:', categoryData[0].id);
                                         this.filterSharingService.setSelectedCategory(categoryData[0].id);
                                         this.router.navigate(['/catalogo']);
-                                    } else {
-                                        this.speakMessage(`No encontré productos para ${category}`);
                                     }
                                 },
                                 error: (error) => {
                                     console.error('Error HTTP al obtener categoría:', error);
                                 }
+                            });
+                            handled = true;
+                        }
+                    }
+                    else if (payload?.fields?.action?.stringValue === "filter.by.color") {
+                        const color = payload.fields.color?.stringValue;
+                        if (color) {
+                            this.api.getColorByName(color).subscribe({
+                                next: (colorResponse) => {
+                                    const colorData = colorResponse.data || [];
+                                    if (colorData.length > 0) {
+                                        this.filterSharingService.setSelectedColor(colorData[0].id);
+                                        this.router.navigate(['/catalogo']);
+                                    }
+                                },
+                                error: (error) => { console.error('Error:', error); }
                             });
                             handled = true;
                         }
@@ -220,7 +229,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     renderRichContent(groups: any[]) {
-        
+
         const isDirectFormat = groups.length > 0 &&
             (groups[0].type !== undefined ||
                 groups[0].title !== undefined);
@@ -354,11 +363,11 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         const colors = colorsResponse.data || [];
                         const selectedColor = colors.find((c: any) => c.name === text);
 
-                        if (selectedColor) {
-                            // Es un color, navegar al catálogo con el filtro de color
-                            this.filterSharingService.setSelectedColor(selectedColor.id);
-                            this.router.navigate(['/catalogo']);
-                        }
+                        // if (selectedColor) {
+                        //     // Es un color, navegar al catálogo con el filtro de color
+                        //     this.filterSharingService.setSelectedColor(selectedColor.id);
+                        //     this.router.navigate(['/catalogo']);
+                        // }
                     },
                     error: (error) => {
                         // Si hay error, solo continuar (el mensaje ya fue enviado)

@@ -31,10 +31,14 @@ export class ApiService {
 
   getCategoryByName(name: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/categories/name/${name}`);
-}
+  }
 
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
+  }
+  
+  getColorByName(name: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/colors/name/${name}`);
   }
 
   getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
@@ -47,9 +51,9 @@ export class ApiService {
 
   // tambien existe register()
   // el front no debería de enviar datos hardcodeados al back
-  registerProvider(data: any): Observable<any> { 
+  registerProvider(data: any): Observable<any> {
     const payload = {
-      ...data,  
+      ...data,
       role: 'provider',
       registration_status: 'pending',
       enabled: false,

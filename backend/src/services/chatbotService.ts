@@ -479,7 +479,7 @@ export class ChatbotService {
 
     const richContent = [
       [
-       
+
         {
           options: categories.rows.map((c: any) => ({
             text: c.name
@@ -555,5 +555,44 @@ export class ChatbotService {
         }
       ]
     };
+  }
+
+  async filterByColor(colorName: string): Promise<any> {
+    try {
+      const colorResult = await this.colorService.getColorByName(colorName);
+
+      if (colorResult.rows.length > 0) {
+        return {
+          fulfillmentMessages: [
+            {
+              payload: {
+                action: "filter.by.color",
+                color: colorName,
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      text: [
+                        "¡Catálogo filtrado!",
+                        `Buscando muebles de color ${colorName}`
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        };
+      } else {
+        return {
+          fulfillmentText: `Lo siento, no encontré muebles de color ${colorName}.`
+        };
+      }
+    } catch (error) {
+      console.error("Error in filterByColor:", error);
+      return {
+        fulfillmentText: "Hubo un error al buscar el color."
+      };
+    }
   }
 }

@@ -103,7 +103,7 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.checkReference(furnitureRef, session));
                     return;
                 }
-                case 'get.categories':{
+                case 'get.categories': {
                     res.status(200).json(await this.chatbotService.getCategories());
                     return;
                 }
@@ -115,10 +115,9 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getColorFilters());
                     return;
                 }
-                case 'filter.by.category': {
-                    const category = parameters['category'];
-                    const result = await this.chatbotService.getFurnitureInfo(`category:${category}`, session);
-                    res.status(200).json(result);
+                case 'filter.by.color': {
+                    const color = parameters['furniture_color'];
+                    res.status(200).json(await this.chatbotService.filterByColor(color));
                     return;
                 }
                 default:
