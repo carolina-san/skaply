@@ -6,7 +6,7 @@ import { Landing } from './layouts/landing/landing';
 import { Motor } from './layouts/motor/motor';
 import { Register } from './layouts/register/register';
 import { Login } from './layouts/login/login';
-import { Profile } from './layouts/profile/profile';
+import { AdminProfile} from './layouts/adminProfile/adminProfile';
 import { Cookies } from './layouts/legal/cookies';
 import { LegalNotice } from './layouts/legal/legal-notice';
 import { Privacy } from './layouts/legal/privacy';
@@ -19,7 +19,7 @@ export const routes: Routes = [
     { path: 'register', component: Register },
     { path: 'login', component: Login },
     { path: 'login/success', component: Login }, // Maneja el callback de Google OAuth
-    { path: 'profile', component: Profile },
+    { path: 'admin', component: AdminProfile },
     { path: 'cookies', component: Cookies },
     { path: 'legal-notice', component: LegalNotice },
     { path: 'privacy', component: Privacy },

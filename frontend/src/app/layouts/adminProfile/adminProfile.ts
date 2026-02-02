@@ -4,12 +4,12 @@ import { CommonModule } from '@angular/common';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-admin-profile',
   imports: [CommonModule],
-  templateUrl: './profile.html',
-  styleUrls: ['./profile.css']
+  templateUrl: './adminProfile.html',
+  styleUrls: ['./adminProfile.css']
 })
-export class Profile implements OnInit {
+export class AdminProfile implements OnInit {
   providers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
