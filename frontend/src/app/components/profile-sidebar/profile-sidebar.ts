@@ -19,27 +19,41 @@ export class ProfileSidebar implements OnInit {
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
-      console.log(user);
       this.currentUser = user;
+
+      if (this.currentUser && this.currentUser.role === 'admin') {
+        this.apiService.getProviders().subscribe({
+          next: (res) => {
+            this.totalProviders = res.data.length;
+          },
+          error: (err) => {
+            console.error('Error fetching providers count:', err);
+          }
+        });
+        this.apiService.getAllFurniture().subscribe({
+          next: (res) => {
+            this.totalFurniture = res.data.length;
+          },
+          error: (err) => {
+            console.error('Error fetching furniture count:', err);
+          }
+        });
+      }
+      else if (this.currentUser && this.currentUser.role === 'provider') {
+        this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe({
+          next: (res) => {
+            this.totalFurniture = res.data.length;
+          },
+          error: (err) => {
+            console.error('Error fetching furniture count:', err);
+          }
+        });
+
+      }
+
     });
 
-    this.apiService.getProviders().subscribe({
-      next: (res) => {
-        this.totalProviders = res.data.length;
-      },
-      error: (err) => {
-        console.error('Error fetching providers count:', err);
-      }
-    });
 
-    this.apiService.getAllFurniture().subscribe({
-      next: (res) => {
-        this.totalFurniture = res.data.length;
-      },
-      error: (err) => {
-        console.error('Error fetching furniture count:', err);
-      }
-    });
   }
 
   logout() {

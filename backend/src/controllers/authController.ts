@@ -22,15 +22,19 @@ export class AuthController {
       // validate
       validateEmail(email);
       const user = await this.authService.getUserByEmail(email);
-      if (!user) {throw new ApiError("NOT_FOUND", "User not found");}
-      if (!user.enabled) {throw new ApiError("FORBIDDEN","Account is not enabled" );}
+      if (!user) { throw new ApiError("NOT_FOUND", "User not found"); }
+      if (!user.enabled) { throw new ApiError("FORBIDDEN", "Account is not enabled"); }
 
       // Check password
       await validateCorrectPassword(password, user.password);
 
       // Token JWT
       const token = jwt.sign(
-        { emailuser: email, role: user.role },
+        {
+          id: user.id,
+          emailuser: email,
+          role: user.role
+        },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: '24h' });
 
@@ -44,7 +48,7 @@ export class AuthController {
 
       // Response
       res.status(200).json({ message: 'Login successful', data: { email } });
-      
+
       // Error
     } catch (error) {
       if (error instanceof ApiError) next(error);
@@ -54,7 +58,7 @@ export class AuthController {
 
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-       // required fields
+      // required fields
       const requiredFields = [
         'email',
         'password',
@@ -74,7 +78,7 @@ export class AuthController {
         next(new ApiError('CONFLICT', 'User already exists with this email'));
         return;
       }
-      
+
       // hash password
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -100,9 +104,9 @@ export class AuthController {
 
       // error
     } catch (error) {
-        console.error('Registration error:', error);
-        if (error instanceof ApiError) { return next(error); }
-        next(new ApiError('INTERNAL_SERVER', 'Failed to register provider'));
+      console.error('Registration error:', error);
+      if (error instanceof ApiError) { return next(error); }
+      next(new ApiError('INTERNAL_SERVER', 'Failed to register provider'));
     }
   };
 
@@ -145,8 +149,9 @@ export class AuthController {
 
         // Generate JWT token (same format as traditional login)
         const token = jwt.sign({
+          id: user.id,
           emailuser: user.email,
-          role: 'provider'
+          role: user.role || 'provider'
         }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
 
         // Set HttpOnly cookie

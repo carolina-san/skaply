@@ -20,7 +20,8 @@
 
     </div>
     <div class="flex flex-row gap-2 mb-3 w-full">
-        <div class="mt-6 w-full bg-white/10 p-4 rounded-xl flex flex-col items-left border border-white/10">
+        <div *ngIf="currentUser?.role === 'admin'"
+            class="mt-6 w-full bg-white/10 p-4 rounded-xl flex flex-col items-left border border-white/10">
             <h4 class="text-gray-300 text-sm font-medium uppercase  mb-1">Proveedores</h4>
             <p class="text-3xl font-bold text-azul-claro">{{ totalProviders }}</p>
         </div>

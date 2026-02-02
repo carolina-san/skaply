@@ -79,6 +79,7 @@ export class FurnitureController {
     }
   }
 
+
   getFurnitureAssembly = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const furnitureId = parseInt(req.params.id || '0');
@@ -158,7 +159,7 @@ export class FurnitureController {
   updateFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-            return next(new ApiError('UNAUTHORIZED', 'No se ha proporcionado autenticación'));
+        return next(new ApiError('UNAUTHORIZED', 'No se ha proporcionado autenticación'));
       }
       const furnitureId = Number(req.params.id);
       if (!furnitureId || isNaN(furnitureId)) {

@@ -36,7 +36,7 @@ export class ApiService {
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
-  
+
   getColorByName(name: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors/name/${name}`);
   }
@@ -48,6 +48,8 @@ export class ApiService {
   getProviders(): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     return this.http.get(`${this.apiUrl}/private/providers`);
   }
+
+
 
   // tambien existe register()
   // el front no debería de enviar datos hardcodeados al back

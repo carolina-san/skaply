@@ -7,6 +7,7 @@ export interface User {
   role: string;
   company_name?: string;
   loginMethod?: string;
+  id: number;
 }
 
 @Injectable({

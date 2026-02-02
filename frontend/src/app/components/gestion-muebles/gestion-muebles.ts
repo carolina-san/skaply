@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
+import { AuthService, User } from '../../services/auth.service';
 
 @Component({
   selector: 'app-gestion-muebles',
@@ -13,22 +14,29 @@ export class GestionMuebles {
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
+  currentUser: User | null = null;
 
-  constructor(private apiService: ApiService) {
-    this.fetchFurniture();
+  constructor(private apiService: ApiService, private authService: AuthService) {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      this.fetchFurniture();
+    });
   }
 
   fetchFurniture() {
-    this.apiService.getAllFurniture().subscribe(
-      (response) => {
-        console.log('Furniture fetched successfully:', response);
-        this.furniture = response.data || [];
-        this.totalItems = this.furniture.length;
-      },
-      (error) => {
-        console.error('Error fetching furniture:', error);
-      }
-    );
+    if (this.currentUser) {
+      this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe(
+        (response) => {
+          console.log('Furniture fetched successfully:', response);
+          this.furniture = response.data || [];
+          this.totalItems = this.furniture.length;
+        },
+        (error) => {
+          console.error('Error fetching furniture:', error);
+        }
+      );
+    }
+
   }
 
   get paginatedFurniture() {
