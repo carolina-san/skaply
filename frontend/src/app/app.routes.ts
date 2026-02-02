@@ -10,6 +10,7 @@ import { AdminProfile} from './layouts/adminProfile/adminProfile';
 import { Cookies } from './layouts/legal/cookies';
 import { LegalNotice } from './layouts/legal/legal-notice';
 import { Privacy } from './layouts/legal/privacy';
+import { ProviderProfile } from './layouts/provider-profile/provider-profile';
 
 export const routes: Routes = [
     { path: '', component: Landing },
@@ -20,6 +21,7 @@ export const routes: Routes = [
     { path: 'login', component: Login },
     { path: 'login/success', component: Login }, // Maneja el callback de Google OAuth
     { path: 'admin', component: AdminProfile },
+    { path: 'provider', component: ProviderProfile },
     { path: 'cookies', component: Cookies },
     { path: 'legal-notice', component: LegalNotice },
     { path: 'privacy', component: Privacy },
