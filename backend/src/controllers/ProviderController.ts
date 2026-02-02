@@ -119,6 +119,25 @@ export class ProviderController {
       }
   };
 
+//   makeProviderVisible = async (req: Request,res: Response,next: NextFunction): Promise<void> => {
+//   try {
+//     // validation
+//     const providerId = validateParameterId(req.params.id || '');
+//     await validateProvider(this.providerService, providerId, {checkEnabled: true});
+//     // fecth
+//     const result = await this.providerService.setProviderVisible(providerId, true);
+//     // response
+//     res.status(200).json({
+//       message: 'Provider is now visible',
+//       data: result
+//     });
+//     // error
+//   } catch (error) {
+//     if (error instanceof ApiError) return next(error);
+//     next(new ApiError('INTERNAL_SERVER', 'Failed to make provider visible'));
+//   }
+// };
+
   approveRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // validation
