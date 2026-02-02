@@ -1,4 +1,25 @@
 <main class="w-full h-screen flex flex-row bg-marron-oscuro">
-    <app-provider-panel class="w-[25%]"></app-provider-panel>
-    <app-gestion-muebles class="w-[75%]"></app-gestion-muebles>
+    <app-provider-panel class="w-[20%]"></app-provider-panel>
+    <div class="w-[80%] flex flex-col">
+      <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige">
+        <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
+          [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
+          class="hover:opacity-100 transition pb-1">
+          Estadísiticas
+        </button>
+        <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
+          [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
+          class="hover:opacity-100 transition pb-1">
+            Muebles
+        </button>
+        <button (click)="setActiveTab('incidencias')" class="relative opacity-40 hover:opacity-100 transition">
+          Incidencias
+          <span
+            class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
+            2
+          </span>
+        </button>
+      </div>
+      <app-gestion-muebles class="flex-1"></app-gestion-muebles>
+    </div>
 </main>
