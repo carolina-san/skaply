@@ -225,6 +225,7 @@ export class FurnitureController {
     }
   };
 
+  // repasar
   deleteFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');

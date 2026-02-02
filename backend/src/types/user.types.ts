@@ -4,7 +4,7 @@ export interface User {
   name: string;
   password?: string; // Optional for responses (should be excluded)
   role?: UserRole;
-  status?: UserStatus;
+  status?: RegistrationStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,7 +48,7 @@ export enum UserRole {
   PROV = 'provider'
 }
 
-export enum UserStatus {
+export enum RegistrationStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
   REJECTED = 'rejected'

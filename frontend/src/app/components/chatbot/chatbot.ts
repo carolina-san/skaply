@@ -163,14 +163,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     const rich = m.payload?.fields?.richContent?.listValue?.values;
                     if (rich) {
                         this.renderRichContent(rich);
-                        if(m.payload?.fields?.message?.stringValue){
+                        if (m.payload?.fields?.message?.stringValue) {
                             this.speakMessage(m.payload.fields.message.stringValue);
                         }
                         handled = true;
                     }
                     const payload = m.payload;
                     if (payload?.fields?.redirect) {
-
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
                                 window.location.href = "/register";
@@ -179,6 +178,46 @@ export class Chatbot implements OnInit, AfterViewChecked {
                             }
                         }, 4000);
                         handled = true;
+                    }
+                    else if (payload?.fields?.action?.stringValue === "filter.by.category") {
+                        const category = payload.fields.category?.stringValue;
+
+                        if (category) {
+                            this.api.getCategoryByName(category).subscribe({
+                                next: (categoryResponse) => {
+                                    const categoryData = categoryResponse.data || [];
+
+                                    if (categoryData.length > 0) {
+                                        this.filterSharingService.clearSelectedCategory();
+                                        this.filterSharingService.clearSelectedColors();
+                                        this.filterSharingService.setSelectedCategory(categoryData[0].id);
+                                        this.router.navigate(['/catalogo']);
+                                    }
+                                },
+                                error: (error) => {
+                                    console.error('Error HTTP al obtener categoría:', error);
+                                }
+                            });
+                            handled = true;
+                        }
+                    }
+                    else if (payload?.fields?.action?.stringValue === "filter.by.color") {
+                        const color = payload.fields.color?.stringValue;
+                        if (color) {
+                            this.api.getColorByName(color).subscribe({
+                                next: (colorResponse) => {
+                                    const colorData = colorResponse.data || [];
+                                    if (colorData.length > 0) {
+                                        this.filterSharingService.clearSelectedCategory();
+                                        this.filterSharingService.clearSelectedColors();
+                                        this.filterSharingService.setSelectedColor(colorData[0].id);
+                                        this.router.navigate(['/catalogo']);
+                                    }
+                                },
+                                error: (error) => { console.error('Error:', error); }
+                            });
+                            handled = true;
+                        }
                     }
                 }
 
@@ -194,19 +233,16 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     renderRichContent(groups: any[]) {
-        // Detectar si es el formato directo (array de objetos con type, title, etc.)
-        // o el formato Dialogflow (nested listValue.values)
-        const isDirectFormat = groups.length > 0 && 
-                               (groups[0].type !== undefined || 
-                                groups[0].title !== undefined);
+
+        const isDirectFormat = groups.length > 0 &&
+            (groups[0].type !== undefined ||
+                groups[0].title !== undefined);
 
         if (isDirectFormat) {
-            // Procesar formato directo
             this.processDirectRichContent(groups);
             return;
         }
 
-        // Procesar formato Dialogflow original
         groups.forEach(group => {
             const list = group.listValue?.values || [];
             const items: any[] = [];
@@ -309,27 +345,43 @@ export class Chatbot implements OnInit, AfterViewChecked {
     }
 
     handleChipClick(text: string) {
-        // Obtener todas las categorías para verificar si el chip es una categoría
+        // Enviar el mensaje siempre
+        this.newMessage = text;
+        this.sendMessage();
+
+        // Obtener categorías y colores para verificar si el chip es una categoría o color
         this.api.getCategories().subscribe({
-            next: (response) => {
-                const categories = response.data || [];
+            next: (categoriesResponse) => {
+                const categories = categoriesResponse.data || [];
                 const selectedCategory = categories.find((c: any) => c.name === text);
-                
-                if (selectedCategory) {
-                    // Es una categoría, navegar al catálogo con el filtro
-                    this.filterSharingService.setSelectedCategory(selectedCategory.id);
-                    this.router.navigate(['/catalogo']);
-                } else {
-                    // No es una categoría, procesar como mensaje normal
-                    this.newMessage = text;
-                    this.sendMessage();
-                }
+
+                // if (selectedCategory) {
+                //     // Es una categoría, navegar al catálogo con el filtro
+                //     this.filterSharingService.setSelectedCategory(selectedCategory.id);
+                //     this.router.navigate(['/catalogo']);
+                //     return;
+                // }
+
+                this.api.getColors().subscribe({
+                    next: (colorsResponse) => {
+                        const colors = colorsResponse.data || [];
+                        const selectedColor = colors.find((c: any) => c.name === text);
+
+                        // if (selectedColor) {
+                        //     // Es un color, navegar al catálogo con el filtro de color
+                        //     this.filterSharingService.setSelectedColor(selectedColor.id);
+                        //     this.router.navigate(['/catalogo']);
+                        // }
+                    },
+                    error: (error) => {
+                        // Si hay error, solo continuar (el mensaje ya fue enviado)
+                        console.error('Error al obtener colores:', error);
+                    }
+                });
             },
             error: (error) => {
-                // Si hay error, procesar como mensaje normal
+                // Si hay error, solo continuar (el mensaje ya fue enviado)
                 console.error('Error al obtener categorías:', error);
-                this.newMessage = text;
-                this.sendMessage();
             }
         });
     }
@@ -402,7 +454,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         const rich = m.payload?.fields?.richContent?.listValue?.values;
                         if (rich) {
                             this.renderRichContent(rich);
-                            if(m.payload?.fields?.message?.stringValue){
+                            if (m.payload?.fields?.message?.stringValue) {
                                 this.speakMessage(m.payload.fields.message.stringValue);
                             }
                             handled = true;
@@ -442,7 +494,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         const rich = m.payload?.fields?.richContent?.listValue?.values;
                         if (rich) {
                             this.renderRichContent(rich);
-                            if(m.payload?.fields?.message?.stringValue){
+                            if (m.payload?.fields?.message?.stringValue) {
                                 this.speakMessage(m.payload.fields.message.stringValue);
                             }
                         }

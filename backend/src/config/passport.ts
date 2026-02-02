@@ -12,22 +12,28 @@ passport.use(new GoogleStrategy({
   try {
     const email = profile.emails[0].value;
     const googleId = profile.id;
-    
-    // Verificar si el usuario ya existe por email
-    const existingUser = await authService.checkPassword(email);
-    
-    if (existingUser.rows.length > 0) {
-      // Usuario existe, actualizar googleId si no lo tiene
-      await authService.updateGoogleId(email, googleId);
+
+    const existingUser = await authService.getUserByEmail(email); 
+
+    if (existingUser) {
+      if (!existingUser.google_id) { 
+        // no sé si se tiene que actualizar incluso si ya tiene el google id
+        await authService.updateGoogleId(email, googleId);
+      }
+
+      // creo que con esto se hace el token, así que deberia de estar la misma info que siempre hay en el token (que creo que es solo email y rol?)
       return done(null, {
-        email,
-        id: existingUser.rows[0].id,
-        company_name: existingUser.rows[0].company_name,
+        id: existingUser.id,
+        email: existingUser.email,
+        company_name: existingUser.company_name,
+        role: existingUser.role,
         loginMethod: 'google'
       });
     }
+
+    // ---- De aqui para abajo está igual ----
     
-    // Usuario no existe, crear uno nuevo con datos básicos de Google
+    // Usuario no existe, crear uno nuevo con datos básicos de Google ??
     const newUser = {
       email,
       password: '', // No password for Google users
@@ -53,22 +59,15 @@ passport.use(new GoogleStrategy({
   }
 }));
 
+
 // Serialization for session (aunque usaremos JWT)
 passport.serializeUser((user: any, done) => {
   done(null, user.email);
 });
 
 passport.deserializeUser(async (email: string, done) => {
-  try {
-    const user = await authService.checkPassword(email);
-    if (user.rows.length > 0) {
-      done(null, user.rows[0]);
-    } else {
-      done(null, false);
-    }
-  } catch (error) {
-    done(error, null);
-  }
+  const user = await authService.getUserByEmail(email);
+  done(null, user || false);
 });
 
 export default passport;

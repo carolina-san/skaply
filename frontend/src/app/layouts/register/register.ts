@@ -1,3 +1,8 @@
+/* DUDAS
+  - Un admin se puede registrar?
+  - Un proveedor se puede registrar con google? Esto tiene un inconveniente: no puede rellenar los campos obligatorios (cif, direccion fiscal, telefono), por tanto el admin no puede aprobar su solicitud de registro.
+*/
+
 import { Component } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -60,7 +65,7 @@ export class Register {
       telephone: this.form.value.telephone
     };
 
-    this.api.register(payload).subscribe({
+    this.api.register(payload).subscribe({ 
       next: (response) => {
         this.loading = false;
         this.success = 'Registro exitoso. Redirigiendo al login...';

@@ -29,11 +29,19 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/categories`);
   }
 
+  getCategoryByName(name: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories/name/${name}`);
+  }
+
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
+  
+  getColorByName(name: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/colors/name/${name}`);
+  }
 
-  getActiveProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
+  getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
@@ -41,11 +49,15 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/private/providers`);
   }
 
+  // tambien existe register()
+  // el front no debería de enviar datos hardcodeados al back
   registerProvider(data: any): Observable<any> {
     const payload = {
       ...data,
       role: 'provider',
-      status: 'pending'
+      registration_status: 'pending',
+      enabled: false,
+      visible: false,
     };
     return this.http.post(`${this.apiUrl}/providers`, payload);
   }
@@ -83,7 +95,7 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/login`, { email, password });
   }
 
-  register(userData: any): Observable<any> {
+  register(userData: any): Observable<any> { // tambien existe registerProvider()
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 

@@ -4,6 +4,7 @@ import { ToolService } from '@/services/toolService';
 import { IssueService } from '@/services/issueService';
 import { FurnitureService } from '@/services/furnitureService';
 import { CategoryService } from '@/services/categoryService';
+import { ColorService } from './colorService';
 import { Issue } from '@/types';
 import { struct } from 'pb-util';
 
@@ -15,19 +16,22 @@ export class ChatbotService {
   private sessionClient: dialogflow.SessionsClient;
   private categoryService: CategoryService;
   private projectId: string;
+  private colorService: ColorService;
 
   constructor(
     providerService?: ProviderService,
     toolService?: ToolService,
     issueService?: IssueService,
     furnitureService?: FurnitureService,
-    categoryService?: CategoryService
+    categoryService?: CategoryService,
+    colorService?: ColorService
   ) {
     this.providerService = providerService || new ProviderService();
     this.toolService = toolService || new ToolService();
     this.issueService = issueService || new IssueService();
     this.furnitureService = furnitureService || new FurnitureService();
     this.categoryService = categoryService || new CategoryService();
+    this.colorService = colorService || new ColorService();
     this.projectId = 'allen-hmmc';
     this.sessionClient = new dialogflow.SessionsClient({
       keyFilename: 'dialogflow.json'
@@ -470,6 +474,35 @@ export class ChatbotService {
       fulfillmentText: `Has indicado una referencia. ¿Qué quieres hacer con ella?`
     };
   }
+  async getCategoryFilters(): Promise<any> {
+    const categories = await this.categoryService.getAllCategories();
+
+    const richContent = [
+      [
+
+        {
+          options: categories.rows.map((c: any) => ({
+            text: c.name
+          })),
+          type: 'chips'
+        }
+      ]
+    ];
+
+    return {
+      fulfillmentMessages: [
+        {
+          text: { text: ['¿Qué tipo de mueble te interesa?'] }
+        },
+        {
+          payload: {
+            richContent: richContent
+          }
+        }
+      ]
+    };
+  }
+
   async getCategories(): Promise<any> {
     const categories = await this.categoryService.getAllCategories();
 
@@ -497,5 +530,112 @@ export class ChatbotService {
         }
       ]
     };
+  }
+  async getColorFilters(): Promise<any> {
+    const colors = await this.colorService.getAllColorsFoundInFurniture();
+    const richContent = [
+      [
+        {
+          options: colors.rows.map((c: any) => ({
+            text: c.name
+          })),
+          type: 'chips'
+        }
+      ]
+    ];
+    return {
+      fulfillmentMessages: [
+        {
+          text: { text: ['¿Qué color de mueble prefieres?'] }
+        },
+        {
+          payload: {
+            richContent: richContent
+          }
+        }
+      ]
+    };
+  }
+
+  async filterByColor(colorName: string): Promise<any> {
+    try {
+      const colorResult = await this.colorService.getColorByName(colorName);
+
+      if (colorResult.rows.length > 0) {
+        return {
+          fulfillmentMessages: [
+            {
+              payload: {
+                action: "filter.by.color",
+                color: colorName,
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      text: [
+                        `Buscando muebles de color ${colorName}`
+                      ]
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              text: { text: ["¡Catálogo filtrado!"] }
+            }
+          ]
+        };
+      } else {
+        return {
+          fulfillmentText: `Lo siento, no encontré muebles de color ${colorName}.`
+        };
+      }
+    } catch (error) {
+      console.error("Error in filterByColor:", error);
+      return {
+        fulfillmentText: "Hubo un error al buscar el color."
+      };
+    }
+  }
+
+  async filterByCategory(categoryName: string): Promise<any> {
+    try {
+      const categoryResult = await this.categoryService.getCategoryByName(categoryName);
+
+      if (categoryResult.rows.length > 0) {
+        return {
+          fulfillmentMessages: [
+            {
+              payload: {
+                action: "filter.by.category",
+                category: categoryName,
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      text: [
+                        `Buscando muebles en la categoría ${categoryName}`
+                      ]
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              text: { text: ["¡Catálogo filtrado!"] }
+            }
+          ]
+        };
+      } else {
+        return {
+          fulfillmentText: `Lo siento, no encontré muebles de categoría ${categoryName}.`
+        };
+      }
+    } catch (error) {
+      console.error("Error in filterByCategory:", error);
+      return {
+        fulfillmentText: "Hubo un error al buscar la categoría."
+      };
+    }
   }
 }

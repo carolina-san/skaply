@@ -1,55 +1,56 @@
 import pool from '@config/database';
 import { UserRole } from '../types/user.types';
-import { UserStatus } from '@/types/user.types';
+import { RegistrationStatus } from '@/types/user.types';
 import { ApiError } from '@/utils/ApiError';
+import { NextFunction } from 'express';
 
 export class ProviderService {
 
   // PUBLIC ROUTES
 
-  async getActiveProviders() {
+  async getVisibleProviders() {
     try {
       const result = await pool.query(
         `
         SELECT id, email, name, company_name, telephone, image_url
         FROM "User"
-        WHERE role = $1 AND active = $2 AND status = $3
+        WHERE role = $1 AND visible = $2
         ORDER BY company_name
         `,
-        [UserRole.PROV, true, UserStatus.APPROVED] 
+        [UserRole.PROV, true] 
       );
-      return result;
+      return result.rows;
     } catch (error) {
-      console.error('Error fetching active providers:', error);
-      throw new Error('Unable to fetch active providers');
+      console.error('Error fetching enabled providers:', error);
+      throw new Error('Unable to fetch enabled providers');
     }
   }
-  
-  async getActiveProvider(id: number) {
+
+  async getVisibleProviderById(id: number) {
     try {
       const result = await pool.query(`
         SELECT id, email, name, company_name, telephone, image_url 
         FROM public."User" 
-        WHERE role = $1 AND id = $2 AND active = $3 AND status = $4`, 
-        [UserRole.PROV, id, true, UserStatus.APPROVED]);
-      return result;
+        WHERE role = $1 AND id = $2 AND visible = $3`, 
+        [UserRole.PROV, id, true]);
+      return result.rows[0] || null;
     } catch (error) {
-      throw new Error('Unable to fetch the active provider with this id');
+      throw new Error('Unable to fetch the enabled provider with this id');
     }
   }
 
-  // PRIVATE ROUTES
+  // PRIVATE ROUTES (ADMIN ONLY)
   
   async getProviders() {
     try {
       const result = await pool.query(
-        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, status, fecha_alta 
+        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, enabled, visible, registration_status, created_at, updated_at, approved_at, disabled_at, enabled_at
          FROM public."User" 
          WHERE role = $1
          ORDER BY company_name`,
         [UserRole.PROV]
       );
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch providers');
     }
@@ -59,13 +60,13 @@ export class ProviderService {
     try {
       const result = await pool.query(
         `
-        SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, active, status, fecha_alta
+        SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, enabled, visible, registration_status, created_at, updated_at, approved_at, disabled_at, enabled_at
         FROM "User"
         WHERE role = $1 AND id = $2
         `,
         [UserRole.PROV, id]
       );
-      return result;
+      return result.rows[0] || null;
     } catch (error) {
       throw new Error('Unable to fetch provider by id');
     }
@@ -76,15 +77,15 @@ export class ProviderService {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET active = true
-        WHERE id = $1
-          AND role = $2
-          AND active = $3
-        RETURNING id, company_name, active
+        SET enabled = $1
+        WHERE id = $2
+          AND role = $3
+          AND registration_status = $4
+        RETURNING id, company_name, enabled
         `,
-        [id, UserRole.PROV, false]
+        [true, id, UserRole.PROV, RegistrationStatus.APPROVED]
       );
-      return result;
+      return result.rows[0] || null;
     } catch (error) {
       console.error('Error enabling provider:', error);
       throw new Error('Unable to enable provider');
@@ -96,59 +97,71 @@ export class ProviderService {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET active = false
+        SET enabled = false
         WHERE id = $1
           AND role = $2
-          AND active = $3
-        RETURNING id, company_name, active
+        RETURNING id, company_name, enabled
         `,
-        [id, UserRole.PROV, true]
+        [id, UserRole.PROV]
       );
-      return result;
+      return result.rows[0] || null;
     } catch (error) {
       throw new Error('Unable to disable provider');
     }
   }
 
-  async approveProvider(providerId: number) { 
+  async approveRegistration(providerId: number) { 
     try {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET active = $1,
-            status = $2
-        WHERE id = $3
-          AND role = $4
-          AND status != $2
-        RETURNING id, email, company_name, active, status
+        SET registration_status = $1
+        WHERE id = $2
+          AND role = $3
+          AND registration_status != $4
+        RETURNING id, email, company_name, enabled, registration_status
         `,
-        [true, UserStatus.APPROVED, providerId, UserRole.PROV]
+        [RegistrationStatus.APPROVED, providerId, UserRole.PROV, RegistrationStatus.REJECTED]
       );
-      return result;
+      return result.rows[0] || null;
     } catch (error) {
       throw new Error('Unable to approve provider');
     }
   }
-
-  async rejectProvider(providerId: number) {
+  
+  async rejectRegistration(providerId: number) {
     try {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET active = $1,
-            status = $2
-        WHERE id = $3
-          AND role = $4
-          AND status != $2
-        RETURNING id, email, company_name, active, status
+        SET registration_status = $1
+        WHERE id = $2
+          AND role = $3
+          AND registration_status != $4
+        RETURNING id, email, company_name, enabled, registration_status
         `,
-        [false, UserStatus.REJECTED, providerId, UserRole.PROV]
+        [RegistrationStatus.REJECTED, providerId, UserRole.PROV, RegistrationStatus.APPROVED]
       );
-      return result;
+      return result.rows[0] || null;
     } catch (error) {
-      console.error('Error rejecting provider:', error);
       throw new Error('Unable to reject provider');
     }
+  }
+
+  async updateProvider(providerId: number, data: Record<string, any>) {
+    const fields = Object.keys(data);
+    const values = Object.values(data);
+    const setClause = fields
+      .map((field, index) => `"${field}" = $${index + 1}`)
+      .join(', ');
+    const query = `
+      UPDATE "User"
+      SET ${setClause}
+      WHERE id = $${fields.length + 1}
+        AND role = $${fields.length + 2}
+      RETURNING id, email, company_name, cif, telephone, tax_address
+    `;
+    return (await pool.query(query, [...values, providerId, UserRole.PROV])).rows[0];
   }
 
   async deleteProvider(id: number) {
@@ -163,19 +176,20 @@ export class ProviderService {
     }
   }
 
-  // CHATBOT (PUBLIC)
+  // CHATBOT (PUBLIC) (revisar enabled/visible etc)
 
   async getAllProvidersChatbot() { // ¿por qué no se usa getActiveProviders()?
     try {
-      const result = await pool.query(`SELECT id, company_name, email, cif, tax_address, name,image_url
-                                      FROM public."User" where role = 'provider'`);
+      const result = await pool.query(`
+        SELECT id, company_name, email, cif, tax_address, name,image_url
+        FROM public."User" where role = 'provider'`);
       return result;
     } catch (error) {
       throw new Error('Unable to fetch providers for chatbot')
     }
   }
 
-  async getProviderByName(name: string) { // ¿añadir restricción active = true y status = pending?
+  async getProviderByName(name: string) {
     try {
       const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
       return result;
@@ -184,27 +198,41 @@ export class ProviderService {
     }
   }
   
-  // OTHER ROUTES
-  // ¿es necesario chequear active y status?
+  // OTHER ROUTES (revisar)
   
+  // solo se usa en furntireController (eliminar eventualmente)
   async checkProviderRoleById(providerId: number): Promise<boolean> {
     const result = await pool.query(
       `SELECT role FROM "User" WHERE id = $1`,
       [providerId]
     );
-
     if (result.rows.length === 0) {
       return false; // no existe el usuario
     }
-
     return result.rows[0].role === 'provider';
+  }
+
+  // que sustituya a checkProviderRoleById
+  async checkProviderById(providerId: number) {
+    try {
+      const result = await pool.query(
+        `SELECT role, registration_status, enabled, visible FROM "User" WHERE id = $1`,
+        [providerId]
+      );
+      if (result.rows.length === 0) {
+        return null;
+      }
+      return result.rows[0];
+    } catch (error) {
+      throw new Error('Unable to check provider by id');
+    }
   }
 
   async getProviderIdByEmail(email: string): Promise<number | null> {
     try {
       const result = await pool.query(
-        `SELECT id FROM "User" WHERE email = $1`,
-        [email]
+        `SELECT id FROM "User" WHERE email = $1 AND role = $2`,
+        [email, UserRole.PROV]
       );
 
       if (result.rows.length === 0) return null;

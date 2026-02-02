@@ -15,7 +15,4 @@ router.get('/me', authMiddleware, authController.me);
 router.get('/google', authController.googleAuth);
 router.get('/google/callback', authController.googleCallback);
 
-// PARA BORRAR
-// router.post('/register-admin-test', authController.registerAdminTest);
-
 export default router;

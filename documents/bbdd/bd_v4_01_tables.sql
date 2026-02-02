@@ -24,21 +24,61 @@ CREATE TYPE user_status AS ENUM ('pending', 'approved', 'rejected');
 -- ============================
 -- TABLE: User
 -- ============================
+
 CREATE TABLE "User" (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(100),
-    cif VARCHAR(20),
-    company_name VARCHAR(100),
+    cif VARCHAR(20) UNIQUE,
+    company_name VARCHAR(100) NULL,
     telephone VARCHAR(15),
-    tax_address VARCHAR(200),
+    tax_address VARCHAR(200) NULL,
+
     role user_role NOT NULL,
+
+    registration_status user_status NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    visible BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP NULL,
+    disabled_at TIMESTAMP NULL,
+    enabled_at TIMESTAMP NULL,
+
     image_url TEXT,
-    active BOOLEAN DEFAULT TRUE,
-    status user_status,
-    fecha_alta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    password VARCHAR(200), -- Nullable for Google OAuth users
-    google_id VARCHAR(255) UNIQUE -- Google OAuth ID
+    password VARCHAR(200),
+    google_id VARCHAR(255) UNIQUE,
+
+    -- Solo providers tienen registration_status
+    CONSTRAINT registration_status_only_for_providers
+    CHECK (
+        (role = 'provider' AND registration_status IS NOT NULL)
+        OR
+        (role != 'provider' AND registration_status IS NULL)
+    ),
+
+    -- Enabled solo si approved
+    CONSTRAINT enabled_only_for_approved_providers
+    CHECK (
+        role != 'provider'
+        OR
+        (registration_status = 'approved' AND enabled IN (true, false))
+        OR
+        (registration_status IN ('pending', 'rejected') AND enabled = false)
+    ),
+
+    -- Visible solo si approved
+    CONSTRAINT visible_only_when_approved_and_enabled
+    CHECK (
+        visible = false
+        OR
+        (
+            role = 'provider'
+            AND registration_status = 'approved'
+            AND enabled = true
+        )
+    )
 );
 
 -- ============================
