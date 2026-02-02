@@ -17,6 +17,7 @@ export class Header {
   showBackButton = true;
   currentRoute: string = '';
   scrolled = false;
+  private navigationHistory: string[] = [];
 
   constructor(
     private router: Router,
@@ -24,8 +25,11 @@ export class Header {
     private apiService: ApiService,
     private authService: AuthService
   ) {
-    this.router.events.subscribe(() => {
-      this.currentRoute = this.router.url;
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentRoute = this.router.url;
+        this.trackNavigation();
+      }
     });
   }
 
@@ -35,6 +39,20 @@ export class Header {
       this.scrolled = window.scrollY > 30;
     });
   }
+
+  private trackNavigation(): void {
+    // Evitar agregar duplicados consecutivos
+    if (this.navigationHistory[this.navigationHistory.length - 2] !== this.currentRoute) {
+      this.navigationHistory.push(this.currentRoute);
+    }
+  }
+
+  canGoBack(): boolean {
+    // Solo permitir ir atrás si hay más de un elemento en el historial
+    // (el primero es la página actual)
+    return this.navigationHistory.length > 1 && !this.isHome;
+  }
+
   goBack(): void {
 
     this.finMontaje(); // Elimina el contexto del mueble (comprobar si sale de un montaje)

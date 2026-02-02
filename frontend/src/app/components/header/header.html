@@ -6,7 +6,7 @@
     'header-compact': scrolled
   }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
-  <button *ngIf="!isHome" (click)="goBack()"
+  <button *ngIf="canGoBack()" (click)="goBack()"
     class="absolute w-6 h-6 left-5 md:left-10 text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
     <span class="material-symbols-rounded">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
