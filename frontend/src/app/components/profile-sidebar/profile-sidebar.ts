@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { AuthService, User } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-admin-panel',
+  selector: 'app-profile-sidebar',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './admin-panel.html',
-  styleUrl: './admin-panel.css'
+  templateUrl: './profile-sidebar.html',
+  styleUrl: './profile-sidebar.css'
 })
-export class AdminPanel implements OnInit {
+export class ProfileSidebar implements OnInit {
   currentUser: User | null = null;
 
   constructor(private authService: AuthService) { }

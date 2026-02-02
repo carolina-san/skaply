@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { SeoService } from '../../services/seo.service';
-import { AdminPanel } from '../../components/admin-panel/admin-panel';
+import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
 import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, AdminPanel, GestionProveedores],
+  imports: [CommonModule, ProfileSidebar, GestionProveedores],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
