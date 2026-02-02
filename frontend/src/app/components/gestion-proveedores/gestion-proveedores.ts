@@ -1,31 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
-import { SeoService } from '../../services/seo.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
-  selector: 'app-admin-profile',
+  selector: 'app-gestion-proveedores',
+  standalone: true,
   imports: [CommonModule],
-  templateUrl: './adminProfile.html',
-  styleUrls: ['./adminProfile.css']
+  templateUrl: './gestion-proveedores.html',
+  styleUrl: './gestion-proveedores.css'
 })
-export class AdminProfile implements OnInit {
+export class GestionProveedores implements OnInit {
   providers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
 
-  constructor(private apiService: ApiService, private seo: SeoService) {
-    this.fetchProviders();
-  }
+  constructor(private apiService: ApiService) { }
 
   ngOnInit() {
-    this.seo.setSeo({
-      title: `Mi Perfil - Skäply`,
-      description: `Gestiona tu perfil y visualiza los proveedores registrados en tu cuenta de Skäply.`,
-      canonical: `https://skaply.ovh/perfil`,
-      index: false
-    });
+    this.fetchProviders();
   }
 
   fetchProviders() {
@@ -33,6 +26,7 @@ export class AdminProfile implements OnInit {
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
+        this.totalItems = this.providers.length; // Assuming full list is returned, adjust if backend pagination
       },
       (error) => {
         console.error('Error fetching providers:', error);

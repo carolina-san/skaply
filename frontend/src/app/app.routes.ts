@@ -6,7 +6,7 @@ import { Landing } from './layouts/landing/landing';
 import { Motor } from './layouts/motor/motor';
 import { Register } from './layouts/register/register';
 import { Login } from './layouts/login/login';
-import { AdminProfile} from './layouts/adminProfile/adminProfile';
+import { AdminProfile} from './layouts/admin-profile/admin-profile';
 import { Cookies } from './layouts/legal/cookies';
 import { LegalNotice } from './layouts/legal/legal-notice';
 import { Privacy } from './layouts/legal/privacy';
