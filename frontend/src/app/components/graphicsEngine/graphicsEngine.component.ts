@@ -26,6 +26,7 @@ import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
   imports: [CommonModule, Modal, FormsModule],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
+  styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
