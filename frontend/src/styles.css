@@ -2,20 +2,23 @@
 
 
 
-@font-face{
+@font-face {
   font-family: 'Poppins';
   src: url('assets/fonts/Poppins-Bold.ttf') format('truetype');
 }
+
 @font-face {
   font-family: 'Inter';
   src: url('assets/fonts/inter.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
 }
-html{
-    min-height: 100vh;
-    scroll-behavior: smooth;
+
+html {
+  min-height: 100vh;
+  scroll-behavior: smooth;
 }
+
 body {
   margin: 0;
   /*OPCIÓN 1: fondo marron y sombra marron oscuro*/
@@ -39,8 +42,8 @@ section {
   font-weight: 500;
 }
 
-button{
-  cursor:pointer;
+button {
+  cursor: pointer;
 }
 
 @theme {
@@ -50,8 +53,8 @@ button{
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  --color-beige:#dcd6d5;
-  
+  --color-beige: #dcd6d5;
+
   /* Skaply Interactive Assembly Colors */
   --color-skaply-ui-dark: #1e293b;
   --color-skaply-accent: #00d4ff;
@@ -69,7 +72,7 @@ button{
    =================================
 */
 .fondo {
-    @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
+  @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
 }
 
 /*Clases de botones*/
@@ -132,19 +135,235 @@ button{
   @apply w-full rounded-lg bg-beige text-marron-oscuro py-3 pr-4 pl-12
 }
 
-.iconos-registro{
+.iconos-registro {
   @apply absolute left-4 top-1/2 -translate-y-1/2 text-marron-oscuro;
 }
 
 /*Botón sin fondo con fondo marron claro en el hover*/
-.btn-hover-marron{
+.btn-hover-marron {
   @apply cursor-pointer rounded-full p-1 hover:bg-beige-oscuro transition-colors duration-300
 }
+
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
 páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
 Padding top para salvar el header*/
-.page-main{
+.page-main {
   @apply px-3 md:px-10 lg:px-20;
+}
+
+/* =========================================
+   Toggle Manual/Auto - Diseño Skäply
+   ========================================= */
+.skaply-toggle {
+  /* Dimensiones */
+  --toggle-width: 130px;
+  --toggle-height: 44px;
+  --knob-size: 28px;
+  --knob-offset: 8px;
+
+  /* Colores de Skäply - integrados con la app */
+  --skaply-cyan: #BAD5E3;
+  /* azul-claro */
+  --skaply-brown: #452621;
+  /* marron-oscuro */
+  --skaply-dark-brown: #452621;
+  /* marron-oscuro */
+  --skaply-light: #dcd6d5;
+  /* beige */
+
+  position: relative;
+  display: inline-block;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  cursor: pointer;
+  user-select: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+}
+
+.skaply-toggle .toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Track del toggle */
+.skaply-toggle .toggle-track {
+  position: absolute;
+  inset: 0;
+  background-color: var(--skaply-dark-brown);
+  border-radius: 22px;
+  border: 2px solid rgba(180, 228, 228, 0.3);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+}
+
+/* Textos Manual/Auto */
+.skaply-toggle .toggle-text {
+  position: absolute;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--skaply-light);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.skaply-toggle .text-manual {
+  left: 48px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.skaply-toggle .text-auto {
+  left: 18px;
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+/* Knob (botón circular) */
+.skaply-toggle .toggle-knob {
+  position: absolute;
+  top: var(--knob-offset);
+  left: var(--knob-offset);
+  width: var(--knob-size);
+  height: var(--knob-size);
+  background: linear-gradient(145deg, #BAD5E3, #94adba);
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px rgba(186, 213, 227, 0.5),
+    0 3px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+/* Llave inglesa */
+.skaply-toggle .wrench-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--skaply-dark-brown);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  animation: rotate-wrench-skaply 2.5s infinite ease-in-out;
+}
+
+.skaply-toggle .wrench-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Estado CHECKED (Auto activado) */
+.skaply-toggle .toggle-input:checked~.toggle-track .toggle-knob {
+  transform: translateX(calc(var(--toggle-width) - var(--knob-size) - (var(--knob-offset) * 2)));
+}
+
+.skaply-toggle .toggle-input:checked~.toggle-track .text-manual {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+.skaply-toggle .toggle-input:checked~.toggle-track .text-auto {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.skaply-toggle .toggle-input:checked~.toggle-track {
+  background-color: var(--skaply-brown);
+  border-color: var(--skaply-cyan);
+  box-shadow:
+    0 0 20px rgba(180, 228, 228, 0.4),
+    inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.skaply-toggle .toggle-input:checked~.toggle-track .toggle-knob {
+  background: linear-gradient(145deg, #BAD5E3, #94adba);
+  box-shadow:
+    0 0 16px rgba(186, 213, 227, 0.7),
+    0 3px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.4);
+}
+
+/* Hover effect */
+.skaply-toggle:hover .toggle-track {
+  border-color: var(--skaply-cyan);
+  box-shadow:
+    0 0 12px rgba(186, 213, 227, 0.3),
+    inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.skaply-toggle:hover .toggle-knob {
+  box-shadow:
+    0 0 14px rgba(186, 213, 227, 0.6),
+    0 3px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Animación de la llave */
+@keyframes rotate-wrench-skaply {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-25deg);
+  }
+
+  75% {
+    transform: rotate(25deg);
+  }
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .skaply-toggle {
+    --toggle-width: 115px;
+    --toggle-height: 40px;
+    --knob-size: 26px;
+  }
+
+  .skaply-toggle .toggle-text {
+    font-size: 12px;
+  }
+
+  .skaply-toggle .text-manual {
+    left: 42px;
+  }
+}
+
+/* Versión compacta */
+.skaply-toggle.compact {
+  --toggle-width: 100px;
+  --toggle-height: 36px;
+  --knob-size: 24px;
+  --knob-offset: 6px;
+}
+
+.skaply-toggle.compact .toggle-text {
+  font-size: 11px;
+}
+
+.skaply-toggle.compact .text-manual {
+  left: 38px;
+}
+
+.skaply-toggle.compact .text-auto {
+  left: 14px;
 }
