@@ -1,29 +1,39 @@
-<div class="h-screen bg-marron-oscuro text-white flex flex-col p-6 pt-30">
+<div class="h-screen bg-marron-oscuro text-white flex flex-col p-8 pt-30 w-full items-center">
     <!-- Admin Info Section -->
-    <div *ngIf="currentUser" class="flex flex-col items-center gap-4 mb-8">
+    <div *ngIf="currentUser" class="flex flex-col items-center gap-6 mb-8 w-full">
         <!-- Avatar Placeholder -->
         <div
-            class="w-24 h-24 rounded-full bg-azul-claro flex items-center justify-center text-marron-oscuro text-3xl font-bold uppercase">
+            class="w-full h-35 rounded-xl flex items-center justify-center text-beige border border-beige text-4xl font-bold uppercase">
             {{ currentUser.emailuser.charAt(0) }}
         </div>
 
         <!-- User Info -->
         <div class="text-center">
-            <h2 class="text-lg font-semibold">{{ currentUser.company_name || 'Administrador' }}</h2>
-            <p class="text-sm text-gray-300">{{ currentUser.emailuser }}</p>
+            <h2 class="text-xl font-semibold">{{ currentUser.company_name || 'Administrador' }}</h2>
+            <p class="text-md mt-1 text-gray-300">{{ currentUser.emailuser }}</p>
             <span
                 class="inline-block mt-2 px-3 py-1 bg-azul-claro text-marron-oscuro text-xs font-medium rounded-full uppercase">
                 {{ currentUser.role }}
             </span>
         </div>
-    </div>
 
-    <button (click)="logout()"
-        class="mt-auto px-4 py-3 rounded-full bg-beige hover:bg-beige/80 transition flex flex-row items-center gap-3 text-marron-oscuro flex-wrap">
+
+    </div>
+    <div class="flex flex-row gap-2 mb-3 w-full">
+        <div class="mt-6 w-full bg-white/10 p-4 rounded-xl flex flex-col items-left border border-white/10">
+            <h4 class="text-gray-300 text-sm font-medium uppercase  mb-1">Proveedores</h4>
+            <p class="text-3xl font-bold text-azul-claro">{{ totalProviders }}</p>
+        </div>
+        <div class="mt-6 w-full bg-white/10 p-4 rounded-xl flex flex-col items-left border border-white/10">
+            <h4 class="text-gray-300 text-sm font-medium uppercase  mb-1">Muebles</h4>
+            <p class="text-3xl font-bold text-azul-claro">{{ totalFurniture }}</p>
+        </div>
+    </div>
+    <button (click)="logout()" class="btn-beige w-[80%] self-center mt-auto">
+        Cerrar sesión
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
             <path
                 d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" />
         </svg>
-        Cerrar sesión
     </button>
 </div>

@@ -1,16 +1,11 @@
 <div class="flex flex-row">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
-  <div class="pt-24 px-3 lg:px-20 w-[80%]  flex flex-col bg-beige text-marron-oscuro">
+  <div class="px-5 lg:px-10 w-[80%] pt-10 flex flex-col bg-beige text-marron-oscuro">
 
-    <div class="flex items-center gap-10 text-lg font-semibold mb-6">
-      <button (click)="setActiveTab('dashboard')" [class.opacity-40]="activeTab !== 'dashboard'"
-        [class.border-b-2]="activeTab === 'dashboard'" [class.border-beige]="activeTab === 'dashboard'"
-        class="hover:opacity-100 transition pb-1">
-        Dashboard
-      </button>
+    <div class="flex flex-row items-center gap-10 text-xl font-bold mb-6">
       <button (click)="setActiveTab('proveedores')" [class.opacity-40]="activeTab !== 'proveedores'"
         [class.border-b-2]="activeTab === 'proveedores'" [class.border-beige]="activeTab === 'proveedores'"
-        class="hover:opacity-100 transition pb-1">
+        class="hover:opacity-100 transition">
         Proveedores
       </button>
       <button (click)="setActiveTab('solicitudes')" class="relative opacity-40 hover:opacity-100 transition">
@@ -20,9 +15,14 @@
           2
         </span>
       </button>
+      <button (click)="setActiveTab('dashboard')" [class.opacity-40]="activeTab !== 'dashboard'"
+        [class.border-b-2]="activeTab === 'dashboard'" [class.border-beige]="activeTab === 'dashboard'"
+        class="hover:opacity-100 transition">
+        Estadísticas
+      </button>
     </div>
-
     <app-gestion-proveedores *ngIf="activeTab === 'proveedores'"></app-gestion-proveedores>
+
 
   </div>
 </div>

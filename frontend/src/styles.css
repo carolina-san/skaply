@@ -144,6 +144,10 @@ button {
   @apply cursor-pointer rounded-full p-1 hover:bg-beige-oscuro transition-colors duration-300
 }
 
+.btn-beige {
+  @apply flex flex-row items-center justify-between bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-beige-oscuro transition-all duration-300 cursor-pointer;
+}
+
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
@@ -152,4 +156,3 @@ Padding top para salvar el header*/
 .page-main {
   @apply px-3 md:px-10 lg:px-20;
 }
-

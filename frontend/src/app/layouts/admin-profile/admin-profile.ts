@@ -15,7 +15,7 @@ import { GestionProveedores } from '../../components/gestion-proveedores/gestion
 export class AdminProfile implements OnInit {
   activeTab: 'dashboard' | 'proveedores' | 'solicitudes' = 'proveedores'; // Default tab
 
-  constructor(private seo: SeoService) {
+  constructor(private seo: SeoService, private apiService: ApiService) {
   }
 
   ngOnInit() {

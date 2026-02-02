@@ -1,9 +1,9 @@
 <header [ngClass]="{
     'fixed w-full top-0 left-0 transition-all duration-300 ': true,
     'backdrop-blur-lg': currentRoute !== '/admin' && currentRoute !== '/provider',
-    'backdrop-blur-none bg-transparent': currentRoute === '/admin' || currentRoute === '/provider',
     'header-expanded': !scrolled,
-    'header-compact': scrolled
+    'header-compact': scrolled,
+    'header-mini': currentRoute === '/admin' || currentRoute === '/provider'
   }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
   <button *ngIf="canGoBack()" (click)="goBack()"
@@ -19,8 +19,7 @@
   <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="goHome()">
     <!-- Logo normal -->
     <img src="assets/skaply_azul.svg" alt="logo normal"
-      class="w-full h-auto hover:scale-105 transition-all duration-400"
-      [ngClass]="{'logo-normal':isHome}" />
+      class="w-full h-auto hover:scale-105 transition-all duration-400" [ngClass]="{'logo-normal':isHome}" />
 
     <!-- Logo reducido -->
     <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
@@ -33,7 +32,8 @@
   <!-- Botones de autenticación -->
   <div *ngIf="!isViewer3D" class="hidden lg:flex items-center gap-3 absolute lg:right-20">
     <!-- Botón de login (si no hay sesión) -->
-    <a *ngIf="!isHome && !isLogin && currentRoute !== '/admin' && currentRoute !== '/provider' && !isLoggedIn() " (click)="goLogin()" class="flex items-center justify-center
+    <a *ngIf="!isHome && !isLogin && currentRoute !== '/admin' && currentRoute !== '/provider' && !isLoggedIn() "
+      (click)="goLogin()" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
       hover:bg-beige transition duration-300 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
@@ -43,7 +43,8 @@
     </a>
 
     <!-- Botón de logout (si hay sesión iniciada) -->
-    <button *ngIf="!isHome && currentRoute !== '/admin' && currentRoute !== '/provider' && isLoggedIn()" (click)="logout()" class="flex items-center justify-center
+    <button *ngIf="!isHome && currentRoute !== '/admin' && currentRoute !== '/provider' && isLoggedIn()"
+      (click)="logout()" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-white font-semibold
       hover:bg-beige transition duration-300 cursor-pointer" title="Cerrar sesión">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
