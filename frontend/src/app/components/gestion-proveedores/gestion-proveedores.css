@@ -1,0 +1,5 @@
+@import "../../../styles.css";
+
+.btn-acciones {
+    @apply p-2 hover:bg-azul-claro/30 rounded-full transition;
+}

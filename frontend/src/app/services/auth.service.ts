@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 export interface User {
-  email: string;
+  emailuser: string;
   role: string;
   company_name?: string;
   loginMethod?: string;

@@ -1,0 +1,28 @@
+<div class="flex flex-row">
+  <app-admin-panel class="w-[20%]"></app-admin-panel>
+  <div class="pt-24 px-3 lg:px-20 w-[80%]  flex flex-col bg-beige text-marron-oscuro">
+
+    <div class="flex items-center gap-10 text-lg font-semibold mb-6">
+      <button (click)="setActiveTab('dashboard')" [class.opacity-40]="activeTab !== 'dashboard'"
+        [class.border-b-2]="activeTab === 'dashboard'" [class.border-beige]="activeTab === 'dashboard'"
+        class="hover:opacity-100 transition pb-1">
+        Dashboard
+      </button>
+      <button (click)="setActiveTab('proveedores')" [class.opacity-40]="activeTab !== 'proveedores'"
+        [class.border-b-2]="activeTab === 'proveedores'" [class.border-beige]="activeTab === 'proveedores'"
+        class="hover:opacity-100 transition pb-1">
+        Proveedores
+      </button>
+      <button (click)="setActiveTab('solicitudes')" class="relative opacity-40 hover:opacity-100 transition">
+        Solicitudes
+        <span
+          class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
+          2
+        </span>
+      </button>
+    </div>
+
+    <app-gestion-proveedores *ngIf="activeTab === 'proveedores'"></app-gestion-proveedores>
+
+  </div>
+</div>
