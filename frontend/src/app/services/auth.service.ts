@@ -3,9 +3,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
 export interface User {
-  emailuser: string;
+  email: string;
   role: string;
-  company_name?: string;
+  company_name: string;
   loginMethod?: string;
   id: number;
 }
@@ -25,6 +25,7 @@ export class AuthService {
   checkAuthStatus(): void {
     this.http.get<User>('/api/auth/me').subscribe({
       next: (user) => {
+        console.log(user);
         this.currentUserSubject.next(user);
       },
       error: () => {
@@ -36,7 +37,7 @@ export class AuthService {
   logout(): void {
     this.http.post('/api/auth/logout', {}).subscribe(() => {
       this.currentUserSubject.next(null);
-      window.location.href = '/catalogo';
+      window.location.href = '/login';
     });
   }
 

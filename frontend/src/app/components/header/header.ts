@@ -70,7 +70,7 @@ export class Header {
   get isLogin(): boolean {
     return this.router.url.split('?')[0] === '/login';
   }
-  
+
   finMontaje() {
     if (this.currentRoute.includes('viewer-3d')) {
       this.apiService.resetAssembly().subscribe({
@@ -99,9 +99,22 @@ export class Header {
     return this.authService.isLoggedIn();
   }
 
-  // Cerrar sesión
+  // Cerrar sesión (se mantiene por si acaso, pero el botón ahora usa goToProfile)
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/catalogo']);
+  }
+
+  goToProfile(): void {
+    const user = this.authService.getCurrentUser();
+
+    if (user?.role === 'provider') {
+      this.router.navigate(['/provider']);
+    } else if (user?.role === 'admin') {
+      this.router.navigate(['/admin']);
+    } else {
+      // Fallback si no es ni admin ni provider
+      this.logout();
+    }
   }
 }

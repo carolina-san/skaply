@@ -172,8 +172,22 @@ export class AuthController {
     }
   ];
 
-  me = async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json(req.user);
+  me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new ApiError('UNAUTHORIZED', 'User not authenticated');
+      }
+
+      const user = await this.authService.getUserById(req.user.id);
+
+      if (!user) {
+        throw new ApiError('NOT_FOUND', 'User not found');
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      next(error);
+    }
   };
 
 }

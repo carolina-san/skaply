@@ -4,13 +4,13 @@
         <!-- Avatar Placeholder -->
         <div
             class="w-full h-35 rounded-xl flex items-center justify-center text-beige border border-beige text-4xl font-bold uppercase">
-            {{ currentUser.emailuser.charAt(0) }}
+            {{ currentUser.email.charAt(0) }}
         </div>
 
         <!-- User Info -->
         <div class="text-center">
             <h2 class="text-xl font-semibold">{{ currentUser.company_name || 'Administrador' }}</h2>
-            <p class="text-md mt-1 text-gray-300">{{ currentUser.emailuser }}</p>
+            <p class="text-md mt-1 text-gray-300">{{ currentUser.email }}</p>
             <span
                 class="inline-block mt-2 px-3 py-1 bg-azul-claro text-marron-oscuro text-xs font-medium rounded-full uppercase">
                 {{ currentUser.role }}

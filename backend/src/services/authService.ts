@@ -17,6 +17,17 @@ export class AuthService {
     return result.rows[0];
   }
 
+  async getUserById(id: number) {
+    const result = await pool.query(
+      `SELECT id, email, company_name, role, enabled, registration_status, visible 
+      FROM "User" 
+      WHERE id = $1`,
+      [id]
+    );
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
+  }
+
   async userExistsByEmail(email: string): Promise<boolean> {
     const result = await pool.query(
       `SELECT 1 FROM "User" WHERE email = $1 LIMIT 1`,
@@ -26,7 +37,7 @@ export class AuthService {
   }
 
   async registerProvider(reqUser: RegisterUser) {
-    try{
+    try {
       const date = new Date();
       //const date = new Date().toISOString();
       const result = await pool.query(
@@ -63,7 +74,7 @@ export class AuthService {
         ]
       );
       return result.rows[0];
-    }catch(error){
+    } catch (error) {
       console.error('Error registering provider:', error);
       throw new Error('Error creating provider in database');
     }
@@ -97,7 +108,7 @@ export class AuthService {
         (email, cif, company_name, telephone, tax_address, role, created_at, password, google_id, registration_status) 
         VALUES ($1, $2, $3, $4, $5, 'provider', $6, $7, $8, $9) RETURNING id`,
         [reqUser.email, reqUser.cif, reqUser.company_name,
-         reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId, RegistrationStatus.PENDING]);
+        reqUser.telephone, reqUser.tax_address, date, reqUser.password, reqUser.googleId, RegistrationStatus.PENDING]);
       return { id: result.rows[0].id };
     } catch (error) {
       console.error('Error registering Google user:', error);
