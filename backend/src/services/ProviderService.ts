@@ -110,6 +110,25 @@ export class ProviderService {
     }
   }
 
+  async setProviderVisible(providerId: number, visible: boolean) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET visible = $1
+        WHERE id = $2
+          AND role = $3
+        RETURNING id, company_name, visible
+        `,
+        [visible, providerId, UserRole.PROV]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error updating provider visibility:', error);
+      throw new Error('Unable to update provider visibility');
+    }
+  }
+
   async approveRegistration(providerId: number) {
     try {
       const result = await pool.query(

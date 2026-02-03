@@ -1,3 +1,5 @@
+-- Proveedor Actiu + mueble mesa sencilla LM1A011380CBFM0000 (versión simple de montaje)
+
 INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, created_at, password, registration_status) VALUES
 ('correo@actiu.com',null,'A03137874', 'Actiu', '+34966560700', 'Parque Tecnológico Actiu, Autovía CV-80, salida Onil-Castalla, 03420 Castalla (Alicante)', 'https://actiucdn.net/cdn-cgi/image/width=941,height=663,fit=cover,format=auto,quality=95//uploads/images/autores/actiu-name-692.jpg', 'provider', NOW(),'$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'approved');
 
