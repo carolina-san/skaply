@@ -22,15 +22,14 @@
 
   <!-- tabla muebles -->
   <div class="mx-8 bg-white rounded-3xl overflow-hidden shadow-xl">
-    <div class="grid grid-cols-4 bg-azul-claro px-8 py-3 font-semibold text-marron-oscuro">
+    <div class="grid grid-cols-3 bg-azul-claro px-8 py-3 font-semibold text-marron-oscuro">
       <div>Nombre</div>
       <div>Referencia</div>
-      <div>Proveedor</div>
       <div class="text-center">Acciones</div>
     </div>
 
     <div *ngFor="let item of paginatedFurniture"
-      class="grid grid-cols-4 px-8 py-3 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+      class="grid grid-cols-3 px-8 py-3 border-b border-gray-200 items-center hover:bg-gray-50 transition">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
           <img *ngIf="item.image_url" [src]="item.image_url" [alt]="item.name" class="w-full h-full object-cover" />
@@ -45,7 +44,6 @@
         <span class="font-medium text-gray-800 text-sm">{{ item.name }}</span>
       </div>
       <div class="text-gray-600 font-mono text-xs">{{ item.reference_number }}</div>
-      <div class="text-gray-600 text-sm">{{ item.provider_name }}</div>
       <div class="flex justify-center gap-2">
         <button class="btn-acciones">
           <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
