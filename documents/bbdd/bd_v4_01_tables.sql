@@ -1,21 +1,12 @@
--- CAMBIOS:
---      - Creado tabla "Color"
---      - Relacionado tabla "Color" con "Furniture" y "Part"
---      - Agregado soporte para Google OAuth en tabla "User":
---          * Campo "google_id" (VARCHAR(255) UNIQUE) 
---          * Campo "password" ahora es nullable
---          * Índice optimizado para consultas por google_id
-
-
 
 -- ============================
--- Drop existing tables and types (only for reset purposes)
+-- DROP EXISTING TABLES
 -- ============================
 DROP TABLE IF EXISTS  Step_Tool,Assemblystep, Assemblystep_part,Assemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
 DROP TYPE IF EXISTS user_role, diff, user_status;
 
 -- ============================
--- ENUM: user_role
+-- ENUMS
 -- ============================
 CREATE TYPE user_role AS ENUM ('admin', 'user', 'provider');
 CREATE TYPE diff AS ENUM ('low','medium','high');
@@ -28,10 +19,10 @@ CREATE TYPE user_status AS ENUM ('pending', 'approved', 'rejected');
 CREATE TABLE "User" (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
-    name VARCHAR(100),
-    cif VARCHAR(20) UNIQUE,
+    name VARCHAR(100) NULL,
+    cif VARCHAR(20) NULL,
     company_name VARCHAR(100) NULL,
-    telephone VARCHAR(15),
+    telephone VARCHAR(15) NULL,
     tax_address VARCHAR(200) NULL,
 
     role user_role NOT NULL,
@@ -78,8 +69,22 @@ CREATE TABLE "User" (
             AND registration_status = 'approved'
             AND enabled = true
         )
+    ),
+
+    -- Proveedor siempre tiene CIF
+    CONSTRAINT cif_required_for_providers
+    CHECK (
+        role != 'provider' OR cif IS NOT NULL
     )
 );
+
+-- ============================
+-- INDEX: CIF
+-- ============================
+
+CREATE UNIQUE INDEX uniq_provider_cif
+ON "User"(cif)
+WHERE role = 'provider';
 
 -- ============================
 -- TABLE: Category
@@ -226,3 +231,24 @@ CREATE TABLE KPIs (
 -- ============================
 -- Index for Google ID lookups (only where google_id is not null for performance)
 CREATE INDEX idx_user_google_id ON "User"(google_id) WHERE google_id IS NOT NULL;
+
+-- ============================
+-- REINICIAR IDS
+-- ============================
+
+TRUNCATE TABLE
+    "User",
+    Category,
+    Color,
+    Furniture,
+    Part,
+    Tool,
+    Furniture_Part,
+    Step,
+    Step_Part,
+    Step_Tool,
+    Issue,
+    File,
+    Review,
+    KPIs
+RESTART IDENTITY CASCADE;
