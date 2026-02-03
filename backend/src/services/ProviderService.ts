@@ -17,7 +17,7 @@ export class ProviderService {
         WHERE role = $1 AND visible = $2
         ORDER BY company_name
         `,
-        [UserRole.PROV, true] 
+        [UserRole.PROV, true]
       );
       return result.rows;
     } catch (error) {
@@ -31,7 +31,7 @@ export class ProviderService {
       const result = await pool.query(`
         SELECT id, email, name, company_name, telephone, image_url 
         FROM public."User" 
-        WHERE role = $1 AND id = $2 AND visible = $3`, 
+        WHERE role = $1 AND id = $2 AND visible = $3`,
         [UserRole.PROV, id, true]);
       return result.rows[0] || null;
     } catch (error) {
@@ -40,7 +40,7 @@ export class ProviderService {
   }
 
   // PRIVATE ROUTES (ADMIN ONLY)
-  
+
   async getProviders() {
     try {
       const result = await pool.query(
@@ -129,7 +129,7 @@ export class ProviderService {
     }
   }
 
-  async approveRegistration(providerId: number) { 
+  async approveRegistration(providerId: number) {
     try {
       const result = await pool.query(
         `
@@ -147,7 +147,7 @@ export class ProviderService {
       throw new Error('Unable to approve provider');
     }
   }
-  
+
   async rejectRegistration(providerId: number) {
     try {
       const result = await pool.query(
@@ -216,9 +216,9 @@ export class ProviderService {
       throw new Error('Unable to fetch the provided with this name');
     }
   }
-  
+
   // OTHER ROUTES (revisar)
-  
+
   // solo se usa en furntireController (eliminar eventualmente)
   async checkProviderRoleById(providerId: number): Promise<boolean> {
     const result = await pool.query(
