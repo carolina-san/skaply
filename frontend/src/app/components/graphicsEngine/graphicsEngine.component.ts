@@ -196,14 +196,14 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     // Obtener y convertir el furniture ID
     let furnitureId = 1; // ID por defecto
     const inputId = this.furnitureId();
-    
+
     if (inputId) {
       const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
       if (!isNaN(parsedId) && parsedId > 0) {
         furnitureId = parsedId;
       }
     }
-    
+
     const stars = this.reviewStars();
     const text = this.reviewText().trim();
 
@@ -332,7 +332,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
     try {
       // Ensure the model is fully assembled by switching to 'final' mode.
-      this.setMode('final');
+      this.setMode('manual');
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       this.videoStream = stream;

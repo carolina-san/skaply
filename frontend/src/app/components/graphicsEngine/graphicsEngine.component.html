@@ -97,7 +97,7 @@
             d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.477-1.122-.297-.287-.703-.465-1.17-.465-1.1 0-2-.9-2-2s.9-2 2-2c.467 0 .873.178 1.17.465.297.287.477.685.477 1.122 0 .942.722 1.688 1.648 1.688 5.5 0 10-4.5 10-10S17.5 2 12 2z" />
         </svg>
       </button> -->
-      @if (mode() === 'final' && isSmallScreen()) {
+      @if (isSmallScreen()) {
       <button (click)="toggleAR()"
         class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors z-10"
         [class.bg-beige/90]="true" [class.text-marron-oscuro]="true" [class.hover:bg-white/90]="true">
