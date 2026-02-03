@@ -13,7 +13,7 @@ export class ProviderService {
       const result = await pool.query(
         `
         SELECT id, email, name, company_name, telephone, image_url
-        FROM "User"
+        FROM public."User"
         WHERE role = $1 AND visible = $2
         ORDER BY company_name
         `,
@@ -107,6 +107,25 @@ export class ProviderService {
       return result.rows[0] || null;
     } catch (error) {
       throw new Error('Unable to disable provider');
+    }
+  }
+
+  async setProviderVisible(providerId: number, visible: boolean) {
+    try {
+      const result = await pool.query(
+        `
+        UPDATE "User"
+        SET visible = $1
+        WHERE id = $2
+          AND role = $3
+        RETURNING id, company_name, visible
+        `,
+        [visible, providerId, UserRole.PROV]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error updating provider visibility:', error);
+      throw new Error('Unable to update provider visibility');
     }
   }
 

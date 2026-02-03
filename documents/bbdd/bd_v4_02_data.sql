@@ -47,13 +47,14 @@ ALTER SEQUENCE color_id_seq RESTART WITH 1;
 -- ============================
 -- 2. Insertar usuarios
 -- ============================
-INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, created_at,password, registration_status) VALUES
-('gmail.com','Maria','CIF001',null,'123456789','123 User St','','admin', NOW(),'12345', null),
-('lucia@gmail.com','Lucia','CIF002',null,'123456780','456 User St','','admin', NOW(),'12345', null),
-('carlos@gmail.com','Carlos','CIF003',null,'123456781','789 User St','','admin', NOW(),'12345', null),
-('iqua@gmail.com',null,'CIF004','IqUA','123456782','101 Provider St', 'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg', 'provider', NOW(),'12345', 'approved'),
-('mueblesbaratos@gmail.com',null,'CIF005','Muebles Baratos','123456783','102 Provider St','https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg','provider', NOW(),'12345', 'approved'),
-('decora@gmail.com',null,'CIF006','Decora','123456783','104 Provider St','https://content.gnoss.ws/carq/imagenes/Documentos/imgsem/4c/4ce8/4ce8d437-612f-43bb-8d8e-d169d1a187e5/2cf38bd4-7d1d-42eb-8982-226c4c4b2c87.jpg','provider', NOW(),'12345', 'approved');
+-- Las contraseñas hasheadas con bcrypt para 'password' (salt rounds = 10) -> $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, created_at,password, registration_status, visible) VALUES
+('gmail.com','Maria','CIF001',null,'123456789','123 User St','','admin', NOW(),'$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', null),
+('lucia@gmail.com','Lucia','CIF002',null,'123456780','456 User St','','admin', NOW(),'$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', null),
+('carlos@gmail.com','Carlos','CIF003',null,'123456781','789 User St','','admin', NOW(),'$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', null),
+('iqua@gmail.com',null,'CIF004','IqUA','123456782','101 Provider St', 'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg', 'provider', NOW(),'12345', 'approved', true),
+('mueblesbaratos@gmail.com',null,'CIF005','Muebles Baratos','123456783','102 Provider St','https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg','provider', NOW(),'12345', 'approved', true),
+('decora@gmail.com',null,'CIF006','Decora','123456783','104 Provider St','https://content.gnoss.ws/carq/imagenes/Documentos/imgsem/4c/4ce8/4ce8d437-612f-43bb-8d8e-d169d1a187e5/2cf38bd4-7d1d-42eb-8982-226c4c4b2c87.jpg','provider', NOW(),'12345', 'approved', true);
 
 -- ============================
 -- 3. Insertar categorías
