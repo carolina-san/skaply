@@ -5,13 +5,22 @@
 --      -  HAY 1 MUEBLE DE PRUEBA REAL USADO EN LA RAMA FEATURE/THREEJS
 --      -  HAY 1 MUEBLES REAL DE ACTIU
 
+-- Para subir un mueble, se necesita en este orden:
+--      - User (su proveedor)
+--      - Part (partes del mueble)
+--      - Furniture (mueble en sí)
+--      - Furniture_Part (asocia las piezas al mueble)
+--      - Step (se definen los pasos y sus dependencias)
+--      - Step_Part (asocia las piezas a sus pasos correspondientes)
+
+
 -- ============================
--- 1. Vaciar la base de datos
+-- VACIAR BASE DE DATOS
 -- ============================
 TRUNCATE TABLE Step_Tool, Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool, Step, File, "User" CASCADE;
 
 -- ============================
--- 1. Restart Identity
+-- RESTART IDENTITY
 -- ============================
 ALTER SEQUENCE "User_id_seq" RESTART WITH 1;
 ALTER SEQUENCE step_id_seq RESTART WITH 1;
@@ -25,7 +34,7 @@ ALTER SEQUENCE tool_id_seq RESTART WITH 1;
 ALTER SEQUENCE color_id_seq RESTART WITH 1;
 
 -- ============================
--- 2. Insertar usuarios
+-- USERS
 -- ============================
 -- Contraseñas hasheadas con bcrypt para 'password' (salt rounds = 10): 
 -- $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
@@ -151,7 +160,7 @@ VALUES
 );
 
 -- ============================
--- 3. Insertar categorías
+-- CATEGORIES
 -- ============================
 INSERT INTO Category (name, subcategory_id) VALUES
 ('Sillas', NULL),
@@ -161,7 +170,7 @@ INSERT INTO Category (name, subcategory_id) VALUES
 ('Estanterías', NULL);
 
 -- ============================
--- 4. Insertar colores
+-- COLORS
 -- ============================
 INSERT INTO Color (name, hex) VALUES
 ('Beige', '#F5E6D3'),
@@ -172,7 +181,7 @@ INSERT INTO Color (name, hex) VALUES
 ('Negro', '#212121');
 
 -- ============================
--- 5. Insertar partes
+-- PARTS
 -- ============================
 INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('part1.stl','P001', 1),
@@ -182,19 +191,14 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('','PSILLA01', 4),
 ('','PSILLA02', 5),
 ('','PSILLA03', 6),
--- PARTES MUEBLE ACTIU PRUEBA SENCILLA
-('','esquina01', 1),
-('','esquina02', 1),
-('','esquina03', 1),
-('','esquina04', 1),
-('','pata01', 1),
-('','pata02', 1),
-('','pata03', 1),
-('','pata04', 1),
+-- PARTES MUEBLE ACTIU VITAL RPO
+('','pata01', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','pata02', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','travesaño', 1),
 ('','tablero', 1);
 
 -- ============================
--- 6. Insertar herramientas
+-- TOOLS
 -- ============================
 INSERT INTO Tool (name,image_url) VALUES
 ('Destornillador','https://www.rztools.com/wp-content/uploads/160714-18-destornilladores-ph1.jpg'),
@@ -204,7 +208,7 @@ INSERT INTO Tool (name,image_url) VALUES
 ('Alicates','https://mibricolaje.com/26480-large_default/alicate-universal-6-1000v-pamacon.jpg');
 
 -- ============================
--- 7. Insertar muebles
+-- FURNITURE
 -- ============================
 INSERT INTO Furniture (
     file_uri,
@@ -301,22 +305,22 @@ VALUES
     'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F008'
 ),
--- MUEBLE DE ACTIU (VERSION SENCILLA)
+-- MUEBLE DE ACTIU VITAL PRO
 (
-    'prueba_01_skaply.glb',
-    'Mesa de oficina',
-    'LM1A011380CBFM0000',
+    'vital_pro.glb',
+    'Mesa individual Vital Pro',
+    'VR515F200',
     2,
     6,
     'low',
     3,
-    'Mesa sencilla de oficina',
-    'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=LM1A011380CBFM0000'
+    'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
+    'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
+    'https://skaply.ovh/catalogo?furniture=VR515F200'
 );
 
 -- ============================
--- 8. Asignar las piezas a los muebles
+-- FURNITURE_PART (asocia las partes con su mueble)
 -- ============================
 INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, exploded_distance) VALUES
 -- MUEBLES DE PRUEBA
@@ -326,19 +330,14 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 (4,1,2,'y',0.0),(4,2,2,'y',0.0),
 -- SILLA PRUEBA RAMA FEATURE/THREEJS
 (5,4,1,'y',0.0),(5,5,1,'y',0.4), (5,6,1,'z',0.4),
--- MUEBLE DE ACTIU VERSION SENCILLA
-(6,7,1,'y',0.0),
-(6,8,1,'y',0.0),
-(6,9,1,'y',0.0),                        
-(6,10,1,'y',0.0),                        
-(6,11,1,'y',0.1),                        
-(6,12,1,'y',0.1),                        
-(6,13,1,'y',0.1),                        
-(6,14,1,'y',0.1),                        
-(6,15,1,'y',0.1);                       
+-- MUEBLE DE ACTIU VITAL PRO
+(6,7,1,'y',0.0),    --pata
+(6,8,1,'y',0.0),    --pata
+(6,9,1,'y',0.1),    --travesaño                       
+(6,10,1,'y',0.1);   --tablero                                           
 
 -- ============================
--- 9. Insertar pasos de ensamblaje
+-- STEPS
 -- ============================
 INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES 
 -- MUEBLES DE PRUEBA
@@ -347,16 +346,14 @@ INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES
 (3,1,6),(3,2,6),(3,3,NULL),     
 (4,1,NULL),  
 -- MUEBLE SILLA PRUEBA RAMA THREEJS                   
-(5,1,9),(5,2,NULL),
--- MUEBLE DE ACTIU SIMPLIFICADO  
-(6,1,14),
-(6,2,14),
-(6,3,14),
-(6,4,14),
-(6,5,NULL);          
+(5,1,9),
+(5,2,NULL),
+-- MUEBLE DE ACTIU VITAL PRO 
+(6,1,NULL),     -- patas + travesaño
+(6,2,11);   --(patas + travesaño) + tablero     
 
 -- ============================
--- 10. Asignar piezas a los pasos
+-- SETP_PART (asocia las piezas a los pasos)
 -- ============================
 INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (1,1,1),(1,2,1),                    -- mueble 1
@@ -364,15 +361,12 @@ INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (4,1,1),(4,2,1),(5,1,1),(5,2,1),    -- mueble 3
 (7,1,2),(7,2,2),                    -- mueble 4
 (8,4,1),(8,5,1),(9,6,1),            -- silla azul
--- MUEBLE ACTIU SIMPLE
-(10,7,1),(10,11,1), --paso 1
-(11,8,1),(11,12,1), --paso 1
-(12,9,1),(12,13,1), --paso 1
-(13,10,1),(13,14,1), --paso 1
-(14,15,1); --paso 1
+-- MUEBLE ACTIU VITAL PRO
+(10,7,1),(10,8,1),(10,9,1),  --paso 1
+(11,10,1);                  --paso 2
 
 -- ============================
--- 11. Asignar herramientas a pasos
+-- STEP_TOOL (asocia herramientas a los pasos)
 -- ============================
 INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (1,1),(1,2),                -- mueble 1
@@ -382,7 +376,7 @@ INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (8,1),(9,2);                -- silla
 
 -- ============================
--- 12. Insertar issues
+-- ISSUES
 -- ============================
 INSERT INTO Issue (description, user_email, furniture_id) VALUES
 ('Problema con el ensamblaje','user1@example.com',1),
@@ -392,7 +386,7 @@ INSERT INTO Issue (description, user_email, furniture_id) VALUES
 ('Rasguño en superficie','user2@example.com',4);
 
 -- ============================
--- 13. Insertar archivos
+-- FILES
 -- ============================
 INSERT INTO File (uri, name, format, size, issue_id) VALUES
 ('file1.png','Foto problema 1','png',1.5,1),
@@ -402,7 +396,7 @@ INSERT INTO File (uri, name, format, size, issue_id) VALUES
 ('file4.jpg','Foto problema 4','jpg',2.0,4);
 
 -- ============================
--- 14. Insertar reviews
+-- REVIEWS
 -- ============================
 INSERT INTO Review (stars, text, furniture_id) VALUES
 (5,'Excelente producto',1),
@@ -412,7 +406,7 @@ INSERT INTO Review (stars, text, furniture_id) VALUES
 (2,'No muy satisfecho',4);
 
 -- ============================
--- 15. Insertar KPIs
+-- KPIs
 -- ============================
 INSERT INTO KPIs (n_issues, n_suppliers, n_reviews, provider_id) VALUES
 (4,2,5,4),

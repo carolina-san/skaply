@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
 import { validateProvider } from '@/utils/provider.utils';
-import { validateProviderData } from '@/utils/auth.utils';
+import { validateCorrectPassword, validateProviderData } from '@/utils/auth.utils';
 import { pickFields, validateNotEmptyObject, validateParameterId } from '@/utils/common.utils';
+import { validateRequiredFields } from '@/utils/common.utils';
 import { RegistrationStatus, UserRole } from '@/types';
 
 export class ProviderController {
@@ -254,7 +255,7 @@ export class ProviderController {
 
   updateMyProvider = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // validation
+      // validation (VER VALIDATION EN LOGIN)
       const email = req.user?.emailuser;
       if (!email) {throw new ApiError('UNAUTHORIZED', 'User not authenticated');}
       const providerId = await this.providerService.getProviderIdByEmail(email);
@@ -286,4 +287,45 @@ export class ProviderController {
         next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
       }
   };
+
+  // tengo que coger la contraseña actual de la BD.
+  
+  // changeMyPassword = async ( req: Request, res: Response, next: NextFunction): Promise<void> => {
+  //   try {
+  //     // validation (VER VALIDATION EN LOGIN)
+  //     const email = req.user?.emailuser;
+  //     if (!email) {throw new ApiError('UNAUTHORIZED', 'User not authenticated');}
+  //     const providerId = await this.providerService.getProviderIdByEmail(email);
+  //     if (!providerId) {throw new ApiError('NOT_FOUND', 'Provider not found'); }
+  //     await validateProvider(this.providerService, providerId, { checkEnabled: true });
+
+  //     // allowed fields
+  //     const requiredFields = ['currentPassword', 'newPassword'];
+
+  //     // validate fields
+  //     validateRequiredFields(req.body, requiredFields);
+  //     validateCorrectPassword(req.body.currentPassword);
+      
+  //     // pick fields and validate
+  //     const updateData = pickFields(req.body, allowedFields);
+  //     validateNotEmptyObject(updateData, 'No fields to update');
+  //     validateProviderData(updateData);
+
+  //     console.log("updateData:", updateData);
+      
+  //     // fetch
+  //     const result = await this.providerService.updateProvider(providerId, updateData);
+
+  //     // response
+  //     res.status(200).json({
+  //       message: 'Provider profile updated successfully',
+  //       data: result
+  //     });
+
+  //     // error
+  //   } catch (error) {
+  //       if (error instanceof ApiError) { return next(error); }
+  //       next(new ApiError('INTERNAL_SERVER', 'Failed to update provider'));
+  //     }
+  // };
 }

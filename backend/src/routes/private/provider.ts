@@ -12,6 +12,8 @@ put     /me                         -> [PROV] actualiza los datos del provider a
 put     /:id                        -> [ADMIN] actualiza los datos de un provider por ID (company_name, telephone, tax_address, email, cif)
 delete  /:id                        -> elimina un provider por ID
 
+
+currentPassword, newPassword
 */
 
 import { Router } from 'express';
@@ -26,15 +28,17 @@ router.get('/', authMiddleware, authorize([UserRole.ADMIN]), providerController.
 router.get('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviderById); 
 router.put( '/:id/enable', authMiddleware, authorize([UserRole.ADMIN]), providerController.enableProvider); 
 router.put('/:id/disable', authMiddleware, authorize([UserRole.ADMIN]), providerController.disableProvider);
-router.put('/:id/visible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderVisible); //check
-router.put('/:id/invisible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderInvisible); // check
+router.put('/:id/visible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderVisible);
+router.put('/:id/invisible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderInvisible);
 router.put('/:id/registration/approve', authMiddleware, authorize([UserRole.ADMIN]), providerController.approveRegistration);
 router.put('/:id/registration/reject', authMiddleware, authorize([UserRole.ADMIN]), providerController.rejectRegistration);
 router.put('/me', authMiddleware, authorize([UserRole.PROV]), providerController.updateMyProvider);
 router.put('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.updateProvider);
+//router.put('/me/change-password', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), providerController.changeMyPassword); // check
+//router.put('/:id/change-password', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), providerController.changePassword); // check
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);
 
-// visible/oculto
+
 // changePassword
 
 // filtros
