@@ -247,6 +247,21 @@ export class ProviderService {
     }
   }
 
+  async getProviderPassword(providerId: number) {
+    try {
+      const result = await pool.query(
+        `SELECT password FROM "User" WHERE id = $1 AND role = $2`,
+        [providerId, UserRole.PROV]
+      );
+      if (result.rows.length === 0) {
+        return null;
+      }
+      return result.rows[0].password;
+    } catch (error) {
+      throw new Error('Unable to get provider´s password by id');
+    }
+  }
+
   async getProviderIdByEmail(email: string): Promise<number | null> {
     try {
       const result = await pool.query(
@@ -268,18 +283,5 @@ export class ProviderService {
     );
     if (result.rows.length === 0) return null;
     return result.rows[0].provider_id;
-  }
-
-  async getProviderPassword(id: number): Promise<number | null> {
-    try {
-      const result = await pool.query(
-        `SELECT password FROM "User" WHERE id = $1 AND role = $2`,
-        [id, UserRole.PROV]
-      );
-      if (result.rows.length === 0) return null;
-      return result.rows[0];
-    } catch (error) {
-      throw new Error('Error fetching user ID by email');
-    }
   }
 }
