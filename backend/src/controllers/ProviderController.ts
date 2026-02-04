@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
 import { validateProvider, validateNotSamePassword, getAndValidateIdFromEmailToken } from '@/utils/provider.utils';
-import { validateCorrectPassword, validateProviderData, validatePasswordStrenght } from '@/utils/auth.utils';
+import { validateCorrectPassword, validateProviderData, validatePasswordStrenght, hashPassword } from '@/utils/auth.utils';
 import { pickFields, validateNotEmptyObject, validateParameterId } from '@/utils/common.utils';
 import { validateRequiredFields } from '@/utils/common.utils';
 import { RegistrationStatus, UserRole } from '@/types';
@@ -237,6 +237,39 @@ export class ProviderController {
     }
   };
 
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // validation
+      const providerId = validateParameterId(req.params.id || "");
+      await validateProvider(this.providerService, providerId, {checkApprovedRegistration: true});
+
+      // validate fields
+      const requiredFields = ['newPassword'];
+      validateRequiredFields(req.body, requiredFields);
+      const { newPassword } = req.body;
+
+      // validate new password
+      validatePasswordStrenght(newPassword);
+
+      // hash
+      const hashedPassword = await hashPassword(newPassword);
+
+      // update password 
+      const result = await this.providerService.updateProvider(providerId, { password: hashedPassword });
+
+      // response
+      res.status(200).json({
+        message: 'Provider password updated successfully',
+        data: result
+      });
+
+      // error
+    } catch (error) {
+      if (error instanceof ApiError) { return next(error); }
+      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider\'s password'));
+    }
+  };
+
   deleteProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // validation
@@ -298,19 +331,19 @@ export class ProviderController {
       validateRequiredFields(req.body, requiredFields);
       const { currentPassword, newPassword } = req.body;
 
-      // validate old password
+      // get stored password
       const storedPassword = await this.providerService.getProviderPassword(providerId);
+      
+      // validations
       await validateCorrectPassword(currentPassword, storedPassword);
-
-      // validate new password 
       await validateNotSamePassword(newPassword, storedPassword);
       validatePasswordStrenght(newPassword);
-
+      
       // hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-      // fetch
-      const result = await this.providerService.updateProvider(providerId, { password: hashedPassword });
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // update provider with new password
+      const result = await this.providerService.updateProvider(providerId, {password: hashedPassword});
 
       // response
       res.status(200).json({
@@ -321,7 +354,7 @@ export class ProviderController {
       // error
     } catch (error) {
       if (error instanceof ApiError) { return next(error); }
-      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider´s password'));
+      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider\'s password'));
     }
   };
 }

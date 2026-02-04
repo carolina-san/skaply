@@ -1,6 +1,10 @@
 import { ApiError } from '@/utils/ApiError';
 import bcrypt from "bcryptjs";
 
+export const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+};
 
 export const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
