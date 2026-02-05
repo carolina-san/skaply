@@ -143,7 +143,7 @@ VALUES
     'approved',
     true
 ),
--- PROVIDER: Actiu (datos reales)
+-- PROVIDER: Actiu (datos reales) quitar xd
 (
     'correo@actiu.com',
     null,
@@ -350,7 +350,7 @@ INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES
 (5,2,NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
 (6,1,NULL),     -- patas + travesaño
-(6,2,11);   --(patas + travesaño) + tablero     
+(6,2,11);       --(patas + travesaño) + tablero     
 
 -- ============================
 -- SETP_PART (asocia las piezas a los pasos)
