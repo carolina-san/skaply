@@ -162,7 +162,6 @@ export class FurnitureService {
   }) {
     try {
       const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
-
       let sql = `
         SELECT DISTINCT 
             f.id, 
