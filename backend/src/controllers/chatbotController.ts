@@ -136,7 +136,7 @@ export class ChatbotController {
                         next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
                         return;
                     }
-                    res.status(200).json(await this.chatbotService.getFurnitureRecomendation(ctx.parameters.furniture_category, ctx.parameters.furniture_color));
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendation(ctx.parameters.furniture_category, ctx.parameters.furniture_color, session));
                     return;
                 }
                 case 'get.furniture.recomendation.more': {
@@ -152,7 +152,8 @@ export class ChatbotController {
                         next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar más muebles'));
                         return;
                     }
-                    res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(ctx.parameters.furniture_category, ctx.parameters.furniture_color));
+                    const shownId = ctx.parameters.shown_furniture_id;
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(ctx.parameters.furniture_category, ctx.parameters.furniture_color, shownId));
                     return;
                 }
                 default:

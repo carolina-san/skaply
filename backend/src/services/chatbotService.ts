@@ -166,16 +166,16 @@ export class ChatbotService {
    * Obtiene lista de proveedores
    */
   async getProviders(): Promise<any> {
-    const result = await this.providerService.getAllProvidersChatbot(); // no debería devolver providers que tengan active = false
+    const result = await this.providerService.getVisibleProviders(); // no debería devolver providers que tengan active = false
 
     return {
       fulfillmentMessages: [
         {
           text: {
-            text: [`Tenemos ${result.rows.length} proveedores disponibles:`]
+            text: [`Tenemos ${result.length} proveedores disponibles:`]
           }
         },
-        ...result.rows.map((p: any) => ({
+        ...result.map((p: any) => ({
           card: {
             title: p.company_name,
             subtitle: `${p.email}\n${p.tax_address}`,
@@ -639,7 +639,7 @@ export class ChatbotService {
     }
   }
 
-  async getFurnitureRecomendation(category?: string, color?: string): Promise<any> {
+  async getFurnitureRecomendation(category?: string, color?: string, session?: string): Promise<any> {
     let category_id = null;
     let color_id = null;
     if (category) {
@@ -674,7 +674,8 @@ export class ChatbotService {
         };
       }
 
-      const exactMatch = furnitureResult.rows[0]; // Take the first one as "ideal"
+      const randomIndex = Math.floor(Math.random() * furnitureResult.rows.length);
+      const exactMatch = furnitureResult.rows[randomIndex];
 
       let introText = 'Este es tu mueble ideal:';
       if (matchType === 'fallback') {
@@ -717,7 +718,18 @@ export class ChatbotService {
               ]
             }
           }
-        ]
+        ],
+        outputContexts: session ? [
+          {
+            name: `${session}/contexts/recommendation_vars`,
+            lifespanCount: 5,
+            parameters: {
+              furniture_category: category,
+              furniture_color: color,
+              shown_furniture_id: exactMatch.id
+            }
+          }
+        ] : []
       };
     } catch (error) {
       console.error("Error in getFurnitureRecomendation:", error);
@@ -727,7 +739,7 @@ export class ChatbotService {
     }
   }
 
-  async getFurnitureRecomendationMore(category?: string, color?: string): Promise<any> {
+  async getFurnitureRecomendationMore(category?: string, color?: string, shownId?: number): Promise<any> {
     let category_id = null;
     let color_id = null;
     if (category) {
@@ -754,13 +766,13 @@ export class ChatbotService {
         furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
       }
 
-      if (furnitureResult.rows.length <= 1) {
+      const moreOptions = furnitureResult.rows.filter((f: any) => f.id != shownId);
+
+      if (moreOptions.length === 0) {
         return {
           fulfillmentText: "Lo siento, no tengo más recomendaciones que mostrarte por ahora."
         };
       }
-
-      const moreOptions = furnitureResult.rows.slice(1);
 
       return {
         fulfillmentMessages: [
