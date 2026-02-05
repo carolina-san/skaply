@@ -134,11 +134,12 @@ CREATE TABLE Part (
 -- ============================
 -- TABLE: Tool
 -- ============================
+-- Tool/Screw
+-- nombre, dimesion, diametro, longitud, corte, etc
 CREATE TABLE Tool (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     image_url TEXT
-
 );
 
 -- ============================
@@ -156,11 +157,13 @@ CREATE TABLE Furniture_Part (
 -- ============================
 -- TABLE:  Step
 -- ============================
+-- scene_camera_angle -> por si se rota la camara (boca abajo) angulo 180
 CREATE TABLE  Step (
     id SERIAL PRIMARY KEY,
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     step_number INTEGER NOT NULL,
-    used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL
+    used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL,
+    scene_camera_angle NULL
 );
 
 -- ============================

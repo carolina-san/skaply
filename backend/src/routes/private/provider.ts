@@ -39,8 +39,6 @@ router.put('/:id/change-password', authMiddleware, authorize([UserRole.ADMIN]), 
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);
 
 // filtros
-// GET /providers?status=PENDING
-// GET /providers?status=REJECTED
-// GET /providers?status=APPROVED
+
 
 export default router;

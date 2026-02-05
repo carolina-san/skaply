@@ -195,7 +195,7 @@ export class ProviderService {
     }
   }
 
-  // CHATBOT (PUBLIC) (revisar enabled/visible etc)
+  // CHATBOT (PUBLIC) (revisar enabled/visible etc) CHATBOT DEVUELVE SOLO LO VISIBLE!
 
   async getAllProvidersChatbot() { // ¿por qué no se usa getActiveProviders()?
     try {
