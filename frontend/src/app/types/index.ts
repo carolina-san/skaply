@@ -15,3 +15,6 @@ export * from './color.types';
 
 // Issue types
 export * from './issue.types';
+
+// Assembly types
+export * from './assembly.types';

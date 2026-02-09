@@ -5,6 +5,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from './interfaces';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class ThreeRenderableObject implements RenderableObject {
     constructor(private threeObject: THREE.Object3D) {
@@ -44,7 +45,9 @@ class ThreeRenderableObject implements RenderableObject {
     }
 
     setVisible(visible: boolean): void {
-        this.threeObject.visible = visible;
+        this.threeObject.traverse((child: any) => { //Changed to get all node of the 3d object not just the father
+        child.visible = visible;
+        });
     }
 
     add(child: RenderableObject): void {
@@ -89,6 +92,7 @@ export class ThreeEngineAdapter extends EngineFacade {
     private composer!: EffectComposer;
     private outlinePass!: OutlinePass;
     private raycaster = new THREE.Raycaster();
+    private gltfLoader = new GLTFLoader(); //3D model 
 
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
@@ -272,6 +276,8 @@ export class ThreeEngineAdapter extends EngineFacade {
                 }
                 curr = curr.parent;
             }
+            // If no wrapper on the fathers queue, wrap the object impacted(GLTF submesh)
+            return this.wrapNativeObject(intersects[0].object);
         }
         return null;
     }
@@ -315,6 +321,23 @@ export class ThreeEngineAdapter extends EngineFacade {
     getCamera(): any {
         return this.camera;
     }
+
+    // Load the file GLT
+    async loadGLTF(url: string): Promise<RenderableObject> {
+        const gltf = await new Promise<any>((resolve, reject) => {
+            this.gltfLoader.load(url, resolve, undefined, reject);
+        });
+
+        const root = gltf.scene as THREE.Object3D;
+        return new ThreeRenderableObject(root);
+    }
+
+    wrapNativeObject(native: any): RenderableObject {
+        // cache: avoid creating wrappers repeatedly
+        if (native?.userData?.['wrapper']) return native.userData['wrapper'];
+        return new ThreeRenderableObject(native as THREE.Object3D);
+    }
+
 
     dispose(): void {
         this.renderer?.dispose();
