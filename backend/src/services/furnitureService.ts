@@ -484,4 +484,21 @@ export class FurnitureService {
     }
   }
 
+  async getFurnitureByName(name: string): Promise<any> {
+    try {
+      const result = await pool.query(
+        `SELECT name, reference_number
+         FROM public.furniture 
+         WHERE name ILIKE $1`,
+        [name]
+      );
+      console.log(result.rows);
+      return result.rows;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError('INTERNAL_SERVER', 'Error fetching furniture by name');
+    }
+  }
 }
