@@ -3,7 +3,7 @@ import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
 import { validateProvider, validateNotSamePassword, getAndValidateIdFromEmailToken } from '@/utils/provider.utils';
 import { validateCorrectPassword, validateProviderData, validatePasswordStrenght, hashPassword } from '@/utils/auth.utils';
-import { pickFields, validateNotEmptyObject, validateParameterId } from '@/utils/common.utils';
+import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery  } from '@/utils/common.utils';
 import { validateRequiredFields } from '@/utils/common.utils';
 import { RegistrationStatus, UserRole } from '@/types';
 import bcrypt from "bcryptjs";
@@ -52,17 +52,53 @@ export class ProviderController {
 
   // PRIVATE ROUTES (ADMIN ONLY)
 
-  getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const result = await this.providerService.getProviders();
-      res.status(200).json({
-        message: 'Providers fetched successfully',
-        data: result
-      });
-    } catch (error) {
-      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
+getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const filters: {
+      registration_status?: RegistrationStatus;
+      enabled?: boolean;
+      visible?: boolean;
+    } = {};
+
+    const enabled = parseBooleanQuery(req.query.enabled as string | undefined);
+    const visible = parseBooleanQuery(req.query.visible as string | undefined);
+    const registrationStatus = req.query.registration_status as RegistrationStatus | undefined;
+
+    if (enabled !== undefined) {
+      filters.enabled = enabled;
     }
-  };
+
+    if (visible !== undefined) {
+      filters.visible = visible;
+    }
+
+    if (registrationStatus !== undefined) {
+      if (!Object.values(RegistrationStatus).includes(registrationStatus)) {
+        throw new ApiError('BAD_REQUEST', 'Invalid registration status');
+      }
+      filters.registration_status = registrationStatus;
+    }
+
+    if (filters.visible === true && filters.enabled === false) {
+      throw new ApiError(
+        'BAD_REQUEST',
+        'Visible providers must be enabled'
+      );
+    }
+
+    const result = await this.providerService.getProviders(filters);
+
+    res.status(200).json({
+      message: 'Providers fetched successfully',
+      data: result
+    });
+
+  } catch (error) {
+    if (error instanceof ApiError) return next(error);
+    next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
+  }
+};
+
 
   getProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

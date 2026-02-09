@@ -41,16 +41,45 @@ export class ProviderService {
 
   // PRIVATE ROUTES (ADMIN ONLY)
 
-  async getProviders() {
+  async getProviders(filters?: {
+  registration_status?: RegistrationStatus;
+  enabled?: boolean;
+  visible?: boolean;
+  }) {
     try {
-      const result = await pool.query(
-        `SELECT id, email, name, cif, company_name, telephone, tax_address, image_url, enabled, visible, registration_status, created_at, updated_at, approved_at, disabled_at, enabled_at
-         FROM public."User" 
-         WHERE role = $1
-         ORDER BY company_name`,
-        [UserRole.PROV]
-      );
+      const conditions: string[] = ['role = $1'];
+      const values: any[] = [UserRole.PROV];
+      let paramIndex = 2;
+
+      if (filters?.registration_status !== undefined) {
+        conditions.push(`registration_status = $${paramIndex++}`);
+        values.push(filters.registration_status);
+      }
+
+      if (filters?.enabled !== undefined) {
+        conditions.push(`enabled = $${paramIndex++}`);
+        values.push(filters.enabled);
+      }
+
+      if (filters?.visible !== undefined) {
+        conditions.push(`visible = $${paramIndex++}`);
+        values.push(filters.visible);
+      }
+
+      const whereClause = conditions.join(' AND ');
+
+      const query = `
+        SELECT id, email, name, cif, company_name, telephone, tax_address,
+              image_url, enabled, visible, registration_status,
+              created_at, updated_at, approved_at, disabled_at, enabled_at
+        FROM public."User"
+        WHERE ${whereClause}
+        ORDER BY company_name
+      `;
+
+      const result = await pool.query(query, values);
       return result.rows;
+
     } catch (error) {
       throw new Error('Unable to fetch providers');
     }
@@ -77,7 +106,7 @@ export class ProviderService {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET enabled = $1
+        SET enabled = $1, enabled_at = CURRENT_TIMESTAMP
         WHERE id = $2
           AND role = $3
           AND registration_status = $4
@@ -97,7 +126,7 @@ export class ProviderService {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET enabled = false
+        SET enabled = false, disabled_at = CURRENT_TIMESTAMP
         WHERE id = $1
           AND role = $2
         RETURNING id, company_name, enabled
@@ -134,7 +163,7 @@ export class ProviderService {
       const result = await pool.query(
         `
         UPDATE "User"
-        SET registration_status = $1
+        SET registration_status = $1, approved_at = CURRENT_TIMESTAMP
         WHERE id = $2
           AND role = $3
           AND registration_status != $4
@@ -175,7 +204,7 @@ export class ProviderService {
       .join(', ');
     const query = `
       UPDATE "User"
-      SET ${setClause}
+      SET ${setClause}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${fields.length + 1}
         AND role = $${fields.length + 2}
       RETURNING id, email, company_name, cif, telephone, tax_address
