@@ -119,7 +119,8 @@ CREATE TABLE Furniture (
     color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL,
     short_description TEXT,
     qr_url VARCHAR(255),
-    required_people INTEGER NOT NULL DEFAULT 1
+    required_people INTEGER NOT NULL DEFAULT 1,
+    visible BOOLEAN NOT NULL DEFAULT FALSE,
 );
 
 -- ============================
