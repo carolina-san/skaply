@@ -14,6 +14,16 @@ put     /me/change-password         -> [PROV] cambia la contraseña del provider
 put     /:id/change-password        -> [ADMIN] cambia la contraseña de un provider por ID (newPassword)
 delete  /:id                        -> elimina un provider por ID
 
+filtros
+GET /providers
+GET /providers?enabled=true
+GET /providers?visible=false
+GET /providers?enabled=false&visible=false
+GET /providers?registration_status=pending
+etc.
+
+Importante en el frontend: si se selecciona visible en el selector de visiblidad, se tiene que bloquear el otro selector con la opcion de enabled (activo o como lo querais llamar) y no dejar que se pueda cambiar.
+
 */
 
 import { Router } from 'express';
@@ -37,8 +47,5 @@ router.put('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerControll
 router.put('/me/change-password', authMiddleware, authorize([UserRole.PROV]), providerController.changeMyPassword);
 router.put('/:id/change-password', authMiddleware, authorize([UserRole.ADMIN]), providerController.changePassword);
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);
-
-// filtros
-
 
 export default router;

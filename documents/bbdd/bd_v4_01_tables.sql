@@ -118,7 +118,9 @@ CREATE TABLE Furniture (
     provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL,
     color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL,
     short_description TEXT,
-    qr_url VARCHAR(255)
+    qr_url VARCHAR(255),
+    required_people INTEGER NOT NULL DEFAULT 1,
+    visible BOOLEAN NOT NULL DEFAULT FALSE,
 );
 
 -- ============================
@@ -163,7 +165,7 @@ CREATE TABLE  Step (
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     step_number INTEGER NOT NULL,
     used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL,
-    scene_camera_angle NULL
+    scene_camera_angle INTEGER DEFAULT NULL
 );
 
 -- ============================

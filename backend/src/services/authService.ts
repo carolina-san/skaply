@@ -36,6 +36,14 @@ export class AuthService {
     return result.rows.length > 0;
   }
 
+  async userExistsByCIF(cif: string): Promise<boolean> {
+    const result = await pool.query(
+      `SELECT 1 FROM "User" WHERE cif = $1 LIMIT 1`,
+      [cif]
+    );
+    return result.rows.length > 0;
+  }
+
   async registerProvider(reqUser: RegisterUser) {
     try {
       const date = new Date();
