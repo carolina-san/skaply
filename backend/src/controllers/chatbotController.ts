@@ -156,6 +156,21 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(ctx.parameters.furniture_category, ctx.parameters.furniture_color, shownId));
                     return;
                 }
+                case 'get.furniture.ref': {
+                    console.log('get.furniture.ref');
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('formacionreferencia-followup')
+                    );
+                    if (!ctx) {
+                        console.log('No se recibió el mueble');
+                        next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
+                        return;
+                    }
+                    const name = ctx.parameters.furniture_name;
+                    console.log(name);
+                    res.status(200).json(await this.chatbotService.getFurnitureRef(name, session));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No entiendo esa consulta. (backend)'

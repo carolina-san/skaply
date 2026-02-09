@@ -143,15 +143,15 @@ VALUES
     'approved',
     true
 ),
--- PROVIDER: Actiu (datos reales) quitar xd
+-- PROVIDER: Actiu 
 (
-    'correo@actiu.com',
+    'correo@activo.com',
     null,
     'A03137874', 
-    'Actiu', 
+    'Activo', 
     '+34966560700', 
-    'Parque Tecnológico Actiu, Autovía CV-80, salida Onil-Castalla, 03420 Castalla (Alicante)', 
-    'https://actiucdn.net/cdn-cgi/image/width=941,height=663,fit=cover,format=auto,quality=95//uploads/images/autores/actiu-name-692.jpg', 
+    'Avenida la libertad, 19, 03610, petrer (Alicante)', 
+    'https://img.freepik.com/vector-gratis/plantilla-logotipo-ateismo-diseno-plano_23-2149242249.jpg?semt=ais_hybrid&w=740&q=80', 
     'provider', 
     NOW(),
     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 
@@ -311,7 +311,7 @@ VALUES
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
-    6,
+    7,
     'low',
     3,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
