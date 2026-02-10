@@ -1,5 +1,20 @@
 @import "../../../styles.css";
 
+.btn-opciones-mueble {
+  @apply flex flex-row px-4 py-1 rounded-full transition-all duration-200 items-center;
+}
+
+.btn-opciones-mueble:hover {
+  @apply bg-azul-claro;
+}
+
+.btn-opciones-mueble.active {
+  @apply bg-azul-claro text-marron-oscuro rounded-full;
+
+  p {
+    @apply flex;
+  }
+}
 
 
 /* =========================================
