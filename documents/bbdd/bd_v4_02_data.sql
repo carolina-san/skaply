@@ -228,7 +228,7 @@ VALUES
 --         |             |- paso1
 --         |- pieza2 x1 -|
 (
-    'furniture1.stl',
+    '/storage/cube.glb',
     'Silla de madera',
     'F001',
     1,
@@ -245,7 +245,7 @@ VALUES
 --         |- pieza2 x1 -|         |- paso2
 --         |- pieza3 x1 -----------|
 (
-    'furniture2.stl',
+    '/storage/cube.glb',
     'Mesa de comedor',
     'F003',
     2,
@@ -264,7 +264,7 @@ VALUES
 --         |             |- paso2 --|
 --         |- pieza2 x1 -|
 (
-    'furniture3.stl',
+    '/storage/cube.glb',
     'Sofa gris',
     'F006',
     3,
@@ -281,7 +281,7 @@ VALUES
 --         |- pieza2 x2 -|
 
 (
-    'furniture4.stl',
+    '/storage/cube.glb',
     'Lámpara de comedor',
     'F007',
     4,
@@ -299,7 +299,7 @@ VALUES
 --         |- PSILLA02 x1 -|         |- paso2
 --         |- PSILLA03 x1 -----------|
 (
-    'silla.stl',
+    '/storage/cube.glb',
     'Silla azul',
     'F008',
     1,
@@ -313,7 +313,7 @@ VALUES
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
-    'vital_pro.glb',
+    '/storage/vital_pro.glb',
     'Mesa individual Vital Pro',
     'VR515F200',
     2,

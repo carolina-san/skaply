@@ -1,12 +1,13 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
 import { Modal } from '../modal/modal';
+import { ActivatedRoute } from '@angular/router'
 
 interface AssemblyPart {
   object: RenderableObject;
@@ -23,22 +24,32 @@ import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
 
 @Component({
   selector: 'app-graphics-engine',
+  standalone: true,
   imports: [CommonModule, Modal, FormsModule],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
+export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
 
-  constructor(private engine: EngineFacade, private apiService: ApiService) { }
+  constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) { }
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
   furnitures: Furniture[] = [];
+
+  // Configuración de modelo
+  useExternalModel = true; // Cambiar a true para cargar modelo externo
+  furniture: any; // Mueble cargado desde API
+
+  get modelUrl(): string {
+    return this.furniture?.data[0].file_uri || '';
+  }
+
 
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
@@ -132,6 +143,22 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
   private initialCameraState: any = null; // Store initial state manually if needed
 
+  private isViewInitialized = false;
+
+  ngOnInit(): void {
+    let ref = this.route.snapshot.params['ref'];
+    // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
+    this.apiService.getFurnitureById(ref).subscribe(f => {
+      this.furniture = f;
+      console.log('Furniture loaded:', this.furniture);
+
+      if (this.useExternalModel && this.isViewInitialized) {
+        this.createFurniture().then(() => {
+          if (!this.animationFrameId) this.animate();
+        });
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.checkScreenSize();
@@ -141,8 +168,17 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
         this.initThree();
-        this.createFurniture();
-        this.animate();
+        this.isViewInitialized = true;
+
+        if (this.useExternalModel) {
+          // Si ya tenemos datos, creamos el mueble. Si no, esperamos a ngOnInit
+          if (this.furniture) {
+            this.createFurniture().then(() => this.animate());
+          }
+        } else {
+          // Modo hardcoded, crear inmediatamente
+          this.createFurniture().then(() => this.animate());
+        }
 
         if (this.autoStartSimulation()) {
           this.setMode('simulation');
@@ -464,7 +500,28 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     return group;
   }
 
-  private createFurniture(): void {
+  private async createFurniture(): Promise<void> {
+    if (this.useExternalModel) {
+      try {
+        const model = await this.engine.loadGLTF(this.modelUrl);
+        // Ajustar modelo cargado si es necesario
+        model.setPosition(0, 0, 0);
+        model.castShadow = true;
+        model.receiveShadow = true;
+        this.engine.addToScene(model);
+
+        // En modo modelo externo, simplificamos steps o lo configuramos como 'final' por defecto
+        // para que no intente animar partes que no existen en this.parts
+        this.totalSteps = 1;
+        this.setMode('final');
+        return;
+      } catch (error) {
+        console.error('Error cargando modelo externo:', error);
+        // Fallback or alert? For now just log.
+        return;
+      }
+    }
+
     const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
     const screwMaterial: MaterialConfig = { type: 'standard', color: 0x374151, roughness: 0.4, metalness: 0.9 };
     const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
@@ -727,6 +784,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
       canvas.style.cursor = 'grab';
     }
   }
+
 
   // Helper to find which AssemblyPart owns a RenderableObject (walking up hierarchy if needed)
   private findPartForObject(inputObj: RenderableObject): AssemblyPart | undefined {

@@ -7,6 +7,7 @@ import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-motor',
+  standalone: true,
   imports: [CommonModule, GraphicsEngineComponent, Chatbot],
   templateUrl: './motor.html',
   styleUrls: ['./motor.css']
