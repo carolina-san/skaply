@@ -334,6 +334,7 @@ async getFurnitureAssembly(furnitureId: number) {
   async createFurniture(data: {
     name: string;
     file_uri: string;
+    assemblyPDF_uri: string;
     difficulty: 'low' | 'medium' | 'high';
     image_url?: string;
     reference_number?: string;
@@ -341,27 +342,45 @@ async getFurnitureAssembly(furnitureId: number) {
     provider_id?: number;
     color_id?: number;
     short_description?: string;
+    required_people?: number;
+    visible?: boolean;
   }) {
     const {
       name,
       file_uri,
+      assemblyPDF_uri,
       difficulty,
       image_url,
       reference_number,
       category_id,
       provider_id,
       color_id,
-      short_description
+      short_description,
+      required_people = 1,
+      visible = false
     } = data;
 
     try {
       // Insertar en DB
       const result = await pool.query(
         `INSERT INTO Furniture 
-        (name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        (name, file_uri, assemblyPDF_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description, required_people, visible)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         RETURNING *`,
-        [name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description]
+        [
+          name,
+          file_uri,
+          assemblyPDF_uri,
+          image_url,
+          reference_number,
+          difficulty,
+          category_id,
+          provider_id,
+          color_id,
+          short_description,
+          required_people,
+          visible
+        ]
       );
 
       return result.rows[0];

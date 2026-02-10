@@ -108,41 +108,50 @@ export class FurnitureController {
       const {
         name,
         file_uri,
+        assemblyPDF_uri,
         difficulty,
         image_url,
         reference_number,
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        required_people = 1,
+        visible = false
       } = req.body;
 
-      if (!name || !file_uri || !difficulty) {
-        return next(new ApiError('BAD_REQUEST', 'Name, file_uri and difficulty are required'));
+      // Validaciones obligatorias
+      if (!name || !file_uri || !assemblyPDF_uri || !difficulty) {
+        return next(new ApiError('BAD_REQUEST', 'Name, file_uri, assemblyPDF_uri and difficulty are required'));
       }
 
       if (!validDifficulties.includes(difficulty)) {
         throw new ApiError('UNPROCESSABLE', 'Invalid difficulty value');
       }
 
+      // Verificar que el usuario es provider
       const isProvider = await this.providerService.checkProviderRoleById(provider_id);
-
       if (!isProvider) {
         throw new ApiError('UNPROCESSABLE', 'User is not a provider');
       }
 
+      // Verificar que los recursos existen
       await this.furnitureService.checkResourcesExist(category_id, provider_id, color_id);
 
+      // Crear mueble
       const furniture = await this.furnitureService.createFurniture({
         name,
         file_uri,
+        assemblyPDF_uri,
         difficulty,
         image_url,
         reference_number,
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        required_people,
+        visible
       });
 
       res.status(201).json({
@@ -154,7 +163,7 @@ export class FurnitureController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   updateFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {

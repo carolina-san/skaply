@@ -111,6 +111,7 @@ CREATE TABLE Furniture (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     file_uri TEXT NOT NULL,
+    assemblyPDF_uri TEXT NOT NULL,
     image_url TEXT,
     reference_number VARCHAR(100),
     difficulty diff NOT NULL,
@@ -120,7 +121,7 @@ CREATE TABLE Furniture (
     short_description TEXT,
     qr_url VARCHAR(255),
     required_people INTEGER NOT NULL DEFAULT 1,
-    visible BOOLEAN NOT NULL DEFAULT FALSE,
+    visible BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ============================
