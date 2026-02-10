@@ -1,7 +1,5 @@
 <div
-  class="w-full h-full rounded-3xl flex flex-col p-2 sm:p-4 border-0 shadow-none bg-transparent transition-colors duration-300"
-  [class.bg-transparent]="true" [class.border-0]="true" [class.shadow-none]="true">
-
+  class="w-full h-full rounded-3xl flex flex-col p-2 sm:p-4 border-0 shadow-none bg-transparent transition-colors duration-300">
 
   <!-- AR Permission Overlay -->
   @if (arFlowState() !== 'idle') {
@@ -59,6 +57,17 @@
       </p>
       }
 
+      @if (mode() === 'manual') {
+      <div class="flex items-center space-x-2 mb-2">
+        @for (step of [].constructor(totalSteps); track $index) {
+        <div class="w-5 h-5 rounded-full transition-all duration-300 flex items-center justify-center  text-sm p-1"
+          [class.bg-azul-claro]="$index <= currentStep()" [class.bg-white/30]="$index > currentStep()"
+          [class.scale-125]="$index === currentStep()"> {{ $index + 1 }}
+        </div>
+        }
+      </div>
+      }
+
       <div class="flex items-center space-x-2 text-sm"></div>
       @if (isolatedPart()) {
       <p class="font-semibold mt-1 text-beige">Inspeccionando pieza</p>
@@ -78,8 +87,7 @@
     <div class="flex items-center space-x-2">
       @if (isSmallScreen()) {
       <button (click)="toggleAR()"
-        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors z-10"
-        [class.bg-beige]="true" [class.text-marron-oscuro]="true" [class.hover:bg-white]="true">
+        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors z-10 bg-beige text-marron-oscuro hover:bg-white hover:text-beige">
         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
@@ -160,8 +168,7 @@
   <footer class="flex flex-col items-center justify-center " [class.pointer-events-none]="areControlsDisabled()"
     [class.opacity-60]="areControlsDisabled()" [class.opacity-50]="isolatedPart() !== null">
     <!-- Mode Toggle -->
-    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors"
-      [class.bg-beige]="backgroundColor() === 'dark'" [class.bg-marron-oscuro]="backgroundColor() === 'light'">
+    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
 
       <button (click)="setMode('manual')" class="btn-opciones-mueble" [class.text-marron-oscuro]="mode() === 'manual'"
         [class.bg-azul-claro]="mode() === 'manual'">
