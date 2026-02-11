@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EngineFacade, RenderableObject } from '../engine-facade/interfaces';
+import { EngineFacade, RenderableObject } from '../engine/interfaces';
 import { Axis, FurnitureAssemblyDto } from '../types/assembly.types';
 
 type PartInstance = {

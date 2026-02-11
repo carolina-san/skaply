@@ -3,7 +3,7 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
+import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
 import { Modal } from '../modal/modal';
@@ -20,7 +20,7 @@ interface AssemblyPart {
   arrow?: RenderableObject;
 }
 
-import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
+import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 
 @Component({
   selector: 'app-graphics-engine',
