@@ -1,7 +1,7 @@
 @import "../../../styles.css";
 
 .btn-opciones-mueble {
-  @apply flex flex-row px-4 py-1 rounded-full transition-all duration-200 items-center;
+  @apply flex flex-row px-2 py-1 rounded-full transition-all duration-200 items-center text-marron-oscuro gap-1 font-medium;
 }
 
 .btn-opciones-mueble:hover {
