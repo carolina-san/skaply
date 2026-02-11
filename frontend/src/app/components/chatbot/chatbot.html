@@ -1,24 +1,25 @@
-
 <!-- Comportamiento del chatbot según el tamaño -->
 <div class="fixed right-0 bottom-0 transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
     ' top-0 h-screen': inMontajeMode && isDesktop,     
     'w-1/4  ':  isDesktop,                    
     ' w-full sm:w-96  h-[85vh] ': !inMontajeMode || !isDesktop,
-    'h-20': !chatVisible && (!inMontajeMode || isMobile)
+    'h-20': !chatVisible && (!inMontajeMode || isMobile),
+    '!z-999': chatVisible
   }">
 
     <!-- Icono del chatbot -->
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
-        class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center p-0 shadow-lg hover:scale-110 transition-transform pointer-events-auto "
+        class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center h-20 w-20 p-2 rounded-full  hover:scale-110 transition-transform pointer-events-auto "
         [ngClass]="{
-        'bottom-10': isCatalogPage,
-        'bottom-40': !isCatalogPage
+        'bottom-5 bg-marron-oscuro shadow-lg': isCatalogPage,
+        'bottom-14 right-2!': !isCatalogPage
     }" (click)="toggleChat()">
-        <img src="assets/imgs/Allen.png" alt="Allen" class="w-15 lg:w-20 h-auto ">
+        <img src="assets/imgs/Allen.png" alt="Allen" class="w-full">
     </button>
 
     <!-- Chatbot abierto y renderizado de rich content -->
-    <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto"
+    <div *ngIf="chatVisible"
+        class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
         [ngClass]="{
     'rounded-t-3xl': !inMontajeMode || isMobile}">
 
@@ -63,9 +64,7 @@
                         </div>
                         <!-- Chips dentro de la card -->
                         <div class="flex flex-wrap gap-2 justify-end">
-                            <button *ngFor="let btn of msg.rich.buttons"
-                                class=" chip"
-                                (click)="openLink(btn.postback)">
+                            <button *ngFor="let btn of msg.rich.buttons" class=" chip" (click)="openLink(btn.postback)">
                                 {{ btn.text }}
                             </button>
                         </div>
@@ -110,8 +109,7 @@
 
                             <!-- Button item -->
                             <div *ngIf="item.type === 'button'" class="flex items-center gap-2 msg-bot">
-                                <button class="chip flex items-center gap-2"
-                                    (click)="openLink(item.link)">
+                                <button class="chip flex items-center gap-2" (click)="openLink(item.link)">
                                     <span *ngIf="item.icon?.type" class="material-symbols-rounded">
                                         {{ item.icon.type }}
                                     </span>
