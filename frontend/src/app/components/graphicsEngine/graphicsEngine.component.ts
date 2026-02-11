@@ -73,6 +73,16 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     }
   });
 
+  visibleSteps = computed(() => {
+    return Array.from({ length: this.totalSteps }, (_, i) => i);
+  });
+
+  goToStep(step: number): void {
+    if (step >= 0 && step < this.totalSteps) {
+      this.manualStep.set(step);
+    }
+  }
+
   isSimulating = computed(() => this.mode() === 'simulation');
 
   isManualFirstStep = computed(() => this.manualStep() === 0);

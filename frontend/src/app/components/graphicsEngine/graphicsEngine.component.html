@@ -46,8 +46,8 @@
 
   <!-- Header -->
   @if (showHeader() && !isARActive()) {
-  <header class="flex justify-between items-start p-2 relative top-20">
-    <div>
+  <header class="flex justify-center items-center p-2 relative top-20 z-50 pointer-events-none w-full">
+    <div class="pointer-events-auto flex flex-col justify-center items-center w-full">
       <!-- Nombre del mueble -->
       @if (furnitureName() && mode() !== 'manual') {
       <p class="font-semibold text-base sm:text-xl transition-colors text-azul-claro mb-2">
@@ -56,17 +56,24 @@
       }
 
       @if (mode() === 'manual') {
-      <div class="flex items-center space-x-2 mb-2">
-        @for (step of [].constructor(totalSteps); track $index) {
-        <div class="w-5 h-5 rounded-full transition-all duration-300 flex items-center justify-center  text-sm p-1"
-          [class.bg-azul-claro]="$index <= currentStep()" [class.bg-white/30]="$index > currentStep()"
-          [class.scale-125]="$index === currentStep()"> {{ $index + 1 }}
-        </div>
+      <div #stepsContainer
+        class="flex items-center space-x-2 mb-2 overflow-x-auto max-w-[11rem] px-4 py-1  scrollbar-hide mask-fade pointer-events-auto">
+        @for (stepIndex of visibleSteps(); track stepIndex) {
+        <button (click)="goToStep(stepIndex)"
+          class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
+          [ngClass]="{
+            'bg-azul-claro': stepIndex <= currentStep(),
+            'bg-white/30': stepIndex > currentStep(),
+            'scale-115': stepIndex === currentStep(),
+            'font-bold': stepIndex === currentStep()
+          }">
+          {{ stepIndex + 1 }}
+        </button>
         }
       </div>
       }
 
-      <div class="flex items-center space-x-2 text-sm"></div>
+      <div class="flex items-center justify-center space-x-2 text-sm"></div>
       @if (isolatedPart()) {
       <p class="font-semibold mt-1 text-beige">Inspeccionando pieza</p>
       } @else if (isSimulating()) {
@@ -82,26 +89,26 @@
 
       }
     </div>
-    <div class="flex items-center space-x-2">
-      @if (isSmallScreen()) {
-      <button (click)="toggleAR()"
-        class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-colors z-10 bg-beige text-marron-oscuro hover:bg-white hover:text-beige">
-        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
-          <circle cx="12" cy="13" r="3"></circle>
-        </svg>
-        <span class="text-sm">AR</span>
-      </button>
-      }
-    </div>
+
   </header>
+
+  @if (isSmallScreen()) {
+  <button (click)="toggleAR()"
+    class="fixed top-24 right-2 flex items-center justify-center gap-1 px-2 py-1 rounded-full text-sm transition-colors z-55 bg-beige text-marron-oscuro hover:bg-marron-claro">
+    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+      <circle cx="12" cy="13" r="3"></circle>
+    </svg>
+    <span class="text-sm">AR</span>
+  </button>
+  }
   }
 
-  <!-- Canvas Container QUITAR DISPLAY NONE CUANDO ACABE -->
-  <div class="flex-1 relative display-none">
-    <canvas #canvas class="absolute top-0 left-0 w-full h-full block active:cursor-grabbing"
-      [class.bg-transparent]="isARActive()" [class.z-10]="isARActive()" style="cursor: grab;"></canvas>
+  <!-- Canvas Container-->
+  <div class=" relative h-full">
+    <canvas #canvas class="absolute top-0 left-0 w-full h-full cursor-grabbing" [class.bg-transparent]="isARActive()"
+      [class.z-10]="isARActive()"></canvas>
 
     @if(isARActive()) {
     <div class="absolute top-20 left-1/2 -translate-x-1/2 z-20">
@@ -146,46 +153,48 @@
 
   <!-- Footer Controls -->
   @if(showFooterControls() && !isARActive()) {
-  <footer class="flex flex-col items-start justify-center " [class.pointer-events-none]="areControlsDisabled()"
+  <footer class="flex flex-col items-start justify-center bg-transparent  text-marron-oscuro"
+    [class.pointer-events-none]="areControlsDisabled()"
     [class.opacity-60]="areControlsDisabled() || isolatedPart() !== null">
     @if (isCameraMoved()) {
     <button (click)="resetCameraPosition()"
-      class="flex px-3 py-2 bg-beige justify-left rounded-full transition-all duration-200 transform hover:scale-105 mb-2">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000">
+      class="flex px-3 py-2 bg-beige justify-left rounded-full transition-all duration-200 transform hover:scale-105 mb-2 z-50">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="M480-360v-60q0-25 17.5-42.5T540-480h60L480-360Zm0 161v-85l196-196h85L480-199Zm2 75 353-354q16 4 27.5 15.5T878-435L524-82q-16-5-26.5-15.5T482-124Zm117 44 281-281v85L684-80h-85Zm161 0 120-120v60q0 25-17.5 42.5T820-80h-60ZM480-760q-117 0-198.5 81.5T200-480q0 72 32.5 132t87.5 98v-70q0-17 11.5-28.5T360-360q17 0 28.5 11.5T400-320v160q0 17-11.5 28.5T360-120H200q-17 0-28.5-11.5T160-160q0-17 11.5-28.5T200-200h54q-62-50-98-122.5T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q114 0 204 62.5T814-615q6 16 0 31t-22 21q-16 6-31.5 0T739-585q-31-78-100.5-126.5T480-760Z" />
       </svg>
     </button>
     }
     <!--Primera fila de botones-->
-    <div class="flex items-left justify-left w-full mb-2">
+    <div class="flex items-left justify-left w-full mb-2 h-10">
       <!-- Mode Toggle -->
       <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
 
-        <button (click)="setMode('manual')" class="btn-opciones-mueble" [class.bg-azul-claro]="mode() === 'manual'">
+        <button (click)="setMode('manual')" class="btn-opciones-mueble" [ngClass]="{ 'active': mode() === 'manual' }">
           <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
             <path
               d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
           </svg>
-          @if (mode() === 'simulation') {<p>Paso a paso</p>}
+          @if (mode() === 'simulation') {<p>Manual</p>}
         </button>
         <button (click)="setMode('simulation')" class="btn-opciones-mueble"
-          [class.text-marron-oscuro]="mode() === 'simulation'" [class.bg-azul-claro]="mode() === 'simulation'">
+          [ngClass]="{ 'active': mode() === 'simulation' }">
           <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
             <path
               d="M701-535q14-9 14-25t-14-25L506-710q-15-10-30.5-1.5T460-685v250q0 18 15.5 26.5T506-410l195-125ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-520q0-17 11.5-28.5T120-720q17 0 28.5 11.5T160-680v520h520q17 0 28.5 11.5T720-120q0 17-11.5 28.5T680-80H160Zm160-720v480-480Z" />
           </svg>
-          @if (mode() === 'manual') {<p>Simulación</p>}
+          @if (mode() === 'manual') {<p>Auto</p>}
         </button>
       </div>
     </div>
 
     <!--Segunda fila de botones-->
     <!-- Dynamic Controls Area -->
-    <div class="w-full flex flex-row items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1">
+    <div
+      class="w-full flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1">
 
       @if (mode() === 'manual') {
-      <button class="bg-beige p-2 rounded-full">
+      <button class="bg-beige p-2 rounded-full" (click)="goToStep(0)">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
           <path
             d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
@@ -244,10 +253,8 @@
 
         <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige">
           @for(speed of simulationSpeeds; track speed) {
-          <button (click)="setSimulationSpeed(speed)"
-            class="px-3 py-1 rounded-full transition-colors duration-200 text-xs w-12"
-            [class.bg-azul-claro]="simulationSpeed() === speed" [class.text-marron-oscuro]="simulationSpeed() === speed"
-            [class.text-marron-oscuro]="simulationSpeed() !== speed">
+          <button (click)="setSimulationSpeed(speed)" class="btn-opciones-mueble"
+            [ngClass]="{ 'active': simulationSpeed() === speed }">
             {{speed}}x
           </button>
           }
