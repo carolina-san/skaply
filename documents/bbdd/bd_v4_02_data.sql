@@ -221,7 +221,8 @@ INSERT INTO Furniture (
     short_description,
     image_url,
     qr_url, -- (no tiene sentido si es casi el "reference_number") ??
-    assemblyPDF_uri
+    assemblyPDF_uri,
+    visible
 )
 VALUES
 -- mueble1 |- pieza1 x1 -|
@@ -238,7 +239,8 @@ VALUES
     'Silla de madera cómoda y resistente',
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F001',
-    'pdf1'
+    'pdf1',
+    true
 ),
 -- mueble2 |- pieza1 x1 -|
 --         |             |- paso1 -|
@@ -255,7 +257,8 @@ VALUES
     'Mesa de comedor grande y elegante',
     'https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F003',
-     'pdf1'
+     'pdf1',
+     true   
 ),
 -- mueble3 |- pieza1 x1 -|
 --         |             |- paso1 --|
@@ -274,7 +277,8 @@ VALUES
     'Sofa gris de tres plazas con cojines suaves',
     'https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F006',
-     'pdf1'
+     'pdf1',
+     true   
 ),
 -- mueble4 |- pieza1 x2 -|
 --         |             |- paso1
@@ -291,7 +295,8 @@ VALUES
     'Lámpara de comedor moderna con luz ajustable',
     'https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F007',
-     'pdf1'
+     'pdf1',
+     true   
 ),
 -- MUEBLE SILLA PRUEBA RAMA FEATURE/THREEJS
 -- silla   |- PSILLA01 x1 -|
@@ -309,7 +314,8 @@ VALUES
     'Silla azul apilable y ligera',
     'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F008',
-     'pdf1'
+     'pdf1',
+     true   
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
@@ -323,7 +329,8 @@ VALUES
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
     'https://skaply.ovh/catalogo?furniture=VR515F200',
-     'pdf1'
+     'pdf1',
+     true   
 );
 
 -- ============================

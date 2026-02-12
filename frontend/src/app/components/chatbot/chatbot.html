@@ -11,7 +11,7 @@
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
         class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center h-20 w-20 p-2 rounded-full  hover:scale-110 transition-transform pointer-events-auto "
         [ngClass]="{
-        'bottom-5 bg-marron-oscuro shadow-lg': isCatalogPage,
+        'bottom-5 bg-marron-oscuro shadow-lg border-1 border-beige/50': isCatalogPage,
         'bottom-14 right-2!': !isCatalogPage
     }" (click)="toggleChat()">
         <img src="assets/imgs/Allen.png" alt="Allen" class="w-full">
