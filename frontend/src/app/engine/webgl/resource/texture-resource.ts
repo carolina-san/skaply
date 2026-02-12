@@ -1,27 +1,32 @@
-import { Resource } from './resource';
+// !!LO COMENTO PORQUE EN PRINCIPIO NO HACE FALTA USAR ESTA CLASE
+// !!LAS TEXTURAS SE COGEN DESDE LOS GLB DIRECTAMENTE EN EL MESH RESOURCE
 
-export class TextureResource extends Resource {
 
-    texture?: WebGLTexture;
-    width: number = 0;
-    height: number = 0;
 
-    constructor(private gl: WebGL2RenderingContext, name: string) { super(name); }
+// import { Resource } from './resource';
 
-    // LOAD FILE
+// export class TextureResource extends Resource {
 
-    async loadFile(url: string): Promise<void> {
-        const image = new Image();
-        image.src = url;
-        await image.decode();
+//     texture?: WebGLTexture;
+//     width: number = 0;
+//     height: number = 0;
 
-        const gl = this.gl;
-        this.texture = this.gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.generateMipmap(gl.TEXTURE_2D);
+//     constructor(private gl: WebGL2RenderingContext, name: string) { super(name); }
 
-        this.width = image.width;
-        this.height = image.height;
-    }
-}
+//     // LOAD FILE
+
+//     async loadFile(url: string): Promise<void> {
+//         const image = new Image();
+//         image.src = url;
+//         await image.decode();
+
+//         const gl = this.gl;
+//         this.texture = this.gl.createTexture()!;
+//         gl.bindTexture(gl.TEXTURE_2D, this.texture);
+//         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+//         gl.generateMipmap(gl.TEXTURE_2D);
+
+//         this.width = image.width;
+//         this.height = image.height;
+//     }
+// }
