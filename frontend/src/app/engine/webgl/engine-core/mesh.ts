@@ -1,3 +1,4 @@
+import { ShaderResource } from '../resource/shader-resource';
 import { Entity } from './entity';
 import { mat4 } from 'gl-matrix';
 
@@ -14,11 +15,11 @@ export class Mesh extends Entity {
         super();
     }
 
-    draw (modelMatrix: mat4): void {
+    draw (modelMatrix: mat4 /*, shader: ShaderResource*/): void {
+        
         const gl = this.gl;
-        // TODO: bind shader, set uniforms
-        // Set model matrix uniform
-        // gl.uniformMatrix4fv(uModelMatrix, false, modelMatrix);
+
+        //shader.setMat4("model", modelMatrix);
 
         // bind VAO
         gl.bindVertexArray(this.resource.vao);

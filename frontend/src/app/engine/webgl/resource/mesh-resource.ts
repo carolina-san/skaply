@@ -24,10 +24,16 @@ export class MeshResource extends Resource {
         super(name);
     }
 
-    // LOAD FILE
-    // !! version primeriza que solo coge el primer mesh del glb 
+    // LOAD FILE (LOAD GLTF AND SETUP BUFFERS)
 
     async loadFile(url: string): Promise<void> {
+        await this.loadGLTF(url);
+        this.setupBuffers();
+    }
+
+    // LOAD GLTF !! version primeriza que solo coge el primer mesh del glb 
+
+    private async loadGLTF(url: string): Promise<void> {
 
         // INFO:
         // Dowload glTF file and parse it using loaders.gl
@@ -156,6 +162,53 @@ export class MeshResource extends Resource {
             case 'VEC4': return 4;
             default: return 3;
         }
+    }
+
+    // SETUP BUFFERS (CREATE VAO, VBOs, EBO)
+
+    private setupBuffers(): void {
+        
+        const gl = this.gl;
+        const vao = gl.createVertexArray()!;
+        gl.bindVertexArray(vao);
+
+        // POSITION
+        const vboPos = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vboPos);
+        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(0);
+
+        // NORMAL
+        if (this.normals.length > 0) {
+            const vboNormal = gl.createBuffer()!;
+            gl.bindBuffer(gl.ARRAY_BUFFER, vboNormal);
+            gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(1);
+        }
+
+        // TEXCOORD
+        if (this.texCoords.length > 0) {
+            const vboTex = gl.createBuffer()!;
+            gl.bindBuffer(gl.ARRAY_BUFFER, vboTex);
+            gl.bufferData(gl.ARRAY_BUFFER, this.texCoords, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(2);
+        }
+
+        // EBO
+        const ebo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+
+        // desbind VAO
+        gl.bindVertexArray(null);
+
+        this.mesh = new Mesh(
+            { vao, indexCount: this.indices.length },
+            gl
+        );
     }
 
     // DRAW (no hace falta porque se dibuja desde la funcion traverse del nodo raiz)

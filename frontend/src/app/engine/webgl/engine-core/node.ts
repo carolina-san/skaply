@@ -1,5 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
+import { Mesh } from './mesh';
 
 export class Node {
     
@@ -112,8 +113,8 @@ export class Node {
         }
 
         // draw entity 
-        if (this.entity) {
-            this.entity.draw(this.transformMatrix);
+        if (this.entity instanceof Mesh) {
+            this.entity.draw(this.transformMatrix/*, shader*/);
         }
 
         // recursive
