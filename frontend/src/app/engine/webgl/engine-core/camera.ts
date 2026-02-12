@@ -9,10 +9,12 @@ export class Camera extends Entity {
     public fov: number = 45;
     public aspect: number = 1;
 
-    public projectionMatrix: mat4 = mat4.create(); // camera coord -> clip coord
-    public viewMatrix: mat4 = mat4.create();  // world coord -> camera coord
-    public position: vec3 = vec3.create(); // camera's position (within world)
-    public target: vec3 = vec3.create();
+    public viewMatrix: mat4 = mat4.create();        // world coord -> camera coord
+    public projectionMatrix: mat4 = mat4.create();  // camera coord -> clip coord
+    public position: vec3 = vec3.create();          // camera's position (within world)
+    public target: vec3 = vec3.create();            // point camera is looking at 
+
+    // SETTERS
 
     setPerspective(fov: number, aspect: number, near: number, far: number): void {
         this.isPerspective = true;
@@ -20,22 +22,23 @@ export class Camera extends Entity {
         this.aspect = aspect;
         this.near = near;
         this.far = far;
-        // create perspective projection matrix
         mat4.perspective(this.projectionMatrix, fov * Math.PI / 180, aspect, near, far);
     }
 
     setOrthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): void {
         this.isPerspective = false;
-        // create orthographic projection matrix
         mat4.ortho(this.projectionMatrix, left, right, bottom, top, near, far);
     }
+
+    // LOOKAT (CAMERA ORIENTATION)
 
     lookAt(position: vec3, target: vec3): void {
         vec3.copy(this.position, position);
         vec3.copy(this.target, target);
-        // create view matrix
         mat4.lookAt(this.viewMatrix, this.position, this.target, [0, 1, 0]);
     }
+
+    // DRAW
 
     draw(modelMatrix: mat4): void {
         // Camera does not draw geometry
