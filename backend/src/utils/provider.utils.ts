@@ -3,6 +3,8 @@ import { checkProvider } from '@/types';
 import { ApiError } from '@/utils/ApiError';
 import { ProviderService } from '@/services/ProviderService';
 import { validateParameterId } from './common.utils';
+import bcrypt from "bcryptjs";
+
 
 export const validateExistsProvider = (provider: any) => {
     if (!provider) {
@@ -91,4 +93,43 @@ export async function validateProvider(
   if (checkApprovedRegistration) { validateApprovedProvider(provider);}
   if (checkPendingRegistration) {validatePendingProvider(provider); }
   if (checkVisible) {validateVisibleProvider(provider);}
+}
+
+export async function getAndValidateIdFromEmailToken(
+  providerService: ProviderService,
+  email: string
+): Promise<number> {
+  if (!email || email == "") {
+    throw new ApiError('UNAUTHORIZED', 'User not authenticated');
+  }
+  const providerId = await providerService.getProviderIdByEmail(email);
+  if (!providerId) {
+    throw new ApiError('NOT_FOUND', 'Provider id not found from token');
+  }
+  return providerId;
+}
+
+export async function validateNotSamePassword(newPassword: string,storedPassword: string): Promise<void> {
+
+  if (!storedPassword) {
+    throw new ApiError('INTERNAL_SERVER', 'No stored password found');
+  }
+
+  let isSame = false;
+
+  // bcrypt hash
+  if (storedPassword.startsWith('$2b$')) {
+    isSame = await bcrypt.compare(newPassword, storedPassword);
+  } 
+  // plain text (development only)
+  else {
+    isSame = newPassword === storedPassword;
+  }
+
+  if (isSame) {
+    throw new ApiError(
+      'BAD_REQUEST',
+      'New password must be different from current password'
+    );
+  }
 }

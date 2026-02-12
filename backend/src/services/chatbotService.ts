@@ -166,16 +166,16 @@ export class ChatbotService {
    * Obtiene lista de proveedores
    */
   async getProviders(): Promise<any> {
-    const result = await this.providerService.getAllProvidersChatbot(); // no debería devolver providers que tengan active = false
+    const result = await this.providerService.getVisibleProviders(); // no debería devolver providers que tengan active = false
 
     return {
       fulfillmentMessages: [
         {
           text: {
-            text: [`Tenemos ${result.rows.length} proveedores disponibles:`]
+            text: [`Tenemos ${result.length} proveedores disponibles:`]
           }
         },
-        ...result.rows.map((p: any) => ({
+        ...result.map((p: any) => ({
           card: {
             title: p.company_name,
             subtitle: `${p.email}\n${p.tax_address}`,
@@ -546,7 +546,7 @@ export class ChatbotService {
     return {
       fulfillmentMessages: [
         {
-          text: { text: ['¿Qué color de mueble prefieres?'] }
+          text: { text: ['¡Perfecto! Ahora dime, ¿qué color de mueble prefieres?'] }
         },
         {
           payload: {
@@ -635,6 +635,200 @@ export class ChatbotService {
       console.error("Error in filterByCategory:", error);
       return {
         fulfillmentText: "Hubo un error al buscar la categoría."
+      };
+    }
+  }
+
+  async getFurnitureRecomendation(category?: string, color?: string, session?: string): Promise<any> {
+    let category_id = null;
+    let color_id = null;
+    if (category) {
+      const categoryResult = await this.categoryService.getCategoryByName(category);
+      if (categoryResult.rows.length > 0) {
+        category_id = categoryResult.rows[0].id;
+      }
+    }
+    if (color) {
+      const colorResult = await this.colorService.getColorByName(color);
+      if (colorResult.rows.length > 0) {
+        color_id = colorResult.rows[0].id;
+      }
+    }
+    const filters: any = {};
+    if (category_id) filters.category_ids = [category_id];
+    if (color_id) filters.color_ids = [color_id];
+
+    try {
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+      let matchType = 'exact';
+
+      if (furnitureResult.rows.length === 0 && category_id) {
+        const fallbackFilters = { category_ids: [category_id], color_ids: [] };
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+        matchType = 'fallback';
+      }
+
+      if (furnitureResult.rows.length === 0) {
+        return {
+          fulfillmentText: "Lo siento, no encontré muebles con esas características."
+        };
+      }
+
+      const randomIndex = Math.floor(Math.random() * furnitureResult.rows.length);
+      const exactMatch = furnitureResult.rows[randomIndex];
+
+      let introText = 'Este es tu mueble ideal:';
+      if (matchType === 'fallback') {
+        introText = `No encontré muebles con esas características, pero aquí tienes una opción en esa categoría:`;
+      }
+
+      return {
+        fulfillmentMessages: [
+          {
+            text: { text: [introText] }
+          },
+          {
+            card: {
+              title: exactMatch.name,
+              subtitle: `${exactMatch.short_description || ''}`,
+              imageUri: exactMatch.image_url || 'https://via.placeholder.com/300',
+              buttons: [
+                {
+                  text: 'Empezar montaje',
+                  postback: `https://skaply.ovh/viewer-3d/${exactMatch.reference_number}`
+                }
+              ]
+            }
+          },
+          {
+            text: { text: ['¿Quieres más recomendaciones?'] }
+          },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "chips",
+                    options: [
+                      { text: "Sí, ver más" },
+                      { text: "No, gracias" }
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        ],
+        outputContexts: session ? [
+          {
+            name: `${session}/contexts/recommendation_vars`,
+            lifespanCount: 5,
+            parameters: {
+              furniture_category: category,
+              furniture_color: color,
+              shown_furniture_id: exactMatch.id
+            }
+          }
+        ] : []
+      };
+    } catch (error) {
+      console.error("Error in getFurnitureRecomendation:", error);
+      return {
+        fulfillmentText: "Hubo un error al obtener las recomendaciones de muebles."
+      };
+    }
+  }
+
+  async getFurnitureRecomendationMore(category?: string, color?: string, shownId?: number): Promise<any> {
+    let category_id = null;
+    let color_id = null;
+    if (category) {
+      const categoryResult = await this.categoryService.getCategoryByName(category);
+      if (categoryResult.rows.length > 0) {
+        category_id = categoryResult.rows[0].id;
+      }
+    }
+    if (color) {
+      const colorResult = await this.colorService.getColorByName(color);
+      if (colorResult.rows.length > 0) {
+        color_id = colorResult.rows[0].id;
+      }
+    }
+    const filters: any = {};
+    if (category_id) filters.category_ids = [category_id];
+    if (color_id) filters.color_ids = [color_id];
+
+    try {
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+
+      if (furnitureResult.rows.length === 0 && category_id) {
+        const fallbackFilters = { category_ids: [category_id], color_ids: [] };
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+      }
+
+      const moreOptions = furnitureResult.rows.filter((f: any) => f.id != shownId);
+
+      if (moreOptions.length === 0) {
+        return {
+          fulfillmentText: "Lo siento, no tengo más recomendaciones que mostrarte por ahora."
+        };
+      }
+
+      return {
+        fulfillmentMessages: [
+          {
+            text: { text: ["Aquí tienes otras opciones que te pueden interesar:"] }
+          },
+          ...moreOptions.map((f: any) => ({
+            card: {
+              title: f.name,
+              subtitle: f.short_description || '',
+              imageUri: f.image_url || 'https://via.placeholder.com/300',
+              buttons: [
+                {
+                  text: 'Empezar montaje',
+                  postback: `https://skaply.ovh/viewer-3d/${f.reference_number}`
+                }
+              ]
+            }
+          }))
+        ]
+      };
+
+    } catch (error) {
+      console.error("Error in getFurnitureRecomendationMore:", error);
+      return {
+        fulfillmentText: "Hubo un error al obtener más recomendaciones."
+      };
+    }
+  }
+
+  async getFurnitureRef(name: string, session?: string): Promise<any> {
+    try {
+      const furnitureResult = await this.furnitureService.getFurnitureByName(name);
+      if (furnitureResult.length === 0) {
+        return {
+          fulfillmentText: "Lo siento, no encontré el mueble con el nombre proporcionado."
+        };
+      }
+      else if (furnitureResult.length > 1) {
+        return {
+          fulfillmentText: "Lo siento, hay más de un mueble con ese nombre."
+        };
+      }
+      const furniture = furnitureResult[0];
+      console.log(furniture);
+      return {
+        fulfillmentMessages: [
+          {
+            text: { text: [`La referencia de ese mueble es: ${furniture.reference_number}`] }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getFurnitureRef:", error);
+      return {
+        fulfillmentText: "Hubo un error al obtener el mueble."
       };
     }
   }

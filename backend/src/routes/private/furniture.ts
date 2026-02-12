@@ -14,9 +14,10 @@ const issueControllerInstance = new IssueController(issueServiceInstance);
 const reviewServiceInstance = new ReviewService();
 const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
-router.post('/',authMiddleware,authorize([UserRole.ADMIN]), furnitureController.createFurniture);
-router.put('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.updateFurniture);
-router.delete('/:id',authMiddleware,authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.deleteFurniture);
+//router.get('/', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviders);
+router.post('/',authMiddleware,authorize([UserRole.ADMIN]), furnitureController.createFurniture); // revisar
+router.put('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.updateFurniture); // revisar
+router.delete('/:id',authMiddleware,authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.deleteFurniture); // revisar
 
 // toso el filtrado de la parte privada
 

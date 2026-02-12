@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import passport from 'passport';
 import { RegisterUser, RegistrationStatus, UserRole } from '@/types';
 import { ApiError } from '@/utils/ApiError';
-import { validateCorrectPassword, validateEmail, validateProviderData } from '@/utils/auth.utils';
+import { validateCorrectPassword, validateEmail, validateProviderData, hashPassword } from '@/utils/auth.utils';
 import { validateRequiredFields } from '@/utils/common.utils';
 
 export class AuthController {
@@ -18,7 +18,6 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
     try {
-
       // validate
       validateEmail(email);
       const user = await this.authService.getUserByEmail(email);
@@ -72,15 +71,22 @@ export class AuthController {
       validateRequiredFields(req.body, requiredFields);
       validateProviderData(req.body);
 
-      // check user exists
-      const exists = await this.authService.userExistsByEmail(req.body.email);
-      if (exists) {
+      // check user exists by email
+      const existsEmail = await this.authService.userExistsByEmail(req.body.email);
+      if (existsEmail) {
         next(new ApiError('CONFLICT', 'User already exists with this email'));
         return;
       }
 
+      // check user exists by CIF
+      const existsCIF = await this.authService.userExistsByCIF(req.body.cif);
+      if (existsCIF) {
+        next(new ApiError('CONFLICT', 'A provider already exists with this CIF'));
+        return;
+      }
+
       // hash password
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const hashedPassword = await hashPassword(req.body.password);
 
       // prepare data
       const { email, company_name, cif, tax_address, telephone } = req.body;

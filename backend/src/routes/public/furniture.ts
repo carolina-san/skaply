@@ -23,4 +23,7 @@ router.post("/filter", furnitureController.filterFurniture);
 router.post('/:id/issues', issueControllerInstance.postIssue);
 router.post('/:id/reviews', reviewControllerInstance.createFurnitureReview);
 
+// cambiar rutas, estas deben devolver solo muebles visibles.
+// añadir rutas privadas donde se devuelven todos los muebles
+
 export default router;

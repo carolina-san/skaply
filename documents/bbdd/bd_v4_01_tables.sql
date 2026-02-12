@@ -111,6 +111,7 @@ CREATE TABLE Furniture (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     file_uri TEXT NOT NULL,
+    assemblyPDF_uri TEXT NOT NULL,
     image_url TEXT,
     reference_number VARCHAR(100),
     difficulty diff NOT NULL,
@@ -118,7 +119,9 @@ CREATE TABLE Furniture (
     provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL,
     color_id INTEGER REFERENCES Color(id) ON DELETE SET NULL,
     short_description TEXT,
-    qr_url VARCHAR(255)
+    qr_url VARCHAR(255),
+    required_people INTEGER NOT NULL DEFAULT 1,
+    visible BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ============================
@@ -134,11 +137,12 @@ CREATE TABLE Part (
 -- ============================
 -- TABLE: Tool
 -- ============================
+-- Tool/Screw
+-- nombre, dimesion, diametro, longitud, corte, etc
 CREATE TABLE Tool (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     image_url TEXT
-
 );
 
 -- ============================
@@ -156,11 +160,13 @@ CREATE TABLE Furniture_Part (
 -- ============================
 -- TABLE:  Step
 -- ============================
+-- scene_camera_angle -> por si se rota la camara (boca abajo) angulo 180
 CREATE TABLE  Step (
     id SERIAL PRIMARY KEY,
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     step_number INTEGER NOT NULL,
-    used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL
+    used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL,
+    scene_camera_angle INTEGER DEFAULT NULL
 );
 
 -- ============================

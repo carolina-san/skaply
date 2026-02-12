@@ -162,7 +162,6 @@ export class FurnitureService {
   }) {
     try {
       const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
-
       let sql = `
         SELECT DISTINCT 
             f.id, 
@@ -268,65 +267,74 @@ export class FurnitureService {
 
 
   // Devuelve toda la iformación necesaria para el motor gráfico
-  async getFurnitureAssembly(furnitureId: number) {
-    try {
-      const query = `
-        SELECT
-          s.id AS step_id,
-          s.step_number,
-          s.used_in_step_with_id,
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'part_id', p.id,
-              'reference_number', p.reference_number,
-              'file_uri', p.file_uri,
-              'color_id', p.color_id,
-              'quantity', sp.quantity,
-			        'axis', fp.exploded_axis,
-              'distance', fp.exploded_distance
-            )
-          ) FILTER (WHERE p.id IS NOT NULL) AS parts,
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'tool_id', t.id,
-              'name', t.name
-            )
-          ) FILTER (WHERE t.id IS NOT NULL) AS tools
-        FROM Step s
-        LEFT JOIN Step_Part sp ON sp.stepId = s.id
-        LEFT JOIN Part p ON p.id = sp.part_id
-		    LEFT JOIN Furniture_Part fp ON fp.part_id = p.id AND fp.furniture_id = s.furniture_id
-        LEFT JOIN Step_Tool st ON st.stepId = s.id
-        LEFT JOIN Tool t ON t.id = st.tool_id
-        WHERE s.furniture_id = $1
-        GROUP BY s.id, s.step_number, s.used_in_step_with_id
-        ORDER BY s.step_number ASC
-      `;
+async getFurnitureAssembly(furnitureId: number) {
+  try {
+    const query = `
+      SELECT
+        f.required_people,
+        s.id AS step_id,
+        s.step_number,
+        s.used_in_step_with_id,
+        s.scene_camera_angle,
+        COALESCE(json_agg(
+          DISTINCT jsonb_build_object(
+            'part_id', p.id,
+            'reference_number', p.reference_number,
+            'file_uri', p.file_uri,
+            'color_id', p.color_id,
+            'quantity', sp.quantity,
+            'axis', fp.exploded_axis,
+            'distance', fp.exploded_distance
+          )
+        ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
+        COALESCE(json_agg(
+          DISTINCT jsonb_build_object(
+            'tool_id', t.id,
+            'name', t.name
+          )
+        ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tools
+      FROM Step s
+      JOIN Furniture f ON f.id = s.furniture_id
+      LEFT JOIN Step_Part sp ON sp.stepid = s.id  -- Changed stepId to stepid
+      LEFT JOIN Part p ON p.id = sp.part_id
+      LEFT JOIN Furniture_Part fp 
+        ON fp.part_id = p.id 
+        AND fp.furniture_id = s.furniture_id
+      LEFT JOIN Step_Tool st ON st.stepid = s.id  -- Changed stepId to stepid
+      LEFT JOIN Tool t ON t.id = st.tool_id
+      WHERE s.furniture_id = $1
+      GROUP BY 
+        f.required_people,
+        s.id, 
+        s.step_number, 
+        s.used_in_step_with_id,
+        s.scene_camera_angle
+      ORDER BY s.step_number ASC
+    `;
 
-      const result = await pool.query(query, [furnitureId]);
+    const result = await pool.query(query, [furnitureId]);
+    
+    // Check if we found any steps; if not, return null or an empty object
+    if (result.rows.length === 0) return null;
 
-      // Transformar los datos
-      const steps = result.rows.map(row => ({
-        step_id: row.step_id,
-        step_number: row.step_number,
-        used_in_step_with_id: row.used_in_step_with_id,
-        parts: row.parts || [],
-        tools: row.tools || []
-      }));
+    return {
+      furniture_id: furnitureId,
+      required_people: result.rows[0].required_people,
+      steps: result.rows
+    };
 
-      return {
-        furniture_id: furnitureId,
-        steps
-      };
-    } catch (error) {
-      console.error('Error fetching furniture assembly:', error);
-      throw new Error('Error fetching furniture assembly');
-    }
+  } catch (error) {
+    // SECURITY TIP: Log the actual error internally, but don't expose 
+    // DB details to the user.
+    console.error('Database Error:', error); 
+    throw error; 
   }
+}
 
   async createFurniture(data: {
     name: string;
     file_uri: string;
+    assemblyPDF_uri: string;
     difficulty: 'low' | 'medium' | 'high';
     image_url?: string;
     reference_number?: string;
@@ -334,27 +342,45 @@ export class FurnitureService {
     provider_id?: number;
     color_id?: number;
     short_description?: string;
+    required_people?: number;
+    visible?: boolean;
   }) {
     const {
       name,
       file_uri,
+      assemblyPDF_uri,
       difficulty,
       image_url,
       reference_number,
       category_id,
       provider_id,
       color_id,
-      short_description
+      short_description,
+      required_people = 1,
+      visible = false
     } = data;
 
     try {
       // Insertar en DB
       const result = await pool.query(
         `INSERT INTO Furniture 
-        (name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        (name, file_uri, assemblyPDF_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description, required_people, visible)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         RETURNING *`,
-        [name, file_uri, image_url, reference_number, difficulty, category_id, provider_id, color_id, short_description]
+        [
+          name,
+          file_uri,
+          assemblyPDF_uri,
+          image_url,
+          reference_number,
+          difficulty,
+          category_id,
+          provider_id,
+          color_id,
+          short_description,
+          required_people,
+          visible
+        ]
       );
 
       return result.rows[0];
@@ -485,4 +511,21 @@ export class FurnitureService {
     }
   }
 
+  async getFurnitureByName(name: string): Promise<any> {
+    try {
+      const result = await pool.query(
+        `SELECT name, reference_number
+         FROM public.furniture 
+         WHERE name ILIKE $1`,
+        [name]
+      );
+      console.log(result.rows);
+      return result.rows;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError('INTERNAL_SERVER', 'Error fetching furniture by name');
+    }
+  }
 }

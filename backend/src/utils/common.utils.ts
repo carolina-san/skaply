@@ -40,3 +40,10 @@ export function validateRequiredFields(
     );
   }
 }
+
+export const parseBooleanQuery = (value?: string): boolean | undefined => {
+  if (value === undefined) return undefined;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  throw new ApiError('BAD_REQUEST', 'Invalid boolean query value');
+};

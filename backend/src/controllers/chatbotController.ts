@@ -125,6 +125,52 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.filterByCategory(category));
                     return;
                 }
+                case 'get.furniture.recomendation': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/flujo_busqueda')
+                    );
+                    if (ctx) {
+                        console.log('categoria:', ctx.parameters.furniture_category, 'color:', ctx.parameters.furniture_color);
+                    }
+                    if (!ctx) {
+                        next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
+                        return;
+                    }
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendation(ctx.parameters.furniture_category, ctx.parameters.furniture_color, session));
+                    return;
+                }
+                case 'get.furniture.recomendation.more': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/recommendation_vars')
+                    ) || req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/flujo_busqueda')
+                    );
+                    if (ctx) {
+                        console.log('categoria:', ctx.parameters.furniture_category, 'color:', ctx.parameters.furniture_color);
+                    }
+                    if (!ctx) {
+                        next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar más muebles'));
+                        return;
+                    }
+                    const shownId = ctx.parameters.shown_furniture_id;
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(ctx.parameters.furniture_category, ctx.parameters.furniture_color, shownId));
+                    return;
+                }
+                case 'get.furniture.ref': {
+                    console.log('get.furniture.ref');
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('formacionreferencia-followup')
+                    );
+                    if (!ctx) {
+                        console.log('No se recibió el mueble');
+                        next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
+                        return;
+                    }
+                    const name = ctx.parameters.furniture_name;
+                    console.log(name);
+                    res.status(200).json(await this.chatbotService.getFurnitureRef(name, session));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No entiendo esa consulta. (backend)'
@@ -210,4 +256,15 @@ export class ChatbotController {
         }
     };
 
+    getFurnitureRecomendation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const category = req.body.category;
+            const color = req.body.color;
+            const result = await this.chatbotService.getFurnitureRecomendation(category, color);
+            res.json(result);
+        } catch (error) {
+            console.error('Error en getFurnitureRecomendation:', error);
+            next(new ApiError('INTERNAL_SERVER', 'Error al obtener las recomendaciones de muebles'));
+        }
+    };
 }
