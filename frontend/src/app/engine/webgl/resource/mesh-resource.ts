@@ -94,10 +94,10 @@ export class MeshResource extends Resource {
         }
     }
 
-    // DRAW
+    // DRAW (no hace falta porque se dibuja desde la funcion traverse del nodo raiz)
 
-    draw(transform: mat4) {
-        if (!this.mesh) return;
-        this.mesh.draw(transform);
-    }
+    // draw(transform: mat4) {
+    //     if (!this.mesh) return;
+    //     this.mesh.draw(transform);
+    // }
 }
