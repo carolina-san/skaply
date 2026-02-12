@@ -29,6 +29,8 @@
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@elevenlabs/elevenlabs-js": "^2.26.0",
+    "@loaders.gl/core": "^4.3.4",
+    "@loaders.gl/gltf": "^4.3.4",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/three": "^0.180.0",
     "gl-matrix": "^3.4.4",
