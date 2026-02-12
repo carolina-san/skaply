@@ -11,6 +11,8 @@ import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 import { createHardcodedFurniture, AssemblyPart } from './hardcoded-furniture';
+import { FurnitureAssembly, AssemblyStep, AssemblyPartRef } from '../../types/furniture.types';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-graphics-engine',
@@ -32,7 +34,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   arStateChange = output<boolean>();
 
   // Configuración de modelo
-  useExternalModel = false; // Cambiar a true para cargar modelo externo
+  useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API
 
   get modelUrl(): string {
@@ -49,7 +51,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   showFooterControls = computed(() => this.controlsMode() !== 'hidden');
   areControlsDisabled = computed(() => this.controlsMode() === 'display-only');
 
-  totalSteps = 10;
+  get modelAssembly(): any {
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+  }
+
+
+  totalSteps = 0;
   manualStep = signal(0);
   simulationStep = signal(0);
   isolatedPart = signal<AssemblyPart | null>(null);
@@ -89,17 +96,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   stepDescriptions: string[] = [];
 
-  /* 
-   * Engine facade abstracts these details
-   */
-  // private renderer!: THREE.WebGLRenderer;
-  // private scene!: THREE.Scene;
-  // private camera!: THREE.PerspectiveCamera;
-  // private controls!: OrbitControls;
-  // private composer!: EffectComposer;
-  // private outlinePass!: OutlinePass;
-  // private raycaster = new THREE.Raycaster();
-  // private pointer = new THREE.Vector2();
 
   private parts: AssemblyPart[] = [];
   private animationFrameId: number | null = null;
@@ -110,12 +106,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
 
-  // private onControlsChange = () => { ... } managed by facade loop mostly or we can re-implement listener if facade exposes events
-  // For now simple check in animate or just assume moved if interactions happen?
-  // The original code used a listener. Facade doesn't expose event listener yet.
-  // We can add a 'checkCameraMoved' to facade or just checking in animate.
-  // For this refactor I'll simplify: we won't track "isCameraMoved" exactly as before unless I add getCamera props.
-  // But wait, the facade has `getCamera()` as escape hatch.
 
   private initialCameraState: any = null; // Store initial state manually if needed
 
@@ -402,35 +392,192 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     canvas.addEventListener('dblclick', this.onDoubleClick);
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
-
-
-
   private async createFurniture(): Promise<void> {
-    if (this.useExternalModel) {
-      try {
-        const model = await this.engine.loadGLTF(this.modelUrl);
-        // Ajustar modelo cargado si es necesario
-        model.setPosition(0, 0, 0);
-        model.castShadow = true;
-        model.receiveShadow = true;
-        this.engine.addToScene(model);
 
-        // En modo modelo externo, simplificamos steps o lo configuramos como 'final' por defecto
-        // para que no intente animar partes que no existen en this.parts
-        this.totalSteps = 1;
-        this.setMode('final');
-        return;
+    let baseModel: RenderableObject | undefined;
+
+    // 0. Pre-load the base model if available (shared for both API assembly and single-model rollback)
+    if (this.modelUrl) {
+      try {
+        console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
+        baseModel = await this.engine.loadGLTF(this.modelUrl);
+        // Ensure it's in the scene to find parts, though we might toggle visibility later
+        baseModel.setPosition(0, 0, 0);
+        baseModel.castShadow = true;
+        baseModel.receiveShadow = true;
+        this.engine.addToScene(baseModel);
       } catch (error) {
-        console.error('Error cargando modelo externo:', error);
-        // Fallback or alert? For now just log.
-        return;
+        console.error('Error pre-loading base model:', error);
       }
+    }
+
+    // 1. Attempt to load from API Assembly Steps
+    try {
+      const furnitureId = Number(this.furniture?.id) || 6;
+      const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+
+      if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
+        console.log('Loading assembly from API for furniture ID:', furnitureId);
+        // Pass the pre-loaded baseModel to find parts inside it
+        const { parts, totalSteps, stepDescriptions } = await this.createPartsFromApi(assemblyData, baseModel);
+
+        // If we found parts, we use them.
+        // If the baseModel was loaded but NO parts were matched/found inside it (and no external files),
+        // createPartsFromApi might return placeholders. 
+        // We assume valid configuration if parts.length > 0.
+
+        if (parts.length > 0) {
+          this.parts = parts;
+          this.totalSteps = totalSteps;
+          this.stepDescriptions = stepDescriptions;
+
+          // If we successfully set up the assembly from the API, we keep the baseModel in the scene?
+          // If the parts are children of baseModel, they are already in the scene.
+          // If we use specific parts, we might want to hide the "rest" of the baseModel if it contains duplicates?
+          // Usually, if we extracting parts, we are manipulating them.
+          // If the baseModel is just a container, it's fine.
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
+    }
+
+    // 2. If API steps failed, check UseExternalModel flag to show the static model
+    if (this.useExternalModel && baseModel) {
+      console.log('Using standard external model mode.');
+      this.totalSteps = 1;
+      this.setMode('final');
+      return;
+    }
+
+    // 3. Fallback to Hardcoded Furniture if everything else fails
+    console.log('Falling back to hardcoded furniture logic.');
+    // If we loaded a baseModel but are not using it, remove it?
+    if (baseModel) {
+      this.engine.removeFromScene(baseModel);
     }
 
     const hardcodedData = createHardcodedFurniture(this.engine);
     this.parts = hardcodedData.parts;
     this.totalSteps = hardcodedData.totalSteps;
     this.stepDescriptions = hardcodedData.stepDescriptions;
+  }
+
+  private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
+    const parts: AssemblyPart[] = [];
+    const stepDescriptions: string[] = [];
+    let currentStepIndex = 0;
+
+    // Generic material configuration
+    const defaultMaterial: MaterialConfig = { type: 'standard', color: 0xCCCCCC, roughness: 0.8, metalness: 0.1 };
+
+    // Sort steps by step_number just in case
+    const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
+
+    for (const step of sortedSteps) {
+      stepDescriptions.push(`Paso ${step.step_number}: Ensamblaje de partes.`);
+
+      // Calculate appear and join steps
+      const appearStep = currentStepIndex * 2;
+      const joinStep = appearStep + 1;
+
+      for (const partRef of step.parts) {
+        let mesh: RenderableObject | null = null;
+        let targetPos = { x: 0, y: 0, z: 0 };
+        let usingExistingMesh = false;
+
+        if (partRef.file_uri) {
+          // Case A: Part has its own file
+          try {
+            mesh = await this.engine.loadGLTF(partRef.file_uri);
+          } catch (e) {
+            console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
+          }
+        }
+
+        if (!mesh && baseModel && partRef.reference_number) {
+          // Case B: Look for part in baseModel by reference number
+          // Access native object (THREE.Object3D) to traverse/find
+          // We assume reference_number matches the node name in GLTF
+          const nativeRoot = baseModel.nativeObject;
+          const foundNative = nativeRoot.getObjectByName(partRef.reference_number);
+
+          if (foundNative) {
+            mesh = this.engine.wrapNativeObject(foundNative);
+            usingExistingMesh = true;
+            // Capture its current assembled position (Target)
+            // Note: getPosition() returns world or local? 
+            // EngineFacade.getPosition() wraps native .position (local).
+            // If the hierarchy is flat or we just want local animation, this is fine.
+            targetPos = mesh.getPosition();
+          } else {
+            console.warn(`Part with reference '${partRef.reference_number}' not found in base model.`);
+          }
+        }
+
+        if (!mesh) {
+          // Case C: Fallback placeholder
+          const args = [0.2, 0.2, 0.2];
+          mesh = this.engine.createMesh({ type: 'box', args: args }, defaultMaterial);
+        }
+
+        // If we created a new mesh (Case A or C), we need to add it to scene.
+        // If we found an existing mesh (Case B), it's already in the scene (as child of baseModel).
+        // However, for animation, if we want to move it freely, we might need to detach it or just move it relative to parent.
+        // The animation logic uses mesh.setPosition(). 
+
+        if (!usingExistingMesh) {
+          this.engine.addToScene(mesh);
+        }
+
+        // Calculate start position based on axis and distance
+        const startPos = { ...targetPos };
+        const dist = partRef.distance; // default distance
+
+        console.log("distancia en paso: ", this.currentStep, " es: ", dist);
+
+        if (partRef.axis === 'x') startPos.x += dist;
+        else if (partRef.axis === 'y') startPos.y += dist;
+        else if (partRef.axis === 'z') startPos.z += dist;
+        else startPos.y += dist; // Default
+
+        // Set initial state to START position
+        mesh.setPosition(startPos.x, startPos.y, startPos.z);
+        if (!usingExistingMesh) {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
+        // Ensure visibility is managed by animation loop, but initially...
+        // The animation loop sets visibility based on steps.
+
+        const assemblyPart: AssemblyPart = {
+          object: mesh,
+          startPosition: startPos,
+          targetPosition: targetPos,
+          appearStep,
+          joinStep,
+          name: partRef.reference_number || `Part ${partRef.part_id}`,
+          description: `Part: ${partRef.reference_number}`
+        };
+
+        // Arrow helper logic (simplified)
+        if (dist > 0.01) {
+          const dir = { x: targetPos.x - startPos.x, y: targetPos.y - startPos.y, z: targetPos.z - startPos.z };
+          const len = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+          if (len > 0) {
+            const arrowDir = { x: dir.x / len, y: dir.y / len, z: dir.z / len };
+            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, { x: 0, y: 0, z: 0 }, 0.5, 0x00ffff);
+            assemblyPart.object.add(assemblyPart.arrow);
+          }
+        }
+
+        parts.push(assemblyPart);
+      }
+      currentStepIndex++;
+    }
+
+    return { parts, totalSteps: currentStepIndex * 2, stepDescriptions };
   }
 
   private runSimulation(): void {
