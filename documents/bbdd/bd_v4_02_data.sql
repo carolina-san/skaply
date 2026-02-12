@@ -326,7 +326,7 @@ VALUES
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
-    'assets/models/vital_pro.glb', -- prueba
+    '/storage//vital_pro.glb', -- prueba
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
@@ -340,7 +340,7 @@ VALUES
 ),
     -- MUEBLE DE ACTIU ARMARIO MODULAR
 (
-    'assets/models/armario_modular.glb', -- prueba
+    '/storage/armario_modular.glb', -- prueba
     'Armario modular',
     'VR123456',
     5,
