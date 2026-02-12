@@ -802,4 +802,34 @@ export class ChatbotService {
       };
     }
   }
+
+  async getFurnitureRef(name: string, session?: string): Promise<any> {
+    try {
+      const furnitureResult = await this.furnitureService.getFurnitureByName(name);
+      if (furnitureResult.length === 0) {
+        return {
+          fulfillmentText: "Lo siento, no encontré el mueble con el nombre proporcionado."
+        };
+      }
+      else if (furnitureResult.length > 1) {
+        return {
+          fulfillmentText: "Lo siento, hay más de un mueble con ese nombre."
+        };
+      }
+      const furniture = furnitureResult[0];
+      console.log(furniture);
+      return {
+        fulfillmentMessages: [
+          {
+            text: { text: [`La referencia de ese mueble es: ${furniture.reference_number}`] }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getFurnitureRef:", error);
+      return {
+        fulfillmentText: "Hubo un error al obtener el mueble."
+      };
+    }
+  }
 }

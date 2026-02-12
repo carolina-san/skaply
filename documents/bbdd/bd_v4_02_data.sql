@@ -195,7 +195,20 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('','pata01', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','pata02', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','travesaño', 1),
-('','tablero', 1);
+('','tablero', 1),
+-- PARTES MUEBLE ACTIU ARMRIO MODULAR
+('','patas', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','tablon_inferior', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','tablon_izquierdo', 1),
+('','tablon_derecho', 1),
+('','tablon_trasero', 1),
+('','tablon_superior', 1),
+('','estante_1', 1),
+('','estante_2', 1),
+('','puerta_izquierda', 1),
+('','puerta_derecha', 1)
+;
+
 
 -- ============================
 -- TOOLS
@@ -220,14 +233,15 @@ INSERT INTO Furniture (
     color_id,
     short_description,
     image_url,
-    qr_url -- (no tiene sentido si es casi el "reference_number") ??
+    qr_url, -- (no tiene sentido si es casi el "reference_number") ??
+    assemblyPDF_uri
 )
 VALUES
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
 --         |- pieza2 x1 -|
 (
-    'furniture1.stl',
+    '/storage/cube.glb',
     'Silla de madera',
     'F001',
     1,
@@ -236,14 +250,15 @@ VALUES
     3,
     'Silla de madera cómoda y resistente',
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=F001'
+    'https://skaply.ovh/catalogo?furniture=F001',
+    'pdf1'
 ),
 -- mueble2 |- pieza1 x1 -|
 --         |             |- paso1 -|
 --         |- pieza2 x1 -|         |- paso2
 --         |- pieza3 x1 -----------|
 (
-    'furniture2.stl',
+    '/storage/cube.glb',
     'Mesa de comedor',
     'F003',
     2,
@@ -252,7 +267,8 @@ VALUES
     4,
     'Mesa de comedor grande y elegante',
     'https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=F003'
+    'https://skaply.ovh/catalogo?furniture=F003',
+     'pdf1'
 ),
 -- mueble3 |- pieza1 x1 -|
 --         |             |- paso1 --|
@@ -261,7 +277,7 @@ VALUES
 --         |             |- paso2 --|
 --         |- pieza2 x1 -|
 (
-    'furniture3.stl',
+    '/storage/cube.glb',
     'Sofa gris',
     'F006',
     3,
@@ -270,14 +286,15 @@ VALUES
     5,
     'Sofa gris de tres plazas con cojines suaves',
     'https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=F006'
+    'https://skaply.ovh/catalogo?furniture=F006',
+     'pdf1'
 ),
 -- mueble4 |- pieza1 x2 -|
 --         |             |- paso1
 --         |- pieza2 x2 -|
 
 (
-    'furniture4.stl',
+    '/storage/cube.glb',
     'Lámpara de comedor',
     'F007',
     4,
@@ -286,7 +303,8 @@ VALUES
     5,
     'Lámpara de comedor moderna con luz ajustable',
     'https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=F007'
+    'https://skaply.ovh/catalogo?furniture=F007',
+     'pdf1'
 ),
 -- MUEBLE SILLA PRUEBA RAMA FEATURE/THREEJS
 -- silla   |- PSILLA01 x1 -|
@@ -294,7 +312,7 @@ VALUES
 --         |- PSILLA02 x1 -|         |- paso2
 --         |- PSILLA03 x1 -----------|
 (
-    'silla.stl',
+    '/storage/cube.glb',
     'Silla azul',
     'F008',
     1,
@@ -303,21 +321,38 @@ VALUES
     3,
     'Silla azul apilable y ligera',
     'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://skaply.ovh/catalogo?furniture=F008'
+    'https://skaply.ovh/catalogo?furniture=F008',
+     'pdf1'
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
-    'vital_pro.glb',
+    '/storage/vital_pro.glb',
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
-    6,
+    7,
     'low',
     3,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
-    'https://skaply.ovh/catalogo?furniture=VR515F200'
-);
+    'https://skaply.ovh/catalogo?furniture=VR515F200',
+     'pdf1'
+),
+    -- MUEBLE DE ACTIU ARMARIO MODULAR
+(
+    '/storage/armario_modular.glb',
+    'Armario modular',
+    'VR123456',
+    5,
+    7,
+    'medium',
+    3,
+    'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
+    'https://actiucdn.net/cdn-cgi/image/width=960,height=999,fit=contain,format=auto,quality=95/uploads/images/modules/5531/img-6-2.jpg', --cambiar
+    'https://skaply.ovh/catalogo?furniture=123456',
+     'pdf2'
+)
+;
 
 -- ============================
 -- FURNITURE_PART (asocia las partes con su mueble)
@@ -333,8 +368,19 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 -- MUEBLE DE ACTIU VITAL PRO
 (6,7,1,'y',0.0),    --pata
 (6,8,1,'y',0.0),    --pata
-(6,9,1,'y',0.1),    --travesaño                       
-(6,10,1,'y',0.1);   --tablero                                           
+(6,9,1,'y',0.3),    --travesaño                       
+(6,10,1,'y',0.3),   --tablero          
+-- MUEBLE DE ACTIU ARMARIO MODULAR
+(7,11,1,'y',0.0),    --patas
+(7,12,1,'y',0.3),    --tablon
+(7,13,1,'y',0.5),    --travesaño                       
+(7,14,1,'y',0.5),
+(7,15,1,'z',-0.4),
+(7,16,1,'y',0.5),
+(7,17,1,'z',0.4),
+(7,18,1,'z',0.4),
+(7,19,1,'z',0.4),
+(7,20,1,'z',0.4);   --tablero     
 
 -- ============================
 -- STEPS
@@ -350,8 +396,16 @@ INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES
 (5,2,NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
 (6,1,NULL),     -- patas + travesaño
-(6,2,11);       --(patas + travesaño) + tablero     
-
+(6,2,11),       --(patas + travesaño) + tablero     
+-- MUEBLE DE ACTIU ARMARIO MODULAR
+(7,1,13),     -- tablon inferior y patas
+(7,2,14),     -- (tablon inferior y patas) + laterales
+(7,3,15),     -- (tablon inferior y patas + laterales) + tablon trasero
+(7,4,16),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
+(7,5,17),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
+(7,6,18),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
+(7,7,NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
+;       
 -- ============================
 -- SETP_PART (asocia las piezas a los pasos)
 -- ============================
@@ -363,8 +417,17 @@ INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (8,4,1),(8,5,1),(9,6,1),            -- silla azul
 -- MUEBLE ACTIU VITAL PRO
 (10,7,1),(10,8,1),(10,9,1),  --paso 1
-(11,10,1);                  --paso 2
+(11,10,1),                 --paso 2
 
+-- MUEBLE ACTIU ARMARIO MODULAR
+(12,11,1),(12,12,1),  --paso 1
+(13,13,1),(13,14,1),   -- paso 2
+(14,15,1),          -- paso 3
+(15,16,1),          -- paso 4
+(16,17,1),(16,18,1), -- pao 5
+(17,19,1), -- paso 6
+(18,20,1) -- paso 7
+;            
 -- ============================
 -- STEP_TOOL (asocia herramientas a los pasos)
 -- ============================

@@ -71,10 +71,17 @@ export class AuthController {
       validateRequiredFields(req.body, requiredFields);
       validateProviderData(req.body);
 
-      // check user exists
-      const exists = await this.authService.userExistsByEmail(req.body.email);
-      if (exists) {
+      // check user exists by email
+      const existsEmail = await this.authService.userExistsByEmail(req.body.email);
+      if (existsEmail) {
         next(new ApiError('CONFLICT', 'User already exists with this email'));
+        return;
+      }
+
+      // check user exists by CIF
+      const existsCIF = await this.authService.userExistsByCIF(req.body.cif);
+      if (existsCIF) {
+        next(new ApiError('CONFLICT', 'A provider already exists with this CIF'));
         return;
       }
 

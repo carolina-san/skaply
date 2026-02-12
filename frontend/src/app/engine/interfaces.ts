@@ -64,5 +64,11 @@ export abstract class EngineFacade {
     // Camera getter for internal calculations if needed (e.g. projecting 3d to 2d)
     abstract getCamera(): any;
 
+    // LoadGLTF
+    abstract loadGLTF(url: string): Promise<RenderableObject>;
+
+    // Wrap native (THREE.Object3D) into a RenderableObject (needed for GLTF sub-parts)
+    abstract wrapNativeObject(native: any): RenderableObject;
+
     abstract dispose(): void;
 }
