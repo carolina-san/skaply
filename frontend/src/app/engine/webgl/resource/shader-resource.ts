@@ -13,7 +13,9 @@ export class ShaderResource extends Resource {
     // LOAD FILE (ONLY SAVES SOURCES)
 
     async loadFile(url: string, type: 'vertex' | 'fragment' = 'vertex'): Promise<void> {
+        // fetch shader source code from url and convert to text
         const source = await fetch(url).then(res => res.text());
+        // save source code in the corresponding variable
         if (type === 'vertex') this.vertexSource = source;
         else this.fragmentSource = source;
     }
@@ -22,7 +24,7 @@ export class ShaderResource extends Resource {
 
     buildProgram(): void {
         if (!this.vertexSource || !this.fragmentSource) {
-            throw new Error('Shaders vertex o fragment no cargados');
+            throw new Error('Shaders vertex o fragment is not loaded');
         }
 
         // compile shaders
@@ -31,16 +33,16 @@ export class ShaderResource extends Resource {
 
         // create program and link
         const program = this.gl.createProgram();
-        if (!program) throw new Error('No se pudo crear el programa shader');
+        if (!program) throw new Error('Program creation failed');
         this.gl.attachShader(program, vertexShader);
         this.gl.attachShader(program, fragmentShader);
         this.gl.linkProgram(program);
 
         if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
-            throw new Error('Error al enlazar el programa: ' + this.gl.getProgramInfoLog(program));
+            throw new Error('Error linking program: ' + this.gl.getProgramInfoLog(program));
         }
 
-        // save program 
+        // save program in class variable
         this.program = program;
 
         // delete shaders 
