@@ -9,8 +9,8 @@ export interface MeshResource {
 export class Mesh extends Entity {
     
     constructor(
-    private resource: MeshResource, // mesh info (vao and indexCount)
-    private gl: WebGL2RenderingContext) { // WebGL2 context
+    private resource: MeshResource,         // mesh info (vao and indexCount)
+    private gl: WebGL2RenderingContext) {   // WebGL2 context
         super();
     }
 

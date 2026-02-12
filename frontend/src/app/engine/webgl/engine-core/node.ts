@@ -3,10 +3,8 @@ import { Entity } from './entity';
 
 export class Node {
     
-    // entity
+    // entity and nodes
     private entity: Entity | null = null;
-    
-    // nodes
     private children: Node[] = [];
     private parent: Node | null = null;
 
@@ -21,31 +19,78 @@ export class Node {
     // only if local transformations were made
     private needsUpdate: boolean = true;
 
+
+
+    // CHILDREN MANAGEMENT
+
     addChild(child: Node): void {
         child.parent = this;
         this.children.push(child);
     }
 
+    removeChild(child: Node): void {
+        const index = this.children.indexOf(child);
+        if (index !== -1) {
+            this.children.splice(index, 1);
+            child.parent = null;
+        }
+    }
+
+    // SETTERS
+
     setEntity(entity: Entity): void {
         this.entity = entity;
     }
-
+    
     setTranslation(x: number, y: number, z: number): void {
         vec3.set(this.translation, x, y, z);
         this.needsUpdate = true;
     }
-
+    
     setRotation(x: number, y: number, z: number): void {
         vec3.set(this.rotation, x, y, z);
         this.needsUpdate = true;
     }
-
+    
     setScale(x: number, y: number, z: number): void {
         vec3.set(this.scale, x, y, z);
         this.needsUpdate = true;
     }
 
-    private computeLocalMatrix(): mat4 { // local matrix
+    setTransformMatrix(matrix: mat4): void {
+        mat4.copy(this.transformMatrix, matrix);
+        this.needsUpdate = false;
+    }
+    
+    // GETTERS
+    
+    getEntity(): Entity | null {
+        return this.entity;
+    }
+
+    getParent(): Node | null {
+        return this.parent;
+    }
+
+    getTranslation(): vec3 {
+        return this.translation;
+    }
+    
+    getRotation(): vec3 {
+        return this.rotation;
+    }
+    
+    getScale(): vec3 {
+        return this.scale;
+    }
+
+    getTransformMatrix(): mat4 {
+        return this.transformMatrix;
+    }
+
+    // LOCAL MATRIX (PRIVATE)
+
+    private computeLocalMatrix(): mat4 { 
         const matrix = mat4.create();
         mat4.translate(matrix, matrix, this.translation);
         mat4.rotateX(matrix, matrix, this.rotation[0]);
@@ -55,12 +100,14 @@ export class Node {
         return matrix;
     }
 
-    traverse(parentMatrix: mat4): void { // recorrer árbol y dibujar
+    // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
+
+    traverse(parentMatrix: mat4): void { 
         
         // create transform matrix
         if (this.needsUpdate) {
             const localMatrix = this.computeLocalMatrix();
-            mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); // using parent's matrix
+            mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); 
             this.needsUpdate = false;
         }
 
@@ -73,5 +120,24 @@ export class Node {
         for (const child of this.children) {
             child.traverse(this.transformMatrix);
         }
+    }
+
+    // RELATIVE TRANSFORMATIONS 
+
+    traslate(dx: number, dy: number, dz: number): void {
+        vec3.add(this.translation, this.translation, vec3.fromValues(dx, dy, dz));
+        this.needsUpdate = true;
+    }
+
+    rotate(dx: number, dy: number, dz: number): void {
+        vec3.add(this.rotation, this.rotation, vec3.fromValues(dx, dy, dz));
+        this.needsUpdate = true;
+    }
+
+    scaleNode(sx: number, sy: number, sz: number): void {
+        this.scale[0] *= sx;
+        this.scale[1] *= sy;
+        this.scale[2] *= sz;
+        this.needsUpdate = true;
     }
 }
