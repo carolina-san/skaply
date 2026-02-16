@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-profile-sidebar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, Modal],
   templateUrl: './profile-sidebar.html',
   styleUrl: './profile-sidebar.css'
 })
@@ -15,7 +16,7 @@ export class ProfileSidebar implements OnInit {
   currentUser: User | null = null;
   totalProviders: number = 0;
   totalFurniture: number = 0;
-  showEditModal: boolean = false;
+  isEditModalOpen: boolean = false;
   editForm: FormGroup;
   isSubmitting: boolean = false;
   errorMessage: string = '';
@@ -85,7 +86,7 @@ export class ProfileSidebar implements OnInit {
       };
 
       this.editForm.patchValue(this.initialFormValues);
-      this.showEditModal = true;
+      this.isEditModalOpen = true;
       this.errorMessage = '';
       this.successMessage = '';
       this.hasChanges = false;
@@ -111,7 +112,7 @@ export class ProfileSidebar implements OnInit {
   }
 
   closeEditModal() {
-    this.showEditModal = false;
+    this.isEditModalOpen = false;
     this.editForm.reset();
     this.errorMessage = '';
     this.successMessage = '';

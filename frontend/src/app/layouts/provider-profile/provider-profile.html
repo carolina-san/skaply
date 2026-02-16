@@ -1,12 +1,7 @@
-<main class="w-full h-screen flex flex-row bg-marron-oscuro">
+<main class="w-full h-screen flex flex-row bg-beige">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
   <div class="w-[80%] flex flex-col">
     <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige">
-      <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
-        [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
-        class="hover:opacity-100 transition pb-1">
-        Estadísiticas
-      </button>
       <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
         [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
         class="hover:opacity-100 transition pb-1">
@@ -19,7 +14,12 @@
           2
         </span>
       </button>
+      <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
+        [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
+        class="hover:opacity-100 transition pb-1">
+        Estadísiticas
+      </button>
     </div>
-    <app-gestion-muebles class="flex-1"></app-gestion-muebles>
+    <app-gestion-muebles *ngIf="activeTab === 'muebles'"></app-gestion-muebles>
   </div>
 </main>

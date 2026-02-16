@@ -245,7 +245,9 @@ export class FurnitureController {
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        visible,
+        required_people
       } = req.body;
 
       if (difficulty && !validDifficulties.includes(difficulty)) {
@@ -261,7 +263,9 @@ export class FurnitureController {
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        visible,
+        required_people
       });
 
       res.status(200).json({
