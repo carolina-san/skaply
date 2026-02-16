@@ -20,6 +20,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}`);
   }
 
+  getFurnitureAssembly(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/${id}/assembly`);
+  }
+
   getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
     console.log('Filters sent to API Service:', filters);
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);

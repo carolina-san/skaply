@@ -353,18 +353,18 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 -- ============================
 -- STEPS
 -- ============================
-INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES 
+INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id) VALUES 
 -- MUEBLES DE PRUEBA
-(1,1,NULL),                     
-(2,1,3),(2,2,NULL),    
-(3,1,6),(3,2,6),(3,3,NULL),     
-(4,1,NULL),  
+(1,1,'Ensamblar estructura base',NULL),                     
+(2,1,'Unir piezas laterales',3),(2,2,'Montar estructura completa',NULL),    
+(3,1,'Preparar base inferior',6),(3,2,'Añadir soportes laterales',6),(3,3,'Completar ensamblaje',NULL),     
+(4,1,'Montar estructura principal',NULL),  
 -- MUEBLE SILLA PRUEBA RAMA THREEJS                   
-(5,1,9),
-(5,2,NULL),
+(5,1,'Ensamblar respaldo y base',9),
+(5,2,'Fijar asiento a la estructura',NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
-(6,1,NULL),     -- patas + travesaño
-(6,2,11);       --(patas + travesaño) + tablero     
+(6,1,'Unir patas con travesaño',NULL),     -- patas + travesaño
+(6,2,'Colocar tablero sobre la estructura',11);       --(patas + travesaño) + tablero     
 
 -- ============================
 -- SETP_PART (asocia las piezas a los pasos)
