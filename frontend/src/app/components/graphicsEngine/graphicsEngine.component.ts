@@ -17,7 +17,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, Modal, FormsModule],
+  imports: [CommonModule, FormsModule],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
@@ -43,6 +43,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
+  finished = output<void>();
 
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
@@ -117,10 +118,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   backgroundColor = signal<'dark' | 'light'>('dark');
   isCameraMoved = signal(false);
-  isModalOpen = signal(false);
-  reviewStars = signal(0);
-  reviewText = signal('');
-  isSubmittingReview = signal(false);
 
   stepDescriptions = signal<string[]>([]);
 
@@ -205,15 +202,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   openFinishModal(): void {
-    this.isModalOpen.set(true);
-    this.reviewStars.set(0);
-    this.reviewText.set('');
-  }
-
-  closeModal(): void {
-    this.isModalOpen.set(false);
-    this.reviewStars.set(0);
-    this.reviewText.set('');
+    this.finished.emit();
   }
 
 
@@ -779,44 +768,5 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
 
-  setRating(stars: number): void {
-    this.reviewStars.set(stars);
-  }
 
-  submitReview(): void {
-    // Obtener y convertir el furniture ID
-    let furnitureId = 1; // ID por defecto
-    const inputId = this.furnitureId();
-
-    if (inputId) {
-      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
-      if (!isNaN(parsedId) && parsedId > 0) {
-        furnitureId = parsedId;
-      }
-    }
-
-    const stars = this.reviewStars();
-    const text = this.reviewText().trim();
-
-    if (stars === 0) {
-      return;
-    }
-
-    this.isSubmittingReview.set(true);
-
-    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
-      next: (response) => {
-        this.isSubmittingReview.set(false);
-        this.closeModal();
-        alert('¡Gracias por tu reseña!');
-      },
-      error: (error) => {
-        console.error('Error al guardar la review:', error);
-        console.error('Error completo:', JSON.stringify(error, null, 2));
-        this.isSubmittingReview.set(false);
-        const errorMessage = error.error?.message || error.message || 'Error desconocido';
-        alert('Error al guardar la reseña: ' + errorMessage);
-      }
-    });
-  }
 }

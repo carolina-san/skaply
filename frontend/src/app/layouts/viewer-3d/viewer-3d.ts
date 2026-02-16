@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Chatbot } from '../../components/chatbot/chatbot';
-import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
+// import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { Modal } from '../../components/modal/modal';
 import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
@@ -16,7 +16,13 @@ import { SeoService } from '../../services/seo.service';
   templateUrl: './viewer-3d.html'
 })
 export class Viewer3D implements OnInit {
-  @ViewChild(FurnitureViewer) furnitureViewer!: FurnitureViewer;
+  @ViewChild(GraphicsEngineComponent) graphicsEngine!: GraphicsEngineComponent;
+
+  // Review Modal State
+  isReviewModalOpen = signal(false);
+  reviewStars = signal(0);
+  reviewText = signal('');
+  isSubmittingReview = signal(false);
 
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
@@ -208,21 +214,75 @@ export class Viewer3D implements OnInit {
   }
 
   // Métodos para controlar el visor 3D
+  // Métodos para controlar el visor 3D
   resetCamera(): void {
-    this.furnitureViewer?.resetCamera();
+    this.graphicsEngine?.resetCameraPosition();
+  }
+
+  // Review Modal Methods
+  openReviewModal(): void {
+    this.isReviewModalOpen.set(true);
+    this.reviewStars.set(0);
+    this.reviewText.set('');
+  }
+
+  closeReviewModal(): void {
+    this.isReviewModalOpen.set(false);
+    this.reviewStars.set(0);
+    this.reviewText.set('');
+  }
+
+  setRating(stars: number): void {
+    this.reviewStars.set(stars);
+  }
+
+  submitReview(): void {
+    // Obtener y convertir el furniture ID
+    let furnitureId = 1; // ID por defecto
+    const inputId = this.furnitureId;
+
+    if (inputId) {
+      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
+      if (!isNaN(parsedId) && parsedId > 0) {
+        furnitureId = parsedId;
+      }
+    }
+
+    const stars = this.reviewStars();
+    const text = this.reviewText().trim();
+
+    if (stars === 0) {
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+
+    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
+      next: (response) => {
+        this.isSubmittingReview.set(false);
+        this.closeReviewModal();
+        alert('¡Gracias por tu reseña!');
+      },
+      error: (error) => {
+        console.error('Error al guardar la review:', error);
+        this.isSubmittingReview.set(false);
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        alert('Error al guardar la reseña: ' + errorMessage);
+      }
+    });
   }
 
   toggleWireframe(): void {
-    this.furnitureViewer?.toggleWireframe();
+    // this.furnitureViewer?.toggleWireframe();
   }
 
   toggleAutoRotate(): void {
-    this.furnitureViewer?.toggleAutoRotate();
+    // this.furnitureViewer?.toggleAutoRotate();
   }
 
   loadNextModel(): void {
     this.currentModelIndex = (this.currentModelIndex + 1) % this.modelPaths.length;
     this.modelPath = this.modelPaths[this.currentModelIndex];
-    this.furnitureViewer?.loadModel(this.modelPath);
+    // this.furnitureViewer?.loadModel(this.modelPath);
   }
 }
