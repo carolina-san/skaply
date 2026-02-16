@@ -38,7 +38,7 @@ export class Viewer3D implements OnInit {
     this.seo.setSeo({
       title: `Visualizador 3D de Muebles - Skäply`,
       description: `Visualiza muebles en 3D, pruébalos en realidad aumentada y reporta problemas directamente desde Skäply.`,
-      canonical: `https://skaply.ovh/3d`,
+      canonical: `https://skaply.ovh/viewer-3d`,
       index: true
     });
 
