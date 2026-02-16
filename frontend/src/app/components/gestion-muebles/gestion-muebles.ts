@@ -1,26 +1,78 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
+import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-gestion-muebles',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, Modal],
   templateUrl: './gestion-muebles.html',
   styleUrl: './gestion-muebles.css'
 })
-export class GestionMuebles {
+export class GestionMuebles implements OnInit {
   furniture: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
   currentUser: User | null = null;
 
+  // Modal
+  isEditModalOpen: boolean = false;
+  selectedFurniture: any = null;
+  editForm: any = {
+    name: '',
+    short_description: '',
+    color_id: null,
+    category_id: null,
+    image_url: '',
+    difficulty: 'low',
+    required_people: 1
+  };
+  originalEditForm: any = {};
+
+  // Opciones para los selects
+  categories: any[] = [];
+  colors: any[] = [];
+  difficulties = [
+    { value: 'low', label: 'Baja' },
+    { value: 'medium', label: 'Media' },
+    { value: 'high', label: 'Alta' }
+  ];
+
   constructor(private apiService: ApiService, private authService: AuthService) {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.fetchFurniture();
     });
+  }
+
+  ngOnInit() {
+    this.loadCategories();
+    this.loadColors();
+  }
+
+  loadCategories() {
+    this.apiService.getCategories().subscribe(
+      (response) => {
+        this.categories = response.data || [];
+      },
+      (error) => {
+        console.error('Error loading categories:', error);
+      }
+    );
+  }
+
+  loadColors() {
+    this.apiService.getColors().subscribe(
+      (response) => {
+        this.colors = response.data || [];
+      },
+      (error) => {
+        console.error('Error loading colors:', error);
+      }
+    );
   }
 
   fetchFurniture() {
@@ -69,5 +121,68 @@ export class GestionMuebles {
 
   get endItem(): number {
     return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+  }
+
+  toggleVisibility(furniture: any) {
+    const newVisibleState = !furniture.visible;
+    
+    this.apiService.updateFurniture(furniture.id, { visible: newVisibleState }).subscribe(
+      (response) => {
+        furniture.visible = newVisibleState;
+      },
+      (error) => {
+        console.error('Error updating visibility:', error);
+      }
+    );
+  }
+
+  openEditModal(furniture: any) {
+    this.selectedFurniture = furniture;
+    this.editForm = {
+      name: furniture.name,
+      short_description: furniture.short_description,
+      color_id: furniture.color_id,
+      category_id: furniture.category_id,
+      image_url: furniture.image_url || '',
+      difficulty: furniture.difficulty,
+      required_people: furniture.required_people || 1
+    };
+    // Guardar copia de los valores originales
+    this.originalEditForm = { ...this.editForm };
+    this.isEditModalOpen = true;
+  }
+
+  get hasFormChanges(): boolean {
+    return JSON.stringify(this.editForm) !== JSON.stringify(this.originalEditForm);
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+    this.selectedFurniture = null;
+  }
+
+  saveChanges() {
+    if (!this.selectedFurniture) return;
+
+    this.apiService.updateFurniture(this.selectedFurniture.id, this.editForm).subscribe(
+      (response) => {
+        console.log('Furniture updated:', response);
+        // Actualizar en la lista local
+        Object.assign(this.selectedFurniture, this.editForm);
+        // Actualizar nombres para mostrar (opcional)
+        const category = this.categories.find(c => c.id === this.editForm.category_id);
+        if (category) this.selectedFurniture.category_name = category.name;
+        const color = this.colors.find(c => c.id === this.editForm.color_id);
+        if (color) {
+          this.selectedFurniture.color_name = color.name;
+          this.selectedFurniture.color_hex = color.hex;
+        }
+        this.closeEditModal();
+      },
+      (error) => {
+        console.error('Error updating furniture:', error);
+        alert('Error al actualizar el mueble');
+      }
+    );
   }
 }

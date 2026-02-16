@@ -91,7 +91,8 @@ export class FurnitureService {
               cl.name AS color_name,
               cl.hex AS color_hex,
               f.difficulty,
-              f.short_description
+              f.short_description,
+              f.visible
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
@@ -122,6 +123,7 @@ export class FurnitureService {
               cl.hex AS color_hex,
               f.difficulty,
               f.short_description,
+              f.visible,
               COUNT(*) AS total_steps
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
@@ -143,7 +145,8 @@ export class FurnitureService {
               cl.name,
               cl.hex,
               f.difficulty,
-              f.short_description`,
+              f.short_description,
+              f.visible`,
         [id]);
       return result;
     } catch (error) {
@@ -226,7 +229,8 @@ export class FurnitureService {
             cl.name AS color_name,
             cl.hex AS color_hex,
             f.difficulty,
-            f.short_description
+            f.short_description,
+            f.visible
         FROM public.furniture f
         INNER JOIN Step s ON s.furniture_id = f.id
         INNER JOIN Category c ON f.category_id = c.id
@@ -466,6 +470,8 @@ export class FurnitureService {
     provider_id?: number;
     color_id?: number;
     short_description?: string;
+    visible?: boolean;
+    required_people?: number;
   }) {
     const fields: string[] = [];
     const values: any[] = [];
