@@ -44,6 +44,7 @@ export class Home implements OnInit {
   resetFilterToggle: boolean = false;
   isFurnitureModalOpen = false;
   selectedFurniture: Furniture | null = null;
+  selectedFurnitureSteps: any[] = [];
   isIncidenciaModalOpen = false;
   isLoadingFurnitures = false;
 
@@ -147,11 +148,23 @@ export class Home implements OnInit {
   openFurnitureModal(furniture: Furniture) {
     this.selectedFurniture = furniture;
     this.isFurnitureModalOpen = true;
+    // Cargar los pasos de montaje
+    this.apiService.getFurnitureAssemblyById(furniture.id).subscribe({
+      next: (response) => {
+        console.log('Assembly data received:', response);
+        this.selectedFurnitureSteps = response.steps || [];
+      },
+      error: (error) => {
+        console.error('Error al cargar los pasos de montaje:', error);
+        this.selectedFurnitureSteps = [];
+      }
+    });
   }
 
   closeFurnitureModal() {
     this.isFurnitureModalOpen = false;
     this.selectedFurniture = null;
+    this.selectedFurnitureSteps = [];
     // Limpiar el query param de la URL al cerrar el modal
     this.router.navigate([], {
       relativeTo: this.route,
@@ -391,7 +404,6 @@ export class Home implements OnInit {
     this.obtenerCatalogo();
   }
 
-
   downloadPDF() {
     if (!this.selectedFurniture) return;
 
@@ -399,7 +411,7 @@ export class Home implements OnInit {
     const doc = new jsPDF();
 
     // ===== FONDO GENERAL =====
-    doc.setFillColor(220, 214, 213); // color #dcd6d5
+    doc.setFillColor(220, 214, 213); // beige;
     doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
 
     const primaryColor: [number, number, number] = [45, 26, 21]; // marron oscuro
@@ -471,6 +483,68 @@ export class Home implements OnInit {
 
       doc.text(splitDescription, 20, finalY + 8);
 
+      let currentY = finalY + 8 + (splitDescription.length * 5);
+      
+      if (this.selectedFurnitureSteps && this.selectedFurnitureSteps.length > 0) {
+        currentY += 10;
+
+        // Si no hay espacio suficiente, agregar nueva página
+        const pageHeight = doc.internal.pageSize.height;
+        if (currentY > pageHeight - 80) {
+          doc.addPage();
+          currentY = 30;
+          // Agregar fondo a la nueva página
+          doc.setFillColor(220, 214, 213);
+          doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+        }
+
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...primaryColor);
+        doc.text("Pasos de montaje", 20, currentY);
+
+        // Preparar datos de pasos para la tabla
+        const stepsData = this.selectedFurnitureSteps.map((step, index) => {
+          const stepNumber = index + 1;
+          const parts = step.parts && step.parts.length > 0 
+            ? step.parts.map((p: any) => `${p.reference_number} (x${p.quantity})`).join(', ')
+            : 'Sin piezas';
+          const description = step.description || (step.tools && step.tools.length > 0
+            ? step.tools.map((t: any) => t.name).join(', ')
+            : 'Sin descripción');
+           
+          
+          return [`Paso ${stepNumber}`, parts, description];
+        });
+
+        autoTable(doc, {
+          startY: currentY + 5,
+          head: [['Paso', 'Piezas', 'Descripción']],
+          body: stepsData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: primaryColor,
+            textColor: 255
+          },
+          alternateRowStyles: {
+            fillColor: lightGray
+          },
+          styles: {
+            fontSize: 9,
+            cellPadding: 3
+          },
+          columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 85 },
+            2: { cellWidth: 60 }
+          }
+        });
+
+        currentY = (doc as any).lastAutoTable.finalY + 10;
+      } else {
+        console.log('No steps available for PDF generation');
+      }
+
       // ===== FOOTER =====
       const pageHeight = doc.internal.pageSize.height;
 
@@ -494,6 +568,4 @@ export class Home implements OnInit {
       doc.save(`Ficha_${furniture.name}.pdf`);
     };
   }
-
-
 }

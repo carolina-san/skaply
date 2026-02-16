@@ -470,7 +470,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
 
     for (const step of sortedSteps) {
-      stepDescriptions.push(`Paso ${step.step_number}: Ensamblaje de partes.`);
+      const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
+      stepDescriptions.push(description);
 
       // Calculate appear and join steps
       const appearStep = currentStepIndex * 2;

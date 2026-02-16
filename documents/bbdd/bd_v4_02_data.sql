@@ -342,7 +342,8 @@ VALUES
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
     'https://skaply.ovh/catalogo?furniture=VR515F200',
-     'pdf1'
+    'pdf1',
+    true
 ),
     -- MUEBLE DE ACTIU ARMARIO MODULAR
 (
@@ -356,11 +357,8 @@ VALUES
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
     'https://actiucdn.net/cdn-cgi/image/width=960,height=999,fit=contain,format=auto,quality=95/uploads/images/modules/5531/img-6-2.jpg', --cambiar
     'https://skaply.ovh/catalogo?furniture=123456',
-     'pdf2'
-)
-;
-     'pdf1',
-     true   
+    'pdf2',
+    true
 );
 
 -- ============================
@@ -394,26 +392,26 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 -- ============================
 -- STEPS
 -- ============================
-INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES 
+INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id) VALUES 
 -- MUEBLES DE PRUEBA
-(1,1,NULL),                     
-(2,1,3),(2,2,NULL),    
-(3,1,6),(3,2,6),(3,3,NULL),     
-(4,1,NULL),  
+(1,1,'Ensamblar estructura base',NULL),                     
+(2,1,'Unir piezas laterales',3),(2,2,'Montar estructura completa',NULL),    
+(3,1,'Preparar base inferior',6),(3,2,'Añadir soportes laterales',6),(3,3,'Completar ensamblaje',NULL),     
+(4,1,'Montar estructura principal',NULL),  
 -- MUEBLE SILLA PRUEBA RAMA THREEJS                   
-(5,1,9),
-(5,2,NULL),
+(5,1,'Ensamblar respaldo y base',9),
+(5,2,'Fijar asiento a la estructura',NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
-(6,1,NULL),     -- patas + travesaño
-(6,2,11),       --(patas + travesaño) + tablero     
+(6,1,'Ensamblar patas y travesaño',NULL),     -- patas + travesaño
+(6,2,'Ensamblar tablero',NULL),       --(patas + travesaño) + tablero     
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(7,1,13),     -- tablon inferior y patas
-(7,2,14),     -- (tablon inferior y patas) + laterales
-(7,3,15),     -- (tablon inferior y patas + laterales) + tablon trasero
-(7,4,16),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
-(7,5,17),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
-(7,6,18),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
-(7,7,NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
+(7,1,'Ensamblar tablon inferior y patas',NULL),     -- tablon inferior y patas
+(7,2,'Ensamblar laterales',NULL),     -- (tablon inferior y patas) + laterales
+(7,3,'Ensamblar tablon trasero',NULL),   -- (tablon inferior y patas + laterales) + tablon trasero
+(7,4,'Ensamblar tablon superior',NULL),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
+(7,5,'Ensamblar estantes',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
+(7,6,'Ensamblar puerta izquierda',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
+(7,7,'Ensamblar puerta derecha',NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
 ;       
 -- ============================
 -- SETP_PART (asocia las piezas a los pasos)
