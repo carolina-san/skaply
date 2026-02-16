@@ -10,6 +10,7 @@ import { Modal } from '../modal/modal';
 import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
+import { WebGLEngine } from '../../engine/webgl/webglEngine';
 import { createHardcodedFurniture, AssemblyPart } from './hardcoded-furniture';
 import { FurnitureAssembly, AssemblyStep, AssemblyPartRef } from '../../types/furniture.types';
 import { firstValueFrom } from 'rxjs';
@@ -18,7 +19,6 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-graphics-engine',
   standalone: true,
   imports: [CommonModule, Modal, FormsModule],
-  providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,16 +27,19 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
 
-  constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) { }
+  private engine!: EngineFacade;
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) { }
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
 
+  // Elegir el tipo de motor
+  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API
-
   get modelUrl(): string {
     return this.furniture?.file_uri || '';
   }
@@ -112,6 +115,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private isViewInitialized = false;
 
   ngOnInit(): void {
+    // Initialize Engine based on signal
+    if (this.engineUse() === 'webGL') {
+      console.log('Using WebGL Custom Engine');
+      this.engine = new WebGLEngine();
+    } else {
+      console.log('Using ThreeJS Adapter');
+      this.engine = new ThreeEngineAdapter();
+    }
+
     let ref = this.route.snapshot.params['ref'];
     // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
