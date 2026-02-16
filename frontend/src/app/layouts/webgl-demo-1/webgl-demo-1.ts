@@ -42,26 +42,22 @@ export class WebglSceneComponent implements AfterViewInit {
 
     // ---------- SHADER ----------
     const shader = new ShaderResource(gl, "basic");
-
     await shader.loadFile('assets/shaders/basic.vert', 'vertex');
     await shader.loadFile('assets/shaders/basic.frag', 'fragment');
     shader.buildProgram();
 
     // ---------- RESOURCE MANAGER ----------
     const resourceManager = new ResourceManager();
-
     const meshResource = await resourceManager.getResource(
-      'assets/storage/vital_pro.glb',
+      '../../../storage/vital_pro.glb',
       () => new MeshResource('vital_pro', gl)
     );
 
-    //const mesh = meshResource.getMesh();
     const meshes = meshResource.getMeshes();
 
     // ---------- SCENE GRAPH ----------
     const root = new Node();
     const meshNode = new Node();
-    //meshNode.setEntity(mesh);
     for (let mesh of meshes) {
       const node = new Node();
       node.setEntity(mesh);
@@ -73,8 +69,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
     root.addChild(meshNode);
 
-    const identity = mat4.create();
-
+    
     // ---------- CAMERA ----------
     const view = mat4.create();
     const projection = mat4.create();
@@ -96,7 +91,8 @@ export class WebglSceneComponent implements AfterViewInit {
       shader.setVec3("uLightPosition", vec3.fromValues(3, 5, 3));
       shader.setVec3("uLightColor", vec3.fromValues(1.0, 1.0, 1.0));
       shader.setVec3("uViewPosition", vec3.fromValues(0, 2, 5));
-
+      
+      const identity = mat4.create();
       root.traverse(identity, shader);
 
       requestAnimationFrame(render);
