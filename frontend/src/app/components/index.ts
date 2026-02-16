@@ -7,3 +7,4 @@ export * from './scanner/scanner';
 export * from './graphicsEngine/graphicsEngine.component';
 export * from './modal/modal';
 export * from './voice-controls/voice-controls';
+export * from './export/export';
