@@ -105,6 +105,38 @@ export class FurnitureService {
     }
   }
 
+  async getVisibleFurniture() {
+    try {
+      const result = await pool.query(`
+          SELECT DISTINCT 
+              f.id, 
+              f.name, 
+              f.file_uri, 
+              f.image_url,
+              f.reference_number, 
+              f.category_id, 
+              c.name AS category_name, 
+              f.provider_id, 
+              p.company_name as provider_name, 
+              f.color_id, 
+              cl.name AS color_name,
+              cl.hex AS color_hex,
+              f.difficulty,
+              f.short_description,
+              f.visible
+          FROM public.furniture f
+          INNER JOIN Step s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id
+          WHERE f.visible = true`);
+      return result;
+    } catch (error) {
+      console.error('getVisibleFurniture error:', error);
+      throw error;
+    }
+  }
+
   async getFurnitureById(id: number) {
     try {
       const result = await pool.query(`

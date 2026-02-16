@@ -197,7 +197,7 @@ export class Home implements OnInit {
 
     this.isLoadingFurnitures = true;
     if (filters.category_ids?.length === 0 && !filters.difficulties?.length && !filters.provider_ids?.length && !filters.color_ids?.length && !filters.search) {
-      this.apiService.getAllFurniture().subscribe({
+      this.apiService.getVisibleFurniture().subscribe({
         next: (response) => {
           this.furnitures = response.data || [];
           this.isLoadingFurnitures = false;
