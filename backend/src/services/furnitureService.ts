@@ -323,6 +323,7 @@ export class FurnitureService {
         f.required_people,
         s.id AS step_id,
         s.step_number,
+        s.description,
         s.used_in_step_with_id,
         s.scene_camera_angle,
         COALESCE(json_agg(
@@ -354,10 +355,7 @@ export class FurnitureService {
       WHERE s.furniture_id = $1
       GROUP BY 
         f.required_people,
-        s.id, 
-        s.step_number, 
-        s.used_in_step_with_id,
-        s.scene_camera_angle
+        s.id
       ORDER BY s.step_number ASC
     `;
 

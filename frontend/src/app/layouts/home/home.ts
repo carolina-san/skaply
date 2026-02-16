@@ -404,16 +404,14 @@ export class Home implements OnInit {
     this.obtenerCatalogo();
   }
 
-
   downloadPDF() {
     if (!this.selectedFurniture) return;
 
     const furniture = this.selectedFurniture;
-    console.log('Generating PDF with steps:', this.selectedFurnitureSteps);
     const doc = new jsPDF();
 
     // ===== FONDO GENERAL =====
-    doc.setFillColor(220, 214, 213); // color #dcd6d5
+    doc.setFillColor(220, 214, 213); // beige;
     doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
 
     const primaryColor: [number, number, number] = [45, 26, 21]; // marron oscuro
@@ -486,13 +484,8 @@ export class Home implements OnInit {
       doc.text(splitDescription, 20, finalY + 8);
 
       let currentY = finalY + 8 + (splitDescription.length * 5);
-
-      // ===== PASOS DE MONTAJE =====
-      console.log('Checking steps for PDF. Length:', this.selectedFurnitureSteps?.length);
-      console.log('Steps content:', this.selectedFurnitureSteps);
       
       if (this.selectedFurnitureSteps && this.selectedFurnitureSteps.length > 0) {
-        console.log('Adding steps to PDF');
         currentY += 10;
 
         // Si no hay espacio suficiente, agregar nueva página
@@ -512,7 +505,6 @@ export class Home implements OnInit {
 
         // Preparar datos de pasos para la tabla
         const stepsData = this.selectedFurnitureSteps.map((step, index) => {
-          console.log(`Processing step ${index + 1}:`, step);
           const stepNumber = index + 1;
           const parts = step.parts && step.parts.length > 0 
             ? step.parts.map((p: any) => `${p.reference_number} (x${p.quantity})`).join(', ')
@@ -520,11 +512,10 @@ export class Home implements OnInit {
           const description = step.description || (step.tools && step.tools.length > 0
             ? step.tools.map((t: any) => t.name).join(', ')
             : 'Sin descripción');
+           
           
           return [`Paso ${stepNumber}`, parts, description];
         });
-        
-        console.log('Steps data for table:', stepsData);
 
         autoTable(doc, {
           startY: currentY + 5,
@@ -577,6 +568,4 @@ export class Home implements OnInit {
       doc.save(`Ficha_${furniture.name}.pdf`);
     };
   }
-
-
 }
