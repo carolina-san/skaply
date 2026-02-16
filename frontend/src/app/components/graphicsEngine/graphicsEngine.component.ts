@@ -535,7 +535,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         const startPos = { ...targetPos };
         const dist = partRef.distance; // default distance
 
-        console.log("distancia en paso: ", this.currentStep, " es: ", dist);
+        console.log("distancia en paso: ", currentStepIndex, " es: ", dist);
 
         if (partRef.axis === 'x') startPos.x += dist;
         else if (partRef.axis === 'y') startPos.y += dist;
