@@ -78,6 +78,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   });
 
+  visibleSteps = computed(() => {
+    return Array.from({ length: this.totalSteps }, (_, i) => i);
+  });
+
+  goToStep(step: number): void {
+    if (step >= 0 && step < this.totalSteps) {
+      this.manualStep.set(step);
+    }
+  }
+
   isSimulating = computed(() => this.mode() === 'simulation');
 
   isManualFirstStep = computed(() => this.manualStep() === 0);
@@ -535,7 +545,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         const startPos = { ...targetPos };
         const dist = partRef.distance; // default distance
 
-        console.log("distancia en paso: ", this.currentStep, " es: ", dist);
+        console.log("distancia en paso: ", currentStepIndex, " es: ", dist);
 
         if (partRef.axis === 'x') startPos.x += dist;
         else if (partRef.axis === 'y') startPos.y += dist;

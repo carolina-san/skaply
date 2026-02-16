@@ -3,7 +3,56 @@ import { Difficulty } from '@/types/common.types';
 import { ApiError } from '@/utils/ApiError';
 import QRCode from 'qrcode';
 
+interface FurnitureFilters {
+  visible?: boolean;
+  category_id?: number;
+  provider_id?: number;
+}
+
 export class FurnitureService {
+
+  // PRIVATE ROUTES
+
+  // async getPrivateFurniture(filters?: FurnitureFilters) {
+  //   try {
+  //     const conditions: string[] = ['1=1'];
+  //     const values: any[] = [];
+  //     let paramIndex = 1;
+
+  //     // Visible
+  //     if (filters?.visible !== undefined) {
+  //       conditions.push(`visible = $${paramIndex++}`);
+  //       values.push(filters.visible);
+  //     }
+
+  //     // Category
+  //     if (filters?.category_id !== undefined) {
+  //       conditions.push(`category_id = $${paramIndex++}`);
+  //       values.push(filters.category_id);
+  //     }
+
+  //     // Provider
+  //     if (filters?.provider_id !== undefined) {
+  //       conditions.push(`provider_id = $${paramIndex++}`);
+  //       values.push(filters.provider_id);
+  //     }
+
+  //     const whereClause = conditions.join(' AND ');
+
+  //     const query = `
+  //       SELECT *
+  //       FROM furniture
+  //       WHERE ${whereClause}
+  //       ORDER BY created_at DESC
+  //     `;
+
+  //     const result = await pool.query(query, values);
+  //     return result.rows;
+
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
 
   // Checks if the furniture id is valid
   async furnitureExists(id: number): Promise<boolean> {
@@ -267,9 +316,9 @@ export class FurnitureService {
 
 
   // Devuelve toda la iformación necesaria para el motor gráfico
-async getFurnitureAssembly(furnitureId: number) {
-  try {
-    const query = `
+  async getFurnitureAssembly(furnitureId: number) {
+    try {
+      const query = `
       SELECT
         f.required_people,
         s.id AS step_id,
@@ -312,24 +361,24 @@ async getFurnitureAssembly(furnitureId: number) {
       ORDER BY s.step_number ASC
     `;
 
-    const result = await pool.query(query, [furnitureId]);
-    
-    // Check if we found any steps; if not, return null or an empty object
-    if (result.rows.length === 0) return null;
+      const result = await pool.query(query, [furnitureId]);
 
-    return {
-      furniture_id: furnitureId,
-      required_people: result.rows[0].required_people,
-      steps: result.rows
-    };
+      // Check if we found any steps; if not, return null or an empty object
+      if (result.rows.length === 0) return null;
 
-  } catch (error) {
-    // SECURITY TIP: Log the actual error internally, but don't expose 
-    // DB details to the user.
-    console.error('Database Error:', error); 
-    throw error; 
+      return {
+        furniture_id: furnitureId,
+        required_people: result.rows[0].required_people,
+        steps: result.rows
+      };
+
+    } catch (error) {
+      // SECURITY TIP: Log the actual error internally, but don't expose 
+      // DB details to the user.
+      console.error('Database Error:', error);
+      throw error;
+    }
   }
-}
 
   async createFurniture(data: {
     name: string;
@@ -513,13 +562,13 @@ async getFurnitureAssembly(furnitureId: number) {
 
   async getFurnitureByName(name: string): Promise<any> {
     try {
+
       const result = await pool.query(
-        `SELECT name, reference_number
+        `SELECT id, name, image_url, reference_number, provider_id, short_description
          FROM public.furniture 
-         WHERE name ILIKE $1`,
+         WHERE name ILIKE $1 AND visible = true`,
         [name]
       );
-      console.log(result.rows);
       return result.rows;
     } catch (error) {
       if (error instanceof ApiError) {

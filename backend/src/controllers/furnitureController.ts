@@ -4,6 +4,7 @@ import { FurnitureService } from '../services/furnitureService'
 import { ProviderService } from '../services/ProviderService'
 import { Difficulty } from '@/types/common.types';
 import { UserRole } from '@/types/user.types';
+import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery  } from '@/utils/common.utils';
 /*import { UserService } from '../services/UserService';*/
 
 const validDifficulties = ['low', 'medium', 'high'];
@@ -16,6 +17,47 @@ export class FurnitureController {
     this.furnitureService = furnitureService || new FurnitureService();
     this.providerService = providerService || new ProviderService();
   }
+
+  // PRIVATE ROUTES
+
+  // getAllPrivateFurniture = async (req: Request, res: Response, next: NextFunction) => {
+  //   try {
+  //     const { visible, category_id, provider_id } = req.query;
+
+  //     const filters: any = {};
+
+  //     // validation
+  //     filters.visible = parseBooleanQuery(visible as string | undefined);
+  //     if (category_id !== undefined) {filters.category_id = validateParameterId(category_id as string);}
+  //     if (provider_id !== undefined) {filters.provider_id = validateParameterId(provider_id as string);}
+
+  //     // PROV
+  //     if (req.user?.role === UserRole.PROV) {
+  //       const userProviderId = await this.providerService.getProviderIdByEmail(req.user.emailuser);
+  //       if (!userProviderId) throw new ApiError('UNAUTHORIZED', 'Provider not found');
+  //       filters.provider_id = userProviderId; 
+  //     }
+
+  //     // ADMIN
+  //     if (req.user?.role === UserRole.ADMIN && provider_id !== undefined) {
+  //       filters.provider_id = validateParameterId(provider_id as string);
+  //     }
+
+  //     const result = await this.furnitureService.getPrivateFurniture(filters);
+
+  //     res.status(200).json({
+  //       message: 'Muebles filtrados correctamente',
+  //       data: result
+  //     });
+
+  //   } catch (error) {
+  //     console.error('Database error in getPrivateFurniture:', error);
+  //     if (error instanceof ApiError) return next(error);
+  //     next(new ApiError('INTERNAL_SERVER', 'Failed to fetch private furniture'));
+  //   }
+  // }
+
+  // PUBLIC ROUTES
 
   getAllFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

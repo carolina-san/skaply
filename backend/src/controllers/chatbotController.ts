@@ -61,15 +61,29 @@ export class ChatbotController {
                         parameters.furniture_ref2 && parameters.furniture_ref2.trim() !== ''
                             ? parameters.furniture_ref2
                             : undefined;
+                    let name = null;
 
                     if (!ref) {
                         const montajeCtx = outputContexts.find((c: any) =>
                             c.name.endsWith('/contexts/montaje_context')
                         );
                         ref = montajeCtx?.parameters?.furniture_ref;
+                        if (!ref) {
+                            name = parameters.furniture_name;
+                        }
                     }
 
-                    res.status(200).json(await this.chatbotService.getFurnitureInfo(ref || '', session));
+                    if (ref) {
+                        res.status(200).json(await this.chatbotService.getFurnitureInfo(ref || '', session));
+                        return;
+                    }
+
+                    if (name) {
+                        res.status(200).json(await this.chatbotService.getFurnitureInfoByName(name || '', session));
+                        return;
+                    }
+
+                    res.status(200).json(await this.chatbotService.getFurnitureInfo('', session));
                     return;
                 }
                 case 'set.reference': {
@@ -157,17 +171,14 @@ export class ChatbotController {
                     return;
                 }
                 case 'get.furniture.ref': {
-                    console.log('get.furniture.ref');
                     const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
                         c.name.endsWith('formacionreferencia-followup')
                     );
                     if (!ctx) {
-                        console.log('No se recibió el mueble');
                         next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
                         return;
                     }
                     const name = ctx.parameters.furniture_name;
-                    console.log(name);
                     res.status(200).json(await this.chatbotService.getFurnitureRef(name, session));
                     return;
                 }

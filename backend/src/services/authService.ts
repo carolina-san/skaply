@@ -19,7 +19,7 @@ export class AuthService {
 
   async getUserById(id: number) {
     const result = await pool.query(
-      `SELECT id, email, company_name, role, enabled, registration_status, visible 
+      `SELECT id, email, name, company_name, telephone, role, enabled, registration_status, visible 
       FROM "User" 
       WHERE id = $1`,
       [id]
@@ -131,6 +131,67 @@ export class AuthService {
     } catch (error) {
       console.error('Error getting user by Google ID:', error);
       throw new Error('Error finding user by Google ID');
+    }
+  }
+
+  async updateMyProfile(userId: number, updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string }) {
+    try {
+      const fieldsToUpdate: string[] = [];
+      const values: any[] = [];
+      let paramCount = 1;
+
+      if (updates.name !== undefined) {
+        fieldsToUpdate.push(`name = $${paramCount}`);
+        values.push(updates.name);
+        paramCount++;
+      }
+
+      if (updates.company_name !== undefined) {
+        fieldsToUpdate.push(`company_name = $${paramCount}`);
+        values.push(updates.company_name);
+        paramCount++;
+      }
+
+      if (updates.email !== undefined) {
+        fieldsToUpdate.push(`email = $${paramCount}`);
+        values.push(updates.email);
+        paramCount++;
+      }
+
+      if (updates.telephone !== undefined) {
+        fieldsToUpdate.push(`telephone = $${paramCount}`);
+        values.push(updates.telephone);
+        paramCount++;
+      }
+
+      if (updates.password !== undefined) {
+        fieldsToUpdate.push(`password = $${paramCount}`);
+        values.push(updates.password);
+        paramCount++;
+      }
+
+      if (fieldsToUpdate.length === 0) {
+        throw new Error('No fields to update');
+      }
+
+      fieldsToUpdate.push(`updated_at = $${paramCount}`);
+      values.push(new Date());
+      paramCount++;
+
+      values.push(userId);
+
+      const query = `
+        UPDATE "User" 
+        SET ${fieldsToUpdate.join(', ')}
+        WHERE id = $${paramCount}
+        RETURNING id, email, name, company_name, telephone, role
+      `;
+
+      const result = await pool.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw new Error('Error updating user profile in database');
     }
   }
 

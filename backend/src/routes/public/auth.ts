@@ -10,6 +10,7 @@ router.post('/register', authController.register);
 router.post('/logout', authController.logout);
 router.post('/refresh', authController.refreshToken);
 router.get('/me', authMiddleware, authController.me);
+router.put('/me', authMiddleware, authController.updateMyProfile);
 
 // Google OAuth routes
 router.get('/google', authController.googleAuth);
