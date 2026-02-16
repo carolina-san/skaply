@@ -1,6 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
 import { Mesh } from './mesh';
+import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
     
@@ -103,7 +104,7 @@ export class Node {
 
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
 
-    traverse(parentMatrix: mat4): void { 
+    traverse(parentMatrix: mat4, shader: ShaderResource): void { 
         
         // create transform matrix
         if (this.needsUpdate) {
@@ -113,13 +114,14 @@ export class Node {
         }
 
         // draw entity 
-        if (this.entity instanceof Mesh) {
-            this.entity.draw(this.transformMatrix/*, shader*/);
+        if (this.entity) {
+            console.log('Node: Dibujando entidad', this.entity.constructor.name);
+            this.entity.draw(this.transformMatrix, shader);
         }
 
         // recursive
         for (const child of this.children) {
-            child.traverse(this.transformMatrix);
+            child.traverse(this.transformMatrix, shader);
         }
     }
 

@@ -11,6 +11,7 @@ import { Cookies } from './layouts/legal/cookies';
 import { LegalNotice } from './layouts/legal/legal-notice';
 import { Privacy } from './layouts/legal/privacy';
 import { ProviderProfile } from './layouts/provider-profile/provider-profile';
+import { WebglSceneComponent } from './layouts/webgl-demo-1/webgl-demo-1'; //new
 
 export const routes: Routes = [
     { path: '', component: Landing },
@@ -25,5 +26,6 @@ export const routes: Routes = [
     { path: 'cookies', component: Cookies },
     { path: 'legal-notice', component: LegalNotice },
     { path: 'privacy', component: Privacy },
+    { path: 'webgl1', component: WebglSceneComponent }, //new
     { path: '**', redirectTo: 'catalogo' } // Redirige cualquier ruta no encontrada al catálogo
 ];

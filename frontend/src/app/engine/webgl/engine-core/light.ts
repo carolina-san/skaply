@@ -1,3 +1,4 @@
+import { ShaderResource } from '../resource/shader-resource';
 import { Entity } from './entity';
 import { vec3, mat4 } from 'gl-matrix';
 
@@ -21,7 +22,13 @@ export class Light extends Entity {
 
     // DRAW
 
-    draw(modelMatrix: mat4): void {
-        // Lights do not draw geometry in WebGL, but will pass data to shaders
+    draw(modelMatrix: mat4,shader: ShaderResource): void {
+        // lights do not draw geometry 
+        const localPos = vec3.fromValues(0, 0, 0);
+        const worldPos = vec3.create();
+        vec3.transformMat4(worldPos, localPos, modelMatrix);
+        shader.setVec3("uLightPosition", worldPos);
+        shader.setVec3("uLightColor", this.intensity);
     }
+
 }

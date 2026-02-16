@@ -1,220 +1,207 @@
-import { mat4 } from 'gl-matrix';
 import { Resource } from './resource';
 import { Mesh } from '../engine-core/mesh';
-import { load } from '@loaders.gl/core';
-import { GLTFLoader } from '@loaders.gl/gltf';
 
-export interface Material {
-    name: string;
-    baseColorTexture?: WebGLTexture;
-    metallicRoughnessTexture?: WebGLTexture;
-    normalTexture?: WebGLTexture;
-}
 
 export class MeshResource extends Resource {
+
+    vertices!: Float32Array;
+    normals!: Float32Array;
+    texCoords!: Float32Array;
+    indices!: Uint32Array;
     
-    vertices: Float32Array = new Float32Array();
-    normals: Float32Array = new Float32Array();
-    texCoords: Float32Array = new Float32Array();
-    indices: Uint16Array = new Uint16Array();
-    mesh?: Mesh;
-    materials: Material[] = [];
+    private textures: Map<number, WebGLTexture> = new Map();
+
+    //mesh?: Mesh;
+    meshes: Mesh[] = [];
 
     constructor(name: string, private gl: WebGL2RenderingContext) {
         super(name);
     }
 
-    // LOAD FILE (LOAD GLTF AND SETUP BUFFERS)
-
     async loadFile(url: string): Promise<void> {
-        await this.loadGLTF(url);
-        this.setupBuffers();
-    }
 
-    // LOAD GLTF !! version primeriza que solo coge el primer mesh del glb 
+        console.log("Cargando modelo con Assimp:", url);
 
-    private async loadGLTF(url: string): Promise<void> {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
 
-        // INFO:
-        // Dowload glTF file and parse it using loaders.gl
-        // loaders.gl returns an object with the following structure:
-        //  {
-        //      json,     // estructura glTF
-        //      buffers,  // datos binarios reales
-        //      images
-        //  }
-        // json contains:
-        //      json.meshes
-        //      json.accessors
-        //      json.bufferViews
-        //      json.nodes
-        //      json.materials
+        const assimpModule = await import('assimpjs');
 
-        const gltf: any = await load(url, GLTFLoader);
-        const json = gltf.json;
-        const buffers = gltf.buffers;
-        const images = gltf.images;
+        const a = await assimpModule.default({
+            locateFile: (file: string) => `assets/assimp/${file}`
+        });
 
-        // get first mesh and its primitive (geometry)
-        const mesh = json.meshes[0];
-        const primitive = mesh.primitives[0];
+        const fileList = new a.FileList();
+        fileList.AddFile(url, new Uint8Array(arrayBuffer));
 
-        const extractData = (accessor: any) => {
-            const bufferView = json.bufferViews[accessor.bufferView];
-            const buffer = buffers[bufferView.buffer];
+        const result = a.ConvertFileList(fileList, 'assjson');
 
-            const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
-            const length = accessor.count * this.getNumComponents(accessor.type);
+        if (!result.IsSuccess()) {
+            throw new Error(result.GetErrorCode());
+        }
 
-            return new Float32Array(buffer, byteOffset, length); // real vertex data
-        };
+        const json = JSON.parse(new TextDecoder().decode(result.GetFile(0).GetContent()));
 
-        // INFO:
-        // accessor doesnt contain the actual vertex data
-        // it just describes how to read it from the bufferView
-        // mesh → accessor → bufferView → buffer
-        const positionAccessor = json.accessors[primitive.attributes.POSITION];
-        const normalAccessor = json.accessors[primitive.attributes.NORMAL];
-        const texCoordAccessor = primitive.attributes.TEXCOORD_0 ? json.accessors[primitive.attributes.TEXCOORD_0] : null;
-        const indexAccessor = json.accessors[primitive.indices];
+        await this.loadTextures(json);
 
-        // save vertices, normals, texCoords
-        this.vertices = extractData(positionAccessor);
-        this.normals = normalAccessor? extractData(normalAccessor): new Float32Array();
-        this.texCoords = texCoordAccessor? extractData(texCoordAccessor): new Float32Array();
+        const allMeshes = json.meshes;
 
-        // extract indices
-        const indexBufferView = json.bufferViews[indexAccessor.bufferView];
-        const indexBuffer = buffers[indexBufferView.buffer];
+        for (let m of allMeshes) {
 
-        // save indices
-        this.indices = new Uint16Array(
-            indexBuffer,
-            indexBufferView.byteOffset || 0,
-            indexAccessor.count
-        );
+            const vertices = new Float32Array(m.vertices.flat());
 
-        // extract materials and create WebGL textures for them
-        if (json.materials && json.materials.length > 0) {
-            
-            this.materials = json.materials.map((mat: any) => {
-                
-                const material: Material = { name: mat.name };
+            const normals = m.normals
+                ? new Float32Array(m.normals.flat())
+                : new Float32Array();
 
-                // Base color texture
-                if (mat.pbrMetallicRoughness?.baseColorTexture) {
-                    const texIndex = mat.pbrMetallicRoughness.baseColorTexture.index;
-                    const image = images[texIndex];
-                    if (image) {
-                        const glTex = this.gl.createTexture()!;
-                        this.gl.bindTexture(this.gl.TEXTURE_2D, glTex);
-                        this.gl.texImage2D(
-                            this.gl.TEXTURE_2D, 0, this.gl.RGBA,
-                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, image
-                        );
-                        this.gl.generateMipmap(this.gl.TEXTURE_2D);
-                        material.baseColorTexture = glTex;
-                    }
-                }
+            const texCoords = m.texturecoords?.length
+                ? new Float32Array(m.texturecoords[0].flat())
+                : new Float32Array();
 
-                // Metallic-roughness texture
-                if (mat.pbrMetallicRoughness?.metallicRoughnessTexture) {
-                    const texIndex = mat.pbrMetallicRoughness.metallicRoughnessTexture.index;
-                    const image = images[texIndex];
-                    if (image) {
-                        const glTex = this.gl.createTexture()!;
-                        this.gl.bindTexture(this.gl.TEXTURE_2D, glTex);
-                        this.gl.texImage2D(
-                            this.gl.TEXTURE_2D, 0, this.gl.RGBA,
-                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, image
-                        );
-                        this.gl.generateMipmap(this.gl.TEXTURE_2D);
-                        material.metallicRoughnessTexture = glTex;
-                    }
-                }
+            const indices = new Uint32Array(m.faces.flat());
 
-                // Normal texture
-                if (mat.normalTexture) {
-                    const texIndex = mat.normalTexture.index;
-                    const image = images[texIndex];
-                    if (image) {
-                        const glTex = this.gl.createTexture()!;
-                        this.gl.bindTexture(this.gl.TEXTURE_2D, glTex);
-                        this.gl.texImage2D(
-                            this.gl.TEXTURE_2D, 0, this.gl.RGBA,
-                            this.gl.RGBA, this.gl.UNSIGNED_BYTE, image
-                        );
-                        this.gl.generateMipmap(this.gl.TEXTURE_2D);
-                        material.normalTexture = glTex;
-                    }
-                }
+            const materialIndex = m.materialindex;
+            const texture = this.textures.get(materialIndex);
 
-                return material;
-            });
+            const mesh = this.createMesh(vertices, normals, texCoords, indices, texture);
+            this.meshes.push(mesh);
         }
     }
 
-    private getNumComponents(type: string): number {
-        switch (type) {
-            case 'SCALAR': return 1;
-            case 'VEC2': return 2;
-            case 'VEC3': return 3;
-            case 'VEC4': return 4;
-            default: return 3;
+    private async loadTextures(json: any) {
+        if (!json.materials) return;
+
+        for (let i = 0; i < json.materials.length; i++) {
+
+            const material = json.materials[i];
+            const props = material.properties;
+
+            const texProp = props?.find((p: any) => p.key === '$tex.file'); // ruta de imagen
+            const colorProp = props?.find((p: any) => p.key === '$clr.diffuse'); // color base
+
+            const gl = this.gl;
+
+            if (texProp && typeof texProp.value === 'string') {
+                // --- textura desde archivo ---
+                try {
+                    const img = new Image();
+                    img.src = `assets/models/${texProp.value}`;
+                    await img.decode();
+
+                    const texture = gl.createTexture()!;
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+
+                    this.textures.set(i, texture);
+                } catch (e) {
+                    console.warn(`No se pudo cargar la textura: ${texProp.value}`, e);
+                }
+
+            } else if (colorProp && Array.isArray(colorProp.value)) {
+                // --- textura 1x1 de color ---
+                const c = colorProp.value;
+                const data = new Uint8Array([
+                    Math.round(c[0] * 255),
+                    Math.round(c[1] * 255),
+                    Math.round(c[2] * 255),
+                    Math.round((c[3] ?? 1) * 255),
+                ]);
+
+                const texture = gl.createTexture()!;
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.RGBA,
+                    1,
+                    1,
+                    0,
+                    gl.RGBA,
+                    gl.UNSIGNED_BYTE,
+                    data
+                );
+                gl.generateMipmap(gl.TEXTURE_2D);
+
+                this.textures.set(i, texture);
+
+            } else {
+                // --- fallback ---
+                const data = new Uint8Array([255, 255, 255, 255]);
+                const texture = gl.createTexture()!;
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.RGBA,
+                    1,
+                    1,
+                    0,
+                    gl.RGBA,
+                    gl.UNSIGNED_BYTE,
+                    data
+                );
+                gl.generateMipmap(gl.TEXTURE_2D);
+                this.textures.set(i, texture);
+            }
         }
     }
 
-    // SETUP BUFFERS (CREATE VAO, VBOs, EBO)
 
-    private setupBuffers(): void {
-        
+    private createMesh(
+        vertices: Float32Array,
+        normals: Float32Array,
+        texCoords: Float32Array,
+        indices: Uint32Array,
+        texture?: WebGLTexture
+    ): Mesh {
+
         const gl = this.gl;
+
         const vao = gl.createVertexArray()!;
         gl.bindVertexArray(vao);
 
-        // POSITION
-        const vboPos = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vboPos);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+        // vertices
+        const vbo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
-        // NORMAL
-        if (this.normals.length > 0) {
-            const vboNormal = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, vboNormal);
-            gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
-            gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+        // normals
+        if (normals.length) {
+            const nbo = gl.createBuffer()!;
+            gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
+            gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
             gl.enableVertexAttribArray(1);
+            gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
         }
 
-        // TEXCOORD
-        if (this.texCoords.length > 0) {
-            const vboTex = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, vboTex);
-            gl.bufferData(gl.ARRAY_BUFFER, this.texCoords, gl.STATIC_DRAW);
-            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+        // texcoords
+        if (texCoords.length) {
+            const tbo = gl.createBuffer()!;
+            gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
+            gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
             gl.enableVertexAttribArray(2);
+            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
         }
 
-        // EBO
+        // indices
         const ebo = gl.createBuffer()!;
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
-        // desbind VAO
         gl.bindVertexArray(null);
 
-        this.mesh = new Mesh(
-            { vao, indexCount: this.indices.length },
-            gl
-        );
+        return new Mesh({
+            vao,
+            indexCount: indices.length,
+            texture: texture, 
+            indexType: gl.UNSIGNED_INT
+        }, gl);
     }
 
-    // DRAW (no hace falta porque se dibuja desde la funcion traverse del nodo raiz)
-
-    // draw(transform: mat4) {
-    //     if (!this.mesh) return;
-    //     this.mesh.draw(transform);
-    // }
+    getMeshes(): Mesh[] {
+        return this.meshes;
+    }
 }

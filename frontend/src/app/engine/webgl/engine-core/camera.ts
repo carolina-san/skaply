@@ -1,8 +1,10 @@
+import { ShaderResource } from '../resource/shader-resource';
 import { Entity } from './entity';
 import { mat4, vec3 } from 'gl-matrix';
 
 export class Camera extends Entity {
 
+    // !! fixed parameters
     public isPerspective: boolean = true; // false for orthographic
     public near: number = 0.1;
     public far: number = 100;
@@ -22,7 +24,7 @@ export class Camera extends Entity {
         this.aspect = aspect;
         this.near = near;
         this.far = far;
-        mat4.perspective(this.projectionMatrix, fov * Math.PI / 180, aspect, near, far);
+        mat4.perspective(this.projectionMatrix, fov, aspect, near, far);
     }
 
     setOrthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): void {
@@ -40,7 +42,13 @@ export class Camera extends Entity {
 
     // DRAW
 
-    draw(modelMatrix: mat4): void {
-        // Camera does not draw geometry
+    draw(modelMatrix: mat4, shader: ShaderResource): void {
+
+        console.log('Camera viewMatrix:', this.viewMatrix);
+        console.log('Camera projectionMatrix:', this.projectionMatrix);
+        
+        // Camera does not draw geometry    
+        shader.setMat4("uViewMatrix", this.viewMatrix);
+        shader.setMat4("uProjectionMatrix", this.projectionMatrix);
     }
 }
