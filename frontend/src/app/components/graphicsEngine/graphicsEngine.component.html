@@ -63,7 +63,7 @@
           class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
           [ngClass]="{
             'bg-azul-claro': stepIndex <= currentStep(),
-            'bg-white/30': stepIndex > currentStep(),
+            'bg-white/30 text-beige': stepIndex > currentStep(),
             'scale-115': stepIndex === currentStep(),
             'font-bold': stepIndex === currentStep()
           }">
@@ -156,7 +156,7 @@
   <footer class="flex flex-col items-start justify-center bg-transparent  text-marron-oscuro"
     [class.pointer-events-none]="areControlsDisabled()"
     [class.opacity-60]="areControlsDisabled() || isolatedPart() !== null">
-    @if (isCameraMoved()) {
+    @if (isCameraMoved() && mode() !== 'simulation') {
     <button (click)="resetCameraPosition()"
       class="flex px-3 py-2 bg-beige justify-left rounded-full transition-all duration-200 transform hover:scale-105 mb-2 z-50">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
@@ -194,7 +194,7 @@
       class="w-full flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1">
 
       @if (mode() === 'manual') {
-      <button class="bg-beige p-2 rounded-full" (click)="goToStep(0)">
+      <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStep(0)">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
           <path
             d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
@@ -203,18 +203,20 @@
       <!--Botones siguiente anterior-->
       <div class="flex flex-row items-center justify-center gap-2">
         <button (click)="prevStep()" [disabled]="isManualFirstStep()"
-          class="w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200  disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </button>
 
         @if (manualStep() < totalSteps - 1) { <button (click)="nextStep()"
-          class="w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
@@ -222,12 +224,14 @@
 
           } @else {
           <button (click)="openFinishModal()"
-            class="px-6 h-12 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
+            class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform  disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
             Terminar
           </button>
           }
       </div>
-      <button (click)="setMode('final')" class="bg-beige p-2 rounded-full " [class.bg-azul-claro]="mode() === 'final'">
+      <button (click)="setMode('final')"
+        class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
+        [class.bg-azul-claro]="mode() === 'final'">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
           <path
             d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
