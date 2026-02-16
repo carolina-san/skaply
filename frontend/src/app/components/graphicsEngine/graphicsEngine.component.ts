@@ -11,8 +11,7 @@ import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 import { WebGLEngine } from '../../engine/webgl/webglEngine';
-import { createHardcodedFurniture, AssemblyPart } from './hardcoded-furniture';
-import { FurnitureAssembly, AssemblyStep, AssemblyPartRef } from '../../types/furniture.types';
+import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../types/furniture.types';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -185,9 +184,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           if (this.furniture) {
             this.createFurniture().then(() => this.animate());
           }
-        } else {
-          // Modo hardcoded, crear inmediatamente
-          this.createFurniture().then(() => this.animate());
         }
 
         if (this.autoStartSimulation()) {
@@ -462,18 +458,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.setMode('final');
       return;
     }
-
-    // 3. Fallback to Hardcoded Furniture if everything else fails
-    console.log('Falling back to hardcoded furniture logic.');
-    // If we loaded a baseModel but are not using it, remove it?
-    if (baseModel) {
-      this.engine.removeFromScene(baseModel);
-    }
-
-    const hardcodedData = createHardcodedFurniture(this.engine);
-    this.parts = hardcodedData.parts;
-    this.totalSteps.set(hardcodedData.totalSteps);
-    this.stepDescriptions.set(hardcodedData.stepDescriptions);
   }
 
   private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {

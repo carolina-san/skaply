@@ -45,3 +45,16 @@ export interface FurnitureAssembly {
     required_people: number;
     steps: AssemblyStep[];
 }
+
+import { RenderableObject, Vector3 } from '../engine/interfaces';
+
+export interface AssemblyPart {
+    object: RenderableObject;
+    startPosition: Vector3;
+    targetPosition: Vector3;
+    appearStep: number;
+    joinStep: number;
+    name: string;
+    description: string;
+    arrow?: RenderableObject;
+}

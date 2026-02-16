@@ -46,7 +46,7 @@ class ThreeRenderableObject implements RenderableObject {
 
     setVisible(visible: boolean): void {
         this.threeObject.traverse((child: any) => { //Changed to get all node of the 3d object not just the father
-        child.visible = visible;
+            child.visible = visible;
         });
     }
 
@@ -112,7 +112,7 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
         // En móvil (pantalla pequeña), alejar más la cámara para que el mueble se vea más pequeño
         const isMobile = width < 768;
-        const cameraDistance = isMobile ? 6 : 4;
+        const cameraDistance = isMobile ? 2.5 : 2;
         this.camera.position.set(2.5, 2.5, cameraDistance);
 
         this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
