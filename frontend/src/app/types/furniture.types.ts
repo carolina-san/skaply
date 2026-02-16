@@ -14,6 +14,7 @@ export interface Furniture {
     provider_name?: string;
     image_url?: string;
     category_id: number;
+    total_steps?: number;
     // category_name: number;
 }
 
