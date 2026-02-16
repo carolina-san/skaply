@@ -84,7 +84,7 @@
       <p class="font-semibold mt-1 text-beige">¡Listo! Estructura completada.</p>
       } @else {
       <p class="font-semibold mt-1 text-sm sm:text-base transition-colors text-beige">
-        {{ stepDescriptions[currentStep()] || 'Cargando paso...' }}
+        {{ stepDescriptions()[currentStep()] || 'Cargando paso...' }}
       </p>
 
       }
@@ -216,7 +216,7 @@
           </svg>
         </button>
 
-        @if (manualStep() < totalSteps - 1) { <button (click)="nextStep()"
+        @if (manualStep() < totalSteps() - 1) { <button (click)="nextStep()"
           class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
           <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"

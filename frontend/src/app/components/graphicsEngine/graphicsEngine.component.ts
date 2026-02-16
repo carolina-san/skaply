@@ -56,7 +56,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
 
-  totalSteps = 0;
+  totalSteps = signal(0);
   manualStep = signal(0);
   simulationStep = signal(0);
   isolatedPart = signal<AssemblyPart | null>(null);
@@ -72,18 +72,18 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       case 'simulation':
         return this.simulationStep();
       case 'final':
-        return this.totalSteps - 1;
+        return this.totalSteps() - 1;
       default:
         return 0;
     }
   });
 
   visibleSteps = computed(() => {
-    return Array.from({ length: this.totalSteps }, (_, i) => i);
+    return Array.from({ length: this.totalSteps() }, (_, i) => i);
   });
 
   goToStep(step: number): void {
-    if (step >= 0 && step < this.totalSteps) {
+    if (step >= 0 && step < this.totalSteps()) {
       this.manualStep.set(step);
     }
   }
@@ -91,7 +91,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   isSimulating = computed(() => this.mode() === 'simulation');
 
   isManualFirstStep = computed(() => this.manualStep() === 0);
-  isManualComplete = computed(() => this.manualStep() === this.totalSteps - 1);
+  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
   isSimulationPaused = signal(false);
   simulationSpeed = signal(1);
@@ -104,7 +104,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   reviewText = signal('');
   isSubmittingReview = signal(false);
 
-  stepDescriptions: string[] = [];
+  stepDescriptions = signal<string[]>([]);
 
 
   private parts: AssemblyPart[] = [];
@@ -177,7 +177,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   nextStep(): void {
-    this.manualStep.update(step => (step < this.totalSteps - 1 ? step + 1 : step));
+    this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
   }
 
   prevStep(): void {
@@ -438,8 +438,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         if (parts.length > 0) {
           this.parts = parts;
-          this.totalSteps = totalSteps;
-          this.stepDescriptions = stepDescriptions;
+          this.totalSteps.set(totalSteps);
+          this.stepDescriptions.set(stepDescriptions);
 
           // If we successfully set up the assembly from the API, we keep the baseModel in the scene?
           // If the parts are children of baseModel, they are already in the scene.
@@ -456,7 +456,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // 2. If API steps failed, check UseExternalModel flag to show the static model
     if (this.useExternalModel && baseModel) {
       console.log('Using standard external model mode.');
-      this.totalSteps = 1;
+      this.totalSteps.set(1);
       this.setMode('final');
       return;
     }
@@ -470,8 +470,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     const hardcodedData = createHardcodedFurniture(this.engine);
     this.parts = hardcodedData.parts;
-    this.totalSteps = hardcodedData.totalSteps;
-    this.stepDescriptions = hardcodedData.stepDescriptions;
+    this.totalSteps.set(hardcodedData.totalSteps);
+    this.stepDescriptions.set(hardcodedData.stepDescriptions);
   }
 
   private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
@@ -601,7 +601,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     if (now - this.lastStepTime > interval) {
       if (this.simulationDirection() === 'forward') {
-        if (this.simulationStep() >= this.totalSteps - 1) {
+        if (this.simulationStep() >= this.totalSteps() - 1) {
           this.simulationDirection.set('backward');
         } else {
           this.simulationStep.update(s => s + 1);
