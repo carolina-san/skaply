@@ -28,7 +28,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
-  constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) {
+  private engine!: EngineFacade;
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {
     effect(() => {
       // Track changes to logical step
       const step = this.currentLogicalStep();
@@ -39,9 +41,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       }, 100);
     });
   }
-  private engine!: EngineFacade;
-
-  constructor(private apiService: ApiService, private route: ActivatedRoute) { }
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
