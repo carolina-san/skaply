@@ -51,13 +51,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   get modelUrl(): string {
     return this.furniture?.file_uri || '';
   }
-
-  controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
-  showHeader = computed(() => this.controlsMode() === 'interactive');
-  showFooterControls = computed(() => this.controlsMode() !== 'hidden');
-  areControlsDisabled = computed(() => this.controlsMode() === 'display-only');
-
   get modelAssembly(): any {
     return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
   }
@@ -88,8 +82,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   // Ratio between total animation states and logical steps (usually 2:1)
   stepsRatio = computed(() => {
     const total = this.totalSteps();
-    const descriptions = this.stepDescriptions().length;
-    return (total > 0 && descriptions > 0) ? total / descriptions : 1;
+    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
+    return (total > 0 && logical > 0) ? total / logical : 1;
   });
 
   currentLogicalStep = computed(() => {
@@ -97,15 +91,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   });
 
   visibleSteps = computed(() => {
-    // Show one bubble per logical step (based on descriptions)
-    return this.stepDescriptions().length > 0
-      ? Array.from({ length: this.stepDescriptions().length }, (_, i) => i)
+    // Show one bubble per logical step
+    const count = this.furniture?.total_steps || this.stepDescriptions().length;
+    return count > 0
+      ? Array.from({ length: count }, (_, i) => i)
       : [];
   });
 
   goToStep(logicalStepIndex: number): void {
     const ratio = this.stepsRatio();
-    // Jump to the start of the logical step
     const targetStep = logicalStepIndex * ratio;
     if (targetStep >= 0 && targetStep < this.totalSteps()) {
       this.manualStep.set(targetStep);
