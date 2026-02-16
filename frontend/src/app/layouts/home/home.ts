@@ -149,7 +149,7 @@ export class Home implements OnInit {
     this.selectedFurniture = furniture;
     this.isFurnitureModalOpen = true;
     // Cargar los pasos de montaje
-    this.apiService.getFurnitureAssembly(furniture.id).subscribe({
+    this.apiService.getFurnitureAssemblyById(furniture.id).subscribe({
       next: (response) => {
         console.log('Assembly data received:', response);
         this.selectedFurnitureSteps = response.steps || [];
