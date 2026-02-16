@@ -20,7 +20,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}`);
   }
 
-  getFurnitureAssembly(id: number): Observable<any> {
+  getFurnitureAssemblyById(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/furniture/${id}/assembly`);
   }
 
