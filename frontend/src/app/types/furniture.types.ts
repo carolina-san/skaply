@@ -13,7 +13,7 @@ export interface Furniture {
     provider_id: number;
     provider_name?: string;
     image_url?: string;
-    // category_id: number;
+    category_id: number;
     // category_name: number;
 }
 
@@ -33,6 +33,7 @@ export interface AssemblyStep {
     required_people: number;
     step_id: number;
     step_number: number;
+    description: string | null;
     used_in_step_with_id: number | null;
     scene_camera_angle: string | null;
     parts: AssemblyPartRef[];
@@ -43,4 +44,17 @@ export interface FurnitureAssembly {
     furniture_id: number;
     required_people: number;
     steps: AssemblyStep[];
+}
+
+import { RenderableObject, Vector3 } from '../engine/interfaces';
+
+export interface AssemblyPart {
+    object: RenderableObject;
+    startPosition: Vector3;
+    targetPosition: Vector3;
+    appearStep: number;
+    joinStep: number;
+    name: string;
+    description: string;
+    arrow?: RenderableObject;
 }

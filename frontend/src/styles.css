@@ -114,17 +114,6 @@ button {
   @apply flex flex-col items-center justify-center flex-1 h-full hover:bg-beige transition-colors;
 }
 
-.btn-opciones-mueble {
-  @apply flex flex-col px-4 py-1 rounded-full transition-all duration-200 items-center;
-}
-
-.btn-opciones-mueble:hover {
-  @apply bg-azul-claro;
-}
-
-.btn-opciones-mueble.active {
-  @apply bg-azul-claro text-marron-oscuro;
-}
 
 .btn-canvas {
   @apply flex flex-col items-center justify-center gap-0.5 px-2 py-2 bg-beige text-marron-oscuro rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;

@@ -196,4 +196,49 @@ export class AuthController {
     }
   };
 
+  updateMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new ApiError('UNAUTHORIZED', 'User not authenticated');
+      }
+
+      const { name, company_name, email, telephone, password } = req.body;
+      const updates: any = {};
+
+      if (name !== undefined) updates.name = name;
+      if (company_name !== undefined) updates.company_name = company_name;
+      if (email !== undefined) {
+        validateEmail(email);
+        // Check if email already exists for another user
+        const existingUser = await this.authService.getUserByEmail(email);
+        if (existingUser && existingUser.id !== req.user.id) {
+          throw new ApiError('CONFLICT', 'Email already in use by another user');
+        }
+        updates.email = email;
+      }
+      if (telephone !== undefined) updates.telephone = telephone;
+      if (password !== undefined && password.trim() !== '') {
+        const hashedPassword = await hashPassword(password);
+        updates.password = hashedPassword;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        throw new ApiError('BAD_REQUEST', 'No fields to update');
+      }
+
+      const updatedUser = await this.authService.updateMyProfile(req.user.id, updates);
+
+      res.status(200).json({
+        message: 'Profile updated successfully',
+        data: updatedUser
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        next(error);
+      } else {
+        next(new ApiError('INTERNAL_SERVER', 'Error updating profile'));
+      }
+    }
+  };
+
 }

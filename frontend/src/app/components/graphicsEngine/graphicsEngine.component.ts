@@ -1,6 +1,6 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
@@ -10,15 +10,14 @@ import { Modal } from '../modal/modal';
 import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
-import { createHardcodedFurniture, AssemblyPart } from './hardcoded-furniture';
-import { FurnitureAssembly, AssemblyStep, AssemblyPartRef } from '../../types/furniture.types';
+import { WebGLEngine } from '../../engine/webgl/webglEngine';
+import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../types/furniture.types';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
   imports: [CommonModule, Modal, FormsModule],
-  providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,27 +25,37 @@ import { firstValueFrom } from 'rxjs';
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
-  constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) { }
+  private engine!: EngineFacade;
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {
+    effect(() => {
+      // Track changes to logical step
+      const step = this.currentLogicalStep();
+
+      // Execute scroll after render
+      setTimeout(() => {
+        this.centerActiveStep();
+      }, 100);
+    });
+  }
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
 
+  // Elegir el tipo de motor
+  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API
-
   get modelUrl(): string {
     return this.furniture?.file_uri || '';
   }
 
-
   controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
-
-
-
   showHeader = computed(() => this.controlsMode() === 'interactive');
   showFooterControls = computed(() => this.controlsMode() !== 'hidden');
   areControlsDisabled = computed(() => this.controlsMode() === 'display-only');
@@ -56,7 +65,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
 
-  totalSteps = 0;
+  totalSteps = signal(0);
   manualStep = signal(0);
   simulationStep = signal(0);
   isolatedPart = signal<AssemblyPart | null>(null);
@@ -72,16 +81,43 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       case 'simulation':
         return this.simulationStep();
       case 'final':
-        return this.totalSteps - 1;
+        return this.totalSteps() - 1;
       default:
         return 0;
     }
   });
 
+  // Ratio between total animation states and logical steps (usually 2:1)
+  stepsRatio = computed(() => {
+    const total = this.totalSteps();
+    const descriptions = this.stepDescriptions().length;
+    return (total > 0 && descriptions > 0) ? total / descriptions : 1;
+  });
+
+  currentLogicalStep = computed(() => {
+    return Math.floor(this.currentStep() / this.stepsRatio());
+  });
+
+  visibleSteps = computed(() => {
+    // Show one bubble per logical step (based on descriptions)
+    return this.stepDescriptions().length > 0
+      ? Array.from({ length: this.stepDescriptions().length }, (_, i) => i)
+      : [];
+  });
+
+  goToStep(logicalStepIndex: number): void {
+    const ratio = this.stepsRatio();
+    // Jump to the start of the logical step
+    const targetStep = logicalStepIndex * ratio;
+    if (targetStep >= 0 && targetStep < this.totalSteps()) {
+      this.manualStep.set(targetStep);
+    }
+  }
+
   isSimulating = computed(() => this.mode() === 'simulation');
 
   isManualFirstStep = computed(() => this.manualStep() === 0);
-  isManualComplete = computed(() => this.manualStep() === this.totalSteps - 1);
+  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
   isSimulationPaused = signal(false);
   simulationSpeed = signal(1);
@@ -94,7 +130,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   reviewText = signal('');
   isSubmittingReview = signal(false);
 
-  stepDescriptions: string[] = [];
+  stepDescriptions = signal<string[]>([]);
 
 
   private parts: AssemblyPart[] = [];
@@ -106,12 +142,19 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
 
-
   private initialCameraState: any = null; // Store initial state manually if needed
-
   private isViewInitialized = false;
 
   ngOnInit(): void {
+    // Initialize Engine based on signal
+    if (this.engineUse() === 'webGL') {
+      console.log('Using WebGL Custom Engine');
+      this.engine = new WebGLEngine();
+    } else {
+      console.log('Using ThreeJS Adapter');
+      this.engine = new ThreeEngineAdapter();
+    }
+
     let ref = this.route.snapshot.params['ref'];
     // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
@@ -141,9 +184,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           if (this.furniture) {
             this.createFurniture().then(() => this.animate());
           }
-        } else {
-          // Modo hardcoded, crear inmediatamente
-          this.createFurniture().then(() => this.animate());
         }
 
         if (this.autoStartSimulation()) {
@@ -167,7 +207,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   nextStep(): void {
-    this.manualStep.update(step => (step < this.totalSteps - 1 ? step + 1 : step));
+    this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
   }
 
   prevStep(): void {
@@ -190,54 +230,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.reviewText.set('');
   }
 
-  setRating(stars: number): void {
-    this.reviewStars.set(stars);
-  }
 
-  submitReview(): void {
-    // Obtener y convertir el furniture ID
-    let furnitureId = 1; // ID por defecto
-    const inputId = this.furnitureId();
-
-    if (inputId) {
-      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
-      if (!isNaN(parsedId) && parsedId > 0) {
-        furnitureId = parsedId;
-      }
-    }
-
-    const stars = this.reviewStars();
-    const text = this.reviewText().trim();
-
-    console.log('=== Submit Review ===');
-    console.log('Input ID:', inputId);
-    console.log('Furniture ID (parsed):', furnitureId);
-    console.log('Stars:', stars);
-    console.log('Text:', text);
-
-    if (stars === 0) {
-      console.log('Validation failed - stars is 0');
-      return;
-    }
-
-    this.isSubmittingReview.set(true);
-
-    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
-      next: (response) => {
-        console.log('Review guardada exitosamente:', response);
-        this.isSubmittingReview.set(false);
-        this.closeModal();
-        alert('¡Gracias por tu reseña!');
-      },
-      error: (error) => {
-        console.error('Error al guardar la review:', error);
-        console.error('Error completo:', JSON.stringify(error, null, 2));
-        this.isSubmittingReview.set(false);
-        const errorMessage = error.error?.message || error.message || 'Error desconocido';
-        alert('Error al guardar la reseña: ' + errorMessage);
-      }
-    });
-  }
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
@@ -261,7 +254,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.mode.set(newMode);
 
-    // Auto rotate logic
     const shouldRotate = newMode === 'simulation' || newMode === 'final';
     this.engine.toggleControls(true, shouldRotate);
 
@@ -320,6 +312,22 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   closeARDeniedMessage(): void {
     this.arFlowState.set('idle');
+  }
+
+  private centerActiveStep(): void {
+    if (!this.stepsContainer?.nativeElement) return;
+
+    const container = this.stepsContainer.nativeElement;
+    const activeIndex = this.currentLogicalStep();
+    const buttons = container.querySelectorAll('button');
+
+    if (buttons[activeIndex]) {
+      buttons[activeIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
   }
 
   private checkScreenSize(): void {
@@ -428,8 +436,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         if (parts.length > 0) {
           this.parts = parts;
-          this.totalSteps = totalSteps;
-          this.stepDescriptions = stepDescriptions;
+          this.totalSteps.set(totalSteps);
+          this.stepDescriptions.set(stepDescriptions);
 
           // If we successfully set up the assembly from the API, we keep the baseModel in the scene?
           // If the parts are children of baseModel, they are already in the scene.
@@ -443,25 +451,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
     }
 
-    // 2. If API steps failed, check UseExternalModel flag to show the static model
     if (this.useExternalModel && baseModel) {
       console.log('Using standard external model mode.');
-      this.totalSteps = 1;
+      this.totalSteps.set(1);
+      this.stepDescriptions.set(['Visualización del modelo']);
       this.setMode('final');
       return;
     }
-
-    // 3. Fallback to Hardcoded Furniture if everything else fails
-    console.log('Falling back to hardcoded furniture logic.');
-    // If we loaded a baseModel but are not using it, remove it?
-    if (baseModel) {
-      this.engine.removeFromScene(baseModel);
-    }
-
-    const hardcodedData = createHardcodedFurniture(this.engine);
-    this.parts = hardcodedData.parts;
-    this.totalSteps = hardcodedData.totalSteps;
-    this.stepDescriptions = hardcodedData.stepDescriptions;
   }
 
   private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
@@ -476,7 +472,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
 
     for (const step of sortedSteps) {
-      stepDescriptions.push(`Paso ${step.step_number}: Ensamblaje de partes.`);
+      const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
+      stepDescriptions.push(description);
 
       // Calculate appear and join steps
       const appearStep = currentStepIndex * 2;
@@ -591,7 +588,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     if (now - this.lastStepTime > interval) {
       if (this.simulationDirection() === 'forward') {
-        if (this.simulationStep() >= this.totalSteps - 1) {
+        if (this.simulationStep() >= this.totalSteps() - 1) {
           this.simulationDirection.set('backward');
         } else {
           this.simulationStep.update(s => s + 1);
@@ -780,6 +777,48 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         current = current.parent;
       }
       return false;
+    });
+  }
+
+
+  setRating(stars: number): void {
+    this.reviewStars.set(stars);
+  }
+
+  submitReview(): void {
+    // Obtener y convertir el furniture ID
+    let furnitureId = 1; // ID por defecto
+    const inputId = this.furnitureId();
+
+    if (inputId) {
+      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
+      if (!isNaN(parsedId) && parsedId > 0) {
+        furnitureId = parsedId;
+      }
+    }
+
+    const stars = this.reviewStars();
+    const text = this.reviewText().trim();
+
+    if (stars === 0) {
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+
+    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
+      next: (response) => {
+        this.isSubmittingReview.set(false);
+        this.closeModal();
+        alert('¡Gracias por tu reseña!');
+      },
+      error: (error) => {
+        console.error('Error al guardar la review:', error);
+        console.error('Error completo:', JSON.stringify(error, null, 2));
+        this.isSubmittingReview.set(false);
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        alert('Error al guardar la reseña: ' + errorMessage);
+      }
     });
   }
 }

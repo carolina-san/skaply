@@ -165,6 +165,7 @@ CREATE TABLE  Step (
     id SERIAL PRIMARY KEY,
     furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
     step_number INTEGER NOT NULL,
+    description TEXT,
     used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL,
     scene_camera_angle INTEGER DEFAULT NULL
 );
