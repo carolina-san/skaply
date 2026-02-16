@@ -1,6 +1,6 @@
 # Arquitectura de Fachada 3D
 
-Este documento explica cómo funciona la "Fachada" que hemos implementado para el motor 3D de tu aplicación.
+Este documento explica cómo funciona la "Fachada" que hemos implementado para el motor 3D de nuestra aplicación.
 
 ## ¿Qué es y para qué sirve?
 

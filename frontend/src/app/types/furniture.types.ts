@@ -16,3 +16,31 @@ export interface Furniture {
     category_id: number;
     // category_name: number;
 }
+
+// Interfaces para los pasos de montaje (Assembly Steps)
+export interface AssemblyPartRef {
+    axis: string; // 'x', 'y', 'z'
+    part_id: number;
+    color_id: number;
+    distance: number;
+    file_uri: string;
+    quantity: number;
+    reference_number: string;
+    name?: string; // Optional if not in API, but useful
+}
+
+export interface AssemblyStep {
+    required_people: number;
+    step_id: number;
+    step_number: number;
+    used_in_step_with_id: number | null;
+    scene_camera_angle: string | null;
+    parts: AssemblyPartRef[];
+    tools: any[]; // Define tool interface if needed
+}
+
+export interface FurnitureAssembly {
+    furniture_id: number;
+    required_people: number;
+    steps: AssemblyStep[];
+}

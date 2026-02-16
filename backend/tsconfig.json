@@ -44,7 +44,7 @@
       "@types/*": ["./types/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../frontend/src/app/services/furniture-assembly-engine.service.ts"],
   "exclude": ["node_modules", "dist", "tests"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
