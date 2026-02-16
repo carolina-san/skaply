@@ -13,8 +13,7 @@ import { SeoService } from '../../services/seo.service';
   selector: 'app-viewer-3d',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, Modal],
-  templateUrl: './viewer-3d.html',
-  styleUrls: ['./viewer-3d.css']
+  templateUrl: './viewer-3d.html'
 })
 export class Viewer3D implements OnInit {
   @ViewChild(FurnitureViewer) furnitureViewer!: FurnitureViewer;
@@ -57,9 +56,9 @@ export class Viewer3D implements OnInit {
   loadFurnitureName() {
     if (!this.furnitureId) return;
     this.furnitureLoading = true;
-  
+
     this.apiService.getFurnitureById(this.furnitureId).subscribe({
-      next: (response) => {        
+      next: (response) => {
         let furniture = null;
         if (response && response.data) {
           if (Array.isArray(response.data) && response.data.length > 0) {
@@ -75,7 +74,7 @@ export class Viewer3D implements OnInit {
           this.furnitureName = 'Mueble';
           console.warn('No se encontró el nombre del mueble');
         }
-        
+
         this.seo.setSeo({
           title: `Montaje 3D de ${this.furnitureName} - Skäply`,
           description: `Visualiza ${this.furnitureName} en 3D, pruébalo en realidad aumentada y reporta problemas directamente desde Skäply.`,
@@ -106,20 +105,20 @@ export class Viewer3D implements OnInit {
             ]
           }
         });
-        
+
         this.furnitureLoading = false;
       },
       error: (err) => {
         console.error('Error al cargar información del mueble:', err);
         this.furnitureName = 'Mueble desconocido';
-        
+
         this.seo.setSeo({
           title: `Montaje 3D - Skäply`,
           description: `Visualiza muebles en 3D, pruébalos en realidad aumentada y reporta problemas directamente desde Skäply.`,
           canonical: `https://skaply.ovh/viewer-3d`,
           index: true
         });
-        
+
         this.furnitureLoading = false;
       }
     });

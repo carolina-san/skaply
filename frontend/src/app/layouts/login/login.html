@@ -14,6 +14,7 @@
         </div>
     </div>
 
+    <form (ngSubmit)="onLogin()" class="w-full">
     <div class="w-full relative mb-3">
         <span class="material-symbols-rounded iconos-registro">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
@@ -23,10 +24,12 @@
         </span>
         <input 
             type="email" 
+            name="email"
             placeholder="E-mail" 
             class="btn-registro"
             [(ngModel)]="email"
-            [disabled]="loading">
+            [disabled]="loading"
+            required>
     </div>
 
     <div class="w-full relative mb-3">
@@ -38,15 +41,17 @@
         </span>
         <input 
             type="password" 
+            name="password"
             placeholder="Contraseña" 
             class="btn-registro"
             [(ngModel)]="password"
-            [disabled]="loading">
+            [disabled]="loading"
+            required>
     </div>
 
     <button 
+        type="submit"
         class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full py-3 mb-6 transition-all duration-300 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        (click)="onLogin()"
         [disabled]="loading || !email || !password">
         <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -54,6 +59,7 @@
         </svg>
         {{ loading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
     </button>
+    </form>
 
     <div class="flex items-center gap-4 w-full mb-4">
         <span class="flex-1 h-px bg-beige"></span>

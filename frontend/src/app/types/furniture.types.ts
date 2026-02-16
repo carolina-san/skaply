@@ -13,7 +13,7 @@ export interface Furniture {
     provider_id: number;
     provider_name?: string;
     image_url?: string;
-    // category_id: number;
+    category_id: number;
     // category_name: number;
 }
 
@@ -33,6 +33,7 @@ export interface AssemblyStep {
     required_people: number;
     step_id: number;
     step_number: number;
+    description: string | null;
     used_in_step_with_id: number | null;
     scene_camera_angle: string | null;
     parts: AssemblyPartRef[];

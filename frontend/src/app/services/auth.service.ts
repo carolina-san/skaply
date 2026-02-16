@@ -8,6 +8,8 @@ export interface User {
   company_name: string;
   loginMethod?: string;
   id: number;
+  name?: string;
+  telephone?: string;
 }
 
 @Injectable({
@@ -64,5 +66,10 @@ export class AuthService {
 
     // Limpiar la URL de parámetros
     window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // Método para actualizar el perfil del usuario
+  updateMyProfile(updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string }): Observable<any> {
+    return this.http.put('/api/auth/me', updates);
   }
 }

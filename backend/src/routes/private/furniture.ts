@@ -14,11 +14,11 @@ const issueControllerInstance = new IssueController(issueServiceInstance);
 const reviewServiceInstance = new ReviewService();
 const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
-//router.get('/', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviders);
+// router.get('/', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.getAllPrivateFurniture); // no funciona, hay que mirar
 router.post('/',authMiddleware,authorize([UserRole.ADMIN]), furnitureController.createFurniture); // revisar
 router.put('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.updateFurniture); // revisar
 router.delete('/:id',authMiddleware,authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.deleteFurniture); // revisar
 
-// toso el filtrado de la parte privada
+// todo el filtrado de la parte privada
 
 export default router; 

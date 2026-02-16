@@ -2,19 +2,12 @@
 
   <!-- Contenedor principal: ocupa el espacio restante -->
   <div class=" h-full w-full md:w-[75%]">
-    <app-graphics-engine [furnitureId]="furnitureId" [furnitureName]="furnitureName" (arStateChange)="isARActive.set($event)"></app-graphics-engine>
+    <app-graphics-engine [furnitureId]="furnitureId" [furnitureName]="furnitureName"
+      (arStateChange)="isARActive.set($event)"></app-graphics-engine>
   </div>
 
-  <!-- Chatbot fijo en desktop -->
   @if (!isARActive()) {
-  <div class="hidden lg:block w-96 h-full">
-    <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
-  </div>
-
-  <!-- Chatbot overlay en móvil -->
-  <div class="lg:hidden fixed bottom-5 right-4 z-50">
-    <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
-  </div>
+  <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
   }
 
   <!-- Modal de incidencia -->
@@ -30,7 +23,7 @@
         <div class="space-y-2">
           <label for="descripcion" class="block text-marron-oscuro font-medium">Descripción de la incidencia:</label>
           <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcionIncidencia" required rows="4"
-            placeholder="Describe el problema que encontraste..." 
+            placeholder="Describe el problema que encontraste..."
             class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
           </textarea>
         </div>
@@ -45,13 +38,13 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-3">
-          <button type="button" (click)="isIncidenciaModalOpen = false" 
-                  class="px-4 py-2 rounded-lg bg-azul-claro text-marron-oscuro hover:bg-gray-300 transition">
+          <button type="button" (click)="isIncidenciaModalOpen = false"
+            class="px-4 py-2 rounded-lg bg-azul-claro text-marron-oscuro hover:bg-gray-300 transition">
             Cancelar
           </button>
-          <button type="submit" 
-                  class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  [disabled]="!isDescripcionValida()">
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!isDescripcionValida()">
             Enviar
           </button>
         </div>

@@ -326,7 +326,7 @@ export class ChatbotService {
           {
             card: {
               title: furnitureDetails.name,
-              subtitle: `Referencia: ${furnitureDetails.reference_number}`,
+              subtitle: `${furnitureDetails.reference_number}`,
               imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300'
             }
           },
@@ -334,10 +334,6 @@ export class ChatbotService {
             payload: {
               richContent: [
                 [
-                  {
-                    type: "info",
-                    title: "Detalles del Mueble",
-                  },
                   {
                     type: "description",
                     text: [
@@ -347,7 +343,13 @@ export class ChatbotService {
                       `Color: ${furnitureDetails.color_name}`,
                       `Dificultad: ${difficulty}`
                     ]
+                  },
+                  {
+                    type: "button",
+                    text: "Acceder al montaje",
+                    link: `https://skaply.ovh/viewer-3d/${furnitureDetails.reference_number}`
                   }
+
                 ]
               ]
             }
@@ -361,6 +363,69 @@ export class ChatbotService {
       };
     }
   }
+
+  async getFurnitureInfoByName(name: string, session: string): Promise<any> {
+    if (!name) {
+      return {
+        fulfillmentText: 'No he recibido el nombre del mueble.',
+      };
+    }
+
+    try {
+      const furniture = await this.furnitureService.getFurnitureByName(name);
+
+      if (furniture.length === 0) {
+        return {
+          fulfillmentText: `No encontré el mueble con nombre "${name}".`
+        };
+      }
+
+      const furnitureDetails = furniture[0];
+      const difficulty = await this.furnitureService.getFurnitureDifficulty(furnitureDetails.id);
+
+      return {
+        fulfillmentMessages: [
+          {
+            card: {
+              title: furnitureDetails.name,
+              subtitle: `${furnitureDetails.reference_number}`,
+              imageUri: furnitureDetails.image_url || 'https://via.placeholder.com/300'
+            }
+          },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "description",
+                    text: [
+                      `Descripción: ${furnitureDetails.short_description || 'N/A'}`,
+                      `Categoría: ${furnitureDetails.category_name}`,
+                      `Proveedor: ${furnitureDetails.provider_name}`,
+                      `Color: ${furnitureDetails.color_name}`,
+                      `Dificultad: ${difficulty}`
+                    ]
+                  },
+                  {
+                    type: "button",
+                    text: "Acceder al montaje",
+                    link: `https://skaply.ovh/viewer-3d/${furnitureDetails.reference_number}`
+                  }
+
+                ]
+              ]
+            }
+          }
+        ]
+
+      };
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con el nombre "${name}". Por favor, verifica el nombre e intenta de nuevo.`
+      };
+    }
+  }
+
 
   /**
    * Obtiene dificultad del mueble
