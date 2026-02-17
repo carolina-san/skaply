@@ -16,6 +16,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture`);
   }
 
+  getVisibleFurniture(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/visible`);
+  }
+
   getFurnitureById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/furniture/${id}`);
   }

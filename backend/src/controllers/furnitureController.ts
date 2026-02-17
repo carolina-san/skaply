@@ -74,6 +74,19 @@ export class FurnitureController {
     }
   };
 
+  getVisibleFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.furnitureService.getVisibleFurniture();
+      res.status(200).json({
+        message: 'Visible furniture fetched successfully',
+        data: result.rows
+      });
+    } catch (error) {
+      console.error('getVisibleFurniture error:', error);
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch visible furnitures'));
+    }
+  };
+
   getFurnitureById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const identifier = req.params.id;

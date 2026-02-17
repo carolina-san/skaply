@@ -1,6 +1,6 @@
 import { Component, ViewChild, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Chatbot } from '../../components/chatbot/chatbot';
 // import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
@@ -36,6 +36,7 @@ export class Viewer3D implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private apiService: ApiService,
     private seo: SeoService
   ) { }
@@ -262,6 +263,8 @@ export class Viewer3D implements OnInit {
         this.isSubmittingReview.set(false);
         this.closeReviewModal();
         alert('¡Gracias por tu reseña!');
+        // Redirigir al catálogo después de enviar
+        this.router.navigate(['/catalogo']);
       },
       error: (error) => {
         console.error('Error al guardar la review:', error);
@@ -270,6 +273,11 @@ export class Viewer3D implements OnInit {
         alert('Error al guardar la reseña: ' + errorMessage);
       }
     });
+  }
+
+  skipReview(): void {
+    this.closeReviewModal();
+    this.router.navigate(['/catalogo']);
   }
 
   toggleWireframe(): void {
