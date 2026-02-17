@@ -1,27 +1,17 @@
-<div class="w-full h-full bg-beige pt-6 flex flex-col">
-  <div class="px-8 flex-shrink-0">
-    <!-- buscar y filtrar -->
-    <div class="flex items-center gap-3 mb-6 justify-end">
-      <div class="max-w-md bg-white rounded-full flex items-center px-4 shadow">
-        <input type="text" placeholder="Buscar proveedores..."
-          class="w-full py-2 outline-none text-marron-oscuro placeholder-marron-oscuro" />
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
-          <path
-            d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
-        </svg>
-      </div>
-
-      <button class="bg-white shadow p-3 rounded-full hover:scale-105 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
-          <path
-            d="M440-240q-17 0-28.5-11.5T400-280q0-17 11.5-28.5T440-320h80q17 0 28.5 11.5T560-280q0 17-11.5 28.5T520-240h-80ZM280-440q-17 0-28.5-11.5T240-480q0-17 11.5-28.5T280-520h400q17 0 28.5 11.5T720-480q0 17-11.5 28.5T680-440H280ZM160-640q-17 0-28.5-11.5T120-680q0-17 11.5-28.5T160-720h640q17 0 28.5 11.5T840-680q0 17-11.5 28.5T800-640H160Z" />
-        </svg>
-      </button>
+<div class="w-full h-full bg-beige flex flex-col">
+  <!-- Mensaje de no hay resultados -->
+  <div *ngIf="filteredProviders.length === 0 && searchText" class="flex-1 flex items-center justify-center">
+    <div class="text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355" class="mx-auto mb-4">
+        <path d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+      </svg>
+      <p class="text-xl font-semibold text-marron-oscuro mb-2">No hay resultados</p>
+      <p class="text-gray-600">No se encontraron proveedores que coincidan con "{{ searchText }}"</p>
     </div>
   </div>
 
   <!-- tabla proveedores -->
-  <div class="mx-8 bg-white rounded-3xl overflow-hidden flex-shrink-0">
+  <div *ngIf="filteredProviders.length > 0 || !searchText" class="mx-8 mt-4 bg-white rounded-3xl overflow-hidden flex-shrink-0">
     <div class="grid grid-cols-3 bg-azul-claro px-8 py-4 font-semibold text-marron-oscuro">
       <div>Nombre de empresa</div>
       <div>Fecha alta</div>
@@ -30,7 +20,7 @@
 
     <div>
       <div *ngFor="let provider of paginatedProviders"
-        class="grid grid-cols-3 px-8 py-3 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+        class="grid grid-cols-3 px-8 py-2 border-b border-gray-200 items-center hover:bg-gray-50 transition">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
             <img *ngIf="provider.image_url" [src]="provider.image_url" [alt]="provider.company_name" class="w-full h-full object-cover" />
@@ -79,8 +69,8 @@
   <div class="flex-1"></div>
 
   <!-- Paginación fija en la parte inferior -->
-  <div class="flex justify-end items-center mt-6 mx-8 gap-4 flex-shrink-0 pb-6">
-    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
+  <div *ngIf="filteredProviders.length > 0 || !searchText" class="flex justify-end items-center mt-6 mx-8 gap-4 flex-shrink-0 pb-6">
+    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ filteredProviders.length }}</span>
 
     <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
       <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"

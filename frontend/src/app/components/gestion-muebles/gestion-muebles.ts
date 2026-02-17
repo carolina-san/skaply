@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,9 @@ import { Modal } from '../modal/modal';
   templateUrl: './gestion-muebles.html',
   styleUrl: './gestion-muebles.css'
 })
-export class GestionMuebles implements OnInit {
+export class GestionMuebles implements OnInit, OnChanges {
+  @Input() searchText: string = '';
+  
   furniture: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
@@ -46,6 +48,12 @@ export class GestionMuebles implements OnInit {
       this.currentUser = user;
       this.fetchFurniture();
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['searchText']) {
+      this.currentPage = 1;
+    }
   }
 
   ngOnInit() {
@@ -106,14 +114,26 @@ export class GestionMuebles implements OnInit {
     }
   }
 
+  get filteredFurniture() {
+    if (!this.searchText || this.searchText.trim() === '') {
+      return this.furniture;
+    }
+    
+    const search = this.searchText.toLowerCase().trim();
+    return this.furniture.filter(item => 
+      item.name?.toLowerCase().includes(search) ||
+      item.reference_number?.toLowerCase().includes(search)
+    );
+  }
+
   get paginatedFurniture() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.furniture.slice(start, end);
+    return this.filteredFurniture.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
+    return Math.ceil(this.filteredFurniture.length / this.itemsPerPage);
   }
 
   get pageNumbers(): number[] {
@@ -131,7 +151,7 @@ export class GestionMuebles implements OnInit {
   }
 
   get endItem(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+    return Math.min(this.currentPage * this.itemsPerPage, this.filteredFurniture.length);
   }
 
   toggleVisibility(furniture: any) {

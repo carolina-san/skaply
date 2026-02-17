@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 
@@ -9,13 +9,21 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
-export class GestionProveedores implements OnInit {
+export class GestionProveedores implements OnInit, OnChanges {
+  @Input() searchText: string = '';
+  
   providers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
 
   constructor(private apiService: ApiService) { }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['searchText']) {
+      this.currentPage = 1;
+    }
+  }
 
   ngOnInit() {
     this.fetchProviders();
@@ -48,15 +56,29 @@ export class GestionProveedores implements OnInit {
     }
   }
 
+  get filteredProviders() {
+    if (!this.searchText || this.searchText.trim() === '') {
+      return this.providers;
+    }
+    
+    const search = this.searchText.toLowerCase().trim();
+    return this.providers.filter(provider => 
+      provider.name?.toLowerCase().includes(search) ||
+      provider.email?.toLowerCase().includes(search) ||
+      provider.phone?.toLowerCase().includes(search) ||
+      provider.address?.toLowerCase().includes(search)
+    );
+  }
+
   get paginatedProviders() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.providers.slice(start, end);
+    return this.filteredProviders.slice(start, end);
   }
 
   // Calcular el total de páginas
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
+    return Math.ceil(this.filteredProviders.length / this.itemsPerPage);
   }
 
   // Generar array de números de página
@@ -77,6 +99,6 @@ export class GestionProveedores implements OnInit {
   }
 
   get endItem(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+    return Math.min(this.currentPage * this.itemsPerPage, this.filteredProviders.length);
   }
 }

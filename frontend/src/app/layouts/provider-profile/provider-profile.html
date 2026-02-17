@@ -1,27 +1,48 @@
 <main class="w-full h-screen flex flex-row bg-beige">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
   <div class="w-[80%] flex flex-col min-h-0">
-    <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige flex-shrink-0">
-      <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
-        [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
-        class="hover:opacity-100 transition pb-1">
-        Muebles
-      </button>
-      <button (click)="setActiveTab('incidencias')" class="relative opacity-40 hover:opacity-100 transition">
-        Incidencias
-        <span
-          class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
-          2
-        </span>
-      </button>
-      <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
-        [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
-        class="hover:opacity-100 transition pb-1">
-        Estadísiticas
-      </button>
+    <div class="flex items-center justify-between text-lg font-semibold px-8 py-4 pt-20 bg-beige flex-shrink-0">
+      <div class="flex items-center gap-10">
+        <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
+          [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
+          class="hover:opacity-100 transition pb-1">
+          Muebles
+        </button>
+        <button (click)="setActiveTab('incidencias')" class="relative opacity-40 hover:opacity-100 transition">
+          Incidencias
+          <span
+            class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
+            2
+          </span>
+        </button>
+        <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
+          [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
+          class="hover:opacity-100 transition pb-1">
+          Estadísiticas
+        </button>
+      </div>
+      
+      <!-- barra de búsqueda -->
+      <div class="flex items-center gap-3">
+        <div class="max-w-md bg-white rounded-full flex items-center px-4 shadow">
+          <input type="text" [(ngModel)]="searchText" placeholder="Buscar muebles..."
+            class="w-full py-2 outline-none text-marron-oscuro placeholder-marron-oscuro" />
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+            <path
+              d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+          </svg>
+        </div>
+
+        <button class="bg-white shadow p-3 rounded-full hover:scale-105 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+            <path
+              d="M440-240q-17 0-28.5-11.5T400-280q0-17 11.5-28.5T440-320h80q17 0 28.5 11.5T560-280q0 17-11.5 28.5T520-240h-80ZM280-440q-17 0-28.5-11.5T240-480q0-17 11.5-28.5T280-520h400q17 0 28.5 11.5T720-480q0 17-11.5 28.5T680-440H280ZM160-640q-17 0-28.5-11.5T120-680q0-17 11.5-28.5T160-720h640q17 0 28.5 11.5T840-680q0 17-11.5 28.5T800-640H160Z" />
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="flex-1 min-h-0">
-      <app-gestion-muebles *ngIf="activeTab === 'muebles'" class="h-full block"></app-gestion-muebles>
+      <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText" class="h-full block"></app-gestion-muebles>
     </div>
   </div>
 </main>
