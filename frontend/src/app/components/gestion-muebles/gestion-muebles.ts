@@ -177,9 +177,7 @@ export class GestionMuebles implements OnInit {
     this.apiService.updateFurniture(this.selectedFurniture.id, this.editForm).subscribe(
       (response) => {
         console.log('Furniture updated:', response);
-        // Actualizar en la lista local
         Object.assign(this.selectedFurniture, this.editForm);
-        // Actualizar nombres para mostrar (opcional)
         const category = this.categories.find(c => c.id === this.editForm.category_id);
         if (category) this.selectedFurniture.category_name = category.name;
         const color = this.colors.find(c => c.id === this.editForm.color_id);

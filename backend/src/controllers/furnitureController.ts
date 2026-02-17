@@ -230,10 +230,6 @@ export class FurnitureController {
         return next(new ApiError('BAD_REQUEST', 'Valid furniture ID is required'));
       }
 
-      // Obtener ID del usuario que hace la petición
-      const userId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
-      if (!userId) return next(new ApiError('UNAUTHORIZED', 'User not found'));
-
       // Obtener provider_id del mueble
       const furnitureProviderId = await this.providerService.getProviderIdByFurnitureId(furnitureId);
       if (!furnitureProviderId) return next(new ApiError('NOT_FOUND', 'Furniture not found'));
@@ -242,7 +238,9 @@ export class FurnitureController {
       if (req.user?.role === UserRole.ADMIN) {
         // Admin puede modificar cualquier mueble
       } else if (req.user?.role === UserRole.PROV) {
-        if (furnitureProviderId !== userId) {
+        const providerId = await this.providerService.getProviderIdByEmail(req.user.emailuser || '');
+        if (!providerId) return next(new ApiError('UNAUTHORIZED', 'Provider not found'));
+        if (furnitureProviderId !== providerId) {
           return next(new ApiError('FORBIDDEN', 'You can only update your own furniture'));
         }
       } else {
