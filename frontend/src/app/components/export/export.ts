@@ -13,20 +13,15 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './export.html',
   styleUrl: './export.css'
 })
-export class Export implements OnInit, OnChanges {
-  @Input() selectedFurniture: Furniture | null = null;
+export class Export implements OnChanges {
+  @Input() selectedFurniture: Furniture | undefined;
   selectedFurnitureSteps: any[] = [];
-  difficultyLabels: typeof DifficultyLabels = DifficultyLabels; // Removed Input, just internal property
+  difficultyLabels: typeof DifficultyLabels = DifficultyLabels;
 
-  providers: ProviderBasic[] = [];
-  categories: any[] = [];
+  provider: ProviderBasic | undefined;
+  category: any | undefined;
 
   constructor(private apiService: ApiService) { }
-
-  ngOnInit() {
-    this.fetchProviders();
-    this.fetchCategories();
-  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['selectedFurniture'] && this.selectedFurniture) {
@@ -48,32 +43,24 @@ export class Export implements OnInit, OnChanges {
     });
   }
 
-  fetchProviders() {
-    this.apiService.getVisibleProviders().subscribe({
-      next: (response) => {
-        this.providers = Object.values(response.data);
-      },
-      error: (error) => console.error('Error fetching providers:', error)
-    });
-  }
-
-  fetchCategories() {
-    this.apiService.getCategories().subscribe({
-      next: (response) => {
-        this.categories = response.data;
-      },
-      error: (error) => console.error('Error fetching categories:', error)
-    });
-  }
-
   getProviderName(id: number): string {
-    const provider = this.providers.find(p => p.id === id);
-    return provider ? provider.company_name : (this.selectedFurniture?.provider_name || 'Proveedor');
+    this.apiService.getProviderById(id).subscribe({
+      next: (response) => {
+        this.provider = response;
+      },
+      error: (error) => console.error('Error fetching provider:', error)
+    });
+    return this.provider?.company_name || 'Proveedor';
   }
 
-  getCategoryName(id: number | null): string {
-    if (id === null) return 'Todos los muebles';
-    return this.categories.find(c => c.id === id)?.name || 'Categoría';
+  getCategoryName(id: number): string {
+    this.apiService.getCategoryById(id).subscribe({
+      next: (response) => {
+        this.category = response;
+      },
+      error: (error) => console.error('Error fetching category:', error)
+    });
+    return this.category?.name || 'Categoría';
   }
 
   downloadPDF() {

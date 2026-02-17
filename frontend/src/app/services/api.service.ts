@@ -41,12 +41,20 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/categories/name/${name}`);
   }
 
+  getCategoryById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories/${id}`);
+  }
+
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
 
   getColorByName(name: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors/name/${name}`);
+  }
+
+  getProviderById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/providers/${id}`);
   }
 
   getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos

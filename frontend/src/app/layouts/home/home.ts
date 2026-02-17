@@ -43,7 +43,7 @@ export class Home implements OnInit {
   activeFilters: FilterOptions = {};
   resetFilterToggle: boolean = false;
   isFurnitureModalOpen = false;
-  selectedFurniture: Furniture | null = null;
+  selectedFurniture: Furniture | undefined;
   isIncidenciaModalOpen = false;
   isLoadingFurnitures = false;
 
@@ -139,7 +139,7 @@ export class Home implements OnInit {
     const ref = this.selectedFurniture.reference_number;
     // Cerrar modal sin limpiar query params (evita conflicto de navegaciones)
     this.isFurnitureModalOpen = false;
-    this.selectedFurniture = null;
+    this.selectedFurniture = undefined;
     // Navegar al visor 3D
     this.router.navigate(['/viewer-3d', ref]);
   }
@@ -151,7 +151,7 @@ export class Home implements OnInit {
 
   closeFurnitureModal() {
     this.isFurnitureModalOpen = false;
-    this.selectedFurniture = null;
+    this.selectedFurniture = undefined;
     // Limpiar el query param de la URL al cerrar el modal
     this.router.navigate([], {
       relativeTo: this.route,
