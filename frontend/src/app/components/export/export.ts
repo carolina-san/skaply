@@ -63,51 +63,137 @@ export class Export implements OnChanges {
     return this.category?.name || 'Categoría';
   }
 
-  downloadPDF() {
+  async downloadPDF() {
     if (!this.selectedFurniture) return;
 
     const furniture = this.selectedFurniture;
     const doc = new jsPDF();
 
-    // ===== FONDO GENERAL =====
-    doc.setFillColor(220, 214, 213); // beige;
-    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+    // Cargar fuente Inter
+    try {
+      const fontResponse = await fetch('assets/fonts/inter.ttf');
+      const fontBlob = await fontResponse.blob();
+      const reader = new FileReader();
 
-    const primaryColor: [number, number, number] = [45, 26, 21]; // marron oscuro
-    const secondaryColor: [number, number, number] = [186, 213, 227]; // azul claro
-    const lightGray: [number, number, number] = [240, 240, 240];
+      const fontResponseBold = await fetch('assets/fonts/Inter-Bold.ttf');
+      const fontBlobBold = await fontResponseBold.blob();
+      const readerBold = new FileReader();
 
-    // ===== HEADER =====
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, 210, 30, "F");
+      reader.readAsDataURL(fontBlob);
+      readerBold.readAsDataURL(fontBlobBold);
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        const base64Font = base64data.split(',')[1];
 
-    doc.setTextColor(...secondaryColor);
-    doc.setFontSize(20);
-    doc.text("Skäply", 20, 18);
+        const base64dataBold = readerBold.result as string;
+        const base64FontBold = base64dataBold.split(',')[1];
 
-    doc.setFontSize(10);
-    doc.text("Ficha técnica de producto", 150, 18);
+        doc.addFileToVFS("inter.ttf", base64Font);
+        doc.addFont("inter.ttf", "inter", "normal");
+        doc.addFileToVFS("Inter-Bold.ttf", base64FontBold);
+        doc.addFont("Inter-Bold.ttf", "inter", "bold");
 
-    // Reset color texto
-    doc.setTextColor(...primaryColor);
+        this.generatePDFContent(doc, furniture);
+      };
+    } catch (error) {
+      console.error("Error loading font:", error);
+      // Fallback a fuente por defecto si falla
+      this.generatePDFContent(doc, furniture);
+    }
+  }
 
-    // ===== TÍTULO PRODUCTO =====
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text(furniture.name, 20, 45);
+  async generatePDFContent(doc: jsPDF, furniture: Furniture) {
+    // Helper para cargar imágenes como Promesa
+    const loadImage = (src: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+      });
+    };
 
-    // ===== IMAGEN =====
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = furniture.image_url || 'assets/skaply_azul.png';
+    try {
+      // Cargar imágenes en paralelo
+      const [logo, productImg] = await Promise.all([
+        loadImage('assets/skaply_azul.png'),
+        loadImage(furniture.image_url || 'assets/logo.png') // Fallback si no hay url
+          .catch(() => loadImage('assets/logo.png')) // Fallback si falla la carga
+      ]);
 
-    img.onload = () => {
+      // ===== FONDO GENERAL =====
+      doc.setFillColor(220, 214, 213); // beige;
+      doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
 
-      doc.addImage(img, "JPEG", 140, 40, 50, 50);
+      const primaryColor: [number, number, number] = [45, 26, 21]; // marron oscuro
+      const secondaryColor: [number, number, number] = [186, 213, 227]; // azul claro
+      const lightGray: [number, number, number] = [240, 240, 240];
+
+      // ===== HEADER =====
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, 0, 210, 30, "F");
+
+      doc.setTextColor(...secondaryColor);
+      doc.setFontSize(20);
+
+      doc.setFont("inter", "bold");
+      const logoAspectRatio = logo.height / logo.width;
+      const logoHeight = logoAspectRatio * 50;
+      doc.addImage(logo, "PNG", 20, 7, 50, logoHeight);
+
+      doc.setFontSize(10);
+      doc.text("Ficha técnica del producto", 140, 18);
+
+      doc.setTextColor(...primaryColor);
+
+      // ===== TÍTULO PRODUCTO =====
+      doc.setFontSize(18);
+      // Usar Inter
+      doc.setFont("inter", "bold");
+      doc.text(furniture.name, 20, 45);
+
+      // ===== DESCRIPCIÓN Y IMAGEN (LADO A LADO) =====
+      const contentStartY = 55;
+      const descriptionWidth = 110;
+      const descriptionX = 20;
+
+      // Sección Descripción (Izquierda)
+      doc.setFontSize(14);
+      doc.setFont("inter", "bold");
+
+      doc.setFontSize(11);
+      doc.setFont("inter", "normal");
+
+      const splitDescription = doc.splitTextToSize(
+        furniture.short_description,
+        descriptionWidth
+      );
+
+      doc.text(splitDescription, descriptionX, contentStartY);
+
+      // Altura ocupada por la descripción
+      const descriptionHeight = 8 + (splitDescription.length * 5);
+
+      // ===== IMAGEN (Derecha) =====
+      const imgX = 140;
+      const imgY = 50;
+      const imgWidth = 50;
+
+      // Calcular altura manteniendo el aspecto
+      const aspectRatio = productImg.height / productImg.width;
+      const imgHeight = imgWidth * aspectRatio;
+
+      doc.addImage(productImg, "JPEG", imgX, imgY, imgWidth, imgHeight);
+
+      const descriptionEndY = contentStartY + descriptionHeight;
+      const imageEndY = imgY + imgHeight;
+
+      let nextSectionY = Math.max(descriptionEndY, imageEndY) + 15;
 
       // ===== TABLA INFORMACIÓN =====
       autoTable(doc, {
-        startY: 100,
+        startY: nextSectionY,
         head: [['Información del producto', '']],
         body: [
           ['Referencia', furniture.reference_number],
@@ -116,36 +202,26 @@ export class Export implements OnChanges {
           ['Categoría', this.getCategoryName(furniture.category_id)],
         ],
         theme: 'grid',
+        margin: { left: 20, right: 20 },
         headStyles: {
           fillColor: primaryColor,
-          textColor: 255
+          textColor: 255,
+          font: 'inter', // Especificar fuente para autotable
+          fontStyle: 'bold'
+        },
+        styles: {
+          font: 'inter', // Especificar fuente para autotable
+          fontStyle: 'normal'
         },
         alternateRowStyles: {
           fillColor: lightGray
         }
       });
 
-      // ===== DESCRIPCIÓN =====
-      const finalY = (doc as any).lastAutoTable.finalY + 15;
-
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("Descripción", 20, finalY);
-
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-
-      const splitDescription = doc.splitTextToSize(
-        furniture.short_description,
-        170
-      );
-
-      doc.text(splitDescription, 20, finalY + 8);
-
-      let currentY = finalY + 8 + (splitDescription.length * 5);
+      // ===== PASOS DE MONTAJE =====
+      let currentY = (doc as any).lastAutoTable.finalY + 15;
 
       if (this.selectedFurnitureSteps && this.selectedFurnitureSteps.length > 0) {
-        currentY += 10;
 
         // Si no hay espacio suficiente, agregar nueva página
         const pageHeight = doc.internal.pageSize.height;
@@ -158,7 +234,7 @@ export class Export implements OnChanges {
         }
 
         doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
+        doc.setFont("inter", "bold");
         doc.setTextColor(...primaryColor);
         doc.text("Pasos de montaje", 20, currentY);
 
@@ -181,16 +257,21 @@ export class Export implements OnChanges {
           head: [['Paso', 'Piezas', 'Descripción']],
           body: stepsData,
           theme: 'grid',
+          margin: { left: 20, right: 20 },
           headStyles: {
             fillColor: primaryColor,
-            textColor: 255
+            textColor: 255,
+            font: 'inter', // Fuente en steps table
+            fontStyle: 'bold'
           },
           alternateRowStyles: {
             fillColor: lightGray
           },
           styles: {
             fontSize: 9,
-            cellPadding: 3
+            cellPadding: 3,
+            font: 'inter', // Fuente en steps table
+            fontStyle: 'normal'
           },
           columnStyles: {
             0: { cellWidth: 25 },
@@ -211,6 +292,7 @@ export class Export implements OnChanges {
       doc.line(20, pageHeight - 20, 190, pageHeight - 20);
 
       doc.setFontSize(9);
+      doc.setFont("inter", "normal");
       doc.text(
         `Generado el ${new Date().toLocaleDateString()}`,
         20,
@@ -225,6 +307,9 @@ export class Export implements OnChanges {
 
       // ===== GUARDAR =====
       doc.save(`Ficha_${furniture.name}.pdf`);
-    };
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   }
 }
