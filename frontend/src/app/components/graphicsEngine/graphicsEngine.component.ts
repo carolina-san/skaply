@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
-import { Modal } from '../modal/modal';
+import { EngineSwitch } from '../engine-switch/engine-switch';
 import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
@@ -17,7 +17,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EngineSwitch],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],

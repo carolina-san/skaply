@@ -8,3 +8,4 @@ export * from './graphicsEngine/graphicsEngine.component';
 export * from './modal/modal';
 export * from './voice-controls/voice-controls';
 export * from './export/export';
+export * from './engine-switch/engine-switch';

@@ -47,6 +47,7 @@
   <!-- Header -->
   @if (!isARActive()) {
   <header class="flex justify-center items-center p-2 relative top-20 z-50  w-full">
+    <app-engine-switch></app-engine-switch>
     <div class="pointer-events-auto flex flex-col justify-center items-center w-full lg:items-start">
       <!-- Nombre del mueble -->
       @if (furnitureName() && mode() !== 'manual') {
