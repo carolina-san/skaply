@@ -76,19 +76,34 @@ export class GestionMuebles implements OnInit {
   }
 
   fetchFurniture() {
-    if (this.currentUser) {
-      this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe(
+    if (!this.currentUser) return;
+
+    // Si es admin, obtener todos los muebles
+    if (this.currentUser.role === 'admin') {
+      this.apiService.getAllFurniture().subscribe(
         (response) => {
-          console.log('Furniture fetched successfully:', response);
+          console.log('All furniture fetched successfully:', response);
           this.furniture = response.data || [];
           this.totalItems = this.furniture.length;
         },
         (error) => {
-          console.error('Error fetching furniture:', error);
+          console.error('Error fetching all furniture:', error);
+        }
+      );
+    } 
+    // Si es proveedor, obtener solo sus muebles
+    else if (this.currentUser.role === 'provider') {
+      this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe(
+        (response) => {
+          console.log('Provider furniture fetched successfully:', response);
+          this.furniture = response.data || [];
+          this.totalItems = this.furniture.length;
+        },
+        (error) => {
+          console.error('Error fetching provider furniture:', error);
         }
       );
     }
-
   }
 
   get paginatedFurniture() {
@@ -97,24 +112,20 @@ export class GestionMuebles implements OnInit {
     return this.furniture.slice(start, end);
   }
 
-  // Calcular el total de páginas
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.itemsPerPage);
   }
 
-  // Generar array de números de página
   get pageNumbers(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
-  // Cambiar página
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
-  // Calcular rango de items mostrados
   get startItem(): number {
     return (this.currentPage - 1) * this.itemsPerPage + 1;
   }
@@ -125,7 +136,7 @@ export class GestionMuebles implements OnInit {
 
   toggleVisibility(furniture: any) {
     const newVisibleState = !furniture.visible;
-    
+
     this.apiService.updateFurniture(furniture.id, { visible: newVisibleState }).subscribe(
       (response) => {
         furniture.visible = newVisibleState;
@@ -147,7 +158,6 @@ export class GestionMuebles implements OnInit {
       difficulty: furniture.difficulty,
       required_people: furniture.required_people || 1
     };
-    // Guardar copia de los valores originales
     this.originalEditForm = { ...this.editForm };
     this.isEditModalOpen = true;
   }
@@ -184,5 +194,22 @@ export class GestionMuebles implements OnInit {
         alert('Error al actualizar el mueble');
       }
     );
+  }
+
+  deleteFurniture(furniture: any) {
+    if (confirm(`¿Estás seguro de que quieres eliminar el mueble "${furniture.name}"?`)) {
+      this.apiService.deleteFurniture(furniture.id).subscribe(
+        (response) => {
+          console.log('Furniture deleted:', response);
+          // Eliminar de la lista local
+          this.furniture = this.furniture.filter(item => item.id !== furniture.id);
+          this.totalItems = this.furniture.length;
+        },
+        (error) => {
+          console.error('Error deleting furniture:', error);
+          alert('Error al eliminar el mueble');
+        }
+      );
+    }
   }
 }

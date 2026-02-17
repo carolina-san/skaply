@@ -1,7 +1,7 @@
 <main class="w-full h-screen flex flex-row bg-beige">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
-  <div class="w-[80%] flex flex-col">
-    <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige">
+  <div class="w-[80%] flex flex-col min-h-0">
+    <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige flex-shrink-0">
       <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
         [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
         class="hover:opacity-100 transition pb-1">
@@ -20,6 +20,8 @@
         Estadísiticas
       </button>
     </div>
-    <app-gestion-muebles *ngIf="activeTab === 'muebles'"></app-gestion-muebles>
+    <div class="flex-1 min-h-0">
+      <app-gestion-muebles *ngIf="activeTab === 'muebles'" class="h-full block"></app-gestion-muebles>
+    </div>
   </div>
 </main>

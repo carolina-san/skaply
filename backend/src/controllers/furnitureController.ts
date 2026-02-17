@@ -294,14 +294,10 @@ export class FurnitureController {
     }
   };
 
-  // repasar
+  //revisado el 17 de febrero
+  //puede borrar admin y prov sus propios muebles
   deleteFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
-      if (!userId) {
-        return next(new ApiError('UNAUTHORIZED', 'User not found'));
-      }
-
       const furnitureId = Number(req.params.id);
       if (!furnitureId) {
         return next(new ApiError('BAD_REQUEST', 'Furniture ID is required'));
@@ -316,7 +312,11 @@ export class FurnitureController {
       if (req.user?.role === UserRole.ADMIN) {
         // Admin puede eliminar cualquier mueble
       } else if (req.user?.role === UserRole.PROV) {
-        if (furnitureProviderId !== userId) {
+        const providerId = await this.providerService.getProviderIdByEmail(req.user.emailuser || '');
+        if (!providerId) {
+          return next(new ApiError('UNAUTHORIZED', 'Provider not found'));
+        }
+        if (furnitureProviderId !== providerId) {
           return next(new ApiError('FORBIDDEN', 'You can only delete your own furniture'));
         }
       } else {
