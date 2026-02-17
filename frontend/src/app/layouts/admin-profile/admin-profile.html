@@ -1,12 +1,17 @@
-<div class="flex flex-row">
+<div class="flex flex-row h-screen">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
-  <div class="px-5 lg:px-10 w-[80%] pt-10 flex flex-col bg-beige text-marron-oscuro">
+  <div class="px-5 lg:px-10 w-[80%] pt-10 flex flex-col bg-beige text-marron-oscuro min-h-0">
 
-    <div class="flex flex-row items-center gap-10 text-xl font-bold mb-6">
+    <div class="flex flex-row items-center gap-10 text-xl font-bold mb-6 flex-shrink-0">
       <button (click)="setActiveTab('proveedores')" [class.opacity-40]="activeTab !== 'proveedores'"
         [class.border-b-2]="activeTab === 'proveedores'" [class.border-beige]="activeTab === 'proveedores'"
         class="hover:opacity-100 transition">
         Proveedores
+      </button>
+      <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
+        [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
+        class="hover:opacity-100 transition pb-1">
+        Muebles
       </button>
       <button (click)="setActiveTab('solicitudes')" class="relative opacity-40 hover:opacity-100 transition">
         Solicitudes
@@ -21,8 +26,10 @@
         Estadísticas
       </button>
     </div>
-    <app-gestion-proveedores *ngIf="activeTab === 'proveedores'"></app-gestion-proveedores>
-
+    <div class="flex-1 min-h-0">
+      <app-gestion-proveedores *ngIf="activeTab === 'proveedores'" class="h-full block"></app-gestion-proveedores>
+      <app-gestion-muebles *ngIf="activeTab === 'muebles'" class="h-full block"></app-gestion-muebles>
+    </div>
 
   </div>
 </div>
