@@ -69,7 +69,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
     root.addChild(meshNode);
 
-    
+
     // ---------- CAMERA ----------
     const view = mat4.create();
     const projection = mat4.create();
@@ -91,7 +91,7 @@ export class WebglSceneComponent implements AfterViewInit {
       shader.setVec3("uLightPosition", vec3.fromValues(3, 5, 3));
       shader.setVec3("uLightColor", vec3.fromValues(1.0, 1.0, 1.0));
       shader.setVec3("uViewPosition", vec3.fromValues(0, 2, 5));
-      
+
       const identity = mat4.create();
       root.traverse(identity, shader);
 

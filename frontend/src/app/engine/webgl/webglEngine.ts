@@ -1,261 +1,813 @@
-// import { Injectable } from '@angular/core';
-// import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
-// import { ResourceManager } from '../../engine/webgl/resource/resource-manager';
-// import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
-// import { Node } from '../../engine/webgl/engine-core/node';
-// import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
-// import { mat4, vec3 } from 'gl-matrix';
+import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { mat4, vec3 } from 'gl-matrix';
+
+import { Node } from './engine-core/node';
+import { Mesh } from './engine-core/mesh';
+import { Camera } from './engine-core/camera';
+import { Light } from './engine-core/light';
+
+import { ResourceManager } from './resource/resource-manager';
+import { MeshResource, NamedMesh } from './resource/mesh-resource';
+import { ShaderResource } from './resource/shader-resource';
+
+// --------- “NativeObject” compatible con el componente (Object3D-lite) ----------
+class NativeLikeObject {
+    name: string;
+    parent: NativeLikeObject | null = null;
+    children: NativeLikeObject[] = [];
+    // guardamos el wrapper aquí para wrapNativeObject
+    userData: any = {};
+
+    constructor(name: string) {
+        this.name = name;
+    }
+
+    add(child: NativeLikeObject) {
+        child.parent = this;
+        this.children.push(child);
+    }
+
+    traverse(cb: (o: NativeLikeObject) => void) {
+        cb(this);
+        for (const c of this.children) c.traverse(cb);
+    }
+
+    getObjectByName(name: string): NativeLikeObject | null {
+        let found: NativeLikeObject | null = null;
+        this.traverse(o => {
+            if (!found && o.name === name) found = o;
+        });
+        return found;
+    }
+
+    getObjectNames(): string[] {
+        const names: string[] = [];
+        this.traverse(o => names.push(o.name));
+        return names;
+    }
+}
+
+// --------- Wrapper RenderableObject para Node ----------
+class WebGlRenderableObject implements RenderableObject {
+    uuid: string = crypto.randomUUID();
+    userData: any = {};
+    castShadow: boolean = false;
+    receiveShadow: boolean = false;
+
+    private visible = true;
+
+    // “nativeObject” compatible con lo que espera GraphicsEngineComponent
+    readonly nativeObject: NativeLikeObject;
+
+    constructor(
+        public readonly node: Node,
+        native: NativeLikeObject
+    ) {
+        this.nativeObject = native;
+        // referencia bidireccional
+        this.nativeObject.userData.wrapper = this;
+    }
+
+    setPosition(x: number, y: number, z: number): void {
+        this.node.setTranslation(x, y, z);
+    }
+
+    setRotation(x: number, y: number, z: number): void {
+        this.node.setRotation(x, y, z);
+    }
+
+    getPosition(): Vector3 {
+        const t = this.node.getTranslation(); // vec3
+        return { x: t[0], y: t[1], z: t[2] };
+    }
+
+    setVisible(v: boolean): void {
+        this.visible = v;
+        // requiere el mini-parche de Node.ts (setVisible)
+        // @ts-ignore
+        if (typeof (this.node as any).setVisible === 'function') {
+            // @ts-ignore
+            (this.node as any).setVisible(v);
+        }
+        // también afecta al “native”
+        this.nativeObject.traverse(o => (o.userData.__visible = v));
+    }
+
+    add(child: RenderableObject): void {
+        const c = child as WebGlRenderableObject;
+        this.node.addChild(c.node);
+        this.nativeObject.add(c.nativeObject);
+    }
+
+    remove(child: RenderableObject): void {
+        const c = child as WebGlRenderableObject;
+        this.node.removeChild(c.node);
+        // quitar de native tree
+        this.nativeObject.children = this.nativeObject.children.filter(x => x !== c.nativeObject);
+        c.nativeObject.parent = null;
+    }
+
+    lookAt(_target: Vector3): void {
+        // No implementado a nivel de Node (no hace falta para vuestro flujo actual)
+    }
+}
+
+// --------- WebGL Engine ----------
+export class WebGLEngine extends EngineFacade {
+
+    private canvas!: HTMLCanvasElement;
+    private gl!: WebGL2RenderingContext;
+
+    private resourceManager = new ResourceManager();
+    private shader!: ShaderResource;
+
+    // Scene graph root
+    private rootNode = new Node();
+    private rootNative = new NativeLikeObject('root');
+
+    // Camera + Light
+    private cameraEntity = new Camera();
+    private cameraNode = new Node();
+    private cameraNative = new NativeLikeObject('camera');
+
+    private lightEntity = new Light();
+    private lightNode = new Node();
+    private lightNative = new NativeLikeObject('light');
+
+    // background
+    private clear = { r: 0, g: 0, b: 0, a: 0 };
+
+    // wrappers registry
+    private wrappers = new Set<WebGlRenderableObject>();
+
+    private ready = false;
+
+    init(canvas: HTMLCanvasElement, width: number, height: number): void {
+        this.canvas = canvas;
+        this.gl = canvas.getContext('webgl2', { alpha: true, antialias: true })!;
+        this.gl.enable(this.gl.DEPTH_TEST);
+
+        this.resize(width, height);
+
+        // montar cámara y luz como hijos del root (para que seteen uniforms antes)
+        this.cameraNode.setEntity(this.cameraEntity);
+        this.lightNode.setEntity(this.lightEntity);
+
+        this.rootNode.addChild(this.cameraNode);
+        this.rootNode.addChild(this.lightNode);
+
+        this.rootNative.add(this.cameraNative);
+        this.rootNative.add(this.lightNative);
+
+        // cámara por defecto: sincronizada con las coordenadas esféricas iniciales
+        const aspect = width / height;
+        this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
+        this.updateCameraOrbit(); // Esto setea lookAt(pos, target) basado en Radius/Theta/Phi iniciales
+
+        // luz por defecto
+        this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
+        this.lightNode.setTranslation(8, 10, 5);
+
+        // init async shader
+        this.initShader().then(() => {
+            this.ready = true;
+            this.initControls();
+        });
+    }
+
+    private async initShader(): Promise<void> {
+        this.shader = new ShaderResource(this.gl, 'basic');
+        await this.shader.loadFile('assets/shaders/basic.vert', 'vertex');
+        await this.shader.loadFile('assets/shaders/basic.frag', 'fragment');
+        this.shader.buildProgram();
+    }
+
+    resize(width: number, height: number): void {
+        if (!this.canvas || !this.gl) return;
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.gl.viewport(0, 0, width, height);
+
+        // update camera aspect
+        const aspect = width / height;
+        this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
+    }
+
+    render(): void {
+        if (!this.ready) return;
+
+        // Limpiar con transparencia (importante para que no se vea el fondo blanco de la app)
+        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+        this.shader.use();
+
+        // uniforms que pide el fragment shader
+        this.shader.setVec3('uViewPosition', this.cameraEntity.position);
+
+        // recorrer árbol
+        this.rootNode.traverse(mat4.create(), this.shader);
+    }
+
+    // ------------------ Creación de objetos ------------------
+
+    createGroup(): RenderableObject {
+        const n = new Node();
+        const native = new NativeLikeObject(`group_${crypto.randomUUID()}`);
+        const w = new WebGlRenderableObject(n, native);
+        this.wrappers.add(w);
+        return w;
+    }
+
+    createArrowHelper(_dir: Vector3, _origin: Vector3, _length: number, _color: number | string): RenderableObject {
+        // Stub: un grupo vacío que NO dibuja nada (sirve para el flujo de UI)
+        return this.createGroup();
+    }
+
+    createMesh(geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
+        // Placeholder simple (cubo) para fallback si no encuentra la pieza.
+        // Si queréis cilindro/plane, se amplía, pero con box ya no peta el flujo.
+        if (geometry.type !== 'box') {
+            geometry = { type: 'box', args: [0.2, 0.2, 0.2] };
+        }
+
+        const [w, h, d] = geometry.args;
+        const mesh = this.createBoxMesh(w, h, d);
+
+        const node = new Node();
+        node.setEntity(mesh);
+
+        const native = new NativeLikeObject(`placeholder_${crypto.randomUUID()}`);
+        const wrapper = new WebGlRenderableObject(node, native);
+        this.wrappers.add(wrapper);
+        return wrapper;
+    }
+
+    private createBoxMesh(w: number, h: number, d: number): Mesh {
+        const gl = this.gl;
+
+        // cubo muy básico (pos + normal + uv) con índices
+        // (esto es placeholder, no ultra perfecto, pero suficiente para que “se vea algo”)
+        const hw = w / 2, hh = h / 2, hd = d / 2;
+
+        const positions = new Float32Array([
+            // front
+            -hw, -hh, hd, hw, -hh, hd, hw, hh, hd, -hw, hh, hd,
+            // back
+            -hw, -hh, -hd, -hw, hh, -hd, hw, hh, -hd, hw, -hh, -hd,
+            // top
+            -hw, hh, -hd, -hw, hh, hd, hw, hh, hd, hw, hh, -hd,
+            // bottom
+            -hw, -hh, -hd, hw, -hh, -hd, hw, -hh, hd, -hw, -hh, hd,
+            // right
+            hw, -hh, -hd, hw, hh, -hd, hw, hh, hd, hw, -hh, hd,
+            // left
+            -hw, -hh, -hd, -hw, -hh, hd, -hw, hh, hd, -hw, hh, -hd,
+        ]);
+
+        const normals = new Float32Array([
+            // front
+            0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+            // back
+            0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+            // top
+            0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+            // bottom
+            0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+            // right
+            1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+            // left
+            -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+        ]);
+
+        const uvs = new Float32Array([
+            0, 0, 1, 0, 1, 1, 0, 1,
+            0, 0, 0, 1, 1, 1, 1, 0,
+            0, 0, 0, 1, 1, 1, 1, 0,
+            0, 0, 1, 0, 1, 1, 0, 1,
+            0, 0, 0, 1, 1, 1, 1, 0,
+            0, 0, 1, 0, 1, 1, 0, 1,
+        ]);
+
+        const indices = new Uint32Array([
+            0, 1, 2, 0, 2, 3,
+            4, 5, 6, 4, 6, 7,
+            8, 9, 10, 8, 10, 11,
+            12, 13, 14, 12, 14, 15,
+            16, 17, 18, 16, 18, 19,
+            20, 21, 22, 20, 22, 23
+        ]);
+
+        const vao = gl.createVertexArray()!;
+        gl.bindVertexArray(vao);
+
+        const vbo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        const nbo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
+        gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+
+        const tbo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
+        gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
+
+        const ebo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+        gl.bindVertexArray(null);
+
+        // textura 1x1 blanca
+        const tex = gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+        gl.generateMipmap(gl.TEXTURE_2D);
+
+        return new Mesh({ vao, indexCount: indices.length, texture: tex, indexType: gl.UNSIGNED_INT }, gl);
+    }
+
+    // ------------------ Scene management ------------------
+
+    addToScene(object: RenderableObject): void {
+        const o = object as WebGlRenderableObject;
+        this.rootNode.addChild(o.node);
+        this.rootNative.add(o.nativeObject);
+        this.wrappers.add(o);
+    }
+
+    removeFromScene(object: RenderableObject): void {
+        const o = object as WebGlRenderableObject;
+        this.rootNode.removeChild(o.node);
+        this.rootNative.children = this.rootNative.children.filter(c => c !== o.nativeObject);
+        o.nativeObject.parent = null;
+        this.wrappers.delete(o);
+    }
+
+    setBackground(color: number | string | null): void {
+        if (color === null) {
+            this.clear = { r: 0, g: 0, b: 0, a: 0 };
+            return;
+        }
+        // soporta number tipo 0xRRGGBB
+        if (typeof color === 'number') {
+            const r = ((color >> 16) & 255) / 255;
+            const g = ((color >> 8) & 255) / 255;
+            const b = (color & 255) / 255;
+            this.clear = { r, g, b, a: 1 };
+            return;
+        }
+        // string => fallback
+        this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
+    }
+
+    // ------------------ Camera & controls ------------------
+
+    // Mouse handlers state
+    private isDragging = false;
+    private lastMouseX = 0;
+    private lastMouseY = 0;
+
+    // Polar coordinates for Orbit
+    // Init state: Radius ~3.84, Theta ~45deg, Phi ~67deg -> Position approx (2.5, 2.5, 2.5)
+    private camRadius = 3.84;
+    private camTheta = 0.785;
+    private camPhi = 1.17;
+    private camTarget = vec3.fromValues(0, 1, 0);
+
+    // Default state for reset check (updated via updateCameraOrbit on init)
+    // Default state for reset check (updated via updateCameraOrbit on init)
+    private readonly defaultCamPos = vec3.create();
+    private readonly defaultCamTarget = vec3.fromValues(0, 1, 0);
+    private defaultCamRadius = 3.84;
+    private defaultCamTheta = 0.785;
+    private defaultCamPhi = 1.17;
+
+    private _onMouseDown = this.onMouseDown.bind(this);
+    private _onMouseMove = this.onMouseMove.bind(this);
+    private _onMouseUp = this.onMouseUp.bind(this);
+    private _onWheel = this.onWheel.bind(this);
+    private _onContextMenu = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    // Touch handlers
+    private _onTouchStart = this.onTouchStart.bind(this);
+    private _onTouchMove = this.onTouchMove.bind(this);
+    private _onTouchEnd = this.onTouchEnd.bind(this);
+
+    // Touch state
+    private lastTouchX = 0;
+    private lastTouchY = 0;
+    private lastTouchDist = 0;
+
+    setCameraProps(position: Vector3, target: Vector3): void {
+        // Actualizamos la cámara interna
+        this.cameraEntity.lookAt(
+            vec3.fromValues(position.x, position.y, position.z),
+            vec3.fromValues(target.x, target.y, target.z)
+        );
+
+        // Sincronizamos las variables de control (reverse engineering spherical coords)
+        vec3.set(this.camTarget, target.x, target.y, target.z);
+
+        const dx = position.x - target.x;
+        const dy = position.y - target.y;
+        const dz = position.z - target.z;
+
+        this.camRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        // Evitar division por 0 o radio negativo
+        if (this.camRadius < 0.001) this.camRadius = 0.001;
+
+        // Phi: ángulo respecto Y (0=arriba, PI=abajo)
+        this.camPhi = Math.acos(Math.max(-1, Math.min(1, dy / this.camRadius)));
+        // Theta: ángulo en XZ
+        this.camTheta = Math.atan2(dx, dz);
+    }
+
+    private initControls() {
+        if (!this.canvas) return;
+        this.canvas.addEventListener('mousedown', this._onMouseDown);
+        this.canvas.addEventListener('wheel', this._onWheel, { passive: false });
+        this.canvas.addEventListener('contextmenu', this._onContextMenu);
+        window.addEventListener('mousemove', this._onMouseMove);
+        window.addEventListener('mouseup', this._onMouseUp);
+
+        // Touch listeners (passive: false to prevent scrolling)
+        this.canvas.addEventListener('touchstart', this._onTouchStart, { passive: false });
+        this.canvas.addEventListener('touchmove', this._onTouchMove, { passive: false });
+        this.canvas.addEventListener('touchend', this._onTouchEnd);
+
+        // Guardar la posición inicial calculada como "default" para el botón reset
+        vec3.copy(this.defaultCamPos, this.cameraEntity.position);
+        this.defaultCamRadius = this.camRadius;
+        this.defaultCamTheta = this.camTheta;
+        this.defaultCamPhi = this.camPhi;
+
+        // FIX: Eliminamos el recálculo reverso de coordenadas esféricas aquí.
+        // Como init() ya llamó a updateCameraOrbit() usando las variables camRadius/Theta/Phi,
+        // estas variables YA SON la "source of truth" y están perfectamente sincronizadas.
+    }
+
+    private removeControls() {
+        if (this.canvas) {
+            this.canvas.removeEventListener('mousedown', this._onMouseDown);
+            this.canvas.removeEventListener('wheel', this._onWheel);
+            this.canvas.removeEventListener('contextmenu', this._onContextMenu);
+            this.canvas.removeEventListener('touchstart', this._onTouchStart);
+            this.canvas.removeEventListener('touchmove', this._onTouchMove);
+            this.canvas.removeEventListener('touchend', this._onTouchEnd);
+        }
+        window.removeEventListener('mousemove', this._onMouseMove);
+        window.removeEventListener('mouseup', this._onMouseUp);
+    }
+
+    private onMouseDown(e: MouseEvent) {
+        if (e.button === 0 || e.button === 2) { // Left or Right click
+            // Prevent default behavior to avoid browser gestures (especially in Opera)
+            if (e.button === 2) {
+                e.preventDefault();
+            }
+            this.isDragging = true;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        }
+    }
+
+    private onMouseMove(e: MouseEvent) {
+        if (!this.isDragging) return;
+
+        const deltaX = e.clientX - this.lastMouseX;
+        const deltaY = e.clientY - this.lastMouseY;
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+
+        // Velocidades
+        const rotateSpeed = 0.005;
+        const panSpeed = 0.002 * this.camRadius; // Scale pan speed with zoom
+
+        if (e.buttons & 1) { // Left click: Orbit
+            this.camTheta -= deltaX * rotateSpeed;
+            this.camPhi -= deltaY * rotateSpeed;
+
+            // Clamp Phi para no dar la vuelta completa (evitar gimbal lock visual y confusion)
+            const epsilon = 0.01;
+            this.camPhi = Math.max(epsilon, Math.min(Math.PI - epsilon, this.camPhi));
+
+            this.updateCameraOrbit();
+        } else if (e.buttons & 2) { // Right click: Pan
+            this.performPan(deltaX, deltaY, panSpeed);
+            this.updateCameraOrbit();
+        }
+    }
+
+    // Helper for Panning (Shared by Mouse & Touch)
+    private performPan(deltaX: number, deltaY: number, speed: number) {
+        const forward = vec3.create();
+        vec3.sub(forward, this.camTarget, this.cameraEntity.position);
+        vec3.normalize(forward, forward);
+
+        const right = vec3.create();
+        vec3.cross(right, forward, [0, 1, 0]);
+        vec3.normalize(right, right);
+
+        const up = vec3.create();
+        vec3.cross(up, right, forward);
+        vec3.normalize(up, up);
+
+        const panX = vec3.create();
+        const panY = vec3.create();
+
+        vec3.scale(panX, right, -deltaX * speed);
+        vec3.scale(panY, up, deltaY * speed);
+
+        vec3.add(this.camTarget, this.camTarget, panX);
+        vec3.add(this.camTarget, this.camTarget, panY);
+    }
+
+    private onTouchStart(e: TouchEvent) {
+        // 1 finger: Rotate. 2 fingers: Pan + Zoom
+        if (e.touches.length === 1) {
+            e.preventDefault();
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+            this.isDragging = true;
+        } else if (e.touches.length === 2) {
+            e.preventDefault();
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            // Midpoint for Pan
+            this.lastTouchX = (t1.clientX + t2.clientX) / 2;
+            this.lastTouchY = (t1.clientY + t2.clientY) / 2;
+
+            // Distance for Zoom
+            const dx = t1.clientX - t2.clientX;
+            const dy = t1.clientY - t2.clientY;
+            this.lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+            this.isDragging = true;
+        }
+    }
+
+    private onTouchMove(e: TouchEvent) {
+        e.preventDefault(); // Prevent scroll
+        if (!this.isDragging) return;
+
+        if (e.touches.length === 1) {
+            // Rotate
+            const x = e.touches[0].clientX;
+            const y = e.touches[0].clientY;
+            const deltaX = x - this.lastTouchX;
+            const deltaY = y - this.lastTouchY;
+            this.lastTouchX = x;
+            this.lastTouchY = y;
+
+            const rotateSpeed = 0.005;
+            this.camTheta -= deltaX * rotateSpeed;
+            this.camPhi -= deltaY * rotateSpeed;
+
+            const epsilon = 0.01;
+            this.camPhi = Math.max(epsilon, Math.min(Math.PI - epsilon, this.camPhi));
+            this.updateCameraOrbit();
+
+        } else if (e.touches.length === 2) {
+            // Pan + Zoom
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+
+            // 1. Pan
+            const curX = (t1.clientX + t2.clientX) / 2;
+            const curY = (t1.clientY + t2.clientY) / 2;
+            const deltaX = curX - this.lastTouchX;
+            const deltaY = curY - this.lastTouchY;
+            this.lastTouchX = curX;
+            this.lastTouchY = curY;
+
+            const panSpeed = 0.002 * this.camRadius;
+            this.performPan(deltaX, deltaY, panSpeed);
+
+            // 2. Zoom
+            const dx = t1.clientX - t2.clientX;
+            const dy = t1.clientY - t2.clientY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Difference in distance
+            // pinch out (dist increases) -> zoom in (radius decreases)
+            const zoomDelta = this.lastTouchDist - dist;
+            this.lastTouchDist = dist;
+
+            const zoomSpeed = 0.01 * this.camRadius;
+            this.camRadius += zoomDelta * zoomSpeed;
+            if (this.camRadius < 0.1) this.camRadius = 0.1;
+
+            this.updateCameraOrbit();
+        }
+    }
+
+    private onTouchEnd(e: TouchEvent) {
+        if (e.touches.length === 0) {
+            this.isDragging = false;
+        } else if (e.touches.length === 1) {
+            // Transition smoothly to single finger rotation
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+        }
+    }
+
+    private onMouseUp(_e: MouseEvent) {
+        this.isDragging = false;
+    }
+
+    private onWheel(e: WheelEvent) {
+        e.preventDefault();
+        const zoomSpeed = 0.001 * this.camRadius;
+        this.camRadius += e.deltaY * zoomSpeed;
+        if (this.camRadius < 0.1) this.camRadius = 0.1;
+        this.updateCameraOrbit();
+    }
+
+    private updateCameraOrbit() {
+        const x = this.camRadius * Math.sin(this.camPhi) * Math.sin(this.camTheta);
+        const y = this.camRadius * Math.cos(this.camPhi);
+        const z = this.camRadius * Math.sin(this.camPhi) * Math.cos(this.camTheta);
+
+        const eye = vec3.fromValues(
+            this.camTarget[0] + x,
+            this.camTarget[1] + y,
+            this.camTarget[2] + z
+        );
+
+        this.cameraEntity.lookAt(eye, this.camTarget);
+    }
+
+    updateControls(): void {
+        // Optional: inertia/damping could go here
+    }
+
+    toggleControls(enable: boolean, _autoRotate: boolean): void {
+        if (enable) {
+            this.initControls();
+        } else {
+            this.removeControls();
+        }
+    }
+    setControlsAutoRotateSpeed(_speed: number): void { /* no-op */ }
+
+    resetControls(): void {
+        this.camRadius = this.defaultCamRadius;
+        this.camTheta = this.defaultCamTheta;
+        this.camPhi = this.defaultCamPhi;
+        vec3.copy(this.camTarget, this.defaultCamTarget);
+        this.updateCameraOrbit();
+    }
+
+    checkControlsState(): boolean {
+        // Return true if camera is significantly different from default
+        const pos = this.cameraEntity.position;
+        const distPos = vec3.dist(pos, this.defaultCamPos);
+        const distTarget = vec3.dist(this.camTarget, this.defaultCamTarget);
+
+        return distPos > 0.1 || distTarget > 0.1;
+    }
+
+    getCamera(): any {
+        // devolvemos algo compatible con el componente (usa .position)
+        return { position: { x: this.cameraEntity.position[0], y: this.cameraEntity.position[1], z: this.cameraEntity.position[2] } };
+    }
+
+    // ------------------ Interaction (pendiente) ------------------
+
+    raycast(_x: number, _y: number): RenderableObject | null {
+        // En WebGL puro esto requiere picking (color buffer o ray/triangles).
+        // Para que el flujo no rompa, devolvemos null.
+        return null;
+    }
+
+    setHighlight(_objects: RenderableObject[]): void {
+        // placeholder: sin outline pass en WebGL puro
+    }
+
+    // ------------------ Load model (Assimp) ------------------
+
+    async loadGLTF(url: string): Promise<RenderableObject> {
+        if (!this.gl) throw new Error('Engine not initialized');
+
+        const res = await this.resourceManager.getResource(
+            url,
+            () => new MeshResource(url, this.gl)
+        );
+
+        const groupNode = new Node();
+        const groupNative = new NativeLikeObject(`model_${crypto.randomUUID()}`);
+        const groupWrapper = new WebGlRenderableObject(groupNode, groupNative);
+
+        const namedMeshes = (res as any).getNamedMeshes
+            ? (res as any).getNamedMeshes() as NamedMesh[]
+            : (res as any).getMeshes().map((m: Mesh, i: number) => ({ name: `mesh_${i}`, mesh: m })) as NamedMesh[];
+
+        // --- helper: normaliza nombres
+        // "estante_1"    -> "estante_1"    (porque _1 es parte del nombre base implícito o no colisiona)
+        // "estante_1_2"  -> "estante_1" 
+        // "estante_2"    -> "estante_2"
+        // "estante_2_2"  -> "estante_2"
+        // "tablon_x"     -> "tablon_x"
+        // "tablon_x_2"   -> "tablon_x"
+        // 1. Create a Set of all raw names to check existence
+        const allNames = new Set(namedMeshes.map(n => n.name));
+
+        // --- helper: normaliza nombres usando heurística de existencia
+        const normalizePieceName = (raw: string): string => {
+            const name = String(raw ?? '').trim();
+            // Regex: busca "_N" al final solo si N >= 2
+            // O busca "_1" si es una copia (pero queremos respetar estante_1 como base, y estante_1_2 como copia).
+            // Todo lo que termina en _2, _3, _4... es copia. Lo que termina en _1 a veces es base.
+            // PERO: Si tengo estante_1 y estante_2, son bases distintas.
+            // Si tengo estante_1_2, es copia de estante_1.
+
+            // Simplemente quitamos "_\d+" AL FINAL, siempre que el número sea >= 2.
+            // Así repetimos: estante_1 -> estante_1. estante_1_2 -> estante_1.
+            // Regex que captura "nombre_base" + "_numero" (cualquier numero)
+            const match = name.match(/^(.*)_(\d+)$/);
+            if (match) {
+                const potentialBase = match[1];
+
+                // CASO 1: El padre existe (ej: estante_1_2 -> estante_1 existe)
+                // Entonces _2 es una copa de estante_1
+                if (allNames.has(potentialBase)) {
+                    return potentialBase;
+                }
+
+                // CASO 2: El padre NO existe (ej: estante_1 -> estante NO existe)
+                // Entonces _1 es parte del nombre base unico.
+                // CASO 3: estante_2 -> estante NO existe.
+                return name;
+            }
+
+            // Si no tiene sufijo numérico, es base (ej: patas)
+            return name;
+        };
+
+        // Mapa: nombre base (BD) -> wrapper grupo
+        const pieceGroups = new Map<string, WebGlRenderableObject>();
+
+        for (const { name, mesh } of namedMeshes) {
+            const baseName = normalizePieceName(name);
+
+            // si no existe el grupo de esa pieza, lo creamos
+            let pieceGroup = pieceGroups.get(baseName);
+            if (!pieceGroup) {
+                const pieceGroupNode = new Node();
+                const pieceGroupNative = new NativeLikeObject(baseName); // nombre grupo limpio
+                pieceGroup = new WebGlRenderableObject(pieceGroupNode, pieceGroupNative);
+
+                // cada pieza grupo cuelga del modelo raíz
+                groupWrapper.add(pieceGroup);
+                this.wrappers.add(pieceGroup);
+                pieceGroups.set(baseName, pieceGroup);
+            }
+
+            // este mesh concreto será un hijo interno del grupo (submesh)
+            const subNode = new Node();
+            subNode.setEntity(mesh);
+
+            // Añadir sufijo '_mesh' para evitar duplicados en getObjectNames si el grupo se llama igual
+            // Así getObjectByName buscara el grupo por defecto si usamos el nombre base.
+            const subNative = new NativeLikeObject(name + '_mesh');
+            const subWrapper = new WebGlRenderableObject(subNode, subNative);
+
+            pieceGroup.add(subWrapper);
+            this.wrappers.add(subWrapper);
+        }
+
+        // Debug opcional
+        // console.log('[WebGL loadGLTF] groups:', [...pieceGroups.keys()]);
+
+        return groupWrapper;
+    }
 
 
-// class WebGlRenderableObject implements RenderableObject {
+    wrapNativeObject(native: any): RenderableObject {
+        // si ya tiene wrapper, devolvemos el mismo
+        if (native?.userData?.wrapper) return native.userData.wrapper as RenderableObject;
 
-//     uuid = crypto.randomUUID();
-//     userData: any = {};
-//     castShadow = false;
-//     receiveShadow = false;
+        // si alguien nos pasa un native suelto, intentamos crear wrapper “fake”
+        // pero lo normal es que venga de getObjectByName() y ya tenga wrapper.
+        const node = new Node();
+        const n = native as NativeLikeObject;
+        const w = new WebGlRenderableObject(node, n);
+        this.wrappers.add(w);
+        return w;
+    }
 
-//     children: WebGlRenderableObject[] = [];
-//     visible = true;
-
-//     position = { x: 0, y: 0, z: 0 };
-//     rotation = { x: 0, y: 0, z: 0 };
-
-//     constructor(
-//         public node: Node 
-//     ) {}
-
-//     setPosition(x: number, y: number, z: number): void {
-//         this.position = { x, y, z };
-//         this.node.setTranslation(x, y, z);
-//     }
-
-//     setRotation(x: number, y: number, z: number): void {
-//         this.rotation = { x, y, z };
-//         this.node.setRotation(x, y, z);
-//     }
-
-//     // setVisible(visible: boolean): void {
-//     //     this.visible = visible;
-//     //     this.node.setVisible(visible);
-//     // }
-
-//     add(child: RenderableObject): void {
-
-//     if (!(child instanceof WebGlRenderableObject)) {
-//         throw new Error("Incompatible RenderableObject for this engine");
-//     }
-
-//     this.node.addChild(child.node);
-// }
-
-//     remove(child: RenderableObject): void {
-//         //this.children = this.children.filter(c => c !== child);
-//     }
-
-//     getPosition(): Vector3 {
-//         return this.position;
-//     }
-
-//     // lookAt(target: Vector3): void {
-//     //     this.node.lookAt?.(target);
-//     // }
-// }
-
-// @Injectable()
-// export class WebGLEngineAdapter extends EngineFacade {
-
-//     private gl!: WebGL2RenderingContext;
-//     private canvas!: HTMLCanvasElement;
-
-//     private sceneObjects: WebGlRenderableObject[] = [];
-
-//     private shader!: any; 
-//     private camera!: any;
-
-//     private ready = false;
-
-//     init(canvas: HTMLCanvasElement, width: number, height: number): void {
-
-//         this.canvas = canvas;
-//         this.gl = canvas.getContext('webgl2')!;
-//         this.gl.enable(this.gl.DEPTH_TEST);
-        
-//         this.resize(width, height);
-
-//         this.initializeAsyncShaderAndScene()
-        
-//         // camera
-//         const view = mat4.create();
-//         const projection = mat4.create();
-//         mat4.lookAt(view, vec3.fromValues(0, 2, 5), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-//         mat4.perspective(projection, Math.PI / 4, this.canvas.width / this.canvas.height, 0.1, 100);
-//     }
-    
-//     // ASYNC INITIALIZATION
-
-//     private async initializeAsyncShaderAndScene() {
-//         await this.initializeShader();
-//         await this.createSceneGraph();
-//         this.ready = true;
-//     }
-
-//     private async initializeShader(): Promise<void> {
-//         this.shader = new ShaderResource(this.gl, "basic");
-//         await this.shader.loadFile('assets/shaders/basic.vert', 'vertex');
-//         await this.shader.loadFile('assets/shaders/basic.frag', 'fragment');
-//         this.shader.buildProgram();
-//     }
-    
-//     private async createSceneGraph(): Promise<void> {
-//         this.sceneObjects = [];
-
-//         // resource manager
-//         const resourceManager = new ResourceManager();
-
-//         // load mesh resource (glb)
-//         const meshResource = await resourceManager.getResource(
-//         '../../../storage/vital_pro.glb',
-//         () => new MeshResource('vital_pro', this.gl)
-//         );
-//         const meshes = meshResource.getMeshes();
-
-//         // root node
-//         const root = new Node();
-
-//         // model group node
-//         const modelNode = new Node();
-//         root.addChild(modelNode); // nodo grupo que contiene las transformaciones del modelo
-//         for (let mesh of meshes) {
-//             const node = new Node();
-//             node.setEntity(mesh);
-//             modelNode.addChild(node);
-//         }
-//     }
-
-
-//     resize(width: number, height: number): void {
-//         this.canvas.width = width;
-//         this.canvas.height = height;
-//         this.gl.viewport(0, 0, width, height);
-//     }
-
-//     render(): void {
-//         if (!this.ready) return; // async shader and scene graph not ready yet
-
-//         this.gl.clearColor(0.95, 0.95, 0.95, 1);
-//         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-//         this.shader.use();
-
-//         // for (const obj of this.sceneObjects) {
-//         //     if (!obj.visible) continue;
-//         //     obj.nativeObject.draw?.(this.shader, this.camera);
-//         // }
-//     }
-
-//     // ⚠️ METODOS QUE NECESITAN REVISIÓN ⚠️
-
-//     createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject {
-
-//         const mesh = this.createPrimitive(geometry, material);
-//         const wrapper = new WebGlRenderableObject(mesh);
-
-//         return wrapper;
-//     }
-
-//     createGroup(): RenderableObject {
-//         return new WebGlRenderableObject({ children: [] });
-//     }
-
-//     createArrowHelper(): RenderableObject {
-//         throw new Error("ArrowHelper not implemented yet");
-//     }
-
-//     addToScene(object: RenderableObject): void {
-//         this.sceneObjects.push(object as WebGlRenderableObject);
-//     }
-
-//     removeFromScene(object: RenderableObject): void {
-//         this.sceneObjects =
-//             this.sceneObjects.filter(o => o !== object);
-//     }
-
-//     setBackground(color: number | string | null): void {
-
-//         if (color === null) {
-//             this.gl.clearColor(0, 0, 0, 0);
-//             return;
-//         }
-
-//         const c = this.parseColor(color);
-//         this.gl.clearColor(c.r, c.g, c.b, 1);
-//     }
-
-//     setCameraProps(position: Vector3, target: Vector3): void {
-//         this.camera.setPosition(position);
-//         this.camera.lookAt(target);
-//     }
-
-//     updateControls(): void {}
-//     toggleControls(): void {}
-//     setControlsAutoRotateSpeed(): void {}
-//     resetControls(): void {}
-
-//     raycast(): RenderableObject | null {
-//         return null; // implementar más adelante
-//     }
-
-//     setHighlight(): void {}
-
-//     checkControlsState(): boolean {
-//         return false;
-//     }
-
-//     getCamera(): any {
-//         return this.camera;
-//     }
-
-//     async loadGLTF(url: string): Promise<RenderableObject> {
-
-//         const resource = new MeshResource("gltf", this.gl);
-//         await resource.loadFile(url);
-
-//         const group = new WebGlRenderableObject({ children: [] });
-
-//         for (const mesh of resource.getMeshes()) {
-//             const wrapper = new WebGlRenderableObject(mesh);
-//             group.add(wrapper);
-//             this.sceneObjects.push(wrapper);
-//         }
-
-//         return group;
-//     }
-
-//     wrapNativeObject(native: any): RenderableObject {
-//         return new WebGlRenderableObject(native);
-//     }
-
-//     dispose(): void {
-//         this.sceneObjects = [];
-//     }
-
-//     private createPrimitive(
-//         geometry: GeometryConfig,
-//         material: MaterialConfig
-//     ) {
-//         // aquí puedes usar tus generadores de box, plane, etc.
-//         // y crear Mesh con textura 1x1 basada en material.color
-//         return {};
-//     }
-
-//     private parseColor(color: number | string) {
-//         if (typeof color === 'number') {
-//             const r = ((color >> 16) & 255) / 255;
-//             const g = ((color >> 8) & 255) / 255;
-//             const b = (color & 255) / 255;
-//             return { r, g, b };
-//         }
-
-//         return { r: 1, g: 1, b: 1 };
-//     }
-// }
+    dispose(): void {
+        this.removeControls();
+        this.wrappers.clear();
+        this.ready = false;
+    }
+}

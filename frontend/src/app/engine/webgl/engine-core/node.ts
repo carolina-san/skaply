@@ -4,7 +4,7 @@ import { Mesh } from './mesh';
 import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
-    
+
     // entity and nodes
     private entity: Entity | null = null;
     private children: Node[] = [];
@@ -21,6 +21,8 @@ export class Node {
     // only if local transformations were made
     private needsUpdate: boolean = true;
 
+    // visibility
+    private visible: boolean = true;
 
 
     // CHILDREN MANAGEMENT
@@ -43,17 +45,17 @@ export class Node {
     setEntity(entity: Entity): void {
         this.entity = entity;
     }
-    
+
     setTranslation(x: number, y: number, z: number): void {
         vec3.set(this.translation, x, y, z);
         this.needsUpdate = true;
     }
-    
+
     setRotation(x: number, y: number, z: number): void {
         vec3.set(this.rotation, x, y, z);
         this.needsUpdate = true;
     }
-    
+
     setScale(x: number, y: number, z: number): void {
         vec3.set(this.scale, x, y, z);
         this.needsUpdate = true;
@@ -63,9 +65,14 @@ export class Node {
         mat4.copy(this.transformMatrix, matrix);
         this.needsUpdate = false;
     }
-    
+
+    // Visibility
+    setVisible(v: boolean): void {
+        this.visible = v;
+    }
+
     // GETTERS
-    
+
     getEntity(): Entity | null {
         return this.entity;
     }
@@ -77,11 +84,11 @@ export class Node {
     getTranslation(): vec3 {
         return this.translation;
     }
-    
+
     getRotation(): vec3 {
         return this.rotation;
     }
-    
+
     getScale(): vec3 {
         return this.scale;
     }
@@ -90,9 +97,14 @@ export class Node {
         return this.transformMatrix;
     }
 
+    // VISIBILITY
+    isVisible(): boolean {
+        return this.visible;
+    }
+
     // LOCAL MATRIX (PRIVATE)
 
-    private computeLocalMatrix(): mat4 { 
+    private computeLocalMatrix(): mat4 {
         const matrix = mat4.create();
         mat4.translate(matrix, matrix, this.translation);
         mat4.rotateX(matrix, matrix, this.rotation[0]);
@@ -104,18 +116,22 @@ export class Node {
 
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
 
-    traverse(parentMatrix: mat4, shader: ShaderResource): void { 
-        
-        // create transform matrix
-        if (this.needsUpdate) {
-            const localMatrix = this.computeLocalMatrix();
-            mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); 
-            this.needsUpdate = false;
-        }
+    traverse(parentMatrix: mat4, shader: ShaderResource): void {
+
+        if (!this.visible) return;
+
+        // always update transform matrix based on parent
+        // (localMatrix can be cached if !needsUpdate, but composition must happen)
+        const localMatrix = this.computeLocalMatrix();
+        mat4.multiply(this.transformMatrix, parentMatrix, localMatrix);
+
+        // needsUpdate flag is only for local property changes, 
+        // but since we computeLocalMatrix every time (or we could cache it),
+        // let's just mark it clean.
+        this.needsUpdate = false;
 
         // draw entity 
         if (this.entity) {
-            console.log('Node: Dibujando entidad', this.entity.constructor.name);
             this.entity.draw(this.transformMatrix, shader);
         }
 
@@ -143,4 +159,5 @@ export class Node {
         this.scale[2] *= sz;
         this.needsUpdate = true;
     }
+
 }

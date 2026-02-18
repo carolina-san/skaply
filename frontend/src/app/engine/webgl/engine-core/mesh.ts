@@ -10,17 +10,17 @@ export interface MeshResource {
 }
 
 export class Mesh extends Entity {
-    
+
     constructor(
-    private resource: MeshResource,         // mesh info (vao and indexCount)
-    private gl: WebGL2RenderingContext) {   // WebGL2 context
+        private resource: MeshResource,         // mesh info (vao and indexCount)
+        private gl: WebGL2RenderingContext) {   // WebGL2 context
         super();
     }
 
-    draw (modelMatrix: mat4, shader: ShaderResource): void {
+    draw(modelMatrix: mat4, shader: ShaderResource): void {
         const gl = this.gl;
 
-        console.log('mesh model matrix:' ,modelMatrix);
+        //console.log('mesh model matrix:' ,modelMatrix);
         shader.setMat4("uModelMatrix", modelMatrix);
 
         // Bind texture if present
@@ -35,13 +35,13 @@ export class Mesh extends Entity {
         // choose index type if provided
         const indexType = (this.resource as any).indexType ?? gl.UNSIGNED_SHORT;
 
-        
+
         gl.bindVertexArray(this.resource.vao);
 
-        console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
-        console.log('ELEMENT_ARRAY_BUFFER bound:', gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING));
-        console.log('INDEX_TYPE:', indexType);
-        console.log('Mesh.draw: indexCount=', this.resource.indexCount, 'vao=', !!this.resource.vao, 'indexType=', indexType);
+        // console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
+        // console.log('ELEMENT_ARRAY_BUFFER bound:', gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING));
+        // console.log('INDEX_TYPE:', indexType);
+        // console.log('Mesh.draw: indexCount=', this.resource.indexCount, 'vao=', !!this.resource.vao, 'indexType=', indexType);
 
         gl.drawElements(gl.TRIANGLES, this.resource.indexCount, indexType, 0);
         gl.bindVertexArray(null);

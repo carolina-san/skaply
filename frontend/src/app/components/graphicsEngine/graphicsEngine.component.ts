@@ -46,7 +46,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   arStateChange = output<boolean>();
 
   // Elegir el tipo de motor
-  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
+  engineUse = signal<'threeJS' | 'webGL'>('webGL');
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API
@@ -414,6 +414,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         baseModel.castShadow = true;
         baseModel.receiveShadow = true;
         this.engine.addToScene(baseModel);
+        console.log('[GLB NAMES]', baseModel.nativeObject.getObjectNames());
       } catch (error) {
         console.error('Error pre-loading base model:', error);
       }
@@ -490,6 +491,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             mesh = await this.engine.loadGLTF(partRef.file_uri);
           } catch (e) {
             console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
+            console.error('file_uri que falla:', partRef.file_uri);
           }
         }
 
@@ -515,8 +517,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         if (!mesh) {
           // Case C: Fallback placeholder
-          const args = [0.2, 0.2, 0.2];
-          mesh = this.engine.createMesh({ type: 'box', args: args }, defaultMaterial);
+          console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
+          continue;
         }
 
         // If we created a new mesh (Case A or C), we need to add it to scene.
@@ -730,6 +732,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         this.isolatePart(part);
       }
     }
+  }
+
+  onCanvasInteraction(): void {
+    // Prevent default browser behavior if needed, or trigger specific app logic
   }
 
   private onPointerMove(event: MouseEvent): void {

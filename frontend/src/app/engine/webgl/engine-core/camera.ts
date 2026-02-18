@@ -44,9 +44,9 @@ export class Camera extends Entity {
 
     draw(modelMatrix: mat4, shader: ShaderResource): void {
 
-        console.log('Camera viewMatrix:', this.viewMatrix);
-        console.log('Camera projectionMatrix:', this.projectionMatrix);
-        
+        // console.log('Camera viewMatrix:', this.viewMatrix);
+        // console.log('Camera projectionMatrix:', this.projectionMatrix);
+
         // Camera does not draw geometry    
         shader.setMat4("uViewMatrix", this.viewMatrix);
         shader.setMat4("uProjectionMatrix", this.projectionMatrix);

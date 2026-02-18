@@ -3,7 +3,7 @@ import { Entity } from './entity';
 import { vec3, mat4 } from 'gl-matrix';
 
 export class Light extends Entity {
-    
+
     // PARAMETERS
 
     public intensity: vec3 = vec3.fromValues(1, 1, 1); // white light
@@ -22,7 +22,7 @@ export class Light extends Entity {
 
     // DRAW
 
-    draw(modelMatrix: mat4,shader: ShaderResource): void {
+    draw(modelMatrix: mat4, shader: ShaderResource): void {
         // lights do not draw geometry 
         const localPos = vec3.fromValues(0, 0, 0);
         const worldPos = vec3.create();
