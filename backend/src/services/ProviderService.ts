@@ -42,9 +42,9 @@ export class ProviderService {
   // PRIVATE ROUTES (ADMIN ONLY)
 
   async getProviders(filters?: {
-  registration_status?: RegistrationStatus;
-  enabled?: boolean;
-  visible?: boolean;
+    registration_status?: RegistrationStatus;
+    enabled?: boolean;
+    visible?: boolean;
   }) {
     try {
       const conditions: string[] = ['role = $1'];
@@ -231,7 +231,7 @@ export class ProviderService {
       const result = await pool.query(`
         SELECT id, company_name, email, cif, tax_address, name,image_url
         FROM public."User" where role = 'provider'`);
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch providers for chatbot')
     }
@@ -240,7 +240,7 @@ export class ProviderService {
   async getProviderByName(name: string) {
     try {
       const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch the provided with this name');
     }

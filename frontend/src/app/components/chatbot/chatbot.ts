@@ -187,10 +187,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                 next: (categoryResponse) => {
                                     const categoryData = categoryResponse.data || [];
 
-                                    if (categoryData.length > 0) {
+                                    if (categoryData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedCategory(categoryData[0].id);
+                                        this.filterSharingService.setSelectedCategory(categoryData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },
@@ -207,10 +207,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                             this.api.getColorByName(color).subscribe({
                                 next: (colorResponse) => {
                                     const colorData = colorResponse.data || [];
-                                    if (colorData.length > 0) {
+                                    if (colorData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedColor(colorData[0].id);
+                                        this.filterSharingService.setSelectedColor(colorData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },

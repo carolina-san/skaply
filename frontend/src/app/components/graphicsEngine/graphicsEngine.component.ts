@@ -138,7 +138,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     let ref = this.route.snapshot.params['ref'];
     // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
-      this.furniture = f.data ? f.data[0] : f;
+      this.furniture = f.data ? f.data : f;
       console.log('Furniture loaded:', this.furniture);
 
       if (this.useExternalModel && this.isViewInitialized) {

@@ -1,13 +1,13 @@
 import pool from "@/config/database";
 import { ApiError } from '@/utils/ApiError';
 
-export class ReviewService{
-    async getFurnitureReviews(idFurniture:number){
-        try{
-            const result = pool.query('SELECT * FROM review WHERE furniture_id = $1',[idFurniture]);
-            return result;
-        }catch(error){
-           throw new Error('Error fetching furniture reviews') 
+export class ReviewService {
+    async getFurnitureReviews(idFurniture: number) {
+        try {
+            const result = await pool.query('SELECT * FROM review WHERE furniture_id = $1', [idFurniture]);
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error fetching furniture reviews')
         }
     }
 

@@ -127,7 +127,7 @@ export class AuthService {
   async getUserByGoogleId(googleId: string) {
     try {
       const result = await pool.query(`SELECT * FROM "User" WHERE google_id = $1`, [googleId]);
-      return result;
+      return result.rows[0];
     } catch (error) {
       console.error('Error getting user by Google ID:', error);
       throw new Error('Error finding user by Google ID');

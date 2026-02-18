@@ -4,7 +4,7 @@ import { FurnitureService } from '../services/furnitureService'
 import { ProviderService } from '../services/ProviderService'
 import { Difficulty } from '@/types/common.types';
 import { UserRole } from '@/types/user.types';
-import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery  } from '@/utils/common.utils';
+import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery } from '@/utils/common.utils';
 /*import { UserService } from '../services/UserService';*/
 
 const validDifficulties = ['low', 'medium', 'high'];
@@ -66,7 +66,7 @@ export class FurnitureController {
 
       res.status(200).json({
         message: 'Database connected successfully',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       console.error('getAllFurniture error:', error);
@@ -79,7 +79,7 @@ export class FurnitureController {
       const result = await this.furnitureService.getVisibleFurniture();
       res.status(200).json({
         message: 'Visible furniture fetched successfully',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       console.error('getVisibleFurniture error:', error);
@@ -98,14 +98,14 @@ export class FurnitureController {
 
       const result = await this.furnitureService.getFurnitureByIdOrReference(identifier);
 
-      if (result.rows.length === 0) {
+      if (!result) {
         next(new ApiError('NOT_FOUND', 'Furniture not found'));
         return;
       }
 
       res.status(200).json({
         message: 'Furniture fetched',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this furniture'));
@@ -126,7 +126,7 @@ export class FurnitureController {
 
       res.status(200).json({
         message: 'Furniture fetched',
-        data: result.rows
+        data: result
       });
 
     } catch (error) {

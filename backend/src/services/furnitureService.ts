@@ -98,7 +98,7 @@ export class FurnitureService {
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`);
-      return result;
+      return result.rows;
     } catch (error) {
       console.error('getAllFurniture error:', error);
       throw error;
@@ -130,7 +130,7 @@ export class FurnitureService {
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id
           WHERE f.visible = true`);
-      return result;
+      return result.rows;
     } catch (error) {
       console.error('getVisibleFurniture error:', error);
       throw error;
@@ -180,7 +180,7 @@ export class FurnitureService {
               f.short_description,
               f.visible`,
         [id]);
-      return result;
+      return result.rows[0];
     } catch (error) {
       throw new Error('Unable to fetch the furniture included in the parameters');
     }
@@ -231,7 +231,7 @@ export class FurnitureService {
               f.difficulty,
               f.short_description`,
         [isNumeric ? numId : identifier]);
-      return result;
+      return result.rows[0];
     } catch (error) {
       throw new Error('Unable to fetch the furniture included in the parameters');
     }
@@ -303,7 +303,7 @@ export class FurnitureService {
       }
 
       const result = await pool.query(sql, params);
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Error fetching furniture parts')
     }
@@ -349,7 +349,6 @@ export class FurnitureService {
       throw new Error('Error fetching furniture difficulty');
     }
   }
-
 
   // Devuelve toda la iformación necesaria para el motor gráfico
   async getFurnitureAssembly(furnitureId: number) {
