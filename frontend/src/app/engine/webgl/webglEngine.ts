@@ -108,7 +108,7 @@ class WebGlRenderableObject implements RenderableObject {
     }
 
     lookAt(_target: Vector3): void {
-        // No implementado a nivel de Node (no hace falta para vuestro flujo actual)
+        // No implementado a nivel de Node para el flujo actual
     }
 }
 
@@ -224,115 +224,12 @@ export class WebGLEngine extends EngineFacade {
         return this.createGroup();
     }
 
-    createMesh(geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
-        // Placeholder simple (cubo) para fallback si no encuentra la pieza.
-        // Si queréis cilindro/plane, se amplía, pero con box ya no peta el flujo.
-        if (geometry.type !== 'box') {
-            geometry = { type: 'box', args: [0.2, 0.2, 0.2] };
-        }
-
-        const [w, h, d] = geometry.args;
-        const mesh = this.createBoxMesh(w, h, d);
-
-        const node = new Node();
-        node.setEntity(mesh);
-
-        const native = new NativeLikeObject(`placeholder_${crypto.randomUUID()}`);
-        const wrapper = new WebGlRenderableObject(node, native);
-        this.wrappers.add(wrapper);
-        return wrapper;
+    createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
+        // Método no utilizado actualmente. Retornamos un grupo vacío para cumplir la interfaz.
+        return this.createGroup();
     }
 
-    private createBoxMesh(w: number, h: number, d: number): Mesh {
-        const gl = this.gl;
 
-        // cubo muy básico (pos + normal + uv) con índices
-        // (esto es placeholder, no ultra perfecto, pero suficiente para que “se vea algo”)
-        const hw = w / 2, hh = h / 2, hd = d / 2;
-
-        const positions = new Float32Array([
-            // front
-            -hw, -hh, hd, hw, -hh, hd, hw, hh, hd, -hw, hh, hd,
-            // back
-            -hw, -hh, -hd, -hw, hh, -hd, hw, hh, -hd, hw, -hh, -hd,
-            // top
-            -hw, hh, -hd, -hw, hh, hd, hw, hh, hd, hw, hh, -hd,
-            // bottom
-            -hw, -hh, -hd, hw, -hh, -hd, hw, -hh, hd, -hw, -hh, hd,
-            // right
-            hw, -hh, -hd, hw, hh, -hd, hw, hh, hd, hw, -hh, hd,
-            // left
-            -hw, -hh, -hd, -hw, -hh, hd, -hw, hh, hd, -hw, hh, -hd,
-        ]);
-
-        const normals = new Float32Array([
-            // front
-            0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-            // back
-            0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
-            // top
-            0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-            // bottom
-            0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
-            // right
-            1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-            // left
-            -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
-        ]);
-
-        const uvs = new Float32Array([
-            0, 0, 1, 0, 1, 1, 0, 1,
-            0, 0, 0, 1, 1, 1, 1, 0,
-            0, 0, 0, 1, 1, 1, 1, 0,
-            0, 0, 1, 0, 1, 1, 0, 1,
-            0, 0, 0, 1, 1, 1, 1, 0,
-            0, 0, 1, 0, 1, 1, 0, 1,
-        ]);
-
-        const indices = new Uint32Array([
-            0, 1, 2, 0, 2, 3,
-            4, 5, 6, 4, 6, 7,
-            8, 9, 10, 8, 10, 11,
-            12, 13, 14, 12, 14, 15,
-            16, 17, 18, 16, 18, 19,
-            20, 21, 22, 20, 22, 23
-        ]);
-
-        const vao = gl.createVertexArray()!;
-        gl.bindVertexArray(vao);
-
-        const vbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-        const nbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-        gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-
-        const tbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
-        gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(2);
-        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
-
-        const ebo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-        gl.bindVertexArray(null);
-
-        // textura 1x1 blanca
-        const tex = gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-        gl.generateMipmap(gl.TEXTURE_2D);
-
-        return new Mesh({ vao, indexCount: indices.length, texture: tex, indexType: gl.UNSIGNED_INT }, gl);
-    }
 
     // ------------------ Scene management ------------------
 
