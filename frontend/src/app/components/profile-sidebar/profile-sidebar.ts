@@ -25,7 +25,7 @@ export class ProfileSidebar implements OnInit {
   initialFormValues: any = {};
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private apiService: ApiService,
     private fb: FormBuilder
   ) {
@@ -43,17 +43,25 @@ export class ProfileSidebar implements OnInit {
       this.currentUser = user;
 
       if (this.currentUser && this.currentUser.role === 'admin') {
-        this.apiService.getProviders().subscribe({
+        this.apiService.getProviders(1, 1).subscribe({
           next: (res) => {
-            this.totalProviders = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalProviders = res.meta.total;
+            } else {
+              this.totalProviders = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching providers count:', err);
           }
         });
-        this.apiService.getAllFurniture().subscribe({
+        this.apiService.getAllFurniture(1, 1).subscribe({
           next: (res) => {
-            this.totalFurniture = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalFurniture = res.meta.total;
+            } else {
+              this.totalFurniture = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching furniture count:', err);
@@ -61,9 +69,13 @@ export class ProfileSidebar implements OnInit {
         });
       }
       else if (this.currentUser && this.currentUser.role === 'provider') {
-        this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe({
+        this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id], page: 1, limit: 1 }).subscribe({
           next: (res) => {
-            this.totalFurniture = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalFurniture = res.meta.total;
+            } else {
+              this.totalFurniture = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching furniture count:', err);
@@ -100,7 +112,7 @@ export class ProfileSidebar implements OnInit {
 
   checkForChanges() {
     const currentValues = this.editForm.value;
-    
+
     // Comparar si hay cambios significativos
     const nameChanged = currentValues.name?.trim() !== this.initialFormValues.name;
     const companyNameChanged = currentValues.company_name?.trim() !== this.initialFormValues.company_name;
@@ -125,7 +137,7 @@ export class ProfileSidebar implements OnInit {
       this.successMessage = '';
 
       const updates: any = {};
-      
+
       // Solo enviar campos que han cambiado o que tienen valor
       if (this.currentUser?.role === 'admin' && this.editForm.value.name && this.editForm.value.name.trim() !== '') {
         updates.name = this.editForm.value.name.trim();
@@ -134,15 +146,15 @@ export class ProfileSidebar implements OnInit {
       if (this.currentUser?.role === 'provider' && this.editForm.value.company_name && this.editForm.value.company_name.trim() !== '') {
         updates.company_name = this.editForm.value.company_name.trim();
       }
-      
+
       if (this.editForm.value.email && this.editForm.value.email !== this.currentUser?.email) {
         updates.email = this.editForm.value.email;
       }
-      
+
       if (this.editForm.value.telephone && this.editForm.value.telephone.trim() !== '') {
         updates.telephone = this.editForm.value.telephone.trim();
       }
-      
+
       if (this.editForm.value.password && this.editForm.value.password.trim() !== '') {
         updates.password = this.editForm.value.password;
       }
@@ -157,7 +169,7 @@ export class ProfileSidebar implements OnInit {
         next: (response) => {
           this.successMessage = 'Perfil actualizado correctamente';
           this.isSubmitting = false;
-          
+
           // Actualizar la sesión actual
           setTimeout(() => {
             this.authService.checkAuthStatus();

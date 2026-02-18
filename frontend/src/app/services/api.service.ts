@@ -12,8 +12,12 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   //MUEBLES
-  getAllFurniture(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/furniture`);
+  getAllFurniture(page?: number, limit?: number): Observable<any> {
+    let url = `${this.apiUrl}/furniture`;
+    if (page && limit) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    return this.http.get(url);
   }
 
   getVisibleFurniture(): Observable<any> {
@@ -69,8 +73,12 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
-    return this.http.get(`${this.apiUrl}/private/providers`);
+  getProviders(page: number = 1, limit: number = 10, search: string = ''): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+    let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${search}`;
+    }
+    return this.http.get(url);
   }
 
 

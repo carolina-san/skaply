@@ -11,7 +11,7 @@ import { ApiService } from '../../services/api.service';
 })
 export class GestionProveedores implements OnInit, OnChanges {
   @Input() searchText: string = '';
-  
+
   providers: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
@@ -22,19 +22,25 @@ export class GestionProveedores implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['searchText']) {
       this.currentPage = 1;
+      this.fetchProviders();
     }
   }
 
   ngOnInit() {
     this.fetchProviders();
+
   }
 
   fetchProviders() {
-    this.apiService.getProviders().subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText).subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
-        this.totalItems = this.providers.length; // Assuming full list is returned, adjust if backend pagination
+        if (response.meta) {
+          this.totalItems = response.meta.total;
+        } else {
+          this.totalItems = response.data.length;
+        }
       },
       (error) => {
         console.error('Error fetching providers:', error);
@@ -56,33 +62,22 @@ export class GestionProveedores implements OnInit, OnChanges {
     }
   }
 
-  get filteredProviders() {
-    if (!this.searchText || this.searchText.trim() === '') {
-      return this.providers;
-    }
-    
-    const search = this.searchText.toLowerCase().trim();
-    return this.providers.filter(provider => 
-      provider.name?.toLowerCase().includes(search) ||
-      provider.email?.toLowerCase().includes(search) ||
-      provider.phone?.toLowerCase().includes(search) ||
-      provider.address?.toLowerCase().includes(search)
-    );
-  }
+  // Ya no usamos getters para filtrar localmente
+  // get filteredProviders() ... eliminado
 
   get paginatedProviders() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredProviders.slice(start, end);
+    // Retornamos los providers actuales ya que vienen paginados del backend
+    return this.providers;
   }
 
   // Calcular el total de páginas
   get totalPages(): number {
-    return Math.ceil(this.filteredProviders.length / this.itemsPerPage);
+    return Math.ceil(this.totalItems / this.itemsPerPage);
   }
 
   // Generar array de números de página
   get pageNumbers(): number[] {
+    // podriamos limitar esto si hay muchas paginas
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
@@ -90,15 +85,17 @@ export class GestionProveedores implements OnInit, OnChanges {
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.fetchProviders();
     }
   }
 
   // Calcular rango de items mostrados
   get startItem(): number {
+    if (this.totalItems === 0) return 0;
     return (this.currentPage - 1) * this.itemsPerPage + 1;
   }
 
   get endItem(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.filteredProviders.length);
+    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
   }
 }

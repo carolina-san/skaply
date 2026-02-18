@@ -6,6 +6,8 @@ export interface FilterOptions {
   category_ids?: number[];
   color_ids?: number[];
   search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export type FilterProvider = ProviderBasic;

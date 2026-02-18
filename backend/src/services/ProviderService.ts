@@ -45,11 +45,21 @@ export class ProviderService {
     registration_status?: RegistrationStatus;
     enabled?: boolean;
     visible?: boolean;
+    page?: number;
+    limit?: number;
+    search?: string;
   }) {
     try {
       const conditions: string[] = ['role = $1'];
       const values: any[] = [UserRole.PROV];
       let paramIndex = 2;
+
+      if (filters?.search) {
+        const search = `%${filters.search}%`;
+        conditions.push(`(name ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR company_name ILIKE $${paramIndex} OR telephone ILIKE $${paramIndex} OR tax_address ILIKE $${paramIndex} OR cif ILIKE $${paramIndex})`);
+        values.push(search);
+        paramIndex++;
+      }
 
       if (filters?.registration_status !== undefined) {
         conditions.push(`registration_status = $${paramIndex++}`);
@@ -68,6 +78,16 @@ export class ProviderService {
 
       const whereClause = conditions.join(' AND ');
 
+      // Pagination
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Count total
+      const countQuery = `SELECT COUNT(*) FROM public."User" WHERE ${whereClause}`;
+      const countResult = await pool.query(countQuery, values);
+      const total = parseInt(countResult.rows[0].count, 10);
+
       const query = `
         SELECT id, email, name, cif, company_name, telephone, tax_address,
               image_url, enabled, visible, registration_status,
@@ -75,10 +95,20 @@ export class ProviderService {
         FROM public."User"
         WHERE ${whereClause}
         ORDER BY company_name
+        LIMIT $${paramIndex++} OFFSET $${paramIndex++}
       `;
 
+      values.push(limit, offset);
+
       const result = await pool.query(query, values);
-      return result.rows;
+
+      return {
+        rows: result.rows,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
 
     } catch (error) {
       throw new Error('Unable to fetch providers');

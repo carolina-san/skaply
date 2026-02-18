@@ -725,12 +725,12 @@ export class ChatbotService {
     if (color_id) filters.color_ids = [color_id];
 
     try {
-      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters) as any[];
       let matchType = 'exact';
 
       if (furnitureResult.length === 0 && category_id) {
         const fallbackFilters = { category_ids: [category_id], color_ids: [] };
-        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters) as any[];
         matchType = 'fallback';
       }
 
@@ -825,11 +825,11 @@ export class ChatbotService {
     if (color_id) filters.color_ids = [color_id];
 
     try {
-      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters) as any[];
 
       if (furnitureResult.length === 0 && category_id) {
         const fallbackFilters = { category_ids: [category_id], color_ids: [] };
-        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters) as any[];
       }
 
       const moreOptions = furnitureResult.filter((f: any) => f.id != shownId);

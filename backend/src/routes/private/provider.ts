@@ -35,8 +35,8 @@ const router = Router();
 const providerController = new ProviderController();
 
 router.get('/', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviders);
-router.get('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviderById); 
-router.put( '/:id/enable', authMiddleware, authorize([UserRole.ADMIN]), providerController.enableProvider); 
+router.get('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.getProviderById);
+router.put('/:id/enable', authMiddleware, authorize([UserRole.ADMIN]), providerController.enableProvider);
 router.put('/:id/disable', authMiddleware, authorize([UserRole.ADMIN]), providerController.disableProvider);
 router.put('/:id/visible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderVisible);
 router.put('/:id/invisible', authMiddleware, authorize([UserRole.ADMIN]), providerController.makeProviderInvisible);

@@ -74,9 +74,9 @@ export class FurnitureService {
     return result.rows.length > 0;
   }
 
-  async getAllFurniture() {
+  async getAllFurniture(page?: number, limit?: number) {
     try {
-      const result = await pool.query(`
+      let query = `
           SELECT DISTINCT 
               f.id, 
               f.name, 
@@ -97,8 +97,33 @@ export class FurnitureService {
           INNER JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
+          INNER JOIN Color cl ON f.color_id = cl.id`;
+
+      if (page && limit) {
+        const offset = (page - 1) * limit;
+
+        // Count query
+        const countQueryResult = await pool.query(`SELECT COUNT(DISTINCT f.id) FROM public.furniture f 
+          INNER JOIN Step s ON s.furniture_id = f.id
+          INNER JOIN Category c ON f.category_id = c.id
+          INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`);
-      return result.rows;
+        const total = parseInt(countQueryResult.rows[0].count, 10);
+
+        query += ` LIMIT $1 OFFSET $2`;
+        const result = await pool.query(query, [limit, offset]);
+
+        return {
+          rows: result.rows,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        };
+      } else {
+        const result = await pool.query(query);
+        return result.rows;
+      }
     } catch (error) {
       console.error('getAllFurniture error:', error);
       throw error;
@@ -241,11 +266,55 @@ export class FurnitureService {
     difficulties?: ('low' | 'medium' | 'high')[];
     provider_ids?: number[];
     category_ids?: number[];
-    color_ids: number[];
+    color_ids?: number[];
     search?: string;
+    page?: number;
+    limit?: number;
   }) {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, search, page, limit } = filters;
+
+      let baseSql = `
+        FROM public.furniture f
+        INNER JOIN Step s ON s.furniture_id = f.id
+        INNER JOIN Category c ON f.category_id = c.id
+        INNER JOIN "User" p ON f.provider_id = p.id
+        INNER JOIN Color cl ON f.color_id = cl.id
+        WHERE 1=1`;
+
+      const params: any[] = [];
+      let paramIndex = 1;
+
+      if (color_ids && color_ids.length > 0) {
+        baseSql += ` AND color_id = ANY($${paramIndex}::int[])`;
+        params.push(color_ids);
+        paramIndex++;
+      }
+
+      if (difficulties && difficulties.length > 0) {
+        baseSql += ` AND difficulty = ANY($${paramIndex}::diff[])`;
+        params.push(difficulties);
+        paramIndex++;
+      }
+
+      if (provider_ids && provider_ids.length > 0) {
+        baseSql += ` AND provider_id = ANY($${paramIndex}::int[])`;
+        params.push(provider_ids);
+        paramIndex++;
+      }
+
+      if (category_ids && category_ids.length > 0) {
+        baseSql += ` AND category_id = ANY($${paramIndex}::int[])`;
+        params.push(category_ids);
+        paramIndex++;
+      }
+
+      if (search && search.trim() !== '') {
+        baseSql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+
       let sql = `
         SELECT DISTINCT 
             f.id, 
@@ -263,48 +332,36 @@ export class FurnitureService {
             f.difficulty,
             f.short_description,
             f.visible
-        FROM public.furniture f
-        INNER JOIN Step s ON s.furniture_id = f.id
-        INNER JOIN Category c ON f.category_id = c.id
-        INNER JOIN "User" p ON f.provider_id = p.id
-        INNER JOIN Color cl ON f.color_id = cl.id
-        WHERE 1=1`;
-      const params: any[] = [];
-      let paramIndex = 1; // Shows the number of parameters used
+        ${baseSql}`;
 
-      if (color_ids && color_ids.length > 0) {
-        sql += ` AND color_id = ANY($${paramIndex}::int[])`;
-        params.push(color_ids);
-        paramIndex++;
+      if (page && limit) {
+        const offset = (page - 1) * limit;
+
+        // Count query - simplified to verify existence
+        // Note: Counting distinct items with joins can be expensive, but necessary here.
+        // Simplified count query:
+        const countSql = `SELECT COUNT(DISTINCT f.id) ${baseSql}`;
+        const countResult = await pool.query(countSql, params);
+        const total = parseInt(countResult.rows[0].count, 10);
+
+        sql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+        params.push(limit, offset);
+
+        const result = await pool.query(sql, params);
+
+        return {
+          rows: result.rows,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        };
+      } else {
+        const result = await pool.query(sql, params);
+        return result.rows;
       }
-
-      if (difficulties && difficulties.length > 0) {
-        sql += ` AND difficulty = ANY($${paramIndex}::diff[])`;
-        params.push(difficulties);
-        paramIndex++;
-      }
-
-      if (provider_ids && provider_ids.length > 0) {
-        sql += ` AND provider_id = ANY($${paramIndex}::int[])`;
-        params.push(provider_ids);
-        paramIndex++;
-      }
-
-      if (category_ids && category_ids.length > 0) {
-        sql += ` AND category_id = ANY($${paramIndex}::int[])`;
-        params.push(category_ids);
-        paramIndex++;
-      }
-
-      if (search && search.trim() !== '') {
-        sql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
-        params.push(`%${search}%`);
-        paramIndex++;
-      }
-
-      const result = await pool.query(sql, params);
-      return result.rows;
     } catch (error) {
+      console.error('Error fetching filtered furniture:', error);
       throw new Error('Error fetching furniture parts')
     }
   }

@@ -13,7 +13,7 @@ import { Modal } from '../modal/modal';
 })
 export class GestionMuebles implements OnInit, OnChanges {
   @Input() searchText: string = '';
-  
+
   furniture: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 6;
@@ -37,6 +37,9 @@ export class GestionMuebles implements OnInit, OnChanges {
   // Opciones para los selects
   categories: any[] = [];
   colors: any[] = [];
+  providers: any[] = []; // Lista de proveedores para el select
+  selectedProviderId: number | null = null; // Filtro de proveedor seleccionado
+
   difficulties = [
     { value: 'low', label: 'Baja' },
     { value: 'medium', label: 'Media' },
@@ -53,12 +56,16 @@ export class GestionMuebles implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['searchText']) {
       this.currentPage = 1;
+      this.fetchFurniture(); // Ensure fetch is called on search text change if dealing with server-side filter
     }
   }
 
   ngOnInit() {
     this.loadCategories();
     this.loadColors();
+    if (this.authService.getCurrentUser()?.role === 'admin') {
+      this.loadProviders();
+    }
   }
 
   loadCategories() {
@@ -83,29 +90,82 @@ export class GestionMuebles implements OnInit, OnChanges {
     );
   }
 
+  loadProviders() {
+    this.apiService.getProviders(1, 1000).subscribe( // Loading all providers for dropdown
+      (response) => {
+        this.providers = response.data || [];
+      },
+      (error) => {
+        console.error('Error loading providers:', error);
+      }
+    );
+  }
+
+  onProviderChange() {
+    this.currentPage = 1;
+    this.fetchFurniture();
+  }
+
   fetchFurniture() {
     if (!this.currentUser) return;
 
-    // Si es admin, obtener todos los muebles
+    // Si es admin
     if (this.currentUser.role === 'admin') {
-      this.apiService.getAllFurniture().subscribe(
-        (response) => {
-          console.log('All furniture fetched successfully:', response);
-          this.furniture = response.data || [];
-          this.totalItems = this.furniture.length;
-        },
-        (error) => {
-          console.error('Error fetching all furniture:', error);
-        }
-      );
-    } 
+      if (this.selectedProviderId) {
+        // Si hay un proveedor seleccionado, filtrar por él (paginado)
+        this.apiService.getFilteredFurniture({
+          provider_ids: [this.selectedProviderId],
+          page: this.currentPage,
+          limit: this.itemsPerPage,
+          search: this.searchText
+        }).subscribe(
+          (response) => {
+            console.log('Filtered furniture fetched successfully:', response);
+            this.furniture = response.data || [];
+            if (response.meta) {
+              this.totalItems = response.meta.total;
+            } else {
+              this.totalItems = this.furniture.length;
+            }
+          },
+          (error) => {
+            console.error('Error fetching filtered furniture:', error);
+          }
+        );
+      } else {
+        // Si no, obtener todos (paginado)
+        this.apiService.getAllFurniture(this.currentPage, this.itemsPerPage).subscribe(
+          (response) => {
+            console.log('All furniture fetched successfully:', response);
+            this.furniture = response.data || [];
+            if (response.meta) {
+              this.totalItems = response.meta.total;
+            } else {
+              this.totalItems = this.furniture.length;
+            }
+          },
+          (error) => {
+            console.error('Error fetching all furniture:', error);
+          }
+        );
+      }
+    }
     // Si es proveedor, obtener solo sus muebles
     else if (this.currentUser.role === 'provider') {
-      this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe(
+      this.apiService.getFilteredFurniture({
+        provider_ids: [this.currentUser.id],
+        page: this.currentPage,
+        limit: this.itemsPerPage,
+        search: this.searchText
+      }).subscribe(
         (response) => {
           console.log('Provider furniture fetched successfully:', response);
           this.furniture = response.data || [];
-          this.totalItems = this.furniture.length;
+          if (response.meta) {
+            this.totalItems = response.meta.total;
+          } else {
+            this.totalItems = this.furniture.length;
+          }
         },
         (error) => {
           console.error('Error fetching provider furniture:', error);
@@ -115,25 +175,17 @@ export class GestionMuebles implements OnInit, OnChanges {
   }
 
   get filteredFurniture() {
-    if (!this.searchText || this.searchText.trim() === '') {
-      return this.furniture;
-    }
-    
-    const search = this.searchText.toLowerCase().trim();
-    return this.furniture.filter(item => 
-      item.name?.toLowerCase().includes(search) ||
-      item.reference_number?.toLowerCase().includes(search)
-    );
+    // Al usar paginación en servidor, furniture ya contiene los datos filtrados y paginados
+    return this.furniture;
   }
 
   get paginatedFurniture() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.filteredFurniture.slice(start, end);
+    // Al usar paginación en servidor, furniture ya contiene los datos de la página actual
+    return this.furniture;
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredFurniture.length / this.itemsPerPage);
+    return Math.ceil(this.totalItems / this.itemsPerPage); // Usar totalItems del servidor
   }
 
   get pageNumbers(): number[] {
@@ -143,6 +195,7 @@ export class GestionMuebles implements OnInit, OnChanges {
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.fetchFurniture(); // Fetch al cambiar de página
     }
   }
 
@@ -151,7 +204,7 @@ export class GestionMuebles implements OnInit, OnChanges {
   }
 
   get endItem(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.filteredFurniture.length);
+    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems); // Usar totalItems
   }
 
   toggleVisibility(furniture: any) {

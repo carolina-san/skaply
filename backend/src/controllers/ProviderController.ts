@@ -86,11 +86,21 @@ export class ProviderController {
         );
       }
 
-      const result = await this.providerService.getProviders(filters);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string;
+
+      const result = await this.providerService.getProviders({ ...filters, page, limit, search });
 
       res.status(200).json({
         message: 'Providers fetched successfully',
-        data: result
+        data: result.rows,
+        meta: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages
+        }
       });
 
     } catch (error) {

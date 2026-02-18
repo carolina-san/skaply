@@ -61,13 +61,28 @@ export class FurnitureController {
 
   getAllFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Example database query
-      const result = await this.furnitureService.getAllFurniture();
+      const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
 
-      res.status(200).json({
-        message: 'Database connected successfully',
-        data: result
-      });
+      const result = await this.furnitureService.getAllFurniture(page, limit);
+
+      if (page && limit && 'rows' in result) {
+        res.status(200).json({
+          message: 'Furnitures fetched successfully',
+          data: result.rows,
+          meta: {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            totalPages: result.totalPages
+          }
+        });
+      } else {
+        res.status(200).json({
+          message: 'Furnitures fetched successfully',
+          data: result
+        });
+      }
     } catch (error) {
       console.error('getAllFurniture error:', error);
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch furnitures'));
@@ -114,20 +129,35 @@ export class FurnitureController {
 
   filterFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, search } = req.body;
+      const { difficulties, provider_ids, category_ids, color_ids, search, page, limit } = req.body;
 
       const result = await this.furnitureService.getFilteredFurniture({
         difficulties,
         provider_ids,
         category_ids,
         color_ids,
-        search
+        search,
+        page,
+        limit
       });
 
-      res.status(200).json({
-        message: 'Furniture fetched',
-        data: result
-      });
+      if ((page && limit) && !Array.isArray(result) && 'rows' in result) {
+        res.status(200).json({
+          message: 'Furniture fetched',
+          data: result.rows,
+          meta: {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            totalPages: result.totalPages
+          }
+        });
+      } else {
+        res.status(200).json({
+          message: 'Furniture fetched',
+          data: result
+        });
+      }
 
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', "Unable to fetch filtered furniture"));
