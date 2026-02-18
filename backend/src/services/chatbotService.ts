@@ -546,7 +546,7 @@ export class ChatbotService {
       [
 
         {
-          options: categories.rows.map((c: any) => ({
+          options: categories.map((c: any) => ({
             text: c.name
           })),
           type: 'chips'
@@ -578,7 +578,7 @@ export class ChatbotService {
           type: 'info'
         },
         {
-          options: categories.rows.map((c: any) => ({
+          options: categories.map((c: any) => ({
             text: c.name
           })),
           type: 'chips'

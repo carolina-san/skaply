@@ -20,14 +20,24 @@ export class Export implements OnChanges {
 
   provider: ProviderBasic | undefined;
   category: any | undefined;
+  providerName: string = 'Proveedor';
+  categoryName: string = 'Categoría';
 
   constructor(private apiService: ApiService) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['selectedFurniture'] && this.selectedFurniture) {
       this.fetchSteps(this.selectedFurniture.id);
+      if (this.selectedFurniture.provider_id) {
+        this.fetchProvider(this.selectedFurniture.provider_id);
+      }
+      if (this.selectedFurniture.category_id) {
+        this.fetchCategory(this.selectedFurniture.category_id);
+      }
     } else if (changes['selectedFurniture'] && !this.selectedFurniture) {
       this.selectedFurnitureSteps = [];
+      this.providerName = 'Proveedor';
+      this.categoryName = 'Categoría';
     }
   }
 
@@ -43,24 +53,25 @@ export class Export implements OnChanges {
     });
   }
 
-  getProviderName(id: number): string {
+  fetchProvider(id: number) {
     this.apiService.getProviderById(id).subscribe({
       next: (response) => {
-        this.provider = response;
+        this.provider = response.data;
+        this.providerName = this.provider?.company_name || 'Proveedor';
       },
       error: (error) => console.error('Error fetching provider:', error)
     });
-    return this.provider?.company_name || 'Proveedor';
   }
 
-  getCategoryName(id: number): string {
+  fetchCategory(id: number) {
     this.apiService.getCategoryById(id).subscribe({
       next: (response) => {
-        this.category = response;
+        this.category = response.data;
+        console.log(this.category);
+        this.categoryName = this.category.name || 'Categoría';
       },
       error: (error) => console.error('Error fetching category:', error)
     });
-    return this.category?.name || 'Categoría';
   }
 
   async downloadPDF() {
@@ -197,9 +208,9 @@ export class Export implements OnChanges {
         head: [['Información del producto', '']],
         body: [
           ['Referencia', furniture.reference_number],
-          ['Proveedor', furniture.provider_id ? this.getProviderName(furniture.provider_id) : 'N/A'],
+          ['Proveedor', this.providerName],
           ['Dificultad', this.difficultyLabels[furniture.difficulty]],
-          ['Categoría', this.getCategoryName(furniture.category_id)],
+          ['Categoría', this.categoryName],
         ],
         theme: 'grid',
         margin: { left: 20, right: 20 },

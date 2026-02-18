@@ -4,7 +4,7 @@ export class CategoryService {
     async getAllCategories() {
         try {
             const result = await pool.query('SELECT * FROM public.category')
-            return result;
+            return result.rows;
         } catch (error) {
             throw new Error('No categories available')
         }
@@ -13,7 +13,7 @@ export class CategoryService {
     async getCategoryByName(name: string) {
         try {
             const result = await pool.query('SELECT * FROM public.category WHERE name = $1', [name]);
-            return result;
+            return result.rows[0];
         } catch (error) {
             throw new Error('Category not found');
         }
@@ -22,7 +22,7 @@ export class CategoryService {
     async getCategoryById(id: number) {
         try {
             const result = await pool.query('SELECT * FROM public.category WHERE id = $1', [id]);
-            return result;
+            return result.rows[0];
         } catch (error) {
             throw new Error('Category not found');
         }
