@@ -229,6 +229,7 @@
     [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
-  <app-chatbot></app-chatbot>
+  <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
+  <app-issue-form></app-issue-form>
 </main>
 <app-footer></app-footer>

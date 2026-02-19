@@ -8,7 +8,8 @@ import {
   FilterPanelComponent,
   CardFurniture,
   Modal,
-  Export
+  Export,
+  IssueForm
 } from '../../components';
 import { ApiService } from '../../services/api.service';
 import { FilterSharingService } from '../../services/filter-sharing.service';
@@ -19,13 +20,14 @@ import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-home',
-  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export],
+  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
 
 export class Home implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild(IssueForm) issueForm!: IssueForm;
 
   categories: any[] = [];
   furnitures: Furniture[] = [];
@@ -115,7 +117,7 @@ export class Home implements OnInit {
   }
 
   abrirModalIncidencia() {
-    this.isIncidenciaModalOpen = true;
+    this.issueForm.open();
   }
 
   resetIncidenciaForm() {

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Chatbot } from '../../components/chatbot/chatbot';
 // import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
 import { Modal } from '../../components/modal/modal';
+import { IssueForm } from '../../components/issue-form/issue-form';
 import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
 import { SeoService } from '../../services/seo.service';
@@ -12,11 +13,12 @@ import { SeoService } from '../../services/seo.service';
 @Component({
   selector: 'app-viewer-3d',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, Modal],
+  imports: [CommonModule, RouterModule, FormsModule, Chatbot, GraphicsEngineComponent, Modal, IssueForm],
   templateUrl: './viewer-3d.html'
 })
 export class Viewer3D implements OnInit {
   @ViewChild(GraphicsEngineComponent) graphicsEngine!: GraphicsEngineComponent;
+  @ViewChild(IssueForm) issueForm!: IssueForm;
 
   // Review Modal State
   isReviewModalOpen = signal(false);
@@ -29,9 +31,6 @@ export class Viewer3D implements OnInit {
   furnitureId: string = '';
   furnitureName: string = '';
   furnitureLoading: boolean = false;
-  descripcionIncidencia: string = '';
-  emailIncidencia: string = '';
-  isIncidenciaModalOpen = false;
   isARActive = signal(false);
 
   constructor(
@@ -131,77 +130,14 @@ export class Viewer3D implements OnInit {
     });
   }
 
-  enviarIncidencia() {
-    if (!this.descripcionIncidencia || !this.descripcionIncidencia.trim()) {
-      alert('Por favor, describe la incidencia');
-      return;
-    }
 
-    if (!this.furnitureId) {
-      console.error('furnitureId está vacío o undefined');
-      alert('No se pudo identificar el mueble. Por favor recarga la página.');
-      return;
-    }
 
-    //intentamos obtener el mueble por ID o referencia
-    this.apiService.getFurnitureById(this.furnitureId).subscribe({
-      next: (response) => {
-
-        let furniture = null;
-        if (response && response.data) {
-          if (Array.isArray(response.data) && response.data.length > 0) {
-            furniture = response.data[0];
-          } else if (!Array.isArray(response.data)) {
-            furniture = response.data;
-          }
-        }
-
-        if (!furniture || !furniture.id) {
-          alert('No se encontró el mueble con esa referencia');
-          return;
-        }
-
-        //enviamos la incidencia con el ID numérico del mueble
-        const issue = {
-          description: this.descripcionIncidencia.trim(),
-          date: new Date().toISOString(),
-          user_email: this.emailIncidencia.trim() || 'anonimo@lynk.com'
-        };
-
-        this.apiService.postIssue(furniture.id, issue).subscribe({
-          next: (response) => {
-            console.log('Incidencia enviada:', response);
-            alert('Incidencia reportada correctamente. Te contactaremos al email proporcionado.');
-            this.resetIncidenciaForm();
-          },
-          error: (err) => {
-            console.error('Error al enviar incidencia:', err);
-            alert('Error al reportar la incidencia. Inténtalo de nuevo.');
-          }
-        });
-      },
-      error: (err) => {
-        console.error('Error al buscar mueble:', err);
-        alert('No se encontró el mueble. Verifica la referencia.');
-      }
-    });
-  }
 
   abrirModalIncidencia() {
     if (!this.furnitureId) {
       console.warn('Advertencia: furnitureId está vacío al abrir modal');
     }
-    this.isIncidenciaModalOpen = true;
-  }
-
-  resetIncidenciaForm() {
-    this.descripcionIncidencia = '';
-    this.emailIncidencia = '';
-    this.isIncidenciaModalOpen = false;
-  }
-
-  isDescripcionValida(): boolean {
-    return !!(this.descripcionIncidencia && this.descripcionIncidencia.trim().length > 0);
+    this.issueForm.open();
   }
 
   // Array de modelos disponibles

@@ -169,14 +169,21 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         handled = true;
                     }
                     const payload = m.payload;
+                    console.log(payload);
                     if (payload?.fields?.redirect) {
+                        console.log("Hay redirect", payload.fields.redirect);
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
                                 window.location.href = "/register";
 
 
                             }
-                        }, 4000);
+                            if (payload.fields.redirect.stringValue === "issue.form") {
+                                console.log("Ha entrado");
+                                this.abrirIncidencia();
+
+                            }
+                        }, 2000);
                         handled = true;
                     }
                     else if (payload?.fields?.action?.stringValue === "filter.by.category") {

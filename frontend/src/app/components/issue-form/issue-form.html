@@ -1,0 +1,51 @@
+<app-modal [open]="isOpen()" (openChange)="isOpen.set($event)">
+    <div class="p-6 sm:p-8 space-y-6">
+
+        <h2 class="text-3xl font-bold text-marron-oscuro text-center sm:text-left">
+            Reportar Incidencia
+        </h2>
+
+        <!-- formulario incidencia (descripcion e email) -->
+        <form (ngSubmit)="enviarIncidencia()" #incidenciaForm="ngForm" class="space-y-5">
+
+            <div class="space-y-2">
+                <label for="reference" class="block text-marron-oscuro font-medium">Referencia del mueble:</label>
+                <input id="reference" type="text" name="reference" [ngModel]="furnitureReference()"
+                    (ngModelChange)="furnitureReference.set($event)" required placeholder="Ej: 101"
+                    class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition disabled:bg-gray-100 disabled:opacity-70">
+            </div>
+
+            <div class="space-y-2">
+                <label for="descripcion" class="block text-marron-oscuro font-medium">Descripción de la
+                    incidencia:</label>
+                <textarea id="descripcion" name="descripcion" [ngModel]="descripcionIncidencia()"
+                    (ngModelChange)="descripcionIncidencia.set($event)" required rows="4"
+                    placeholder="Describe el problema que encontraste..."
+                    class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+        </textarea>
+            </div>
+
+            <div class="space-y-2">
+                <label for="email" class="block text-marron-oscuro font-medium">Email (opcional):</label>
+                <input id="email" type="email" name="email" [ngModel]="emailIncidencia()"
+                    (ngModelChange)="emailIncidencia.set($event)" placeholder="ejemplo@email.com"
+                    class="w-full p-3 rounded-lg border border-gray-300 opacity-50 bg-white focus:outline-none focus:ring-2 focus:ring-marron-oscuro transition">
+                <p class="text-xs text-marron-oscuro pt-2">
+                    Si deseas recibir respuesta sobre esta incidencia.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3">
+                <button type="button" (click)="closeModal()"
+                    class="px-4 py-2 rounded-lg bg-azul-claro text-marron-oscuro hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-marron-oscuro text-white hover:bg-marron-claro transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    [disabled]="!isDescripcionValida() || isSubmitting()">
+                    {{ isSubmitting() ? 'Enviando...' : 'Enviar' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-modal>
