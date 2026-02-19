@@ -16,7 +16,7 @@ export class GestionMuebles implements OnInit, OnChanges {
 
   furniture: any[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 6;
+  itemsPerPage: number = 8;
   totalItems: number = 0;
   currentUser: User | null = null;
 

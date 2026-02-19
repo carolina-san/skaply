@@ -1,11 +1,10 @@
 <div class="w-full h-full bg-beige flex flex-col">
 
   <!-- Filtro de Proveedor (Solo Admin) -->
-  <div *ngIf="currentUser?.role === 'admin'" class="px-8 pt-4 pb-2">
-    <div class="flex items-center gap-3">
-      <label class="text-marron-oscuro font-medium text-sm">Filtrar por proveedor:</label>
+  <div *ngIf="currentUser?.role === 'admin'" class="pt-2 pb-2">
+    <div class="flex flex-row items-center justify-between ">
       <select [(ngModel)]="selectedProviderId" (change)="onProviderChange()"
-        class="px-4 py-2 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-2 focus:ring-azul-claro">
+        class="px-2 py-1.5 mr-3 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro">
         <option [ngValue]="null">Todos los proveedores</option>
         <option *ngFor="let provider of providers" [value]="provider.id">
           {{ provider.company_name }}
@@ -28,8 +27,8 @@
 
   <!-- tabla muebles -->
   <div *ngIf="filteredFurniture.length > 0 || !searchText"
-    class="mx-8 mt-4 bg-white rounded-3xl overflow-hidden flex-shrink-0">
-    <div class="grid grid-cols-3 bg-azul-claro px-3 py-2.5 font-semibold">
+    class=" mt-2 bg-white rounded-2xl overflow-hidden flex-shrink-0">
+    <div class="grid grid-cols-3 bg-azul-claro px-5 py-2 font-semibold">
       <div>Nombre</div>
       <div>Referencia</div>
       <div class="text-center">Acciones</div>
@@ -37,7 +36,7 @@
 
     <div>
       <div *ngFor="let item of paginatedFurniture"
-        class="grid grid-cols-3 px-3 py-1 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+        class="grid grid-cols-3 px-3 border-b border-gray-200 items-center hover:bg-gray-50 transition">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
             <img *ngIf="item.image_url" [src]="item.image_url" [alt]="item.name" class="w-full h-full object-cover" />
@@ -54,20 +53,20 @@
         <div class="text-gray-600 font-mono text-xs">{{ item.reference_number }}</div>
         <div class="flex justify-center gap-2 text-gray-600">
           <button class="btn-acciones" (click)="toggleVisibility(item)">
-            <svg *ngIf="item.visible" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960"
-              width="20px" fill="#000000">
+            <svg *ngIf="item.visible" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960"
+              width="18px" fill="#000000">
               <path
                 d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-134 0-244.5-72T61-462q-5-9-7.5-18.5T51-500q0-10 2.5-19.5T61-538q64-118 174.5-190T480-800q134 0 244.5 72T899-538q5 9 7.5 18.5T909-500q0 10-2.5 19.5T899-462q-64 118-174.5 190T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z" />
             </svg>
-            <svg *ngIf="!item.visible" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960"
-              width="20px" fill="#000000">
+            <svg *ngIf="!item.visible" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960"
+              width="18px" fill="#000000">
               <path
                 d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z" />
             </svg>
             {{ item.visible ? 'Ocultar' : 'Mostrar' }}
           </button>
           <button class="btn-acciones" (click)="openEditModal(item)">
-            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#000000">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#000000">
               <path
                 d="M560-120v-66q0-8 3-15.5t9-13.5l209-208q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L695-92q-6 6-13.5 9T666-80h-66q-17 0-28.5-11.5T560-120Zm300-223-37-37 37 37ZM620-140h38l121-122-37-37-122 121v38ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h287q16 0 30.5 6t25.5 17l194 194q11 11 17 25.5t6 30.5v57q0 17-11.5 28.5T760-510q-17 0-28.5-11.5T720-550v-50H560q-17 0-28.5-11.5T520-640v-160H240v640h200q17 0 28.5 11.5T480-120q0 17-11.5 28.5T440-80H240Zm0-80v-640 640Zm521-121-19-18 37 37-18-19Z" />
             </svg>Editar
@@ -170,7 +169,7 @@
 
   <!-- Paginación fija en la parte inferior -->
   <div *ngIf="filteredFurniture.length > 0 || !searchText"
-    class="flex justify-end items-center mt-6 mx-8 gap-4 flex-shrink-0 pb-6">
+    class="flex justify-end items-center mt-6  gap-4 flex-shrink-0 pb-6">
     <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
 
     <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
