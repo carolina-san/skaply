@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Modal } from '../modal/modal';
 
@@ -10,65 +10,60 @@ import { Modal } from '../modal/modal';
     imports: [CommonModule, FormsModule, Modal],
     templateUrl: './issue-form.html'
 })
-export class IssueForm {
+export class IssueForm implements OnChanges {
+
     @Input() furnitureId: string = '';
     @Output() close = new EventEmitter<void>();
+    @ViewChild('incidenciaForm') incidenceForm!: NgForm;
 
     isOpen = signal(false);
-    descripcionIncidencia = signal('');
-    emailIncidencia = signal('');
     isSubmitting = signal(false);
+    submitStatus = signal<'idle' | 'success' | 'error'>('idle');
+    submitMessage = signal('');
 
-    furnitureReference = signal('');
+    referenceError = signal('');
+    currentRef = '';
 
     constructor(private apiService: ApiService) { }
 
-    open() {
-        this.isOpen.set(true);
-        if (this.furnitureId) {
-            this.furnitureReference.set(this.furnitureId);
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['furnitureId']) {
+            this.currentRef = this.furnitureId || '';
         }
     }
 
+    // Abrir modal
+    open() {
+        this.isOpen.set(true);
+        this.referenceError.set('');
+        this.submitStatus.set('idle');
+        this.submitMessage.set('');
+    }
+
+    // Cerrar modal
     closeModal() {
         this.isOpen.set(false);
         this.close.emit();
     }
 
-    resetForm() {
-        this.descripcionIncidencia.set('');
-        this.emailIncidencia.set('');
-        // No reseteamos furnitureReference si viene por input, pero si es manual quizás sí?
-        // Mejor mantener la logica de open(): si hay input, se pone.
-        if (!this.furnitureId) {
-            this.furnitureReference.set('');
-        }
-        this.isSubmitting.set(false);
+    clearModal() {
+        this.incidenceForm?.resetForm();
+        this.referenceError.set('');
+        this.submitStatus.set('idle');
+        this.submitMessage.set('');
+        this.closeModal();
     }
 
-    isDescripcionValida(): boolean {
-        return !!(this.descripcionIncidencia() && this.descripcionIncidencia().trim().length > 0 && this.furnitureReference() && this.furnitureReference().trim().length > 0);
-    }
-
-    enviarIncidencia() {
-        if (!this.isDescripcionValida()) {
-            alert('Por favor, completa todos los campos requeridos');
+    checkReference(ref: string | null | undefined) {
+        if (!ref || !ref.trim()) {
+            this.referenceError.set('');
             return;
         }
 
-        const ref = this.furnitureReference();
-        if (!ref) {
-            alert('Por favor indica la referencia del mueble.');
-            return;
-        }
-
-        this.isSubmitting.set(true);
-
-        // Intentamos obtener el mueble por ID o referencia para asegurar que existe y obtener su ID numérico si es necesario
         this.apiService.getFurnitureById(ref).subscribe({
             next: (response) => {
                 let furniture = null;
-                if (response && response.data) {
+                if (response?.data) {
                     if (Array.isArray(response.data) && response.data.length > 0) {
                         furniture = response.data[0];
                     } else if (!Array.isArray(response.data)) {
@@ -76,35 +71,90 @@ export class IssueForm {
                     }
                 }
 
-                if (!furniture || !furniture.id) {
-                    alert('No se encontró el mueble con esa referencia');
+                if (!furniture?.id) {
+                    this.referenceError.set('Mueble no encontrado');
+                } else {
+                    this.referenceError.set('');
+                }
+            },
+            error: () => {
+                this.referenceError.set('Esa referencia no existe');
+            }
+        });
+    }
+
+    enviarIncidencia(form: NgForm) {
+
+        if (form.invalid) {
+            Object.values(form.controls).forEach(control => {
+                control.markAsTouched();
+            });
+            return;
+        }
+
+        this.isSubmitting.set(true);
+        this.submitStatus.set('idle');
+        this.submitMessage.set('');
+
+        const reference = form.value.reference?.trim();
+        const descripcion = form.value.descripcion?.trim();
+        const email = form.value.email?.trim() || 'skaply.lynk@gmail.com';
+
+        this.apiService.getFurnitureById(reference).subscribe({
+            next: (response) => {
+
+                let furniture = null;
+
+                if (response?.data) {
+                    if (Array.isArray(response.data) && response.data.length > 0) {
+                        furniture = response.data[0];
+                    } else if (!Array.isArray(response.data)) {
+                        furniture = response.data;
+                    }
+                }
+
+                if (!furniture?.id) {
                     this.isSubmitting.set(false);
+                    this.submitStatus.set('error');
+                    this.submitMessage.set('No se encontró el mueble. Verifica la referencia.');
                     return;
                 }
 
                 const issue = {
-                    description: this.descripcionIncidencia().trim(),
+                    description: descripcion,
                     date: new Date().toISOString(),
-                    user_email: this.emailIncidencia().trim() || 'anonimo@lynk.com'
+                    user_email: email
                 };
 
                 this.apiService.postIssue(furniture.id, issue).subscribe({
-                    next: (response) => {
-                        console.log('Incidencia enviada:', response);
-                        alert('Incidencia reportada correctamente. Te contactaremos al email proporcionado.');
-                        this.resetForm();
-                        this.closeModal();
+                    next: (res) => {
+                        console.log('Incidencia enviada:', res);
+
+                        this.submitStatus.set('success');
+                        this.submitMessage.set('Incidencia enviada correctamente.');
+                        this.isSubmitting.set(false);
+
+                        // Opcional: Cerrar automáticamente después de un tiempo
+                        setTimeout(() => {
+                            if (this.isOpen()) {
+                                form.resetForm();
+                                this.currentRef = this.furnitureId || '';
+                                this.closeModal();
+                            }
+                        }, 2000);
                     },
                     error: (err) => {
                         console.error('Error al enviar incidencia:', err);
-                        alert('Error al reportar la incidencia. Inténtalo de nuevo.');
+                        this.submitStatus.set('error');
+                        this.submitMessage.set('Error al reportar la incidencia. Inténtalo de nuevo.');
                         this.isSubmitting.set(false);
                     }
                 });
             },
             error: (err) => {
                 console.error('Error al buscar mueble:', err);
-                alert('No se encontró el mueble. Verifica la referencia.');
+                this.submitStatus.set('error');
+                this.submitMessage.set('No se encontró el mueble. Verifica la referencia.');
                 this.isSubmitting.set(false);
             }
         });
