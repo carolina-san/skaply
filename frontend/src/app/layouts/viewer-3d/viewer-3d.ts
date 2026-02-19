@@ -32,6 +32,7 @@ export class Viewer3D implements OnInit {
   furnitureName: string = '';
   furnitureLoading: boolean = false;
   isARActive = signal(false);
+  currentRoute: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -41,6 +42,7 @@ export class Viewer3D implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.currentRoute = this.router.url;
     this.seo.setSeo({
       title: `Visualizador 3D de Muebles - Skäply`,
       description: `Visualiza muebles en 3D, pruébalos en realidad aumentada y reporta problemas directamente desde Skäply.`,
@@ -140,6 +142,19 @@ export class Viewer3D implements OnInit {
     this.issueForm.open();
   }
 
+  finMontaje() {
+    if (this.currentRoute.includes('viewer-3d')) {
+      this.apiService.resetAssembly().subscribe({
+        next: (res) => {
+          console.log("Montaje finalizado:", res);
+        },
+        error: (err) => {
+          console.error("Error finalizando montaje:", err);
+        }
+      });
+    }
+  }
+
   // Array de modelos disponibles
   private modelPaths = [
     '/assets/models/EKET_70332124_35x25x35.glb',
@@ -200,6 +215,7 @@ export class Viewer3D implements OnInit {
         this.closeReviewModal();
         alert('¡Gracias por tu reseña!');
         // Redirigir al catálogo después de enviar
+        this.finMontaje();
         this.router.navigate(['/catalogo']);
       },
       error: (error) => {
@@ -213,6 +229,7 @@ export class Viewer3D implements OnInit {
 
   skipReview(): void {
     this.closeReviewModal();
+    this.finMontaje();
     this.router.navigate(['/catalogo']);
   }
 

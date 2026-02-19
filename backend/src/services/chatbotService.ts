@@ -312,13 +312,13 @@ export class ChatbotService {
       const furniture = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
       const furnitureData = await this.furnitureService.getFurnitureById(furniture);
 
-      if (furnitureData.rows.length === 0) {
+      if (furnitureData.length === 0) {
         return {
           fulfillmentText: `No encontré el mueble con referencia "${furnitureRef}".`
         };
       }
 
-      const furnitureDetails = furnitureData.rows[0];
+      const furnitureDetails = furnitureData;
       const difficulty = await this.furnitureService.getFurnitureDifficulty(furniture);
 
       return {
@@ -716,8 +716,8 @@ export class ChatbotService {
     }
     if (color) {
       const colorResult = await this.colorService.getColorByName(color);
-      if (colorResult.length > 0) {
-        color_id = colorResult[0].id;
+      if (colorResult) {
+        color_id = colorResult.id;
       }
     }
     const filters: any = {};
@@ -817,7 +817,7 @@ export class ChatbotService {
     if (color) {
       const colorResult = await this.colorService.getColorByName(color);
       if (colorResult.length > 0) {
-        color_id = colorResult[0].id;
+        color_id = colorResult.id;
       }
     }
     const filters: any = {};

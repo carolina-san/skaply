@@ -333,7 +333,7 @@ export class FurnitureService {
             f.short_description,
             f.visible
         ${baseSql}`;
-
+      console.log(sql);
       if (page && limit) {
         const offset = (page - 1) * limit;
 
