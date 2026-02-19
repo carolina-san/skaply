@@ -14,7 +14,7 @@
 
   <!-- tabla proveedores -->
   <div *ngIf="totalItems > 0 || !searchText" class="mx-8 mt-4 bg-white rounded-3xl overflow-hidden flex-shrink-0">
-    <div class="grid grid-cols-3 bg-azul-claro px-8 py-4 font-semibold text-marron-oscuro">
+    <div class="grid grid-cols-3 bg-azul-claro px-3 py-2.5 font-semibold text-marron-oscuro">
       <div>Nombre de empresa</div>
       <div>Fecha alta</div>
       <div class="text-center">Acciones</div>
@@ -22,7 +22,7 @@
 
     <div>
       <div *ngFor="let provider of paginatedProviders"
-        class="grid grid-cols-3 px-8 py-2 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+        class="grid grid-cols-3 px-3 py-1 border-b border-gray-200 items-center hover:bg-gray-50 transition">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
             <img *ngIf="provider.image_url" [src]="provider.image_url" [alt]="provider.company_name"
