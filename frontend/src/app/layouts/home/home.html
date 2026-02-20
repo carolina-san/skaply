@@ -167,11 +167,11 @@
 
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full h-full md:max-h-[50vh]">
+    <div class="flex flex-col sm:flex-row w-full h-full md:max-h-[50vh] overflow-hidden">
       <!-- IMAGEN -->
-      <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0">
+      <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0 overflow-hidden">
         <img [src]="selectedFurniture?.image_url" loading="lazy"
-          class="w-full h-full sm:h-auto object-cover aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
+          class="w-full h-full sm:h-auto max-h-[40vh] md:max-h-full object-cover aspect-[4/4] sm:aspect-auto rounded-tl-xl rounded-tr-xl sm:rounded-bl-xl sm:rounded-tr-none">
       </div>
       <!-- TEXTO -->
       <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full overflow-y-auto flex-1">
