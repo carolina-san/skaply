@@ -133,21 +133,44 @@ export class GestionMuebles implements OnInit, OnChanges {
           }
         );
       } else {
-        // Si no, obtener todos (paginado)
-        this.apiService.getAllFurniture(this.currentPage, this.itemsPerPage).subscribe(
-          (response) => {
-            console.log('All furniture fetched successfully:', response);
-            this.furniture = response.data || [];
-            if (response.meta) {
-              this.totalItems = response.meta.total;
-            } else {
-              this.totalItems = this.furniture.length;
+        // Si no hay provider en concreto
+        if (this.searchText) {
+          // Si hay texto de búsqueda, usar filter
+          this.apiService.getFilteredFurniture({
+            page: this.currentPage,
+            limit: this.itemsPerPage,
+            search: this.searchText
+          }).subscribe(
+            (response) => {
+              console.log('Filtered all furniture fetched successfully:', response);
+              this.furniture = response.data || [];
+              if (response.meta) {
+                this.totalItems = response.meta.total;
+              } else {
+                this.totalItems = this.furniture.length;
+              }
+            },
+            (error) => {
+              console.error('Error fetching filtered all furniture:', error);
             }
-          },
-          (error) => {
-            console.error('Error fetching all furniture:', error);
-          }
-        );
+          );
+        } else {
+          // Si no, obtener todos (paginado)
+          this.apiService.getAllFurniture(this.currentPage, this.itemsPerPage).subscribe(
+            (response) => {
+              console.log('All furniture fetched successfully:', response);
+              this.furniture = response.data || [];
+              if (response.meta) {
+                this.totalItems = response.meta.total;
+              } else {
+                this.totalItems = this.furniture.length;
+              }
+            },
+            (error) => {
+              console.error('Error fetching all furniture:', error);
+            }
+          );
+        }
       }
     }
     // Si es proveedor, obtener solo sus muebles
