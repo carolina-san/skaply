@@ -129,13 +129,14 @@ export class FurnitureController {
 
   filterFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, search, page, limit } = req.body;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = req.body;
 
       const result = await this.furnitureService.getFilteredFurniture({
         difficulties,
         provider_ids,
         category_ids,
         color_ids,
+        visible,
         search,
         page,
         limit

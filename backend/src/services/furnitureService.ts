@@ -267,12 +267,13 @@ export class FurnitureService {
     provider_ids?: number[];
     category_ids?: number[];
     color_ids?: number[];
+    visible?: boolean;
     search?: string;
     page?: number;
     limit?: number;
   }) {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, search, page, limit } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = filters;
 
       let baseSql = `
         FROM public.furniture f
@@ -315,6 +316,12 @@ export class FurnitureService {
         paramIndex++;
       }
 
+      if (visible !== null && visible !== undefined) {
+        baseSql += ` AND f.visible = $${paramIndex}`;
+        params.push(visible);
+        paramIndex++;
+      }
+
       let sql = `
         SELECT DISTINCT 
             f.id, 
@@ -336,10 +343,6 @@ export class FurnitureService {
       console.log(sql);
       if (page && limit) {
         const offset = (page - 1) * limit;
-
-        // Count query - simplified to verify existence
-        // Note: Counting distinct items with joins can be expensive, but necessary here.
-        // Simplified count query:
         const countSql = `SELECT COUNT(DISTINCT f.id) ${baseSql}`;
         const countResult = await pool.query(countSql, params);
         const total = parseInt(countResult.rows[0].count, 10);
