@@ -1,10 +1,14 @@
-<div class="flex items-center justify-center space-x-2 border-1 border-beige rounded-full p-1">
+<div class="flex items-center justify-center space-x-0.5 border-1 border-beige rounded-full p-0.5 text-xs">
     <button
-        class="px-4 py-2 active:bg-azul-claro active:text-marron-oscuro text-beige text-sm rounded-full transition-all duration-200 transform flex items-center space-x-1">
+        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-beige text-xs rounded-full transition-all duration-200 transform flex items-center space-x-1"
+        [ngClass]="{ 'bg-azul-claro text-marron-oscuro': selectedEngine === 'threejs' }"
+        (click)="engineChanged.emit('threejs')">
         Threejs
     </button>
     <button
-        class="px-4 py-2 active:bg-azul-claro active:text-marron-oscuro text-beige text-sm  rounded-full transition-all duration-200 transform flex items-center space-x-1">
+        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-beige text-xs  rounded-full transition-all duration-200 transform flex items-center space-x-1"
+        [ngClass]="{ 'bg-azul-claro text-marron-oscuro': selectedEngine === 'webgl' }"
+        (click)="engineChanged.emit('webgl')">
         WebGL
     </button>
 </div>

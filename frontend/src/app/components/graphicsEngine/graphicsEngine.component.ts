@@ -1,6 +1,6 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
@@ -27,7 +27,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
-
+  @Output() engineChanged = new EventEmitter<string>();
+  selectedEngine = 'threejs';
   constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) {
     effect(() => {
       // Track changes to logical step
