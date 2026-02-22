@@ -1,29 +1,31 @@
 <header [ngClass]="{
     'fixed w-full top-0 left-0 transition-all duration-300 ': true,
-    'backdrop-blur-lg': currentRoute !== '/admin' && currentRoute !== '/provider',
+    'backdrop-blur-lg': currentRoute === '/catalogo' || currentRoute === '/',
     'header-expanded': !scrolled,
     'header-compact': scrolled,
-    'header-mini': currentRoute === '/admin' || currentRoute === '/provider'
+    'header-mini': currentRoute === '/admin' || currentRoute === '/provider',
+    'header-assembly': isViewer3D 
   }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
-  <button *ngIf="canGoBack()" (click)="goBack()"
-    class="absolute w-6 h-6 left-5 md:left-10 text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
-    <span class="material-symbols-rounded">
+  <div class="flex items-center gap-2">
+    <button *ngIf="canGoBack()" (click)="goBack()"
+      class="text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="m382-480 294 294q15 15 14.5 35T675-116q-15 15-35 15t-35-15L297-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T676-844q15 15 15 35t-15 35L382-480Z" />
       </svg>
-    </span>
-  </button>
+    </button>
 
-  <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="goHome()">
-    <!-- Logo normal -->
-    <img src="assets/skaply_azul.svg" alt="logo normal"
-      class="w-full h-auto hover:scale-105 transition-all duration-400" [ngClass]="{'logo-normal':isHome}" />
+    <div class="logo-container w-30 md:w-40 lg:w-50 cursor-pointer" (click)="goHome()">
+      <!-- Logo normal -->
+      <img src="assets/skaply_azul.svg" alt="logo normal"
+        class="w-full h-auto hover:scale-105 transition-all duration-400" [ngClass]="{'logo-normal':isHome}" />
 
-    <!-- Logo reducido -->
-    <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
-      class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
+      <!-- Logo reducido -->
+      <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
+        class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
+    </div>
+
   </div>
 
   <!-- Menú si está en la landing -->

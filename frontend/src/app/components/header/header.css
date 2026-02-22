@@ -34,6 +34,6 @@
 }
 
 .header-assembly {
-  @apply w-3/4;
+  @apply w-[75%] px-5;
   /* ancho del header en modo montaje */
 }
