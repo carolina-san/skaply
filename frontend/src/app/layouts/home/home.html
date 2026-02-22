@@ -167,14 +167,18 @@
 
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full h-full md:max-h-[50vh] overflow-hidden">
+    <div class="flex flex-col sm:flex-row w-full h-full max-h-[85vh] sm:max-h-[50vh] overflow-hidden">
       <!-- IMAGEN -->
       <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0 overflow-hidden">
-        <img [src]="selectedFurniture?.image_url" loading="lazy"
-          class="w-full h-full sm:h-auto max-h-[40vh] md:max-h-full object-cover aspect-[4/4] sm:aspect-auto rounded-tl-xl rounded-tr-xl sm:rounded-bl-xl sm:rounded-tr-none">
+        <img [src]="selectedFurniture?.image_url" loading="lazy" class="w-full
+         h-[28vh] sm:h-auto
+         max-h-[220px] sm:max-h-full
+         object-cover
+         rounded-tl-xl rounded-tr-xl
+         sm:rounded-bl-xl sm:rounded-tr-none">
       </div>
       <!-- TEXTO -->
-      <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full overflow-y-auto flex-1">
+      <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full">
         <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2">
           <span class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-bold rounded-full" [ngClass]="{
             'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
