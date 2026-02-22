@@ -106,6 +106,9 @@ export class GestionMuebles implements OnInit, OnChanges {
   }
 
   onProviderChange() {
+    if (this.selectedProviderId === null) {
+      this.filters.provider_ids = [];
+    }
     this.currentPage = 1;
     this.fetchFurniture();
   }
