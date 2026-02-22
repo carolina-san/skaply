@@ -3,7 +3,10 @@
     <div *ngIf="currentUser" class="flex flex-col items-center gap-6 mb-8 w-full">
         <!-- Avatar Placeholder con botón de editar -->
         <div class="relative w-full">
-            <div class="w-full h-35 rounded-xl flex items-center justify-center border border-beige uppercase">
+            <img *ngIf="currentUser.image_url" src="{{ currentUser.image_url }}" alt="Avatar"
+                class="w-full h-35 rounded-xl object-cover">
+            <div *ngIf="!currentUser.image_url"
+                class="w-full h-35 rounded-xl flex items-center justify-center border border-beige uppercase">
                 <svg xmlns="http://www.w3.org/2000/svg" height="45px" viewBox="0 -960 960 960" width="45px"
                     fill="#FFFFFF">
                     <path

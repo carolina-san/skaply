@@ -6,11 +6,12 @@ import { Landing } from './layouts/landing/landing';
 import { Motor } from './layouts/motor/motor';
 import { Register } from './layouts/register/register';
 import { Login } from './layouts/login/login';
-import { AdminProfile} from './layouts/admin-profile/admin-profile';
+import { AdminProfile } from './layouts/admin-profile/admin-profile';
 import { Cookies } from './layouts/legal/cookies';
 import { LegalNotice } from './layouts/legal/legal-notice';
 import { Privacy } from './layouts/legal/privacy';
 import { ProviderProfile } from './layouts/provider-profile/provider-profile';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
     { path: '', component: Landing },
@@ -20,8 +21,8 @@ export const routes: Routes = [
     { path: 'register', component: Register },
     { path: 'login', component: Login },
     { path: 'login/success', component: Login }, // Maneja el callback de Google OAuth
-    { path: 'admin', component: AdminProfile },
-    { path: 'provider', component: ProviderProfile },
+    { path: 'admin', component: AdminProfile, canActivate: [roleGuard], data: { roles: ['admin'] } },
+    { path: 'provider', component: ProviderProfile, canActivate: [roleGuard], data: { roles: ['provider'] } },
     { path: 'cookies', component: Cookies },
     { path: 'legal-notice', component: LegalNotice },
     { path: 'privacy', component: Privacy },

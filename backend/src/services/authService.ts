@@ -19,7 +19,7 @@ export class AuthService {
 
   async getUserById(id: number) {
     const result = await pool.query(
-      `SELECT id, email, name, company_name, telephone, role, enabled, registration_status, visible 
+      `SELECT id, email, name, company_name, telephone, role, enabled, registration_status, visible, image_url 
       FROM "User" 
       WHERE id = $1`,
       [id]
