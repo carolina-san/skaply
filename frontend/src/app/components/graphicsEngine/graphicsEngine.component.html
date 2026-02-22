@@ -3,7 +3,7 @@
 
   <!-- AR Permission Overlay -->
   @if (arFlowState() !== 'idle') {
-  <div class="absolute inset-0  flex items-center justify-center backdrop-blur-sm z-80 bg-beige">
+  <div class="absolute inset-0  flex items-center justify-center backdrop-blur-sm z-80 bg-transparent">
     <div
       class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center border bg-beige text-marron-oscuro border-marron-claro border-marron-claro">
       @if (arFlowState() === 'requesting') {
@@ -94,8 +94,8 @@
 
   </header>
 
-  @if (isSmallScreen()) {
-  <button (click)="toggleAR()"
+
+  <button *ngIf="isSmallScreen() && mode() !== 'simulation'" (click)="toggleAR()"
     class="fixed top-24 right-2 flex items-center justify-center gap-1 px-2 py-1 rounded-full text-sm transition-colors z-55 bg-beige text-marron-oscuro hover:bg-marron-claro">
     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -104,7 +104,7 @@
     </svg>
     <span class="text-sm">AR</span>
   </button>
-  }
+
   }
 
   <!-- Canvas Container-->
@@ -202,7 +202,8 @@
 
       <!--Boton volver al inicio-->
       <button *ngIf="mode()==='manual'"
-        class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStep(0)">
+        class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStep(0)"
+        [class.bg-beige-oscuro]="manualStep() === 0">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
           <path
             d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
@@ -285,7 +286,7 @@
       <!--Boton modo final-->
       <button (click)="setMode('final')"
         class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
-        [class.bg-azul-claro]="mode() === 'final'">
+        [class.bg-beige-oscuro]="mode() === 'final'">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
           <path
             d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />

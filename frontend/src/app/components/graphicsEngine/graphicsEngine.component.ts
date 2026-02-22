@@ -226,6 +226,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public setMode(newMode: 'manual' | 'simulation' | 'final'): void {
+    if (this.mode() === 'final' && newMode === 'final') {
+      newMode = 'manual';
+    };
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
