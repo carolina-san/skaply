@@ -1,4 +1,4 @@
-<main class="pt-20 md:pt-35 flex flex-col fondo">
+<main class="pt-20 md:pt-25 flex flex-col fondo">
   <h1 class="sm:text-5xl text-3xl font-bold text-azul-claro mb-3 text-left page-main">Catálogo de Muebles</h1>
   <!-- Barra de búsqueda y filtros -->
   <div class="sticky top-[57px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
@@ -140,7 +140,7 @@
 
   <!-- Grid de muebles-->
   <section *ngIf="furnitures.length > 0"
-    class="grid py-1 md:py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 page-main">
+    class="grid py-1 md:py-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 page-main">
     <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
   </section>

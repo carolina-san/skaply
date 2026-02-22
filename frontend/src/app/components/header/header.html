@@ -1,11 +1,11 @@
 <header [ngClass]="{
-    'fixed w-full top-0 left-0 transition-all duration-300 ': true,
     'backdrop-blur-lg': currentRoute === '/catalogo' || currentRoute === '/',
     'header-expanded': !scrolled,
     'header-compact': scrolled,
     'header-mini': currentRoute === '/admin' || currentRoute === '/provider',
     'header-assembly': isViewer3D 
-  }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
+  }"
+  class="fixed w-full top-0 left-0 transition-all duration-300 z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
   <div class="flex items-center gap-2">
     <button *ngIf="canGoBack()" (click)="goBack()"
@@ -16,7 +16,8 @@
       </svg>
     </button>
 
-    <div class="logo-container w-30 md:w-40 lg:w-50 cursor-pointer" (click)="goHome()">
+    <div class="logo-container w-30 md:w-40 lg:w-50 max-w-50 cursor-pointer" (click)="goHome()"
+      [ngClass]="{'logo-panel':currentRoute === '/admin' || currentRoute === '/provider'}">
       <!-- Logo normal -->
       <img src="assets/skaply_azul.svg" alt="logo normal"
         class="w-full h-auto hover:scale-105 transition-all duration-400" [ngClass]="{'logo-normal':isHome}" />
