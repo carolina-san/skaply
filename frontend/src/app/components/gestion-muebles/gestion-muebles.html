@@ -1,8 +1,8 @@
 <div class="w-full h-full bg-beige flex flex-col">
 
   <!-- Filtro de Proveedor (Solo Admin) -->
-  <div *ngIf="currentUser?.role === 'admin'" class="pt-2 pb-2">
-    <div class="flex flex-row items-center justify-between ">
+  <div class="flex pt-2 pb-2">
+    <div *ngIf="currentUser?.role === 'admin'" class="flex flex-row items-center justify-between ">
       <select [(ngModel)]="selectedProviderId" (change)="onProviderChange()"
         class="px-2 py-1.5 mr-3 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro">
         <option [ngValue]="null">Todos los proveedores</option>
@@ -11,7 +11,29 @@
         </option>
       </select>
     </div>
+    <div class="flex flex-row items-center justify-between ">
+      <select [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()"
+        class="px-2 py-1.5 mr-3 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro">
+        <option [ngValue]="null" [ngClass]="selectedCategoryId === null ? 'hidden' : ''">{{ selectedCategoryId === null
+          ? 'Categorías' : 'Todas las categorías' }}</option>
+        <option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+    <div>
+      <select [(ngModel)]="selectedVisibility" (change)="onVisibilityChange()"
+        class="px-2 py-1.5 mr-3 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro">
+        <option [ngValue]="null" [ngClass]="selectedVisibility === null ? 'hidden' : ''">{{ selectedVisibility === null
+          ? 'Visibilidad' : 'Cualquier visibilidad' }}</option>
+        <option [value]="true">Visible</option>
+        <option [value]="false">Oculto</option>
+      </select>
+    </div>
   </div>
+
+
+
   <!-- Mensaje de no hay resultados -->
   <div *ngIf="filteredFurniture.length === 0 && searchText" class="flex-1 flex items-center justify-center">
     <div class="text-center">

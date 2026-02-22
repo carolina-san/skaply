@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { Modal } from '../modal/modal';
+import { FilterOptions } from '../../types';
 
 @Component({
   selector: 'app-gestion-muebles',
@@ -14,6 +15,7 @@ import { Modal } from '../modal/modal';
 export class GestionMuebles implements OnInit, OnChanges {
   @Input() searchText: string = '';
 
+  filters: FilterOptions = {};
   furniture: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 8;
@@ -39,6 +41,8 @@ export class GestionMuebles implements OnInit, OnChanges {
   colors: any[] = [];
   providers: any[] = []; // Lista de proveedores para el select
   selectedProviderId: number | null = null; // Filtro de proveedor seleccionado
+  selectedCategoryId: number | null = null; // Filtro de categoría seleccionado
+  selectedVisibility: boolean | null = null; // Filtro de visibilidad seleccionado
 
   difficulties = [
     { value: 'low', label: 'Baja' },
@@ -106,95 +110,59 @@ export class GestionMuebles implements OnInit, OnChanges {
     this.fetchFurniture();
   }
 
+  onCategoryChange() {
+    if (!this.selectedCategoryId) {
+      this.filters.category_ids = [];
+    }
+    this.currentPage = 1;
+    this.fetchFurniture();
+  }
+
+  onVisibilityChange() {
+    if (this.selectedVisibility === null) {
+      this.filters.visible = undefined;
+
+    }
+    this.currentPage = 1;
+    this.fetchFurniture();
+  }
+
   fetchFurniture() {
     if (!this.currentUser) return;
-
+    if (this.selectedCategoryId) {
+      this.filters.category_ids = [this.selectedCategoryId];
+    }
+    if (this.selectedVisibility) {
+      this.filters.visible = this.selectedVisibility;
+    }
+    this.filters.page = this.currentPage;
+    this.filters.limit = this.itemsPerPage;
+    this.filters.search = this.searchText;
     // Si es admin
     if (this.currentUser.role === 'admin') {
       if (this.selectedProviderId) {
-        // Si hay un proveedor seleccionado, filtrar por él (paginado)
-        this.apiService.getFilteredFurniture({
-          provider_ids: [this.selectedProviderId],
-          page: this.currentPage,
-          limit: this.itemsPerPage,
-          search: this.searchText
-        }).subscribe(
-          (response) => {
-            console.log('Filtered furniture fetched successfully:', response);
-            this.furniture = response.data || [];
-            if (response.meta) {
-              this.totalItems = response.meta.total;
-            } else {
-              this.totalItems = this.furniture.length;
-            }
-          },
-          (error) => {
-            console.error('Error fetching filtered furniture:', error);
-          }
-        );
-      } else {
-        // Si no hay provider en concreto
-        if (this.searchText) {
-          // Si hay texto de búsqueda, usar filter
-          this.apiService.getFilteredFurniture({
-            page: this.currentPage,
-            limit: this.itemsPerPage,
-            search: this.searchText
-          }).subscribe(
-            (response) => {
-              console.log('Filtered all furniture fetched successfully:', response);
-              this.furniture = response.data || [];
-              if (response.meta) {
-                this.totalItems = response.meta.total;
-              } else {
-                this.totalItems = this.furniture.length;
-              }
-            },
-            (error) => {
-              console.error('Error fetching filtered all furniture:', error);
-            }
-          );
-        } else {
-          // Si no, obtener todos (paginado)
-          this.apiService.getAllFurniture(this.currentPage, this.itemsPerPage).subscribe(
-            (response) => {
-              console.log('All furniture fetched successfully:', response);
-              this.furniture = response.data || [];
-              if (response.meta) {
-                this.totalItems = response.meta.total;
-              } else {
-                this.totalItems = this.furniture.length;
-              }
-            },
-            (error) => {
-              console.error('Error fetching all furniture:', error);
-            }
-          );
-        }
+        this.filters.provider_ids = [this.selectedProviderId];
       }
     }
     // Si es proveedor, obtener solo sus muebles
     else if (this.currentUser.role === 'provider') {
-      this.apiService.getFilteredFurniture({
-        provider_ids: [this.currentUser.id],
-        page: this.currentPage,
-        limit: this.itemsPerPage,
-        search: this.searchText
-      }).subscribe(
-        (response) => {
-          console.log('Provider furniture fetched successfully:', response);
-          this.furniture = response.data || [];
-          if (response.meta) {
-            this.totalItems = response.meta.total;
-          } else {
-            this.totalItems = this.furniture.length;
-          }
-        },
-        (error) => {
-          console.error('Error fetching provider furniture:', error);
-        }
-      );
+      this.filters.provider_ids = [this.currentUser.id];
     }
+    this.apiService.getFilteredFurniture(this.filters).subscribe(
+      (response) => {
+        console.log('Filtered furniture fetched successfully:', response);
+        this.furniture = response.data || [];
+        if (response.meta) {
+          this.totalItems = response.meta.total;
+        } else {
+          this.totalItems = this.furniture.length;
+        }
+      },
+      (error) => {
+        console.error('Error fetching filtered furniture:', error);
+      }
+    );
+
   }
 
   get filteredFurniture() {
@@ -236,6 +204,7 @@ export class GestionMuebles implements OnInit, OnChanges {
     this.apiService.updateFurniture(furniture.id, { visible: newVisibleState }).subscribe(
       (response) => {
         furniture.visible = newVisibleState;
+        this.fetchFurniture();
       },
       (error) => {
         console.error('Error updating visibility:', error);
