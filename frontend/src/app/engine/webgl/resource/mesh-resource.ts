@@ -1,5 +1,6 @@
 import { Resource } from './resource';
 import { Mesh } from '../engine-core/mesh';
+import { TextureResource } from './texture-resource';
 
 // Export type for named mesh
 export type NamedMesh = { name: string; mesh: Mesh };
@@ -123,45 +124,42 @@ export class MeshResource extends Resource {
             const texProp = props?.find((p: any) => p.key === '$tex.file');
             const colorProp = props?.find((p: any) => p.key === '$clr.diffuse');
 
-            const gl = this.gl;
+            const textureResource = new TextureResource(`mat_${i}`, this.gl);
 
             if (texProp && typeof texProp.value === 'string') {
                 try {
-                    const img = new Image();
-                    img.src = `assets/models/${texProp.value}`;
-                    await img.decode();
+                    // Check if it's an embedded texture (usually looks like *0, *1...)
+                    if (texProp.value.startsWith('*') && json.textures) {
+                        const texIndex = parseInt(texProp.value.substring(1));
+                        const texData = json.textures[texIndex];
+                        if (texData && texData.data) {
+                            await textureResource.loadFromBase64(texData.data, texData.formathint || 'png');
+                            this.textures.set(i, textureResource.texture!);
+                            continue;
+                        }
+                    }
 
-                    const texture = gl.createTexture()!;
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-                    gl.generateMipmap(gl.TEXTURE_2D);
-
-                    this.textures.set(i, texture);
+                    // Not embedded or failed to find it in json.textures => load from URL
+                    await textureResource.loadFile(`assets/models/${texProp.value}`);
+                    this.textures.set(i, textureResource.texture!);
                 } catch (e) {
                     console.warn(`No se pudo cargar la textura: ${texProp.value}`, e);
+                    // fallback to white if texture fails
+                    textureResource.loadFromColor(255, 255, 255);
+                    this.textures.set(i, textureResource.texture!);
                 }
             } else if (colorProp && Array.isArray(colorProp.value)) {
                 const c = colorProp.value;
-                const data = new Uint8Array([
+                textureResource.loadFromColor(
                     Math.round(c[0] * 255),
                     Math.round(c[1] * 255),
                     Math.round(c[2] * 255),
-                    Math.round((c[3] ?? 1) * 255),
-                ]);
-
-                const texture = gl.createTexture()!;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-                gl.generateMipmap(gl.TEXTURE_2D);
-
-                this.textures.set(i, texture);
+                    Math.round((c[3] ?? 1) * 255)
+                );
+                this.textures.set(i, textureResource.texture!);
             } else {
-                const data = new Uint8Array([255, 255, 255, 255]);
-                const texture = gl.createTexture()!;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-                gl.generateMipmap(gl.TEXTURE_2D);
-                this.textures.set(i, texture);
+                textureResource.loadFromColor(255, 255, 255);
+                this.textures.set(i, textureResource.texture!);
             }
         }
     }

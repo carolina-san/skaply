@@ -32,11 +32,17 @@ void main() {
     float specularStrength = 0.25;
     vec3 specular = specularStrength * spec * uLightColor;
 
+    // Combine lighting components
     vec3 lighting = ambient + diff * uLightColor + specular;
 
-    vec3 texColor = texture(uDiffuseTexture, vTexCoord).rgb;
+    // Decode texture from sRGB to linear space
+    vec3 texColor = pow(texture(uDiffuseTexture, vTexCoord).rgb, vec3(2.2));
 
+    // Calculate final linear color
     vec3 result = lighting * texColor;
+
+    // Apply gamma correction (compress to sRGB for display)
+    result = pow(result, vec3(1.0 / 2.2));
 
     fragColor = vec4(result, 1.0);
 }

@@ -566,7 +566,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           const len = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
           if (len > 0) {
             const arrowDir = { x: dir.x / len, y: dir.y / len, z: dir.z / len };
-            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, { x: 0, y: 0, z: 0 }, 0.5, 0x00ffff);
+            const arrowLength = 0.6;
+            const originOffset = {
+              x: -arrowDir.x * arrowLength,
+              y: -arrowDir.y * arrowLength + 0.3,
+              z: -arrowDir.z * arrowLength
+            };
+            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
             assemblyPart.object.add(assemblyPart.arrow);
           }
         }
