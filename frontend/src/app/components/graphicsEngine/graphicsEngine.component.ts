@@ -10,7 +10,7 @@ import { Modal } from '../modal/modal';
 import { ActivatedRoute } from '@angular/router'
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
-import { WebGLEngine } from '../../engine/webgl/webglEngine';
+//import { WebGLEngine } from '../../engine/webgl/webglEngine';
 import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../types/furniture.types';
 import { firstValueFrom } from 'rxjs';
 
@@ -149,7 +149,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // Initialize Engine based on signal
     if (this.engineUse() === 'webGL') {
       console.log('Using WebGL Custom Engine');
-      this.engine = new WebGLEngine();
+      //this.engine = new WebGLEngine();
     } else {
       console.log('Using ThreeJS Adapter');
       this.engine = new ThreeEngineAdapter();

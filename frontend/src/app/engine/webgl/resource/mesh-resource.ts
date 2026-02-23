@@ -11,7 +11,6 @@ export class MeshResource extends Resource {
     
     private textures: Map<number, WebGLTexture> = new Map();
 
-    //mesh?: Mesh;
     meshes: Mesh[] = [];
 
     constructor(name: string, private gl: WebGL2RenderingContext) {
@@ -156,49 +155,13 @@ export class MeshResource extends Resource {
         texture?: WebGLTexture
     ): Mesh {
 
-        const gl = this.gl;
-
-        const vao = gl.createVertexArray()!;
-        gl.bindVertexArray(vao);
-
-        // vertices
-        const vbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-        // normals
-        if (normals.length) {
-            const nbo = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-            gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(1);
-            gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-        }
-
-        // texcoords
-        if (texCoords.length) {
-            const tbo = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
-            gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(2);
-            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
-        }
-
-        // indices
-        const ebo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-        gl.bindVertexArray(null);
-
-        return new Mesh({
-            vao,
-            indexCount: indices.length,
-            texture: texture, 
-            indexType: gl.UNSIGNED_INT
-        }, gl);
+    return new Mesh({
+        vertices,
+        normals,
+        texCoords,
+        indices,
+        texture
+    }, this.gl);
     }
 
     getMeshes(): Mesh[] {

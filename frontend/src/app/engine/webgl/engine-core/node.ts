@@ -16,7 +16,7 @@ export class Node {
     private scale: vec3 = vec3.fromValues(1, 1, 1); // local scale
 
     // final transformation (parent x node)
-    private transformMatrix: mat4 = mat4.create();
+    private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
@@ -104,10 +104,14 @@ export class Node {
 
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
 
-    traverse(parentMatrix: mat4, shader: ShaderResource): void { 
+    // duda de si 'parentUpdate' es la solucion limpia para actualizar la mtriz SI EL PADRE ha cambiado su matriz (antes no se contemplaba esto)
+
+    traverse(parentMatrix: mat4, shader: ShaderResource, parentUpdated: boolean): void { 
+        
+        const mustUpdate = this.needsUpdate || parentUpdated;
         
         // create transform matrix
-        if (this.needsUpdate) {
+        if (mustUpdate) {
             const localMatrix = this.computeLocalMatrix();
             mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); 
             this.needsUpdate = false;
@@ -121,7 +125,7 @@ export class Node {
 
         // recursive
         for (const child of this.children) {
-            child.traverse(this.transformMatrix, shader);
+            child.traverse(this.transformMatrix, shader, mustUpdate);
         }
     }
 
