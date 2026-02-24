@@ -123,7 +123,7 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.2;
-        this.controls.minDistance = 3;
+        this.controls.minDistance = 0.5;
         this.controls.maxDistance = 15;
         this.controls.target.set(0, 1, 0);
         this.controls.saveState();
@@ -228,6 +228,26 @@ export class ThreeEngineAdapter extends EngineFacade {
     setCameraProps(position: Vector3, target: Vector3): void {
         this.camera.position.set(position.x, position.y, position.z);
         this.controls.target.set(target.x, target.y, target.z);
+        this.controls.update();
+    }
+
+    rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
+        if (!this.camera || !this.controls) return;
+
+        const target = this.controls.target;
+        // Vector from target to camera
+        const offset = new THREE.Vector3().subVectors(this.camera.position, target);
+
+        // Rotation axis
+        const rotationAxis = new THREE.Vector3();
+        if (axis === 'x') rotationAxis.set(1, 0, 0);
+        else if (axis === 'y') rotationAxis.set(0, 1, 0);
+        else if (axis === 'z') rotationAxis.set(0, 0, 1);
+
+        const angleRadians = angleDegrees * (Math.PI / 180);
+        offset.applyAxisAngle(rotationAxis, angleRadians);
+
+        this.camera.position.copy(target).add(offset);
         this.controls.update();
     }
 

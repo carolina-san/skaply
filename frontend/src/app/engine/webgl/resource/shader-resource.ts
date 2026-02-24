@@ -49,12 +49,12 @@ export class ShaderResource extends Resource {
         this.gl.deleteShader(vertexShader);
         this.gl.deleteShader(fragmentShader);
     }
-    
+
 
     // COMPILE SHADER (PRIVATE, USED TO SHOW ERRORS)
 
     private compileShader(source: string, type: GLenum): WebGLShader {
-        
+
         const shader = this.gl.createShader(type);
         if (!shader) throw new Error("Shader creation failed");
         this.gl.shaderSource(shader, source);
@@ -99,10 +99,16 @@ export class ShaderResource extends Resource {
         if (loc !== null) this.gl.uniform1f(loc, value);
     }
 
-    setVec3(name: string, vec: vec3): void {
+    setVec3(name: string, vec: vec3 | number[]): void {
         if (!this.program) return;
         const loc = this.gl.getUniformLocation(this.program, name);
-        if (loc !== null) this.gl.uniform3fv(loc, vec);
+        if (loc !== null) this.gl.uniform3fv(loc, vec as Float32List);
+    }
+
+    setVec2(name: string, arr: number[]): void {
+        if (!this.program) return;
+        const loc = this.gl.getUniformLocation(this.program, name);
+        if (loc !== null) this.gl.uniform2fv(loc, arr);
     }
 
     setMat4(name: string, mat: mat4): void {

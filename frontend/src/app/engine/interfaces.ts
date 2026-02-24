@@ -50,6 +50,7 @@ export abstract class EngineFacade {
 
     // Camera & Controls
     abstract setCameraProps(position: Vector3, target: Vector3): void;
+    abstract rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void;
     abstract updateControls(): void;
     abstract toggleControls(enable: boolean, autoRotate: boolean): void;
     abstract setControlsAutoRotateSpeed(speed: number): void;

@@ -6,7 +6,8 @@ export interface MeshResource {
     vao: WebGLVertexArrayObject; // buffers, atributes and layout of the vertex
     indexCount: number; // number of vertex/triangles to draw
     texture?: WebGLTexture,
-    indexType?: GLenum
+    indexType?: GLenum,
+    drawMode?: GLenum
 }
 
 export class Mesh extends Entity {
@@ -43,7 +44,8 @@ export class Mesh extends Entity {
         // console.log('INDEX_TYPE:', indexType);
         // console.log('Mesh.draw: indexCount=', this.resource.indexCount, 'vao=', !!this.resource.vao, 'indexType=', indexType);
 
-        gl.drawElements(gl.TRIANGLES, this.resource.indexCount, indexType, 0);
+        const mode = (this.resource as any).drawMode ?? gl.TRIANGLES;
+        gl.drawElements(mode, this.resource.indexCount, indexType, 0);
         gl.bindVertexArray(null);
     }
 }
