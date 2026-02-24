@@ -8,6 +8,7 @@ import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
 import { EngineSwitch } from '../engine-switch/engine-switch';
 import { ActivatedRoute } from '@angular/router'
+import { Modal } from '../modal/modal';
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 import { WebGLEngine } from '../../engine/webgl/webglEngine';
@@ -17,8 +18,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, Modal, FormsModule],
-  imports: [CommonModule, FormsModule, EngineSwitch],
+  imports: [CommonModule, FormsModule, EngineSwitch, Modal],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
@@ -29,93 +29,30 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
-  private engine!: EngineFacade;
+  @Output() engineChanged = new EventEmitter<string>();
 
-  constructor(private apiService: ApiService, private route: ActivatedRoute) {
-    @Output() engineChanged = new EventEmitter<string>();
-    selectedEngine = 'threejs';
-    constructor(private engine: EngineFacade, private apiService: ApiService, private route: ActivatedRoute) {
-      effect(() => {
-        // Track changes to logical step
-        const step = this.currentLogicalStep();
+  furnitureId = input<number | string>();
+  furnitureName = input<string>('');
+  arStateChange = output<boolean>();
+  finished = output<void>();
 
-        // Execute scroll after render
-        setTimeout(() => {
-          this.centerActiveStep();
-        }, 100);
-      });
-    }
+  selectedEngine = 'threejs';
+  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
+  useExternalModel = true;
+  furniture?: Furniture;
 
-    furnitureId = input<number | string>();
-    furnitureName = input<string>('');
-    arStateChange = output<boolean>();
-    finished = output<void>();
+  totalSteps = signal(0);
+  manualStep = signal(0);
+  simulationStep = signal(0);
+  isolatedPart = signal<AssemblyPart | null>(null);
+  mode = signal<'manual' | 'simulation' | 'final'>('manual');
+  isARActive = signal(false);
+  arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
+  isSmallScreen = signal(false);
 
-    // Elegir el tipo de motor
-    engineUse = signal<'threeJS' | 'webGL'>('threeJS');
-    // Configuración de modelo
-    useExternalModel = true; // Cambiar a true para cargar modelo externo
-    furniture ?: Furniture; // Mueble cargado desde API
-  get modelUrl(): string {
-      return this.furniture?.file_uri || '';
-    }
-    autoStartSimulation = input<boolean>(false);
-  get modelAssembly(): any {
-      return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
-    }
-
-
-    totalSteps = signal(0);
-    manualStep = signal(0);
-    simulationStep = signal(0);
-    isolatedPart = signal<AssemblyPart | null>(null);
-    mode = signal<'manual' | 'simulation' | 'final'>('manual');
-    isARActive = signal(false);
-    arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
-    isSmallScreen = signal(false);
-
-    currentStep = computed(() => {
-      switch (this.mode()) {
-        case 'manual':
-          return this.manualStep();
-        case 'simulation':
-          return this.simulationStep();
-        case 'final':
-          return this.totalSteps() - 1;
-        default:
-          return 0;
-      }
-    });
-
-    // Ratio between total animation states and logical steps (usually 2:1)
-    stepsRatio = computed(() => {
-      const total = this.totalSteps();
-      const logical = this.furniture?.total_steps || this.stepDescriptions().length;
-      return (total > 0 && logical > 0) ? total / logical : 1;
-    });
-
-    currentLogicalStep = computed(() => {
-      return Math.floor(this.currentStep() / this.stepsRatio());
-    });
-
-    visibleSteps = computed(() => {
-      // Show one bubble per logical step
-      const count = this.furniture?.total_steps || this.stepDescriptions().length;
-      return count > 0
-        ? Array.from({ length: count }, (_, i) => i)
-        : [];
-    });
-
-    goToStep(logicalStepIndex: number): void {
-      const ratio = this.stepsRatio();
-      const targetStep = logicalStepIndex * ratio;
-      if(targetStep >= 0 && targetStep < this.totalSteps()) {
-      this.manualStep.set(targetStep);
-    }
-  }
+  autoStartSimulation = input<boolean>(false);
 
   isSimulating = computed(() => this.mode() === 'simulation');
-
   isManualFirstStep = computed(() => this.manualStep() === 0);
   isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
@@ -128,7 +65,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   stepDescriptions = signal<string[]>([]);
 
+  // Methods/Signals used in template
+  showFooterControls = signal(true);
+  areControlsDisabled = signal(false);
 
+  private engine!: EngineFacade;
   private parts: AssemblyPart[] = [];
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
@@ -138,21 +79,61 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
 
-  private initialCameraState: any = null; // Store initial state manually if needed
   private isViewInitialized = false;
 
-  ngOnInit(): void {
-    // Initialize Engine based on signal
-    if (this.engineUse() === 'webGL') {
-      console.log('Using WebGL Custom Engine');
-      this.engine = new WebGLEngine();
-    } else {
-      console.log('Using ThreeJS Adapter');
-      this.engine = new ThreeEngineAdapter();
+  get modelUrl(): string {
+    return this.furniture?.file_uri || '';
+  }
+
+  get modelAssembly(): any {
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+  }
+
+  currentStep = computed(() => {
+    switch (this.mode()) {
+      case 'manual':
+        return this.manualStep();
+      case 'simulation':
+        return this.simulationStep();
+      case 'final':
+        return this.totalSteps() - 1;
+      default:
+        return 0;
     }
+  });
+
+  stepsRatio = computed(() => {
+    const total = this.totalSteps();
+    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
+    return (total > 0 && logical > 0) ? total / logical : 1;
+  });
+
+  currentLogicalStep = computed(() => {
+    return Math.floor(this.currentStep() / this.stepsRatio());
+  });
+
+  visibleSteps = computed(() => {
+    const count = this.furniture?.total_steps || this.stepDescriptions().length;
+    return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
+  });
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {
+    effect(() => {
+      // Logic for scrolling active step
+      this.currentLogicalStep();
+      setTimeout(() => {
+        this.centerActiveStep();
+      }, 100);
+    });
+  }
+
+  private boundWindowResize = this.onWindowResize.bind(this);
+  private boundScreenResize = () => this.checkScreenSize();
+
+  ngOnInit(): void {
+    this.createEngineInstance();
 
     let ref = this.route.snapshot.params['ref'];
-    // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
       this.furniture = f.data ? f.data : f;
       console.log('Furniture loaded:', this.furniture);
@@ -165,18 +146,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
+  private createEngineInstance(): void {
+    if (this.engineUse() === 'webGL') {
+      console.log('Using WebGL Custom Engine');
+      this.engine = new WebGLEngine();
+    } else {
+      console.log('Using ThreeJS Adapter');
+      this.engine = new ThreeEngineAdapter();
+    }
+  }
+
   ngAfterViewInit(): void {
     this.checkScreenSize();
-    window.addEventListener('resize', () => this.checkScreenSize());
+    window.addEventListener('resize', this.boundScreenResize);
 
     this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
         this.initThree();
+        this.setupEventListeners();
         this.isViewInitialized = true;
 
         if (this.useExternalModel) {
-          // Si ya tenemos datos, creamos el mueble. Si no, esperamos a ngOnInit
           if (this.furniture) {
             this.createFurniture().then(() => this.animate());
           }
@@ -198,8 +189,51 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.stopAR();
     this.resizeObserver?.disconnect();
-    window.removeEventListener('resize', () => this.checkScreenSize());
-    this.engine.dispose();
+    window.removeEventListener('resize', this.boundScreenResize);
+    window.removeEventListener('resize', this.boundWindowResize);
+
+    const canvas = this.canvasRef?.nativeElement;
+    if (canvas) {
+      canvas.removeEventListener('mousemove', this.onPointerMove);
+      canvas.removeEventListener('dblclick', this.onDoubleClick);
+    }
+
+    this.engine?.dispose();
+  }
+
+  public onEngineChange(newEngine: string): void {
+    if (this.selectedEngine === newEngine) return;
+
+    console.log('Switching engine to:', newEngine);
+    this.selectedEngine = newEngine;
+    this.engineUse.set(newEngine === 'threejs' ? 'threeJS' : 'webGL');
+    this.engineChanged.emit(newEngine);
+
+    if (this.isViewInitialized) {
+      // 1. Dispose old engine
+      this.engine?.dispose();
+
+      // 2. Create new instance
+      this.createEngineInstance();
+
+      // 3. Re-initialize viewport
+      this.initThree();
+
+      // 4. Reload furniture
+      if (this.furniture) {
+        this.createFurniture().then(() => {
+          if (!this.animationFrameId) this.animate();
+        });
+      }
+    }
+  }
+
+  goToStep(logicalStepIndex: number): void {
+    const ratio = this.stepsRatio();
+    const targetStep = logicalStepIndex * ratio;
+    if (targetStep >= 0 && targetStep < this.totalSteps()) {
+      this.manualStep.set(targetStep);
+    }
   }
 
   nextStep(): void {
@@ -384,12 +418,22 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.engine.init(canvas, width, height);
     this.engine.setControlsAutoRotateSpeed(1.0);
+  }
 
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onDoubleClick = this.onDoubleClick.bind(this);
+  private setupEventListeners(): void {
+    const canvas = this.canvasRef.nativeElement;
+
+    // Use property reassignment for binding to match existing method structure
+    // but ensure they are stable references
+    const originalMove = this.onPointerMove;
+    const originalClick = this.onDoubleClick;
+
+    this.onPointerMove = originalMove.bind(this);
+    this.onDoubleClick = originalClick.bind(this);
+
     canvas.addEventListener('mousemove', this.onPointerMove);
     canvas.addEventListener('dblclick', this.onDoubleClick);
-    window.addEventListener('resize', this.onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundWindowResize);
   }
   private async createFurniture(): Promise<void> {
 
