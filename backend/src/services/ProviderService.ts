@@ -227,19 +227,86 @@ export class ProviderService {
   }
 
   async updateProvider(providerId: number, data: Record<string, any>) {
-    const fields = Object.keys(data);
-    const values = Object.values(data);
-    const setClause = fields
-      .map((field, index) => `"${field}" = $${index + 1}`)
-      .join(', ');
-    const query = `
-      UPDATE "User"
-      SET ${setClause}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $${fields.length + 1}
-        AND role = $${fields.length + 2}
-      RETURNING id, email, company_name, cif, telephone, tax_address, visible
-    `;
-    return (await pool.query(query, [...values, providerId, UserRole.PROV])).rows[0];
+    try {
+      // Get current provider state
+      const currentProvider = await this.getProviderById(providerId);
+      
+      if (!currentProvider) {
+        throw new ApiError('NOT_FOUND', 'Provider not found');
+      }
+
+      console.log('Current provider state:', {
+        id: currentProvider.id,
+        enabled: currentProvider.enabled,
+        visible: currentProvider.visible,
+        registration_status: currentProvider.registration_status
+      });
+      console.log('Update data:', data);
+
+      // Validate business rules for visible
+      if ('visible' in data) {
+        const finalEnabled = 'enabled' in data ? data.enabled : currentProvider.enabled;
+        
+        if (data.visible === true && finalEnabled === false) {
+          throw new ApiError('BAD_REQUEST', 'Cannot make provider visible when it is not enabled. Enable the provider first.');
+        }
+      }
+
+      // Validate business rules for enabled
+      if ('enabled' in data && data.enabled === true) {
+        if (currentProvider.registration_status !== RegistrationStatus.APPROVED) {
+          throw new ApiError('BAD_REQUEST', `Cannot enable provider with registration status: ${currentProvider.registration_status}. Provider must be approved first.`);
+        }
+      }
+
+      // If disabling provider, also make it invisible
+      if ('enabled' in data && data.enabled === false) {
+        data.visible = false;
+      }
+
+      // Handle enabled changes with timestamps
+      if ('enabled' in data) {
+        if (data.enabled === true || data.enabled === 'true') {
+          data.enabled_at = 'CURRENT_TIMESTAMP';
+        } else if (data.enabled === false || data.enabled === 'false') {
+          data.disabled_at = 'CURRENT_TIMESTAMP';
+        }
+      }
+
+      const fields = Object.keys(data);
+      const values = Object.values(data);
+      
+      const setClause = fields
+        .map((field, index) => {
+          // Handle timestamp fields specially
+          if (data[field] === 'CURRENT_TIMESTAMP') {
+            return `"${field}" = CURRENT_TIMESTAMP`;
+          }
+          return `"${field}" = $${index + 1}`;
+        })
+        .join(', ');
+
+      // Filter out CURRENT_TIMESTAMP from values array
+      const filteredValues = values.filter(v => v !== 'CURRENT_TIMESTAMP');
+      
+      const query = `
+        UPDATE "User"
+        SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $${filteredValues.length + 1}
+          AND role = $${filteredValues.length + 2}
+        RETURNING id, email, company_name, cif, telephone, tax_address, visible, enabled, registration_status
+      `;
+      
+      const result = await pool.query(query, [...filteredValues, providerId, UserRole.PROV]);
+      console.log('Update result:', result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      console.error('Error updating provider:', error);
+      throw new Error('Unable to update provider');
+    }
   }
 
   async deleteProvider(id: number) {

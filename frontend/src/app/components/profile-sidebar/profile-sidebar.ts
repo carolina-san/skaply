@@ -43,7 +43,7 @@ export class ProfileSidebar implements OnInit {
       this.currentUser = user;
 
       if (this.currentUser && this.currentUser.role === 'admin') {
-        this.apiService.getProviders(1, 1).subscribe({
+        this.apiService.getProviders(1, 1, '', null, 'approved').subscribe({
           next: (res) => {
             if (res.meta && res.meta.total !== undefined) {
               this.totalProviders = res.meta.total;

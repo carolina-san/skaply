@@ -2,11 +2,12 @@ import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Modal],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
@@ -18,6 +19,10 @@ export class GestionProveedores implements OnInit, OnChanges {
   itemsPerPage: number = 6;
   totalItems: number = 0;
   selectedVisibility: boolean | null = null;
+
+  // Modal de confirmación
+  isDeleteModalOpen: boolean = false;
+  providerToDelete: any = null;
 
   constructor(private apiService: ApiService) { }
 
@@ -39,7 +44,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   fetchProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility).subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, 'approved').subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
@@ -55,18 +60,31 @@ export class GestionProveedores implements OnInit, OnChanges {
     );
   }
 
-  deleteProvider(id: number) {
-    if (confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
-      this.apiService.deleteProvider(id).subscribe(
-        (response) => {
-          console.log('Provider deleted successfully:', response);
-          this.fetchProviders();
-        },
-        (error) => {
-          alert('Error al eliminar el proveedor');
-        }
-      );
-    }
+  openDeleteModal(provider: any) {
+    this.providerToDelete = provider;
+    this.isDeleteModalOpen = true;
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.providerToDelete = null;
+  }
+
+  confirmDeleteProvider() {
+    if (!this.providerToDelete) return;
+
+    this.apiService.deleteProvider(this.providerToDelete.id).subscribe(
+      (response) => {
+        console.log('Provider deleted successfully:', response);
+        this.closeDeleteModal();
+        this.fetchProviders();
+      },
+      (error) => {
+        console.error('Error deleting provider:', error);
+        alert('Error al eliminar el proveedor');
+        this.closeDeleteModal();
+      }
+    );
   }
 
   // Ya no usamos getters para filtrar localmente
@@ -108,6 +126,21 @@ export class GestionProveedores implements OnInit, OnChanges {
         console.error('Error updating provider visibility:', error);
         alert('Error al actualizar la visibilidad del proveedor');
       }
+    );
+  }
+
+  toggleEnabled(provider: any) {
+    const newStatus = !provider.enabled;
+    this.apiService.updateProvider(provider.id, { enabled: newStatus }).subscribe(
+      (response) => {
+        console.log('Provider enabled status updated successfully:', response);
+        provider.enabled = newStatus;
+        this.fetchProviders();
+      },
+      (error) => {
+        console.error('Error updating provider enabled status:', error);
+        alert('Error al actualizar el estado del proveedor');
+      } 
     );
   }
 
