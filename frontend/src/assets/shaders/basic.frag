@@ -10,9 +10,23 @@ uniform vec3 uLightColor;
 uniform vec3 uViewPosition;
 uniform sampler2D uDiffuseTexture;
 
+uniform float uHighlight;
+uniform vec3 uHighlightColor;
+uniform float uIsUnlit;
+uniform vec3 uUnlitColor;
+uniform float uOutlinePass;
+
 out vec4 fragColor;
 
 void main() {
+    if (uOutlinePass > 0.5) {
+        if (uHighlight > 0.5) {
+            fragColor = vec4(1.0); // Output solid white to mask texture
+        } else {
+            discard; // Ignore non-highlighted objects in mask FBO
+        }
+        return;
+    }
 
     vec3 normal = normalize(vNormal);
 
@@ -43,6 +57,10 @@ void main() {
 
     // Apply gamma correction (compress to sRGB for display)
     result = pow(result, vec3(1.0 / 2.2));
+
+    if (uIsUnlit > 0.5) {
+        result = uUnlitColor;
+    }
 
     fragColor = vec4(result, 1.0);
 }

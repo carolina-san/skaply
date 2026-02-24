@@ -120,6 +120,13 @@ export class WebGLEngine extends EngineFacade {
 
     private resourceManager = new ResourceManager();
     private shader!: ShaderResource;
+    private postShader!: ShaderResource;
+
+    // FBO variables for Outline pass
+    private maskFBO: WebGLFramebuffer | null = null;
+    private maskTex: WebGLTexture | null = null;
+    private maskDepth: WebGLRenderbuffer | null = null;
+    private postQuadVAO: WebGLVertexArrayObject | null = null;
 
     // Scene graph root
     private rootNode = new Node();
@@ -162,6 +169,18 @@ export class WebGLEngine extends EngineFacade {
         // cámara por defecto: sincronizada con las coordenadas esféricas iniciales
         const aspect = width / height;
         this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
+
+        const isMobile = width < 768;
+        if (isMobile) {
+            this.camRadius = 3.84;
+            this.camTheta = 0.785;
+            this.camPhi = 1.17;
+        } else {
+            this.camRadius = 3.5355;
+            this.camTheta = 0.896;
+            this.camPhi = 1.132;
+        }
+        vec3.set(this.camTarget, 0, 1, 0);
         this.updateCameraOrbit(); // Esto setea lookAt(pos, target) basado en Radius/Theta/Phi iniciales
 
         // luz por defecto
@@ -180,6 +199,29 @@ export class WebGLEngine extends EngineFacade {
         await this.shader.loadFile('assets/shaders/basic.vert', 'vertex');
         await this.shader.loadFile('assets/shaders/basic.frag', 'fragment');
         this.shader.buildProgram();
+
+        this.postShader = new ShaderResource(this.gl, 'post');
+        await this.postShader.loadFile('assets/shaders/post.vert', 'vertex');
+        await this.postShader.loadFile('assets/shaders/post.frag', 'fragment');
+        this.postShader.buildProgram();
+
+        this.initPostQuad();
+    }
+
+    private initPostQuad() {
+        const gl = this.gl;
+        this.postQuadVAO = gl.createVertexArray();
+        gl.bindVertexArray(this.postQuadVAO);
+
+        const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
+
+        const vbo = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+        gl.bindVertexArray(null);
     }
 
     resize(width: number, height: number): void {
@@ -191,22 +233,82 @@ export class WebGLEngine extends EngineFacade {
         // update camera aspect
         const aspect = width / height;
         this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
+
+        // Resize Outline Mask FBO
+        const gl = this.gl;
+        if (this.maskFBO) gl.deleteFramebuffer(this.maskFBO);
+        if (this.maskTex) gl.deleteTexture(this.maskTex);
+        if (this.maskDepth) gl.deleteRenderbuffer(this.maskDepth);
+
+        this.maskFBO = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.maskFBO);
+
+        this.maskTex = gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D, this.maskTex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.maskTex, 0);
+
+        this.maskDepth = gl.createRenderbuffer()!;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, this.maskDepth);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.maskDepth);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
     render(): void {
         if (!this.ready) return;
 
-        // Limpiar con transparencia (importante para que no se vea el fondo blanco de la app)
-        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        const gl = this.gl;
+
+        // Fase 1: Renderizado original sin deformaciones al Canvas
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         this.shader.use();
-
-        // uniforms que pide el fragment shader
         this.shader.setVec3('uViewPosition', this.cameraEntity.position);
 
-        // recorrer árbol
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        this.shader.setFloat('uOutlinePass', 0.0);
         this.rootNode.traverse(mat4.create(), this.shader);
+
+        // Fase 2: Silueta al Mask FBO (Off-screen)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.maskFBO);
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        this.shader.setFloat('uOutlinePass', 1.0);
+        this.rootNode.traverse(mat4.create(), this.shader);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // Fase 3: Post Processing Tubería Redondeada
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        this.postShader.use();
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.maskTex);
+        this.postShader.setInt('uMaskTex', 0);
+        this.postShader.setVec2('uResolution', [this.canvas.width, this.canvas.height]);
+        this.postShader.setVec3('uHighlightColor', [0.0, 1.0, 1.0]); // Color Cian constante
+
+        gl.bindVertexArray(this.postQuadVAO);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.bindVertexArray(null);
+
+        // Restaurar estado global para el próximo frame
+        gl.disable(gl.BLEND);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE);
     }
 
     // ------------------ Creación de objetos ------------------
@@ -219,9 +321,63 @@ export class WebGLEngine extends EngineFacade {
         return w;
     }
 
-    createArrowHelper(_dir: Vector3, _origin: Vector3, _length: number, _color: number | string): RenderableObject {
-        // Stub: un grupo vacío que NO dibuja nada (sirve para el flujo de UI)
-        return this.createGroup();
+    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
+        if (!this.gl) return this.createGroup();
+
+        const gl = this.gl;
+        const vao = gl.createVertexArray()!;
+        gl.bindVertexArray(vao);
+
+        const tipX = origin.x + dir.x * length;
+        const tipY = origin.y + dir.y * length;
+        const tipZ = origin.z + dir.z * length;
+
+        const vertices = new Float32Array([
+            origin.x, origin.y, origin.z,
+            tipX, tipY, tipZ
+        ]);
+        const indices = new Uint32Array([0, 1]);
+
+        const vbo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+
+        const ebo = gl.createBuffer()!;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+        gl.bindVertexArray(null);
+
+        const arrowMesh = new Mesh({
+            vao,
+            indexCount: 2,
+            indexType: gl.UNSIGNED_INT,
+            drawMode: gl.LINES
+        } as any, gl);
+
+        const node = new Node();
+        node.setEntity(arrowMesh);
+
+        let numColor: number;
+        if (typeof color === 'string') {
+            numColor = parseInt(color.replace('#', ''), 16);
+        } else {
+            numColor = color;
+        }
+
+        const r = ((numColor >> 16) & 255) / 255;
+        const g = ((numColor >> 8) & 255) / 255;
+        const b = (numColor & 255) / 255;
+
+        node.isUnlit = true;
+        node.unlitColor = vec3.fromValues(r, g, b);
+
+        const native = new NativeLikeObject(`arrow_${crypto.randomUUID()}`);
+        const w = new WebGlRenderableObject(node, native);
+        this.wrappers.add(w);
+        return w;
     }
 
     createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
@@ -590,11 +746,28 @@ export class WebGLEngine extends EngineFacade {
         return null;
     }
 
-    setHighlight(_objects: RenderableObject[]): void {
-        // placeholder: sin outline pass en WebGL puro
+    setHighlight(objects: RenderableObject[]): void {
+        const cyan = vec3.fromValues(0, 1, 1);
+
+        this.wrappers.forEach(w => w.node.isHighlighted = false);
+
+        objects.forEach(o => {
+            if (!o) return;
+            const w = o as WebGlRenderableObject;
+
+            const highlightSubtree = (n: Node | null) => {
+                if (!n) return;
+                n.isHighlighted = true;
+                n.highlightColor = cyan;
+                const children: Node[] = (n as any).children || [];
+                children.forEach(highlightSubtree);
+            };
+
+            highlightSubtree(w.node);
+        });
     }
 
-    // ------------------ Load model (Assimp) ------------------
+    // ------------------ Load model (@loaders.gl/gltf) ------------------
 
     async loadGLTF(url: string): Promise<RenderableObject> {
         if (!this.gl) throw new Error('Engine not initialized');
