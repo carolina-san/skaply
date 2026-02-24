@@ -88,6 +88,7 @@ export class Header {
   }
 
   goHome(): void {
+    this.finMontaje();
     this.router.navigate(['/']);
   }
   goLogin(): void {

@@ -42,14 +42,24 @@ export class ProviderService {
   // PRIVATE ROUTES (ADMIN ONLY)
 
   async getProviders(filters?: {
-  registration_status?: RegistrationStatus;
-  enabled?: boolean;
-  visible?: boolean;
+    registration_status?: RegistrationStatus;
+    enabled?: boolean;
+    visible?: boolean;
+    page?: number;
+    limit?: number;
+    search?: string;
   }) {
     try {
       const conditions: string[] = ['role = $1'];
       const values: any[] = [UserRole.PROV];
       let paramIndex = 2;
+
+      if (filters?.search) {
+        const search = `%${filters.search}%`;
+        conditions.push(`(name ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR company_name ILIKE $${paramIndex} OR telephone ILIKE $${paramIndex} OR tax_address ILIKE $${paramIndex} OR cif ILIKE $${paramIndex})`);
+        values.push(search);
+        paramIndex++;
+      }
 
       if (filters?.registration_status !== undefined) {
         conditions.push(`registration_status = $${paramIndex++}`);
@@ -68,6 +78,16 @@ export class ProviderService {
 
       const whereClause = conditions.join(' AND ');
 
+      // Pagination
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Count total
+      const countQuery = `SELECT COUNT(*) FROM public."User" WHERE ${whereClause}`;
+      const countResult = await pool.query(countQuery, values);
+      const total = parseInt(countResult.rows[0].count, 10);
+
       const query = `
         SELECT id, email, name, cif, company_name, telephone, tax_address,
               image_url, enabled, visible, registration_status,
@@ -75,10 +95,20 @@ export class ProviderService {
         FROM public."User"
         WHERE ${whereClause}
         ORDER BY company_name
+        LIMIT $${paramIndex++} OFFSET $${paramIndex++}
       `;
 
+      values.push(limit, offset);
+
       const result = await pool.query(query, values);
-      return result.rows;
+
+      return {
+        rows: result.rows,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
 
     } catch (error) {
       throw new Error('Unable to fetch providers');
@@ -207,7 +237,7 @@ export class ProviderService {
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${fields.length + 1}
         AND role = $${fields.length + 2}
-      RETURNING id, email, company_name, cif, telephone, tax_address
+      RETURNING id, email, company_name, cif, telephone, tax_address, visible
     `;
     return (await pool.query(query, [...values, providerId, UserRole.PROV])).rows[0];
   }
@@ -231,7 +261,7 @@ export class ProviderService {
       const result = await pool.query(`
         SELECT id, company_name, email, cif, tax_address, name,image_url
         FROM public."User" where role = 'provider'`);
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch providers for chatbot')
     }
@@ -240,7 +270,7 @@ export class ProviderService {
   async getProviderByName(name: string) {
     try {
       const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
-      return result;
+      return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch the provided with this name');
     }

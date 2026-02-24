@@ -1,109 +1,151 @@
-<div class="flex items-center gap-10 text-lg font-semibold mb-6">
-    <!-- buscar y filtrar -->
-    <div class="flex px-40 gap-6 justify-between items-center mb-5 w-full">
-        <div class="w-80 bg-white rounded-full flex items-center px-4 shadow">
-            <input type="text" placeholder="Buscar"
-                class="w-full py-2 outline-none text-marron-oscuro placeholder-marron-oscuro" />
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
+<div class="w-full h-full bg-beige flex flex-col">
+
+  <div class="flex pt-2 pb-2">
+    <div>
+      <select [(ngModel)]="selectedVisibility" (change)="onVisibilityChange()" class="filtros-select">
+        <option [ngValue]="null" [ngClass]="selectedVisibility === null ? 'hidden' : ''">{{ selectedVisibility === null
+          ? 'Visibilidad' : 'Cualquier visibilidad' }}</option>
+        <option [value]="true">Visible</option>
+        <option [value]="false">Oculto</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mensaje de no hay resultados -->
+  <div *ngIf="totalItems === 0 && searchText" class="flex-1 flex items-center justify-center">
+    <div class="text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355"
+        class="mx-auto mb-4">
+        <path
+          d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+      </svg>
+      <p class="text-xl font-semibold text-marron-oscuro mb-2">No hay resultados</p>
+      <p class="text-gray-600">No se encontraron proveedores que coincidan con "{{ searchText }}"</p>
+    </div>
+  </div>
+
+  <!-- tabla proveedores -->
+  <div *ngIf="totalItems > 0 || !searchText"
+    class="mt-2 bg-white rounded-xl overflow-hidden flex-shrink-0 flex flex-col">
+
+    <!-- HEADER -->
+    <div class="grid grid-cols-5 bg-azul-claro px-3 py-1 text-sm  text-marron-oscuro">
+      <h4 class="col-span-2 font-bold">
+        Nombre
+      </h4>
+
+      <h4 class="text-center font-bold">
+        Fecha alta
+      </h4>
+
+      <h4 class="col-span-2 text-center font-bold">
+        Acciones
+      </h4>
+    </div>
+
+    <!-- body -->
+    <div class="divide-y divide-gray-200">
+
+      <div *ngFor="let provider of paginatedProviders"
+        class="grid grid-cols-5 px-2 py-2 items-center hover:bg-gray-50 transition">
+
+        <!-- Nombre + imagen-->
+        <div class="col-span-2 flex items-center gap-3 min-w-0">
+
+          <div class="w-10 h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+            <img *ngIf="provider.image_url" [src]="provider.image_url" [alt]="provider.company_name"
+              class="w-full h-full object-cover" />
+
+            <div *ngIf="!provider.image_url" class="w-full h-full flex items-center justify-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                fill="currentColor">
                 <path
-                    d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
-            </svg>
+                  d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z" />
+              </svg>
+            </div>
+          </div>
+
+          <span class="font-medium text-gray-800 text-sm truncate">{{ provider.company_name }}</span>
         </div>
+        <!-- Fecha alta -->
+        <div class="text-center text-gray-600 font-mono text-xs">{{ provider.created_at | date:'dd/MM/yyyy' }}</div>
 
-        <button class="bg-white shadow p-3 rounded-full hover:scale-105 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
-                <path
-                    d="M440-240q-17 0-28.5-11.5T400-280q0-17 11.5-28.5T440-320h80q17 0 28.5 11.5T560-280q0 17-11.5 28.5T520-240h-80ZM280-440q-17 0-28.5-11.5T240-480q0-17 11.5-28.5T280-520h400q17 0 28.5 11.5T720-480q0 17-11.5 28.5T680-440H280ZM160-640q-17 0-28.5-11.5T120-680q0-17 11.5-28.5T160-720h640q17 0 28.5 11.5T840-680q0 17-11.5 28.5T800-640H160Z" />
-            </svg>
-        </button>
-    </div>
-</div>
+        <!-- Acciones -->
+        <div class="col-span-2 flex justify-center gap-0.5 text-gray-600">
 
-<!-- tabla proveedores -->
-<div class="bg-white rounded-3xl overflow-hidden mr-15">
-    <div class="grid grid-cols-3 bg-azul-claro px-8 py-4 font-semibold text-marron-oscuro">
-        <div>Nombre de empresa</div>
-        <div>Fecha alta</div>
-        <div class="text-center">Acciones</div>
-    </div>
+          <button class="btn-acciones">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path
+                d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z" />
+            </svg>Bloquear
+          </button>
 
-    <!-- FILAS -->
-    <div *ngFor="let provider of paginatedProviders"
-        class="grid grid-cols-3 px-8 py-5 border-b border-gray-200 items-center">
-        <div class="flex items-center gap-4">
-            <span class="font-medium">{{ provider.company_name }}</span>
+          <button class="btn-acciones" (click)="toggleVisibility(provider)"> <svg *ngIf="provider.visible"
+              xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path
+                d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-134 0-244.5-72T61-462q-5-9-7.5-18.5T51-500q0-10 2.5-19.5T61-538q64-118 174.5-190T480-800q134 0 244.5 72T899-538q5 9 7.5 18.5T909-500q0 10-2.5 19.5T899-462q-64 118-174.5 190T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z" />
+            </svg> <svg *ngIf="!provider.visible" xmlns="http://www.w3.org/2000/svg" height="18px"
+              viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path
+                d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z" />
+            </svg> {{ provider.visible ? 'Ocultar' : 'Mostrar' }} </button>
+
+          <button class="btn-acciones">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path
+                d="M560-120v-66q0-8 3-15.5t9-13.5l209-208q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L695-92q-6 6-13.5 9T666-80h-66q-17 0-28.5-11.5T560-120Zm300-223-37-37 37 37ZM620-140h38l121-122-37-37-122 121v38ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h287q16 0 30.5 6t25.5 17l194 194q11 11 17 25.5t6 30.5v57q0 17-11.5 28.5T760-510q-17 0-28.5-11.5T720-550v-50H560q-17 0-28.5-11.5T520-640v-160H240v640h200q17 0 28.5 11.5T480-120q0 17-11.5 28.5T440-80H240Zm0-80v-640 640Zm521-121-19-18 37 37-18-19Z" />
+            </svg>Editar
+          </button>
+
+          <button class="btn-acciones" (click)="deleteProvider(provider.id)">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+              <path
+                d="M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM280-720v520-520Z" />
+            </svg>Eliminar
+          </button>
+
         </div>
-        <div class="text-gray-700">{{ provider.created_at | date:'dd/MM/yyyy' }}</div>
-        <div class="flex justify-center gap-4">
-            <button class="btn-acciones">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                    fill="#452621">
-                    <path
-                        d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z" />
-                </svg>
-            </button>
-            <button class="btn-acciones">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                    fill="#452621">
-                    <path
-                        d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-134 0-244.5-72T61-462q-5-9-7.5-18.5T51-500q0-10 2.5-19.5T61-538q64-118 174.5-190T480-800q134 0 244.5 72T899-538q5 9 7.5 18.5T909-500q0 10-2.5 19.5T899-462q-64 118-174.5 190T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z" />
-                </svg>
-            </button>
-            <button class="btn-acciones">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                    fill="#452621">
-                    <path
-                        d="M560-120v-66q0-8 3-15.5t9-13.5l209-208q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T903-300L695-92q-6 6-13.5 9T666-80h-66q-17 0-28.5-11.5T560-120Zm300-223-37-37 37 37ZM620-140h38l121-122-37-37-122 121v38ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h287q16 0 30.5 6t25.5 17l194 194q11 11 17 25.5t6 30.5v57q0 17-11.5 28.5T760-510q-17 0-28.5-11.5T720-550v-50H560q-17 0-28.5-11.5T520-640v-160H240v640h200q17 0 28.5 11.5T480-120q0 17-11.5 28.5T440-80H240Zm0-80v-640 640Zm521-121-19-18 37 37-18-19Z" />
-                </svg>
-            </button>
-            <button class="btn-acciones" (click)="deleteProvider(provider.id)">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-                    fill="#452621">
-                    <path
-                        d="M280-120q-33 0-56.5-23.5T200-200v-520q-17 0-28.5-11.5T160-760q0-17 11.5-28.5T200-800h160q0-17 11.5-28.5T400-840h160q17 0 28.5 11.5T600-800h160q17 0 28.5 11.5T800-760q0 17-11.5 28.5T760-720v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM400-280q17 0 28.5-11.5T440-320v-280q0-17-11.5-28.5T400-640q-17 0-28.5 11.5T360-600v280q0 17 11.5 28.5T400-280Zm160 0q17 0 28.5-11.5T600-320v-280q0-17-11.5-28.5T560-640q-17 0-28.5 11.5T520-600v280q0 17 11.5 28.5T560-280ZM280-720v520-520Z" />
-                </svg>
-            </button>
-        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- PAGINACIÓN FUERA DE LA TABLA -->
-<div class="flex justify-end items-center mt-6 mr-15 gap-4">
-    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} de {{ totalItems }}</span>
+  <!-- Espaciador para empujar la paginación hacia abajo -->
+  <div class="flex-1"></div>
+
+  <!-- Paginación fija en la parte inferior -->
+  <div *ngIf="totalItems > 0 || !searchText" class="flex justify-end items-center mt-6 gap-4 flex-shrink-0 pb-6">
+    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
 
     <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
-        <!-- Botón anterior -->
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
-                <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
-            </svg>
-        </button>
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition ">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+          <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
+        </svg>
+      </button>
 
-        <!-- Números de página -->
-        <button *ngFor="let page of pageNumbers" (click)="goToPage(page)" [class.bg-[#4a5568]]="page === currentPage"
-            [class.text-white]="page === currentPage" [class.bg-white]="page !== currentPage"
-            [class.text-marron-oscuro]="page !== currentPage"
-            class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-100 transition shadow-sm">
-            {{ page }}
-        </button>
+      <button *ngFor="let page of pageNumbers" (click)="goToPage(page)" [class.bg-beige]="page === currentPage"
+        [class.text-marron-oscuro]="page === currentPage" [class.bg-white]="page !== currentPage"
+        [class.text-marron-oscuro]="page !== currentPage"
+        class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium hover:bg-beige-oscuro transition shadow-sm">
+        {{ page }}
+      </button>
 
-        <!-- Puntos suspensivos si hay muchas páginas -->
-        <span *ngIf="totalPages > 5" class="px-2 text-gray-500">...</span>
+      <span *ngIf="totalPages > 5" class="px-2 text-gray-500">...</span>
 
-        <button *ngIf="totalPages >= 10" (click)="goToPage(10)" [class.bg-[#4a5568]]="10 === currentPage"
-            [class.text-white]="10 === currentPage" [class.bg-white]="10 !== currentPage"
-            [class.text-marron-oscuro]="10 !== currentPage"
-            class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-100 transition shadow-sm">
-            10
-        </button>
+      <button *ngIf="totalPages >= 10" (click)="goToPage(10)" [class.bg-beige]="10 === currentPage"
+        [class.text-marron-oscuro]="10 === currentPage" [class.bg-white]="10 !== currentPage"
+        [class.text-marron-oscuro]="10 !== currentPage"
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-100 transition shadow-sm">
+        10
+      </button>
 
-        <!-- Botón siguiente -->
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages <= 1"
-            class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
-                <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-            </svg>
-        </button>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages <= 1"
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+        </svg>
+      </button>
     </div>
+  </div>
 </div>

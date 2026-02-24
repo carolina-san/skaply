@@ -97,6 +97,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
 
+            if (this.chatVisible) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+
+
             // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
             if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
                 this.sendWelcomeEvent();
@@ -173,10 +180,11 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
                                 window.location.href = "/register";
-
-
                             }
-                        }, 4000);
+                            if (payload.fields.redirect.stringValue === "issue.form") {
+                                this.abrirIncidencia();
+                            }
+                        }, 1000);
                         handled = true;
                     }
                     else if (payload?.fields?.action?.stringValue === "filter.by.category") {
@@ -187,10 +195,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                 next: (categoryResponse) => {
                                     const categoryData = categoryResponse.data || [];
 
-                                    if (categoryData.length > 0) {
+                                    if (categoryData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedCategory(categoryData[0].id);
+                                        this.filterSharingService.setSelectedCategory(categoryData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },
@@ -207,10 +215,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                             this.api.getColorByName(color).subscribe({
                                 next: (colorResponse) => {
                                     const colorData = colorResponse.data || [];
-                                    if (colorData.length > 0) {
+                                    if (colorData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedColor(colorData[0].id);
+                                        this.filterSharingService.setSelectedColor(colorData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },

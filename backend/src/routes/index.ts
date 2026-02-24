@@ -25,7 +25,7 @@ router.get('/health', async (_req, res, next: NextFunction) => {
     res.status(200).json({
       message: 'API is running',
       timestamp: new Date().toISOString(),
-      healthTool: healthTool.rows
+      healthTool: healthTool
     });
   } catch (error) {
     next(new ApiError('INTERNAL_SERVER', 'Api check health failed'));

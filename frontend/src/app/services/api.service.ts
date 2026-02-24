@@ -12,8 +12,16 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   //MUEBLES
-  getAllFurniture(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/furniture`);
+  getAllFurniture(page?: number, limit?: number): Observable<any> {
+    let url = `${this.apiUrl}/furniture`;
+    if (page && limit) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    return this.http.get(url);
+  }
+
+  getVisibleFurniture(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/visible`);
   }
 
   getFurnitureById(id: string): Observable<any> {
@@ -29,12 +37,28 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
   }
 
+  updateFurniture(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
+  }
+
+  updateProvider(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${id}`, data);
+  }
+
+  deleteFurniture(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/private/furniture/${id}`);
+  }
+
   getCategories(): Observable<any> {
     return this.http.get(`${this.apiUrl}/categories`);
   }
 
   getCategoryByName(name: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/categories/name/${name}`);
+  }
+
+  getCategoryById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories/${id}`);
   }
 
   getColors(): Observable<any> {
@@ -45,12 +69,23 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/colors/name/${name}`);
   }
 
+  getProviderById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/providers/${id}`);
+  }
+
   getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
-    return this.http.get(`${this.apiUrl}/private/providers`);
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+    let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${search}`;
+    }
+    if (visible !== null) {
+      url += `&visible=${visible}`;
+    }
+    return this.http.get(url);
   }
 
 

@@ -23,13 +23,13 @@ export class IssueController {
             }
             const result = await this.issueService.getFurnitureIssues(id);
 
-            if (result.rows.length === 0) {
+            if (result.length === 0) {
                 next(new ApiError('NOT_FOUND', 'No issues found for this furniture'));
                 return;
             }
 
             res.status(200).json({
-                data: result.rows
+                data: result
             });
         } catch (error) {
             next(new ApiError('INTERNAL_SERVER', 'Failed to fetch furniture issues'));

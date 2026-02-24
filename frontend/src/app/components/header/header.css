@@ -29,11 +29,15 @@
 }
 
 .header-mini {
-  @apply backdrop-blur-none bg-transparent w-[20%];
+  @apply backdrop-blur-none bg-transparent w-[20%] px-5;
 
 }
 
 .header-assembly {
-  @apply w-3/4;
+  @apply lg:w-[75%] px-5 bg-marron-oscuro/70;
   /* ancho del header en modo montaje */
+}
+
+.logo-panel {
+  @apply w-[75%];
 }

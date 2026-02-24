@@ -2,13 +2,13 @@ import pool from "@/config/database";
 
 import { Issue } from "@/types";
 
-export class IssueService{
-    async getFurnitureIssues(idFurniture:number){
-        try{
-            const result = await pool.query('SELECT * FROM issue WHERE furniture_id = $1',[idFurniture]);
-            return result;
-        }catch(error){
-           throw new Error('Error fetching furniture issues') 
+export class IssueService {
+    async getFurnitureIssues(idFurniture: number) {
+        try {
+            const result = await pool.query('SELECT * FROM issue WHERE furniture_id = $1', [idFurniture]);
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error fetching furniture issues')
         }
     }
 

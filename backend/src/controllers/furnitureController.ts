@@ -4,7 +4,7 @@ import { FurnitureService } from '../services/furnitureService'
 import { ProviderService } from '../services/ProviderService'
 import { Difficulty } from '@/types/common.types';
 import { UserRole } from '@/types/user.types';
-import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery  } from '@/utils/common.utils';
+import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery } from '@/utils/common.utils';
 /*import { UserService } from '../services/UserService';*/
 
 const validDifficulties = ['low', 'medium', 'high'];
@@ -61,16 +61,44 @@ export class FurnitureController {
 
   getAllFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Example database query
-      const result = await this.furnitureService.getAllFurniture();
+      const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
 
-      res.status(200).json({
-        message: 'Database connected successfully',
-        data: result.rows
-      });
+      const result = await this.furnitureService.getAllFurniture(page, limit);
+
+      if (page && limit && 'rows' in result) {
+        res.status(200).json({
+          message: 'Furnitures fetched successfully',
+          data: result.rows,
+          meta: {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            totalPages: result.totalPages
+          }
+        });
+      } else {
+        res.status(200).json({
+          message: 'Furnitures fetched successfully',
+          data: result
+        });
+      }
     } catch (error) {
       console.error('getAllFurniture error:', error);
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch furnitures'));
+    }
+  };
+
+  getVisibleFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.furnitureService.getVisibleFurniture();
+      res.status(200).json({
+        message: 'Visible furniture fetched successfully',
+        data: result
+      });
+    } catch (error) {
+      console.error('getVisibleFurniture error:', error);
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch visible furnitures'));
     }
   };
 
@@ -85,14 +113,14 @@ export class FurnitureController {
 
       const result = await this.furnitureService.getFurnitureByIdOrReference(identifier);
 
-      if (result.rows.length === 0) {
+      if (!result) {
         next(new ApiError('NOT_FOUND', 'Furniture not found'));
         return;
       }
 
       res.status(200).json({
         message: 'Furniture fetched',
-        data: result.rows
+        data: result
       });
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch this furniture'));
@@ -101,20 +129,36 @@ export class FurnitureController {
 
   filterFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, search } = req.body;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = req.body;
 
       const result = await this.furnitureService.getFilteredFurniture({
         difficulties,
         provider_ids,
         category_ids,
         color_ids,
-        search
+        visible,
+        search,
+        page,
+        limit
       });
 
-      res.status(200).json({
-        message: 'Furniture fetched',
-        data: result.rows
-      });
+      if ((page && limit) && !Array.isArray(result) && 'rows' in result) {
+        res.status(200).json({
+          message: 'Furniture fetched',
+          data: result.rows,
+          meta: {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            totalPages: result.totalPages
+          }
+        });
+      } else {
+        res.status(200).json({
+          message: 'Furniture fetched',
+          data: result
+        });
+      }
 
     } catch (error) {
       next(new ApiError('INTERNAL_SERVER', "Unable to fetch filtered furniture"));
@@ -217,10 +261,6 @@ export class FurnitureController {
         return next(new ApiError('BAD_REQUEST', 'Valid furniture ID is required'));
       }
 
-      // Obtener ID del usuario que hace la petición
-      const userId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
-      if (!userId) return next(new ApiError('UNAUTHORIZED', 'User not found'));
-
       // Obtener provider_id del mueble
       const furnitureProviderId = await this.providerService.getProviderIdByFurnitureId(furnitureId);
       if (!furnitureProviderId) return next(new ApiError('NOT_FOUND', 'Furniture not found'));
@@ -229,7 +269,9 @@ export class FurnitureController {
       if (req.user?.role === UserRole.ADMIN) {
         // Admin puede modificar cualquier mueble
       } else if (req.user?.role === UserRole.PROV) {
-        if (furnitureProviderId !== userId) {
+        const providerId = await this.providerService.getProviderIdByEmail(req.user.emailuser || '');
+        if (!providerId) return next(new ApiError('UNAUTHORIZED', 'Provider not found'));
+        if (furnitureProviderId !== providerId) {
           return next(new ApiError('FORBIDDEN', 'You can only update your own furniture'));
         }
       } else {
@@ -245,7 +287,9 @@ export class FurnitureController {
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        visible,
+        required_people
       } = req.body;
 
       if (difficulty && !validDifficulties.includes(difficulty)) {
@@ -261,7 +305,9 @@ export class FurnitureController {
         category_id,
         provider_id,
         color_id,
-        short_description
+        short_description,
+        visible,
+        required_people
       });
 
       res.status(200).json({
@@ -277,14 +323,10 @@ export class FurnitureController {
     }
   };
 
-  // repasar
+  //revisado el 17 de febrero
+  //puede borrar admin y prov sus propios muebles
   deleteFurniture = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = await this.providerService.getProviderIdByEmail(req.user?.emailuser || '');
-      if (!userId) {
-        return next(new ApiError('UNAUTHORIZED', 'User not found'));
-      }
-
       const furnitureId = Number(req.params.id);
       if (!furnitureId) {
         return next(new ApiError('BAD_REQUEST', 'Furniture ID is required'));
@@ -299,7 +341,11 @@ export class FurnitureController {
       if (req.user?.role === UserRole.ADMIN) {
         // Admin puede eliminar cualquier mueble
       } else if (req.user?.role === UserRole.PROV) {
-        if (furnitureProviderId !== userId) {
+        const providerId = await this.providerService.getProviderIdByEmail(req.user.emailuser || '');
+        if (!providerId) {
+          return next(new ApiError('UNAUTHORIZED', 'Provider not found'));
+        }
+        if (furnitureProviderId !== providerId) {
           return next(new ApiError('FORBIDDEN', 'You can only delete your own furniture'));
         }
       } else {

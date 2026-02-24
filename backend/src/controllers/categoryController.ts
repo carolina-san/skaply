@@ -13,7 +13,7 @@ export class CategoryController {
         try {
             const result = await this.categoryService.getAllCategories()
             res.status(200).json({
-                data: result.rows
+                data: result
             })
         } catch (error) {
             next(new ApiError('INTERNAL_SERVER', 'Error fetching all categories'));
@@ -22,10 +22,22 @@ export class CategoryController {
 
     getCategoryByName = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const name: string = req.params.name? req.params.name : '';
+            const name: string = req.params.name ? req.params.name : '';
             const result = await this.categoryService.getCategoryByName(name);
             res.status(200).json({
-                data: result.rows
+                data: result
+            });
+        } catch (error) {
+            next(new ApiError('NOT_FOUND', 'Category not found'));
+        }
+    };
+
+    getCategoryById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const id: number = req.params.id ? parseInt(req.params.id) : 0;
+            const result = await this.categoryService.getCategoryById(id);
+            res.status(200).json({
+                data: result
             });
         } catch (error) {
             next(new ApiError('NOT_FOUND', 'Category not found'));
