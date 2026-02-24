@@ -36,7 +36,12 @@
             </svg>
         </span>
         <input type="text" formControlName="company_name" placeholder="Nombre de empresa" class="btn-registro"
-            [disabled]="loading">
+            [disabled]="loading"
+            [class.border-red-500]="form.get('company_name')?.invalid && form.get('company_name')?.touched">
+        
+        <div *ngIf="form.get('company_name')?.invalid && form.get('company_name')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            El nombre de empresa es obligatorio
+        </div>
     </div>
 
 
@@ -48,7 +53,12 @@
             </svg>
         </span>
         <input type="text" formControlName="cif" placeholder="CIF / Nº Fiscal" class="btn-registro"
-            [disabled]="loading">
+            [disabled]="loading"
+            [class.border-red-500]="form.get('cif')?.invalid && form.get('cif')?.touched">
+        
+        <div *ngIf="form.get('cif')?.invalid && form.get('cif')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            El CIF es obligatorio
+        </div>
     </div>
 
     <div class="w-full relative mb-3">
@@ -59,7 +69,12 @@
             </svg>
         </span>
         <input type="text" formControlName="tax_address" placeholder="Dirección Fiscal" class="btn-registro"
-            [disabled]="loading">
+            [disabled]="loading"
+            [class.border-red-500]="form.get('tax_address')?.invalid && form.get('tax_address')?.touched">
+        
+        <div *ngIf="form.get('tax_address')?.invalid && form.get('tax_address')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            La dirección fiscal es obligatoria
+        </div>
     </div>
 
     <div class="w-full relative mb-3">
@@ -69,7 +84,13 @@
                     d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z" />
             </svg>
         </span>
-        <input type="email" formControlName="email" placeholder="E-mail" class="btn-registro" [disabled]="loading">
+        <input type="email" formControlName="email" placeholder="E-mail" class="btn-registro" [disabled]="loading"
+            [class.border-red-500]="form.get('email')?.invalid && form.get('email')?.touched">
+        
+        <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            <span *ngIf="form.get('email')?.errors?.['required']">El email es obligatorio</span>
+            <span *ngIf="form.get('email')?.errors?.['email']">El email no es válido</span>
+        </div>
     </div>
 
     <div class="w-full relative mb-3">
@@ -79,7 +100,12 @@
                     d="M798-120q-125 0-247-54.5T329-329Q229-429 174.5-551T120-798q0-18 12-30t30-12h162q14 0 25 9.5t13 22.5l26 140q2 16-1 27t-11 19l-97 98q20 37 47.5 71.5T387-386q31 31 65 57.5t72 48.5l94-94q9-9 23.5-13.5T670-390l138 28q14 4 23 14.5t9 23.5v162q0 18-12 30t-30 12ZM241-600l66-66-17-94h-89q5 41 14 81t26 79Zm358 358q39 17 79.5 27t81.5 13v-88l-94-19-67 67ZM241-600Zm358 358Z" />
             </svg>
         </span>
-        <input type="tel" formControlName="telephone" placeholder="Teléfono" class="btn-registro" [disabled]="loading">
+        <input type="tel" formControlName="telephone" placeholder="Teléfono" class="btn-registro" [disabled]="loading"
+            [class.border-red-500]="form.get('telephone')?.invalid && form.get('telephone')?.touched">
+        
+        <div *ngIf="form.get('telephone')?.invalid && form.get('telephone')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            El teléfono es obligatorio
+        </div>
     </div>
 
     <div class="w-full relative mb-3">
@@ -90,7 +116,13 @@
             </svg>
         </span>
         <input type="password" formControlName="password" placeholder="Contraseña" class="btn-registro"
-            [disabled]="loading">
+            [disabled]="loading"
+            [class.border-red-500]="form.get('password')?.invalid && form.get('password')?.touched">
+        
+        <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-xs mt-1 ml-1">
+            <span *ngIf="form.get('password')?.errors?.['required']">La contraseña es obligatoria</span>
+            <span *ngIf="form.get('password')?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</span>
+        </div>
     </div>
 
     <button (click)="submit()"

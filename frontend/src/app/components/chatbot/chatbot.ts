@@ -97,6 +97,13 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
 
+            if (this.chatVisible) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+
+
             // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
             if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
                 this.sendWelcomeEvent();
