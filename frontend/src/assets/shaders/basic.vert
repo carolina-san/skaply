@@ -12,8 +12,10 @@ out vec3 vNormal;
 out vec3 vFragPos;
 out vec2 vTexCoord;
 
-void main() {
+uniform float uOutlinePass;
+uniform float uHighlight;
 
+void main() {
     vec4 worldPos = uModelMatrix * vec4(aPosition, 1.0);
     vFragPos = worldPos.xyz;
 
