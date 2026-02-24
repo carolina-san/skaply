@@ -127,6 +127,20 @@ export class FurnitureController {
     }
   }
 
+  furnitureCatalogo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const filters = req.body;
+      const result = await this.furnitureService.getFurnitureCatalogo(filters);
+      res.status(200).json({
+        message: 'Furniture catalog fetched successfully',
+        data: result.rows
+      });
+    } catch (error) {
+      console.error('getFurnitureCatalogo error:', error);
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch furniture catalog'));
+    }
+  };
+
   filterFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = req.body;

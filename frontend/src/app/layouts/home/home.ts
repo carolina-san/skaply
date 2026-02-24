@@ -198,32 +198,18 @@ export class Home implements OnInit {
     }
 
     this.isLoadingFurnitures = true;
-    if (filters.category_ids?.length === 0 && !filters.difficulties?.length && !filters.provider_ids?.length && !filters.color_ids?.length && !filters.search) {
-      this.apiService.getVisibleFurniture().subscribe({
-        next: (response) => {
-          this.furnitures = response.data || [];
-          this.isLoadingFurnitures = false;
-        },
-        error: (error) => {
-          console.error('Error al obtener el catálogo de muebles:', error);
-          this.furnitures = [];
-          this.isLoadingFurnitures = false;
-        }
-      });
-    } else {
-      this.apiService.getFilteredFurniture(filters).subscribe({
-        next: (response) => {
-          this.furnitures = response.data || [];
-          this.isLoadingFurnitures = false;
-        },
-        error: (error) => {
-          console.error('Error al obtener el catálogo de muebles:', error);
-          this.furnitures = [];
-          this.isLoadingFurnitures = false;
-        }
-      });
-    }
 
+    this.apiService.getFurnitureCatalogo(filters).subscribe(
+      (response) => {
+        console.log('Catálogo obtenido con filtros:', filters, 'Respuesta:', response);
+        this.furnitures = response.data || [];
+        this.isLoadingFurnitures = false;
+      },
+      (error) => {
+        console.error('Error al obtener catálogo con filtros:', filters, 'Error:', error);
+        this.isLoadingFurnitures = false;
+      }
+    );
   }
 
   obtenerCategorias() {

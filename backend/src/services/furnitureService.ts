@@ -370,6 +370,90 @@ export class FurnitureService {
     }
   }
 
+  async getFurnitureCatalogo(filters: {
+    difficulties?: ('low' | 'medium' | 'high')[];
+    provider_ids?: number[];
+    category_ids?: number[];
+    color_ids?: number[];
+    search?: string;
+  }) {
+    try {
+      const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
+
+      let baseSql = `
+        FROM public.furniture f
+        INNER JOIN Step s ON s.furniture_id = f.id
+        INNER JOIN Category c ON f.category_id = c.id
+        INNER JOIN "User" p ON f.provider_id = p.id
+        INNER JOIN Color cl ON f.color_id = cl.id
+        WHERE 1=1 AND f.visible = true AND p.visible = true AND p.enabled = true`;
+
+      const params: any[] = [];
+      let paramIndex = 1;
+
+      if (color_ids && color_ids.length > 0) {
+        baseSql += ` AND color_id = ANY($${paramIndex}::int[])`;
+        params.push(color_ids);
+        paramIndex++;
+      }
+
+      if (difficulties && difficulties.length > 0) {
+        baseSql += ` AND difficulty = ANY($${paramIndex}::diff[])`;
+        params.push(difficulties);
+        paramIndex++;
+      }
+
+      if (provider_ids && provider_ids.length > 0) {
+        baseSql += ` AND provider_id = ANY($${paramIndex}::int[])`;
+        params.push(provider_ids);
+        paramIndex++;
+      }
+
+      if (category_ids && category_ids.length > 0) {
+        baseSql += ` AND category_id = ANY($${paramIndex}::int[])`;
+        params.push(category_ids);
+        paramIndex++;
+      }
+
+      if (search && search.trim() !== '') {
+        baseSql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+
+      let sql = `
+        SELECT DISTINCT 
+            f.id, 
+            f.name, 
+            f.file_uri, 
+            f.image_url,
+            f.reference_number, 
+            f.category_id, 
+            c.name AS category_name, 
+            f.provider_id, 
+            p.company_name as provider_name, 
+            f.color_id, 
+            cl.name AS color_name,
+            cl.hex AS color_hex,
+            f.difficulty,
+            f.short_description,
+            f.visible,
+            f.created_at
+        ${baseSql}`;
+      console.log(sql);
+
+      const result = await pool.query(sql, params);
+
+      return {
+        rows: result.rows,
+      };
+
+    } catch (error) {
+      console.error('Error fetching filtered furniture:', error);
+      throw new Error('Error fetching furniture parts')
+    }
+  }
+
   async getFurnitureIdByRef(ref: string): Promise<number> {
     try {
       const result = await pool.query(`SELECT id FROM furniture 
