@@ -49,11 +49,13 @@ const options: swaggerJSDoc.Options = {
                     type: 'object',
                     properties: {
                         id: { type: 'integer', example: 1 },
-                        company_name: { type: 'string', example: 'Muebles SA' },
-                        cif: { type: 'string', example: 'B12345678' },
-                        tax_address: { type: 'string', example: 'Calle Industria 4, Madrid' },
                         email: { type: 'string', format: 'email', example: 'contact@mueblessa.com' },
+                        name: { type: 'string', example: 'Juan García' },
+                        cif: { type: 'string', example: 'B12345678' },
+                        company_name: { type: 'string', example: 'Muebles SA' },
                         telephone: { type: 'string', example: '+34600123456' },
+                        tax_address: { type: 'string', example: 'Calle Industria 4, Madrid' },
+                        image_url: { type: 'string', example: 'https://storage.googleapis.com/providers/avatar1.jpg' },
                     },
                 },
                 Furniture: {

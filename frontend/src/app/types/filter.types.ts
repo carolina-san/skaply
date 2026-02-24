@@ -5,7 +5,10 @@ export interface FilterOptions {
   provider_ids?: number[];
   category_ids?: number[];
   color_ids?: number[];
+  visible?: boolean;
   search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export type FilterProvider = ProviderBasic;

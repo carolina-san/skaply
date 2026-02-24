@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 
 import { errorHandler } from '@middleware/errorHandler';
 import apiRoutes from '@/routes';
@@ -38,6 +39,9 @@ app.use(express.json());
 // app.use(express.json({ limit: '32mb' }));
 app.use(express.urlencoded({ extended: true }));
 // app.use(express.urlencoded({ limit: '32mb', extended: true }));
+
+// Serve static files from storage directory
+app.use('/storage', express.static(path.join(__dirname, '../../storage')));
 
 // Documentation
 app.use(

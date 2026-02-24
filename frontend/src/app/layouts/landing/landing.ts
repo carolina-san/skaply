@@ -28,7 +28,7 @@ export class Landing implements AfterViewInit {
   ngAfterViewInit() {
     this.seo.setSeo({
       title: `Skäply - Montaje de Muebles fácil`,
-      description: `Descubre Skäply, la plataforma para montar tus muebles fácilmente. Catálogo completo, motor 3D interactivo y soporte profesional.`,
+      description: `Descubre Skäply, la plataforma para montar tus muebles fácilmente. Catálogo completo, guía interactiva 3D y soporte profesional.`,
       canonical: `https://skaply.ovh/`,
       index: true,
       schema: {
@@ -37,7 +37,7 @@ export class Landing implements AfterViewInit {
         "@id": "https://skaply.ovh/#webapplication",
         "name": "Skäply",
         "url": "https://skaply.ovh",
-        "description": "Plataforma de montaje de muebles con motor 3D interactivo.",
+        "description": "Guía interactiva 3D para el montaje de muebles. Plataforma todo en uno con catálogo, guía interactiva 3D y soporte profesional.",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "All",
         "creator": {

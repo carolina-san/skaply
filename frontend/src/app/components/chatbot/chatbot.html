@@ -1,21 +1,25 @@
+<!-- Comportamiento del chatbot según el tamaño -->
 <div class="fixed right-0 bottom-0 transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
     ' top-0 h-screen': inMontajeMode && isDesktop,     
     'w-1/4  ':  isDesktop,                    
     ' w-full sm:w-96  h-[85vh] ': !inMontajeMode || !isDesktop,
-    'h-20': !chatVisible && (!inMontajeMode || isMobile)
+    'h-15': !chatVisible && (!inMontajeMode || isMobile),
+    '!z-999': chatVisible
   }">
 
+    <!-- Icono del chatbot -->
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
-        class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center p-0  shadow-lg hover:scale-110 transition-transform pointer-events-auto "
+        class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center h-15 w-15 md:h-20 md:w-20 p-2 rounded-full  hover:scale-110 transition-transform pointer-events-auto "
         [ngClass]="{
-        'bottom-10': isCatalogPage,
-        'bottom-40': !isCatalogPage
+        'bottom-5 bg-marron-oscuro shadow-lg border-1 border-beige/50': isCatalogPage,
+        'bottom-14 right-2!': !isCatalogPage
     }" (click)="toggleChat()">
-        <img src="assets/imgs/Allen.png" alt="Allen" class="w-20 h-auto ">
+        <img src="assets/imgs/Allen.png" alt="Allen" class="w-full">
     </button>
 
-
-    <div *ngIf="chatVisible" class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto"
+    <!-- Chatbot abierto y renderizado de rich content -->
+    <div *ngIf="chatVisible"
+        class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
         [ngClass]="{
     'rounded-t-3xl': !inMontajeMode || isMobile}">
 
@@ -47,36 +51,36 @@
                     {{ msg.text }}
                 </div>
 
-                <!-- Renderizado unificado de richContent: card, info, items, chips -->
-                <div *ngIf="msg.rich && !msg.text" class="msg-bot">
+                <!-- Renderizado de richContent -->
+                <div *ngIf="msg.rich && !msg.text" class="">
+
                     <!-- Cards -->
-                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2">
+                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2 msg-bot p-2!">
                         <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
-                            class="w-full h-32 object-cover rounded-2xl">
+                            class="w-full h-25 object-cover rounded-xl">
                         <div>
                             <h4 class="titulo">{{ msg.rich.title }}</h4>
                             <p class="subtitulo">{{ msg.rich.subtitle }}</p>
                         </div>
+                        <!-- Chips dentro de la card -->
                         <div class="flex flex-wrap gap-2 justify-end">
-                            <button *ngFor="let btn of msg.rich.buttons"
-                                class=" chip"
-                                (click)="openLink(btn.postback)">
+                            <button *ngFor="let btn of msg.rich.buttons" class=" chip" (click)="openLink(btn.postback)">
                                 {{ btn.text }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Items type (info, description, list, chips) -->
-                    <div *ngIf="msg.rich.items" class="space-y-2">
+                    <div *ngIf="msg.rich.items" class="space-y-2 flex flex-col ">
                         <div *ngFor="let item of msg.rich.items">
                             <!-- Info item -->
-                            <div *ngIf="item.type === 'info'">
+                            <div *ngIf="item.type === 'info'" class="msg-bot">
                                 <h4 class="titulo">{{ item.title }}</h4>
                                 <p class="subtitulo">{{ item.subtitle }}</p>
                             </div>
 
                             <!-- Description item -->
-                            <div *ngIf="item.type === 'description'">
+                            <div *ngIf="item.type === 'description'" class="msg-bot">
                                 <h4 class="titulo">{{ item.title }}</h4>
                                 <ul class="subtitulo ">
                                     <li *ngFor="let text of item.text">{{ text }}</li>
@@ -84,7 +88,7 @@
                             </div>
 
                             <!-- List item -->
-                            <div *ngIf="item.type === 'list'">
+                            <div *ngIf="item.type === 'list'" class="msg-bot">
                                 <h4 class="font-bold">{{ item.title }}</h4>
                                 <div *ngIf="item.items && item.items.length > 0" class="text-sm space-y-2 mt-1 ml-2">
                                     <div *ngFor="let subitem of item.items">
@@ -95,11 +99,21 @@
                             </div>
 
                             <!-- Chips item -->
-                            <div *ngIf="item.type === 'chips'" class="flex flex-wrap gap-2">
+                            <div *ngIf="item.type === 'chips'" class="flex gap-2 ">
                                 <button *ngFor="let opt of item.options"
                                     class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
                                     (click)="handleChipClick(opt.text)">
                                     {{ opt.text }}
+                                </button>
+                            </div>
+
+                            <!-- Button item -->
+                            <div *ngIf="item.type === 'button'" class="flex items-center gap-2 msg-bot">
+                                <button class="chip flex items-center gap-2" (click)="openLink(item.link)">
+                                    <span *ngIf="item.icon?.type" class="material-symbols-rounded">
+                                        {{ item.icon.type }}
+                                    </span>
+                                    {{ item.text }}
                                 </button>
                             </div>
                         </div>
@@ -123,7 +137,7 @@
                 (stop)="onStopSpeaking()">
             </app-voice-controls>
 
-            <button *ngIf="!isCatalogPage" class="btn-incidencia " (click)="abrirIncidencia()">
+            <button class="btn-incidencia " (click)="abrirIncidencia()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                     <path
                         d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />

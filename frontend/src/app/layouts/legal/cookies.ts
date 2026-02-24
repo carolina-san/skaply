@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Footer } from '../../components/footer/footer';
 import { SeoService } from '../../services/seo.service';
+import { ConsentService } from '../../services/consent.service';
 
 @Component({
   selector: 'app-cookies',
@@ -13,7 +14,10 @@ import { SeoService } from '../../services/seo.service';
 export class Cookies implements OnInit {
   showScrollButton = false;
 
-  constructor(private seo: SeoService) {}
+  constructor(
+    private seo: SeoService,
+    public consentService: ConsentService
+  ) {}
 
   ngOnInit() {
     this.updateScrollButtonVisibility();
@@ -48,5 +52,10 @@ export class Cookies implements OnInit {
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  openConsentModal() {
+    this.consentService.openConsentModal();
+  }
 }
+
 

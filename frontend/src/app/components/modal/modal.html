@@ -1,31 +1,20 @@
 <!-- BACKDROP -->
-<div
-  [ngClass]="{ 'hidden': !open }"
-  class="fixed inset-0 bg-black/60 z-45"
-></div>
+<div [ngClass]="{ 'hidden': !open }" class="fixed inset-0 bg-black/70 z-[1000]"></div>
 
 <!-- MODAL WRAPPER -->
-<div
-  [ngClass]="{ 'hidden': !open }"
-  class="fixed left-0 right-0 bottom-0 z-50 flex justify-center
-          sm:h-auto sm:items-center  sm:w-[60%] sm:inset-0 m-auto  modal-wrapper max-h-[90dvh] overflow-hidden"
->
+<div [ngClass]="{ 'hidden': !open }" class="fixed left-0 right-0 bottom-0 z-[1001] flex justify-center
+          sm:h-auto sm:items-center  sm:w-[60%] sm:inset-0 m-auto  modal-wrapper max-h-[90dvh] overflow-hidden">
 
   <!-- MODAL CONTENT -->
-  <div
-    class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl
+  <div class="bg-beige rounded-t-xl sm:rounded-xl shadow-2xl
            w-full sm:w-[60%]
           pb-[max(0.5rem,env(safe-area-inset-bottom))]
           sm:pb-0
            animate-slide-up sm:!animate-none
-           relative"
-  >
+           relative">
 
     <!-- CLOSE -->
-    <button
-      (click)="close()"
-      class="absolute top-2 right-2 w-8 btn-hover-marron bg-white"
-    >
+    <button (click)="close()" class="absolute top-2 right-2 w-8 btn-hover-marron bg-white">
       ✕
     </button>
 

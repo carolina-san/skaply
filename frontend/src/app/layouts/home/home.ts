@@ -1,13 +1,15 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   Chatbot,
   Footer,
   FilterPanelComponent,
   CardFurniture,
-  Modal
+  Modal,
+  Export,
+  IssueForm
 } from '../../components';
 import { ApiService } from '../../services/api.service';
 import { FilterSharingService } from '../../services/filter-sharing.service';
@@ -15,15 +17,17 @@ import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
 import { SeoService } from '../../services/seo.service';
 
+
 @Component({
   selector: 'app-home',
-  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal],
+  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
 
 export class Home implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild(IssueForm) issueForm!: IssueForm;
 
   categories: any[] = [];
   furnitures: Furniture[] = [];
@@ -41,13 +45,14 @@ export class Home implements OnInit {
   activeFilters: FilterOptions = {};
   resetFilterToggle: boolean = false;
   isFurnitureModalOpen = false;
-  selectedFurniture: Furniture | null = null;
+  selectedFurniture: Furniture | undefined;
   isIncidenciaModalOpen = false;
   isLoadingFurnitures = false;
 
   constructor(
     private apiService: ApiService,
     private router: Router,
+    private route: ActivatedRoute,
     private filterSharingService: FilterSharingService,
     private seo: SeoService
   ) { }
@@ -58,12 +63,37 @@ export class Home implements OnInit {
     this.loadProviders();
     this.loadColors();
 
+    // Verificar si hay un mueble en la URL para abrir su modal automáticamente
+    this.route.queryParams.subscribe(params => {
+      const furnitureRef = params['furniture'];
+      if (furnitureRef) {
+        this.openFurnitureModalByRef(furnitureRef);
+      }
+    });
+
     // Suscribirse a los cambios de categoría desde el chatbot
     this.filterSharingService.selectedCategory$.subscribe(categoryId => {
       if (categoryId !== null) {
+        // Al seleccionar categoría desde el chatbot, limpiamos otros filtros para 'empezar de cero'
         this.selectedCategoryId = categoryId;
+        this.activeFilters = {};
+        this.calculateActiveFilters(this.activeFilters);
         this.obtenerCatalogo();
         this.filterSharingService.clearSelectedCategory();
+      }
+    });
+
+    // Suscribirse a los cambios de color desde el chatbot
+    this.filterSharingService.selectedColors$.subscribe(colorIds => {
+      if (colorIds && colorIds.length > 0) {
+        // Al seleccionar color desde el chatbot, limpiamos categoría y otros filtros
+        this.selectedCategoryId = null; // Limpiar categoría seleccionada
+        this.activeFilters = {
+          color_ids: colorIds // Solo mantener los nuevos colores
+        };
+        this.calculateActiveFilters(this.activeFilters);
+        this.obtenerCatalogo();
+        this.filterSharingService.clearSelectedColors();
       }
     });
 
@@ -73,21 +103,21 @@ export class Home implements OnInit {
 
     this.seo.setSeo({
       title: `Catálogo de muebles disponibles - Skäply`,
-      description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra la pieza perfecta para tu espacio y móntala fácilmente.`,
+      description: `Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.`,
       canonical: `https://skaply.ovh/catalogo`,
       index: true,
       schema: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         'name': 'Catálogo de Muebles',
-        'description': 'Explorar catálogo de muebles disponibles',
+        'description': 'Explora nuestro catálogo de muebles disponibles en Skäply. Encuentra el mueble perfecto para tu espacio y móntalo fácilmente con nuestro manual interactivo 3D.',
         'url': 'https://skaply.ovh/catalogo'
       }
     });
   }
 
   abrirModalIncidencia() {
-    this.isIncidenciaModalOpen = true;
+    this.issueForm.open();
   }
 
   resetIncidenciaForm() {
@@ -108,9 +138,12 @@ export class Home implements OnInit {
 
   goToViewer3D() {
     if (!this.selectedFurniture) return;
-    this.router.navigate(['/viewer-3d', this.selectedFurniture.reference_number]);
-    this.closeFurnitureModal();
-    this.selectedFurniture = null;
+    const ref = this.selectedFurniture.reference_number;
+    // Cerrar modal sin limpiar query params (evita conflicto de navegaciones)
+    this.isFurnitureModalOpen = false;
+    this.selectedFurniture = undefined;
+    // Navegar al visor 3D
+    this.router.navigate(['/viewer-3d', ref]);
   }
 
   openFurnitureModal(furniture: Furniture) {
@@ -120,6 +153,33 @@ export class Home implements OnInit {
 
   closeFurnitureModal() {
     this.isFurnitureModalOpen = false;
+    this.selectedFurniture = undefined;
+    // Limpiar el query param de la URL al cerrar el modal
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
+  /**
+   * Abre el modal de un mueble buscándolo por su reference_number
+   * Usado cuando se accede via QR: /catalogo?furniture=F001
+   */
+  openFurnitureModalByRef(referenceNumber: string) {
+    this.apiService.getFurnitureById(referenceNumber).subscribe({
+      next: (response) => {
+        if (response.data && response.data.length > 0) {
+          const furniture = response.data[0];
+          this.openFurnitureModal(furniture);
+        } else {
+          console.error('Mueble no encontrado:', referenceNumber);
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar mueble por referencia:', error);
+      }
+    });
   }
 
   /**
@@ -139,7 +199,7 @@ export class Home implements OnInit {
 
     this.isLoadingFurnitures = true;
     if (filters.category_ids?.length === 0 && !filters.difficulties?.length && !filters.provider_ids?.length && !filters.color_ids?.length && !filters.search) {
-      this.apiService.getAllFurniture().subscribe({
+      this.apiService.getVisibleFurniture().subscribe({
         next: (response) => {
           this.furnitures = response.data || [];
           this.isLoadingFurnitures = false;
@@ -175,7 +235,7 @@ export class Home implements OnInit {
   }
 
   loadProviders() {
-    this.apiService.getProviders().subscribe({
+    this.apiService.getVisibleProviders().subscribe({
       next: (response) => {
         this.providers = Object.values(response.data);
       },

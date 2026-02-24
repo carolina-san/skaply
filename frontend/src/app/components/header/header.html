@@ -1,30 +1,32 @@
 <header [ngClass]="{
-    'fixed w-full top-0 left-0 transition-all duration-300 ': true,
-    'backdrop-blur-lg': currentRoute !== '/profile',
-    'backdrop-blur-none bg-transparent': currentRoute === '/profile',
+    'backdrop-blur-lg': currentRoute === '/catalogo' || currentRoute === '/',
     'header-expanded': !scrolled,
-    'header-compact': scrolled
-  }" class="z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
+    'header-compact': scrolled,
+    'header-mini': currentRoute === '/admin' || currentRoute === '/provider',
+    'header-assembly': isViewer3D 
+  }"
+  class="fixed w-full top-0 left-0 transition-all duration-300 z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
-  <button *ngIf="!isHome" (click)="goBack()"
-    class="absolute w-6 h-6 left-5 md:left-10 text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
-    <span class="material-symbols-rounded">
+  <div class="flex items-center gap-2">
+    <button *ngIf="canGoBack()" (click)="goBack()"
+      class="fixed left-3 md:relative md:left-0 text-white cursor-pointer hover:translate-x-[-5px] hover:scale-105 transition-transform duration-400">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="m382-480 294 294q15 15 14.5 35T675-116q-15 15-35 15t-35-15L297-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T676-844q15 15 15 35t-15 35L382-480Z" />
       </svg>
-    </span>
-  </button>
+    </button>
 
-  <div class="logo-container w-40 lg:w-50 cursor-pointer" (click)="scrollToTop()">
-    <!-- Logo normal -->
-    <img src="assets/skaply_azul.svg" alt="logo normal"
-      class="w-full h-auto hover:scale-105 transition-all duration-400"
-      [ngClass]="{'logo-normal':isHome}" />
+    <div class="logo-container w-30 md:w-40 lg:w-50 max-w-50 cursor-pointer" (click)="goHome()"
+      [ngClass]="{'logo-panel':currentRoute === '/admin' || currentRoute === '/provider'}">
+      <!-- Logo normal -->
+      <img src="assets/skaply_azul.svg" alt="logo normal"
+        class="w-full h-auto hover:scale-105 transition-all duration-400" [ngClass]="{'logo-normal':isHome}" />
 
-    <!-- Logo reducido -->
-    <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
-      class="logo-hover w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-2px] left-15" />
+      <!-- Logo reducido -->
+      <img *ngIf="isHome" src="assets/reducido.svg" alt="logo reducido"
+        class="logo-hover w-12 md:w-17 h-auto opacity-0 transition-opacity duration-500 absolute top-[-6px] left-10" />
+    </div>
+
   </div>
 
   <!-- Menú si está en la landing -->
@@ -33,22 +35,24 @@
   <!-- Botones de autenticación -->
   <div *ngIf="!isViewer3D" class="hidden lg:flex items-center gap-3 absolute lg:right-20">
     <!-- Botón de login (si no hay sesión) -->
-    <a *ngIf="!isHome && currentRoute !== '/profile' && !isLoggedIn() " class="flex items-center justify-center
+    <a *ngIf="!isHome && !isLogin && currentRoute !== '/admin' && currentRoute !== '/provider' && !isLoggedIn() "
+      (click)="goLogin()" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-marron-oscuro font-semibold
-      hover:bg-beige transition duration-300 cursor-not-allowed pointer-events-none opacity-60">
+      hover:bg-beige transition duration-300 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
         <path
           d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
       </svg>
     </a>
 
-    <!-- Botón de logout (si hay sesión iniciada) -->
-    <button *ngIf="!isHome && currentRoute !== '/profile' && isLoggedIn()" (click)="logout()" class="flex items-center justify-center
+    <!-- Botón de perfil (si hay sesión iniciada) -->
+    <button *ngIf="!isHome && currentRoute !== '/admin' && currentRoute !== '/provider' && isLoggedIn()"
+      (click)="goToProfile()" class="flex items-center justify-center
       bg-azul-claro rounded-full h-10 w-10 text-white font-semibold
-      hover:bg-beige transition duration-300 cursor-pointer" title="Cerrar sesión">
+      hover:bg-beige transition duration-300 cursor-pointer" title="Mi Perfil">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
         <path
-          d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h240q17 0 28.5 11.5T480-800q0 17-11.5 28.5T440-760H200v560h240q17 0 28.5 11.5T480-160q0 17-11.5 28.5T440-120H200Zm487-320H400q-17 0-28.5-11.5T360-480q0-17 11.5-28.5T400-520h287l-75-75q-11-11-11-27t11-28q11-12 28-12.5t29 11.5l143 143q12 12 12 28t-12 28L669-309q-12 12-28.5 11.5T612-310q-11-12-10.5-28.5T613-366l74-74Z" />
+          d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
       </svg>
     </button>
   </div>

@@ -9,6 +9,7 @@ declare global {
       user?: {
         emailuser: string;
         role: string;
+        id: number;
       };
     }
   }
@@ -30,6 +31,7 @@ export const authMiddleware = (
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as {
       emailuser: string;
       role: string;
+      id: number;
     };
 
     // Agregar la información del usuario al request

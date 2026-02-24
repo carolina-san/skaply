@@ -1,54 +1,47 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, signal, computed, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine-facade/interfaces';
+import { FormsModule } from '@angular/forms';
+import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
+import { EngineSwitch } from '../engine-switch/engine-switch';
+import { ActivatedRoute } from '@angular/router'
+import { Modal } from '../modal/modal';
 
-interface AssemblyPart {
-  object: RenderableObject;
-  startPosition: Vector3;
-  targetPosition: Vector3;
-  appearStep: number;
-  joinStep: number;
-  name: string;
-  description: string;
-  arrow?: RenderableObject;
-}
-
-import { ThreeEngineAdapter } from '../../engine-facade/threeEngine';
+import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
+import { WebGLEngine } from '../../engine/webgl/webglEngine';
+import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../types/furniture.types';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-graphics-engine',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, EngineSwitch, Modal],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
+  styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
+export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
-  constructor(private engine: EngineFacade, private apiService: ApiService) { }
+  @Output() engineChanged = new EventEmitter<string>();
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
-  furnitures: Furniture[] = [];
+  finished = output<void>();
 
-  controlsMode = input<'interactive' | 'display-only' | 'hidden'>('interactive');
-  autoStartSimulation = input<boolean>(false);
+  selectedEngine = 'threejs';
+  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
+  useExternalModel = true;
+  furniture?: Furniture;
 
-  getFurnitureById(idFurniture: number) {
-    return this.furnitures.find(furniture => furniture.id === idFurniture);
-  }
-
-  showHeader = computed(() => this.controlsMode() === 'interactive');
-  showFooterControls = computed(() => this.controlsMode() !== 'hidden');
-  areControlsDisabled = computed(() => this.controlsMode() === 'display-only');
-
-  totalSteps = 10;
+  totalSteps = signal(0);
   manualStep = signal(0);
   simulationStep = signal(0);
   isolatedPart = signal<AssemblyPart | null>(null);
@@ -57,23 +50,11 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
   isSmallScreen = signal(false);
 
-  currentStep = computed(() => {
-    switch (this.mode()) {
-      case 'manual':
-        return this.manualStep();
-      case 'simulation':
-        return this.simulationStep();
-      case 'final':
-        return this.totalSteps - 1;
-      default:
-        return 0;
-    }
-  });
+  autoStartSimulation = input<boolean>(false);
 
   isSimulating = computed(() => this.mode() === 'simulation');
-
   isManualFirstStep = computed(() => this.manualStep() === 0);
-  isManualComplete = computed(() => this.manualStep() === this.totalSteps - 1);
+  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
   isSimulationPaused = signal(false);
   simulationSpeed = signal(1);
@@ -82,31 +63,13 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   backgroundColor = signal<'dark' | 'light'>('dark');
   isCameraMoved = signal(false);
 
-  stepDescriptions = [
-    "Paso 1: Prepara los tacos inferiores.",
-    "Paso 2: Inserta los tacos en la base.",
-    "Paso 3: Prepara los paneles laterales.",
-    "Paso 4: Une los paneles laterales a la base.",
-    "Paso 5: Prepara el panel trasero.",
-    "Paso 6: Desliza el panel trasero en su sitio.",
-    "Paso 7: Prepara los tacos superiores.",
-    "Paso 8: Inserta los tacos en los paneles laterales.",
-    "Paso 9: Prepara el panel superior y los tornillos.",
-    "Paso 10: Fija el panel superior con los tornillos."
-  ];
+  stepDescriptions = signal<string[]>([]);
 
-  /* 
-   * Engine facade abstracts these details
-   */
-  // private renderer!: THREE.WebGLRenderer;
-  // private scene!: THREE.Scene;
-  // private camera!: THREE.PerspectiveCamera;
-  // private controls!: OrbitControls;
-  // private composer!: EffectComposer;
-  // private outlinePass!: OutlinePass;
-  // private raycaster = new THREE.Raycaster();
-  // private pointer = new THREE.Vector2();
+  // Methods/Signals used in template
+  showFooterControls = signal(true);
+  areControlsDisabled = signal(false);
 
+  private engine!: EngineFacade;
   private parts: AssemblyPart[] = [];
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
@@ -116,26 +79,99 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
 
-  // private onControlsChange = () => { ... } managed by facade loop mostly or we can re-implement listener if facade exposes events
-  // For now simple check in animate or just assume moved if interactions happen?
-  // The original code used a listener. Facade doesn't expose event listener yet.
-  // We can add a 'checkCameraMoved' to facade or just checking in animate.
-  // For this refactor I'll simplify: we won't track "isCameraMoved" exactly as before unless I add getCamera props.
-  // But wait, the facade has `getCamera()` as escape hatch.
+  private isViewInitialized = false;
 
-  private initialCameraState: any = null; // Store initial state manually if needed
+  get modelUrl(): string {
+    return this.furniture?.file_uri || '';
+  }
 
+  get modelAssembly(): any {
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+  }
+
+  currentStep = computed(() => {
+    switch (this.mode()) {
+      case 'manual':
+        return this.manualStep();
+      case 'simulation':
+        return this.simulationStep();
+      case 'final':
+        return this.totalSteps() - 1;
+      default:
+        return 0;
+    }
+  });
+
+  stepsRatio = computed(() => {
+    const total = this.totalSteps();
+    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
+    return (total > 0 && logical > 0) ? total / logical : 1;
+  });
+
+  currentLogicalStep = computed(() => {
+    return Math.floor(this.currentStep() / this.stepsRatio());
+  });
+
+  visibleSteps = computed(() => {
+    const count = this.furniture?.total_steps || this.stepDescriptions().length;
+    return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
+  });
+
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {
+    effect(() => {
+      // Logic for scrolling active step
+      this.currentLogicalStep();
+      setTimeout(() => {
+        this.centerActiveStep();
+      }, 100);
+    });
+  }
+
+  private boundWindowResize = this.onWindowResize.bind(this);
+  private boundScreenResize = () => this.checkScreenSize();
+
+  ngOnInit(): void {
+    this.createEngineInstance();
+
+    let ref = this.route.snapshot.params['ref'];
+    this.apiService.getFurnitureById(ref).subscribe((f: any) => {
+      this.furniture = f.data ? f.data : f;
+      console.log('Furniture loaded:', this.furniture);
+
+      if (this.useExternalModel && this.isViewInitialized) {
+        this.createFurniture().then(() => {
+          if (!this.animationFrameId) this.animate();
+        });
+      }
+    });
+  }
+
+  private createEngineInstance(): void {
+    if (this.engineUse() === 'webGL') {
+      console.log('Using WebGL Custom Engine');
+      this.engine = new WebGLEngine();
+    } else {
+      console.log('Using ThreeJS Adapter');
+      this.engine = new ThreeEngineAdapter();
+    }
+  }
 
   ngAfterViewInit(): void {
     this.checkScreenSize();
-    window.addEventListener('resize', () => this.checkScreenSize());
+    window.addEventListener('resize', this.boundScreenResize);
 
     this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
         this.initThree();
-        this.createFurniture();
-        this.animate();
+        this.setupEventListeners();
+        this.isViewInitialized = true;
+
+        if (this.useExternalModel) {
+          if (this.furniture) {
+            this.createFurniture().then(() => this.animate());
+          }
+        }
 
         if (this.autoStartSimulation()) {
           this.setMode('simulation');
@@ -153,12 +189,55 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     }
     this.stopAR();
     this.resizeObserver?.disconnect();
-    window.removeEventListener('resize', () => this.checkScreenSize());
-    this.engine.dispose();
+    window.removeEventListener('resize', this.boundScreenResize);
+    window.removeEventListener('resize', this.boundWindowResize);
+
+    const canvas = this.canvasRef?.nativeElement;
+    if (canvas) {
+      canvas.removeEventListener('mousemove', this.onPointerMove);
+      canvas.removeEventListener('dblclick', this.onDoubleClick);
+    }
+
+    this.engine?.dispose();
+  }
+
+  public onEngineChange(newEngine: string): void {
+    if (this.selectedEngine === newEngine) return;
+
+    console.log('Switching engine to:', newEngine);
+    this.selectedEngine = newEngine;
+    this.engineUse.set(newEngine === 'threejs' ? 'threeJS' : 'webGL');
+    this.engineChanged.emit(newEngine);
+
+    if (this.isViewInitialized) {
+      // 1. Dispose old engine
+      this.engine?.dispose();
+
+      // 2. Create new instance
+      this.createEngineInstance();
+
+      // 3. Re-initialize viewport
+      this.initThree();
+
+      // 4. Reload furniture
+      if (this.furniture) {
+        this.createFurniture().then(() => {
+          if (!this.animationFrameId) this.animate();
+        });
+      }
+    }
+  }
+
+  goToStep(logicalStepIndex: number): void {
+    const ratio = this.stepsRatio();
+    const targetStep = logicalStepIndex * ratio;
+    if (targetStep >= 0 && targetStep < this.totalSteps()) {
+      this.manualStep.set(targetStep);
+    }
   }
 
   nextStep(): void {
-    this.manualStep.update(step => (step < this.totalSteps - 1 ? step + 1 : step));
+    this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
   }
 
   prevStep(): void {
@@ -168,6 +247,12 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   reset(): void {
     this.manualStep.set(0);
   }
+
+  openFinishModal(): void {
+    this.finished.emit();
+  }
+
+
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
@@ -187,11 +272,13 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
   }
 
   public setMode(newMode: 'manual' | 'simulation' | 'final'): void {
+    if (this.mode() === 'final' && newMode === 'final') {
+      newMode = 'manual';
+    };
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
 
-    // Auto rotate logic
     const shouldRotate = newMode === 'simulation' || newMode === 'final';
     this.engine.toggleControls(true, shouldRotate);
 
@@ -252,6 +339,22 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     this.arFlowState.set('idle');
   }
 
+  private centerActiveStep(): void {
+    if (!this.stepsContainer?.nativeElement) return;
+
+    const container = this.stepsContainer.nativeElement;
+    const activeIndex = this.currentLogicalStep();
+    const buttons = container.querySelectorAll('button');
+
+    if (buttons[activeIndex]) {
+      buttons[activeIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }
+
   private checkScreenSize(): void {
     this.isSmallScreen.set(window.innerWidth < 768);
   }
@@ -264,7 +367,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
     try {
       // Ensure the model is fully assembled by switching to 'final' mode.
-      this.setMode('final');
+      this.setMode('manual');
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       this.videoStream = stream;
@@ -315,166 +418,206 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
     this.engine.init(canvas, width, height);
     this.engine.setControlsAutoRotateSpeed(1.0);
+  }
 
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onDoubleClick = this.onDoubleClick.bind(this);
+  private setupEventListeners(): void {
+    const canvas = this.canvasRef.nativeElement;
+
+    // Use property reassignment for binding to match existing method structure
+    // but ensure they are stable references
+    const originalMove = this.onPointerMove;
+    const originalClick = this.onDoubleClick;
+
+    this.onPointerMove = originalMove.bind(this);
+    this.onDoubleClick = originalClick.bind(this);
+
     canvas.addEventListener('mousemove', this.onPointerMove);
     canvas.addEventListener('dblclick', this.onDoubleClick);
-    window.addEventListener('resize', this.onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundWindowResize);
+  }
+  private async createFurniture(): Promise<void> {
+
+    let baseModel: RenderableObject | undefined;
+
+    // 0. Pre-load the base model if available (shared for both API assembly and single-model rollback)
+    if (this.modelUrl) {
+      try {
+        console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
+        baseModel = await this.engine.loadGLTF(this.modelUrl);
+        // Ensure it's in the scene to find parts, though we might toggle visibility later
+        baseModel.setPosition(0, 0, 0);
+        baseModel.castShadow = true;
+        baseModel.receiveShadow = true;
+        this.engine.addToScene(baseModel);
+        console.log('[GLB NAMES]', baseModel.nativeObject.getObjectNames());
+      } catch (error) {
+        console.error('Error pre-loading base model:', error);
+      }
+    }
+
+    // 1. Attempt to load from API Assembly Steps
+    try {
+      const furnitureId = Number(this.furniture?.id) || 6;
+      const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+
+      if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
+        console.log('Loading assembly from API for furniture ID:', furnitureId);
+        // Pass the pre-loaded baseModel to find parts inside it
+        const { parts, totalSteps, stepDescriptions } = await this.createPartsFromApi(assemblyData, baseModel);
+
+        // If we found parts, we use them.
+        // If the baseModel was loaded but NO parts were matched/found inside it (and no external files),
+        // createPartsFromApi might return placeholders. 
+        // We assume valid configuration if parts.length > 0.
+
+        if (parts.length > 0) {
+          this.parts = parts;
+          this.totalSteps.set(totalSteps);
+          this.stepDescriptions.set(stepDescriptions);
+
+          // If we successfully set up the assembly from the API, we keep the baseModel in the scene?
+          // If the parts are children of baseModel, they are already in the scene.
+          // If we use specific parts, we might want to hide the "rest" of the baseModel if it contains duplicates?
+          // Usually, if we extracting parts, we are manipulating them.
+          // If the baseModel is just a container, it's fine.
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
+    }
+
+    if (this.useExternalModel && baseModel) {
+      console.log('Using standard external model mode.');
+      this.totalSteps.set(1);
+      this.stepDescriptions.set(['Visualización del modelo']);
+      this.setMode('final');
+      return;
+    }
   }
 
-  private createPart(
-    object: RenderableObject,
-    startPos: Vector3,
-    targetPos: Vector3,
-    appearStep: number,
-    joinStep: number,
-    name: string,
-    description: string
-  ): AssemblyPart {
-    object.setPosition(startPos.x, startPos.y, startPos.z);
-    object.castShadow = true;
-    object.receiveShadow = true;
-    this.engine.addToScene(object);
-    return { object, startPosition: startPos, targetPosition: targetPos, appearStep, joinStep, name, description };
-  }
+  private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
+    const parts: AssemblyPart[] = [];
+    const stepDescriptions: string[] = [];
+    let currentStepIndex = 0;
 
-  private createSidePanelWithHoles(dowelHolePositions: { z: number }[], screwHolePositions: { z: number }[]): RenderableObject {
-    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
-    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
+    // Generic material configuration
+    const defaultMaterial: MaterialConfig = { type: 'standard', color: 0xCCCCCC, roughness: 0.8, metalness: 0.1 };
 
-    const group = this.engine.createGroup();
+    // Sort steps by step_number just in case
+    const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
 
-    const panelMesh = this.engine.createMesh({ type: 'box', args: [0.1, 2, 2] }, woodMaterial);
-    group.add(panelMesh);
+    for (const step of sortedSteps) {
+      const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
+      stepDescriptions.push(description);
 
-    const holeGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
-    dowelHolePositions.forEach(p => {
-      const bottomHole = this.engine.createMesh(holeGeo, holeMaterial);
-      bottomHole.setPosition(0, -0.94, p.z);
-      bottomHole.setRotation(0, 0, Math.PI / 2);
-      group.add(bottomHole);
+      // Calculate appear and join steps
+      const appearStep = currentStepIndex * 2;
+      const joinStep = appearStep + 1;
 
-      const topHole = this.engine.createMesh(holeGeo, holeMaterial);
-      topHole.setPosition(0, 0.94, p.z);
-      topHole.setRotation(0, 0, Math.PI / 2);
-      group.add(topHole);
-    });
+      for (const partRef of step.parts) {
+        let mesh: RenderableObject | null = null;
+        let targetPos = { x: 0, y: 0, z: 0 };
+        let usingExistingMesh = false;
 
-    const pilotHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.045, 0.045, 0.1, 12] };
-    screwHolePositions.forEach(p => {
-      const pilotHole = this.engine.createMesh(pilotHoleGeo, holeMaterial);
-      pilotHole.setPosition(0, 0.95, p.z);
-      group.add(pilotHole);
-    });
+        if (partRef.file_uri) {
+          // Case A: Part has its own file
+          try {
+            mesh = await this.engine.loadGLTF(partRef.file_uri);
+          } catch (e) {
+            console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
+            console.error('file_uri que falla:', partRef.file_uri);
+          }
+        }
 
-    return group;
-  }
+        if (!mesh && baseModel && partRef.reference_number) {
+          // Case B: Look for part in baseModel by reference number
+          // Access native object (THREE.Object3D) to traverse/find
+          // We assume reference_number matches the node name in GLTF
+          const nativeRoot = baseModel.nativeObject;
+          const foundNative = nativeRoot.getObjectByName(partRef.reference_number);
 
-  private createTopPanelWithHoles(dowelHolePositions: { x: number, y: number, z: number }[], screwHolePositions: { x: number, z: number }[]): RenderableObject {
-    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
-    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
+          if (foundNative) {
+            mesh = this.engine.wrapNativeObject(foundNative);
+            usingExistingMesh = true;
+            // Capture its current assembled position (Target)
+            // Note: getPosition() returns world or local? 
+            // EngineFacade.getPosition() wraps native .position (local).
+            // If the hierarchy is flat or we just want local animation, this is fine.
+            targetPos = mesh.getPosition();
+          } else {
+            console.warn(`Part with reference '${partRef.reference_number}' not found in base model.`);
+          }
+        }
 
-    const group = this.engine.createGroup();
-    const panelMesh = this.engine.createMesh({ type: 'box', args: [2.2, 0.1, 2.2] }, woodMaterial);
-    group.add(panelMesh);
+        if (!mesh) {
+          // Case C: Fallback placeholder
+          console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
+          continue;
+        }
 
-    const dowelHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
-    dowelHolePositions.forEach(p => {
-      const holeMesh = this.engine.createMesh(dowelHoleGeo, holeMaterial);
-      holeMesh.setPosition(p.x, 0, p.z);
-      group.add(holeMesh);
-    });
+        // If we created a new mesh (Case A or C), we need to add it to scene.
+        // If we found an existing mesh (Case B), it's already in the scene (as child of baseModel).
+        // However, for animation, if we want to move it freely, we might need to detach it or just move it relative to parent.
+        // The animation logic uses mesh.setPosition(). 
 
-    const screwHoleGeo: GeometryConfig = { type: 'cylinder', args: [0.045, 0.045, 0.12, 12] };
-    screwHolePositions.forEach(p => {
-      const holeMesh = this.engine.createMesh(screwHoleGeo, holeMaterial);
-      holeMesh.setPosition(p.x, 0, p.z);
-      group.add(holeMesh);
-    });
+        if (!usingExistingMesh) {
+          this.engine.addToScene(mesh);
+        }
 
-    return group;
-  }
+        // Calculate start position based on axis and distance
+        const startPos = { ...targetPos };
+        const dist = partRef.distance; // default distance
 
-  private createFurniture(): void {
-    const woodMaterial: MaterialConfig = { type: 'standard', color: 0xEAE0D5, roughness: 0.8, metalness: 0.1 };
-    const screwMaterial: MaterialConfig = { type: 'standard', color: 0x374151, roughness: 0.4, metalness: 0.9 };
-    const holeMaterial: MaterialConfig = { type: 'standard', color: 0x4F4A45, roughness: 0.9 };
-    const dowelArgs = [0.03, 0.03, 0.2, 8];
-    let step = 0;
+        console.log("distancia en paso: ", currentStepIndex, " es: ", dist);
 
-    const baseMesh = this.engine.createMesh({ type: 'box', args: [2, 0.1, 2] }, woodMaterial);
-    this.parts.push(this.createPart(baseMesh, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, 0, 0, 'Panel Base', 'Panel inferior de madera (100x100x2cm)'));
+        if (partRef.axis === 'x') startPos.x += dist;
+        else if (partRef.axis === 'y') startPos.y += dist;
+        else if (partRef.axis === 'z') startPos.z += dist;
+        else startPos.y += dist; // Default
 
-    const baseDowelPositions = [{ x: 0.9, z: -0.9 }, { x: -0.9, z: -0.9 }, { x: 0.9, z: 0.9 }, { x: -0.9, z: 0.9 }];
-    const holeGeo: GeometryConfig = { type: 'cylinder', args: [0.035, 0.035, 0.12, 12] };
+        // Set initial state to START position
+        mesh.setPosition(startPos.x, startPos.y, startPos.z);
+        if (!usingExistingMesh) {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
+        // Ensure visibility is managed by animation loop, but initially...
+        // The animation loop sets visibility based on steps.
 
-    baseDowelPositions.forEach(p => {
-      const holeMesh = this.engine.createMesh(holeGeo, holeMaterial);
-      holeMesh.setPosition(p.x, 0.04, p.z);
-      baseMesh.add(holeMesh);
+        const assemblyPart: AssemblyPart = {
+          object: mesh,
+          startPosition: startPos,
+          targetPosition: targetPos,
+          appearStep,
+          joinStep,
+          name: partRef.reference_number || `Part ${partRef.part_id}`,
+          description: `Part: ${partRef.reference_number}`
+        };
 
-      const dowelMesh = this.engine.createMesh({ type: 'cylinder', args: dowelArgs }, woodMaterial);
-      const partDowel = this.createPart(dowelMesh, { x: p.x, y: 0.5, z: p.z }, { x: p.x, y: 0.15, z: p.z }, step, step + 1, 'Tarugo de Madera', 'Cilindro de madera de haya (Ø6x30mm)');
-      partDowel.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.3, 0x00ffff);
-      partDowel.object.add(partDowel.arrow);
-      this.parts.push(partDowel);
-    });
-    step += 2;
+        // Arrow helper logic (simplified)
+        if (dist > 0.01) {
+          const dir = { x: targetPos.x - startPos.x, y: targetPos.y - startPos.y, z: targetPos.z - startPos.z };
+          const len = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+          if (len > 0) {
+            const arrowDir = { x: dir.x / len, y: dir.y / len, z: dir.z / len };
+            const arrowLength = 0.6;
+            const originOffset = {
+              x: -arrowDir.x * arrowLength,
+              y: -arrowDir.y * arrowLength + 0.3,
+              z: -arrowDir.z * arrowLength
+            };
+            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
+            assemblyPart.object.add(assemblyPart.arrow);
+          }
+        }
 
-    const sidePanelDowelHolePositions = [{ z: 0.9 }, { z: -0.9 }];
-    const screwPositions = [{ x: 0.95, z: 0.8 }, { x: -0.95, z: 0.8 }, { x: 0.95, z: -0.8 }, { x: -0.95, z: -0.8 }];
-    const sidePanelScrewHolePositions = screwPositions.map(p => ({ z: p.z })).filter((value, index, self) => self.findIndex(v => v.z === value.z) === index);
+        parts.push(assemblyPart);
+      }
+      currentStepIndex++;
+    }
 
-    const rightPanel = this.createSidePanelWithHoles(sidePanelDowelHolePositions, sidePanelScrewHolePositions);
-    const partRight = this.createPart(rightPanel, { x: 1.5, y: 1.05, z: 0 }, { x: 0.95, y: 1.05, z: 0 }, step, step + 1, 'Panel Lateral Derecho', 'Panel lateral de madera (100x100x5cm)');
-    partRight.arrow = this.engine.createArrowHelper({ x: -1, y: 0, z: 0 }, { x: 0.4, y: 0, z: 0 }, 0.35, 0x00ffff);
-    partRight.object.add(partRight.arrow);
-    this.parts.push(partRight);
-
-    const leftPanel = this.createSidePanelWithHoles(sidePanelDowelHolePositions, sidePanelScrewHolePositions);
-    const partLeft = this.createPart(leftPanel, { x: -1.5, y: 1.05, z: 0 }, { x: -0.95, y: 1.05, z: 0 }, step, step + 1, 'Panel Lateral Izquierdo', 'Panel lateral de madera (100x100x5cm)');
-    partLeft.arrow = this.engine.createArrowHelper({ x: 1, y: 0, z: 0 }, { x: -0.4, y: 0, z: 0 }, 0.35, 0x00ffff);
-    partLeft.object.add(partLeft.arrow);
-    this.parts.push(partLeft);
-    step += 2;
-
-    const backPanelMesh = this.engine.createMesh({ type: 'box', args: [1.8, 2, 0.1] }, woodMaterial);
-    const partBack = this.createPart(backPanelMesh, { x: 0, y: 1.05, z: -1.5 }, { x: 0, y: 1.05, z: -0.95 }, step, step + 1, 'Panel Trasero', 'Panel fino de contrachapado (90x100cm)');
-    partBack.arrow = this.engine.createArrowHelper({ x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -0.4 }, 0.35, 0x00ffff);
-    partBack.object.add(partBack.arrow);
-    this.parts.push(partBack);
-    step += 2;
-
-    const topDowelPositions = [
-      { x: 0.95, y: 2.05, z: 0.9 }, { x: 0.95, y: 2.05, z: -0.9 },
-      { x: -0.95, y: 2.05, z: 0.9 }, { x: -0.95, y: 2.05, z: -0.9 }
-    ];
-    topDowelPositions.forEach(p => {
-      const dowelMesh = this.engine.createMesh({ type: 'cylinder', args: dowelArgs }, woodMaterial);
-      const partDowel = this.createPart(dowelMesh, { x: p.x, y: p.y + 0.5, z: p.z }, { x: p.x, y: p.y, z: p.z }, step, step + 1, 'Tarugo de Madera Superior', 'Cilindro de madera de haya (Ø6x30mm)');
-      partDowel.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.3, 0x00ffff);
-      partDowel.object.add(partDowel.arrow);
-      this.parts.push(partDowel);
-    });
-    step += 2;
-
-    const topPanel = this.createTopPanelWithHoles(topDowelPositions, screwPositions);
-    const partTop = this.createPart(topPanel, { x: 0, y: 2.8, z: 0 }, { x: 0, y: 2.1, z: 0 }, step, step + 1, 'Panel Superior', 'Panel superior de madera (110x110x2cm)');
-    partTop.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.2, z: 0 }, 0.6, 0x00ffff);
-    partTop.object.add(partTop.arrow);
-    this.parts.push(partTop);
-
-    const screwGeoArgs = [0.04, 0.04, 0.3, 12];
-    screwPositions.forEach(p => {
-      const screwMesh = this.engine.createMesh({ type: 'cylinder', args: screwGeoArgs }, screwMaterial);
-      const partScrew = this.createPart(screwMesh, { x: p.x, y: 2.8, z: p.z }, { x: p.x, y: 2.0, z: p.z }, step, step + 1, 'Tornillo de Montaje', 'Tornillo de acero (Ø8x40mm)');
-      partScrew.arrow = this.engine.createArrowHelper({ x: 0, y: -1, z: 0 }, { x: 0, y: -0.25, z: 0 }, 0.4, 0x00ffff);
-      partScrew.object.add(partScrew.arrow);
-      this.parts.push(partScrew);
-    });
-    step += 2;
-    this.totalSteps = step;
+    return { parts, totalSteps: currentStepIndex * 2, stepDescriptions };
   }
 
   private runSimulation(): void {
@@ -488,7 +631,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
     if (now - this.lastStepTime > interval) {
       if (this.simulationDirection() === 'forward') {
-        if (this.simulationStep() >= this.totalSteps - 1) {
+        if (this.simulationStep() >= this.totalSteps() - 1) {
           this.simulationDirection.set('backward');
         } else {
           this.simulationStep.update(s => s + 1);
@@ -588,9 +731,9 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
 
         part.object.setVisible(hasAppeared || distStart > 0.01);
       });
-    }
 
-    this.engine.render();
+      this.engine.render();
+    }
   }
 
   private onWindowResize(): void {
@@ -632,6 +775,10 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  onCanvasInteraction(): void {
+    // Prevent default browser behavior if needed, or trigger specific app logic
+  }
+
   private onPointerMove(event: MouseEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
 
@@ -660,6 +807,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+
   // Helper to find which AssemblyPart owns a RenderableObject (walking up hierarchy if needed)
   private findPartForObject(inputObj: RenderableObject): AssemblyPart | undefined {
     return this.parts.find(p => {
@@ -678,4 +826,7 @@ export class GraphicsEngineComponent implements AfterViewInit, OnDestroy {
       return false;
     });
   }
+
+
+
 }

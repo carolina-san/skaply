@@ -5,8 +5,12 @@ import { HttpClient } from '@angular/common/http';
 export interface User {
   email: string;
   role: string;
-  company_name?: string;
+  company_name: string;
   loginMethod?: string;
+  id: number;
+  name?: string;
+  telephone?: string;
+  image_url?: string;
 }
 
 @Injectable({
@@ -16,6 +20,9 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
+  private isAuthReadySubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  public isAuthReady$: Observable<boolean> = this.isAuthReadySubject.asObservable();
+
   constructor(private http: HttpClient) {
     // Verificar si hay un usuario logueado al iniciar la aplicación
     this.checkAuthStatus();
@@ -24,10 +31,13 @@ export class AuthService {
   checkAuthStatus(): void {
     this.http.get<User>('/api/auth/me').subscribe({
       next: (user) => {
+        console.log(user);
         this.currentUserSubject.next(user);
+        this.isAuthReadySubject.next(true);
       },
       error: () => {
         this.currentUserSubject.next(null);
+        this.isAuthReadySubject.next(true);
       }
     });
   }
@@ -62,5 +72,10 @@ export class AuthService {
 
     // Limpiar la URL de parámetros
     window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // Método para actualizar el perfil del usuario
+  updateMyProfile(updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string }): Observable<any> {
+    return this.http.put('/api/auth/me', updates);
   }
 }

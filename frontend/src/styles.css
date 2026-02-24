@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
+
+
 @font-face {
-  font-family: 'Agrandir';
-  src: url('assets/fonts/agrandir-bold.ttf') format('truetype');
-  font-style: normal;
+  font-family: 'Poppins';
+  src: url('assets/fonts/Poppins-Bold.ttf') format('truetype');
 }
 
 @font-face {
@@ -12,10 +13,12 @@
   font-weight: 600;
   font-style: normal;
 }
-html{
-    min-height: 100vh;
-    scroll-behavior: smooth;
+
+html {
+  min-height: 100vh;
+  scroll-behavior: smooth;
 }
+
 body {
   margin: 0;
   /*OPCIÓN 1: fondo marron y sombra marron oscuro*/
@@ -25,7 +28,7 @@ body {
 
 h1,
 h2 {
-  font-family: 'Agrandir', sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 p,
@@ -39,8 +42,8 @@ section {
   font-weight: 500;
 }
 
-button{
-  cursor:pointer;
+button {
+  cursor: pointer;
 }
 
 @theme {
@@ -50,8 +53,8 @@ button{
   --color-azul-medio: #94adba;
   --color-azul-claro: #BAD5E3;
   --color-beige-oscuro: #D6CFC4;
-  --color-beige:#dcd6d5;
-  
+  --color-beige: #dcd6d5;
+
   /* Skaply Interactive Assembly Colors */
   --color-skaply-ui-dark: #1e293b;
   --color-skaply-accent: #00d4ff;
@@ -69,7 +72,7 @@ button{
    =================================
 */
 .fondo {
-    @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
+  @apply bg-gradient-to-b from-[#4D2D28] via-marron-oscuro to-marron-secundario;
 }
 
 /*Clases de botones*/
@@ -83,10 +86,9 @@ button{
   @apply flex items-center justify-between w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige font-semibold rounded-[25px] shadow-md transition-colors duration-200 hover:bg-azul-claro hover:text-marron-oscuro cursor-pointer;
 }
 
-/*Fondo marron hover azul*/
 
 .btn-azul {
-  @apply flex flex-row items-center bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 cursor-pointer;
+  @apply flex flex-row items-center bg-azul-claro text-marron-oscuro px-4 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 cursor-pointer;
 }
 
 .btn-azul:hover {
@@ -111,17 +113,6 @@ button{
   @apply flex flex-col items-center justify-center flex-1 h-full hover:bg-beige transition-colors;
 }
 
-.btn-opciones-mueble {
-  @apply flex flex-col px-4 py-1 rounded-full transition-all duration-200 items-center;
-}
-
-.btn-opciones-mueble:hover {
-  @apply bg-azul-claro;
-}
-
-.btn-opciones-mueble.active {
-  @apply bg-azul-claro text-marron-oscuro;
-}
 
 .btn-canvas {
   @apply flex flex-col items-center justify-center gap-0.5 px-2 py-2 bg-beige text-marron-oscuro rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 w-full;
@@ -132,19 +123,24 @@ button{
   @apply w-full rounded-lg bg-beige text-marron-oscuro py-3 pr-4 pl-12
 }
 
-.iconos-registro{
+.iconos-registro {
   @apply absolute left-4 top-1/2 -translate-y-1/2 text-marron-oscuro;
 }
 
 /*Botón sin fondo con fondo marron claro en el hover*/
-.btn-hover-marron{
+.btn-hover-marron {
   @apply cursor-pointer rounded-full p-1 hover:bg-beige-oscuro transition-colors duration-300
 }
+
+.btn-beige {
+  @apply flex flex-row items-center justify-between bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-beige-oscuro transition-all duration-300 cursor-pointer;
+}
+
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
 páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
 Padding top para salvar el header*/
-.page-main{
-  @apply px-5 md:px-10 lg:px-20;
+.page-main {
+  @apply px-3 md:px-10 lg:px-20;
 }

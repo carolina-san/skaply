@@ -2,37 +2,26 @@
 --      -  NO HAY SUBCATEGORIAS
 --      -  HAY PIEZAS COMUNES DE PRUEBA (pieza1, pieza2, pieza3)
 --      -  HAY 4 MUEBLES CON DISTINTAS COMBINACIONES DE PASOS Y CANTIDAD DE PIEZA POR PASO
+--      -  HAY 1 MUEBLE DE PRUEBA REAL USADO EN LA RAMA FEATURE/THREEJS
+--      -  HAY 1 MUEBLES REAL DE ACTIU
 
--- mueble1 |- pieza1 x1 -|
---         |             |- paso1
---         |- pieza2 x1 -|
-
-
--- mueble2 |- pieza1 x1 -|
---         |             |- paso1 -|
---         |- pieza2 x1 -|         |- paso2
---         |- pieza3 x1 -----------|
-
-
--- mueble3 |- pieza1 x1 -|
---         |             |- paso1 --|
---         |- pieza2 x1 -|          |- paso3
---         |- pieza1 x1 -|          |
---         |             |- paso2 --|
---         |- pieza2 x1 -|
-
-
--- mueble4 |- pieza1 x2 -|
---         |             |- paso1
---         |- pieza2 x2 -|
+-- Para subir un mueble, se necesita en este orden:
+--      - User (su proveedor)
+--      - Part (partes del mueble)
+--      - Furniture (mueble en sí)
+--      - Furniture_Part (asocia las piezas al mueble)
+--      - Step (se definen los pasos y sus dependencias)
+--      - Step_Part (asocia las piezas a sus pasos correspondientes)
 
 
 -- ============================
--- 1. Vaciar la base de datos
+-- VACIAR BASE DE DATOS
 -- ============================
 TRUNCATE TABLE Step_Tool, Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool, Step, File, "User" CASCADE;
---RESTART IDENTITY;
 
+-- ============================
+-- RESTART IDENTITY
+-- ============================
 ALTER SEQUENCE "User_id_seq" RESTART WITH 1;
 ALTER SEQUENCE step_id_seq RESTART WITH 1;
 ALTER SEQUENCE category_id_seq RESTART WITH 1;
@@ -45,17 +34,133 @@ ALTER SEQUENCE tool_id_seq RESTART WITH 1;
 ALTER SEQUENCE color_id_seq RESTART WITH 1;
 
 -- ============================
--- 2. Insertar usuarios
+-- USERS
 -- ============================
-INSERT INTO "User" (email, name, cif, company_name, telephone, tax_address, image_url, role, fecha_alta,password) VALUES
-('gmail.com','Maria','CIF001',null,'123456789','123 User St','','admin', NOW(),'12345'),
-('lucia@gmail.com','Lucia','CIF002',null,'123456780','456 User St','','admin', NOW(),'12345'),
-('carlos@gmail.com','Carlos','CIF003',null,'123456781','789 User St','','admin', NOW(),'12345'),
-('ikea@gmail.com',null,'CIF004','Ikea','123456782','101 Provider St', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeJKe0KLma4NjDkp_NoSjOX8kG_F0Z9vwHB_kBTns1J7zBTCHB85k1nGH_CCLFU9HoeM4&usqp=CAU', 'provider', NOW(),'12345'),
-('mueblesbaratos@gmail.com',null,'CIF005','Muebles Baratos','123456783','102 Provider St','https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg','provider', NOW(),'12345');
+-- Contraseñas hasheadas con bcrypt para 'password' (salt rounds = 10): 
+-- $2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+INSERT INTO "User" (
+    email,
+    name,
+    cif,
+    company_name,
+    telephone,
+    tax_address,
+    image_url,
+    role,
+    created_at,
+    password,
+    registration_status,
+    visible
+)
+VALUES
+-- ADMIN: Maria
+(
+    'maria@gmail.com',
+    'Maria',
+    NULL,
+    NULL,
+    '123456789',
+    '123 User St',
+    '',
+    'admin',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    NULL,
+    false
+),
+-- ADMIN: Lucia
+(
+    'lucia@gmail.com',
+    'Lucia',
+    NULL,
+    NULL,
+    '123456780',
+    '456 User St',
+    '',
+    'admin',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    NULL,
+    false
+),
+-- ADMIN: Carlos
+(
+    'carlos@gmail.com',
+    'Carlos',
+    NULL,
+    NULL,
+    '123456781',
+    '789 User St',
+    '',
+    'admin',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    NULL,
+    false
+),
+-- PROVIDER: IqUa
+(
+    'iqua@gmail.com',
+    NULL,
+    'CIF004',
+    'IqUA',
+    '123456782',
+    '101 Provider St',
+    'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg',
+    'provider',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    'approved',
+    true
+),
+-- PROVIDER: Muebles Baratos
+(
+    'mueblesbaratos@gmail.com',
+    NULL,
+    'CIF005',
+    'Muebles Baratos',
+    '123456783',
+    '102 Provider St',
+    'https://www.muebleslozano.es/wp-content/uploads/2023/07/titulo-escoger-muebles-lozano.jpg',
+    'provider',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    'approved',
+    true
+),
+-- PROVIDER: Decora
+(
+    'decora@gmail.com',
+    NULL,
+    'CIF006',
+    'Decora',
+    '123456783',
+    '104 Provider St',
+    'https://content.gnoss.ws/carq/imagenes/Documentos/imgsem/4c/4ce8/4ce8d437-612f-43bb-8d8e-d169d1a187e5/2cf38bd4-7d1d-42eb-8982-226c4c4b2c87.jpg',
+    'provider',
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    'approved',
+    true
+),
+-- PROVIDER: Actiu 
+(
+    'correo@activo.com',
+    null,
+    'A03137874', 
+    'Activo', 
+    '+34966560700', 
+    'Avenida la libertad, 19, 03610, petrer (Alicante)', 
+    'https://img.freepik.com/vector-gratis/plantilla-logotipo-ateismo-diseno-plano_23-2149242249.jpg?semt=ais_hybrid&w=740&q=80', 
+    'provider', 
+    NOW(),
+    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 
+    'approved',
+    true
+);
 
 -- ============================
--- 3. Insertar categorías
+-- CATEGORIES
 -- ============================
 INSERT INTO Category (name, subcategory_id) VALUES
 ('Sillas', NULL),
@@ -65,7 +170,7 @@ INSERT INTO Category (name, subcategory_id) VALUES
 ('Estanterías', NULL);
 
 -- ============================
--- 4. Insertar colores
+-- COLORS
 -- ============================
 INSERT INTO Color (name, hex) VALUES
 ('Beige', '#F5E6D3'),
@@ -76,18 +181,43 @@ INSERT INTO Color (name, hex) VALUES
 ('Negro', '#212121');
 
 -- ============================
--- 5. Insertar partes
+-- PARTS
 -- ============================
 INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('part1.stl','P001', 1),
 ('part2.stl','P002', 2),
 ('part3.stl','P003', 3),
+-- PARTES MUEBLE SILLA PRUEBA RAMA FEATURE/THREEJS
 ('','PSILLA01', 4),
 ('','PSILLA02', 5),
-('','PSILLA03', 6);
+('','PSILLA03', 6),
+-- PARTES MUEBLE ACTIU VITAL RPO
+('','pata01', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','pata02', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','travesaño', 1),
+('','M8_flat_head_20mm_1', 1),
+('','M8_flat_head_20mm_2_izquierda', 1),
+('','M8_flat_head_20mm_2_derecha', 1), -- Nuevo antes de uniones
+('','uniones_tornillos', 1),
+('','M8_flat_head_20mm_3', 1), -- Nuevo antes del tablero
+('','tablero', 1),
+('','M8_flat_head_20mm_4', 1), -- Nuevo después del tablero
+-- PARTES MUEBLE ACTIU ARMRIO MODULAR
+('','patas', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','tablon_inferior', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('','tablon_izquierdo', 1),
+('','tablon_derecho', 1),
+('','tablon_trasero', 1),
+('','tablon_superior', 1),
+('','estante_1', 1),
+('','estante_2', 1),
+('','puerta_izquierda', 1),
+('','puerta_derecha', 1)
+;
+
 
 -- ============================
--- 6. Insertar herramientas
+-- TOOLS
 -- ============================
 INSERT INTO Tool (name,image_url) VALUES
 ('Destornillador','https://www.rztools.com/wp-content/uploads/160714-18-destornilladores-ph1.jpg'),
@@ -97,76 +227,248 @@ INSERT INTO Tool (name,image_url) VALUES
 ('Alicates','https://mibricolaje.com/26480-large_default/alicate-universal-6-1000v-pamacon.jpg');
 
 -- ============================
--- 7. Insertar muebles
+-- FURNITURE
 -- ============================
-INSERT INTO Furniture (file_uri, name, reference_number, category_id, provider_id,difficulty, color_id, short_description, image_url) VALUES
-('furniture1.stl', 'Silla de madera', 'F001', 1, 4,'low', 3, 'Silla de madera cómoda y resistente', 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-('furniture2.stl', 'Mesa de comedor', 'F003', 2, 5,'high', 4, 'Mesa de comedor grande y elegante','https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-('furniture3.stl', 'Sofa gris','F006', 3, 5,'medium', 5, 'Sofa gris de tres plazas con cojines suaves','https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-('furniture4.stl', 'Lámpara de comedor','F007', 4, 4,'low', 5, 'Lámpara de comedor moderna con luz ajustable','https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-('silla.stl', 'Silla azul','F008', 1, 4,'low', 3, 'Silla azul apilable y ligera', 'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+INSERT INTO Furniture (
+    file_uri,
+    name,
+    reference_number,
+    category_id,
+    provider_id,
+    difficulty,
+    color_id,
+    short_description,
+    image_url,
+    qr_url, -- (no tiene sentido si es casi el "reference_number") ??
+    assemblyPDF_uri,
+    visible,
+    created_at
+)
+VALUES
 -- mueble1 |- pieza1 x1 -|
 --         |             |- paso1
 --         |- pieza2 x1 -|
-
-
+(
+    '/storage/cube.glb',
+    'Silla de madera',
+    'F001',
+    1,
+    4,
+    'low',
+    3,
+    'Silla de madera cómoda y resistente',
+    'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://skaply.ovh/catalogo?furniture=F001',
+    'pdf1',
+    true,
+    NOW()
+),
 -- mueble2 |- pieza1 x1 -|
 --         |             |- paso1 -|
 --         |- pieza2 x1 -|         |- paso2
 --         |- pieza3 x1 -----------|
-
-
+(
+    '/storage/cube.glb',
+    'Mesa de comedor',
+    'F003',
+    2,
+    5,
+    'high',
+    4,
+    'Mesa de comedor grande y elegante',
+    'https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://skaply.ovh/catalogo?furniture=F003',
+     'pdf1',
+     true,
+     NOW()
+),
 -- mueble3 |- pieza1 x1 -|
 --         |             |- paso1 --|
 --         |- pieza2 x1 -|          |- paso3
 --         |- pieza1 x1 -|          |
 --         |             |- paso2 --|
 --         |- pieza2 x1 -|
-
-
+(
+    '/storage/cube.glb',
+    'Sofa gris',
+    'F006',
+    3,
+    5,
+    'medium',
+    5,
+    'Sofa gris de tres plazas con cojines suaves',
+    'https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://skaply.ovh/catalogo?furniture=F006',
+     'pdf1',
+     true,
+     NOW()   
+),
 -- mueble4 |- pieza1 x2 -|
 --         |             |- paso1
 --         |- pieza2 x2 -|
 
-
+(
+    '/storage/cube.glb',
+    'Lámpara de comedor',
+    'F007',
+    4,
+    4,
+    'low',
+    5,
+    'Lámpara de comedor moderna con luz ajustable',
+    'https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D',
+    'https://skaply.ovh/catalogo?furniture=F007',
+     'pdf1',
+     true,
+     NOW()   
+),
+-- MUEBLE SILLA PRUEBA RAMA FEATURE/THREEJS
 -- silla   |- PSILLA01 x1 -|
 --         |               |- paso1 -|
 --         |- PSILLA02 x1 -|         |- paso2
 --         |- PSILLA03 x1 -----------|
-
+(
+    '/storage/cube.glb',
+    'Silla azul',
+    'F008',
+    1,
+    4,
+    'low',
+    3,
+    'Silla azul apilable y ligera',
+    'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://skaply.ovh/catalogo?furniture=F008',
+     'pdf1',
+     true,
+     NOW()   
+),
+-- MUEBLE DE ACTIU VITAL PRO
+(
+    '/storage//vital_pro_tornillos.glb', -- prueba
+    'Mesa individual Vital Pro',
+    'VR515F200',
+    2,
+    7,
+    'low',
+    3,
+    'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
+    'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
+    'https://skaply.ovh/catalogo?furniture=VR515F200',
+    'pdf1',
+    true,
+    NOW()
+),
+    -- MUEBLE DE ACTIU ARMARIO MODULAR
+(
+    '/storage/armario_modular.glb', -- prueba
+    'Armario modular',
+    'VR123456',
+    5,
+    7,
+    'medium',
+    3,
+    'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
+    'https://actiucdn.net/cdn-cgi/image/width=960,height=999,fit=contain,format=auto,quality=95/uploads/images/modules/5531/img-6-2.jpg', --cambiar
+    'https://skaply.ovh/catalogo?furniture=123456',
+    'pdf2',
+    true,
+    NOW()
+);
 
 -- ============================
--- 8. Asignar las piezas a los muebles
+-- FURNITURE_PART (asocia las partes con su mueble)
 -- ============================
 INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, exploded_distance) VALUES
+-- MUEBLES DE PRUEBA
 (1,1,1,'y',0.0),(1,2,1,'y',0.0),                        
 (2,1,1,'y',0.0),(2,2,1,'y',0.0), (2,3,1,'y',0.0),      
 (3,1,2,'y',0.0),(3,2,2,'y',0.0),
 (4,1,2,'y',0.0),(4,2,2,'y',0.0),
-(5,4,1,'y',0.0),(5,5,1,'y',0.4), (5,6,1,'z',0.4) ;                      
+-- SILLA PRUEBA RAMA FEATURE/THREEJS
+(5,4,1,'y',0.0),(5,5,1,'y',0.4), (5,6,1,'z',0.4),
+-- MUEBLE DE ACTIU VITAL PRO
+(6,7,1,'y',0.0),    --pata
+(6,8,1,'y',0.0),    --pata
+(6,9,1,'y',0.3),    --travesaño
+(6,10,1,'y',0.25),  --M8_1
+(6,11,1,'x',0.25), --M8_2_izquierda
+(6,12,1,'x',-0.25),   --M8_2_derecha
+(6,13,1,'y',0.25),  --uniones_tornillos
+(6,14,1,'y',0.25),  --M8_3 (antes tablero)
+(6,15,1,'y',0.3),   --tablero
+(6,16,1,'y',-0.35),  --M8_4 (después tablero)
+-- MUEBLE DE ACTIU ARMARIO MODULAR
+(7,17,1,'y',0.0),    --patas
+(7,18,1,'y',0.3),    --tablon
+(7,19,1,'y',0.5),    --travesaño
+(7,20,1,'y',0.5),
+(7,21,1,'z',-0.4),
+(7,22,1,'y',0.5),
+(7,23,1,'z',0.4),
+(7,24,1,'z',0.4),
+(7,25,1,'z',0.4),
+(7,26,1,'z',0.4);   --tablero     
 
 -- ============================
--- 9. Insertar pasos de ensamblaje
+-- STEPS
 -- ============================
-INSERT INTO Step (furniture_id, step_number, used_in_step_with_id) VALUES -- step_depency es el id del step (hay que contar desde 1)
-(1,1,NULL),                     -- mueble 1
-(2,1,3),(2,2,NULL),             -- mueble 2: el paso1 se usa en el paso2 (id3)    
-(3,1,6),(3,2,6),(3,3,NULL),     -- mueble 3: el paso1 y el paso2 se usan en el paso3 (id6)
-(4,1,NULL),                     -- mueble 4
-(5,1,9),(5,2,NULL);             -- silla azul
-
+INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id) VALUES 
+-- MUEBLES DE PRUEBA
+(1,1,'Ensamblar estructura base',NULL),                     
+(2,1,'Unir piezas laterales',3),(2,2,'Montar estructura completa',NULL),    
+(3,1,'Preparar base inferior',6),(3,2,'Añadir soportes laterales',6),(3,3,'Completar ensamblaje',NULL),     
+(4,1,'Montar estructura principal',NULL),  
+-- MUEBLE SILLA PRUEBA RAMA THREEJS                   
+(5,1,'Ensamblar respaldo y base',9),
+(5,2,'Fijar asiento a la estructura',NULL),
+-- MUEBLE DE ACTIU VITAL PRO 
+(6,1,'Ensamblar patas y travesaño',NULL),     -- patas + travesaño
+(6,2,'2 Tornillos M8 L= 20 mm',NULL),
+(6,3,'2 Tornillos M8 L= 17 mm',NULL),
+(6,4,'2 Tornillos M8 L= 17 mm',NULL), -- Nuevo
+(6,5,'4 Soportes Uniones tornillos',NULL), -- Antes paso 3
+(6,6,'4 Tornillos M8 L= 20 mm',NULL),
+(6,7,'Ensamblar tablero',NULL),
+(6,8,'4 Tornillos M6 L= 16 mm',NULL),
+-- MUEBLE DE ACTIU ARMARIO MODULAR
+(7,1,'Ensamblar tablon inferior y patas',NULL),     -- tablon inferior y patas
+(7,2,'Ensamblar laterales',NULL),     -- (tablon inferior y patas) + laterales
+(7,3,'Ensamblar tablon trasero',NULL),   -- (tablon inferior y patas + laterales) + tablon trasero
+(7,4,'Ensamblar tablon superior',NULL),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
+(7,5,'Ensamblar estantes',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
+(7,6,'Ensamblar puerta izquierda',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
+(7,7,'Ensamblar puerta derecha',NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
+;       
 -- ============================
--- 10. Asignar piezas a los pasos
+-- SETP_PART (asocia las piezas a los pasos)
 -- ============================
 INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (1,1,1),(1,2,1),                    -- mueble 1
 (2,1,1),(2,2,1),(3,3,1),            -- mueble 2   
 (4,1,1),(4,2,1),(5,1,1),(5,2,1),    -- mueble 3
 (7,1,2),(7,2,2),                    -- mueble 4
-(8,4,1),(8,5,1),(9,6,1);            -- silla azul
+(8,4,1),(8,5,1),(9,6,1),            -- silla azul
+-- MUEBLE ACTIU VITAL PRO
+(10,7,1),(10,8,1),(10,9,1),  --paso 1 Vital Pro
+(11,10,1),                 --paso 2 (M8 1)
+(12,11,1),                 --paso 3 (M8 2)
+(13,12,1),                 --paso 4 (soporte lateral)
+(14,13,1),                 --paso 5 (uniones tornillos)
+(15,14,1),                 --paso 6 (M8 3 previo)
+(16,15,1),                 --paso 7 (tablero)
+(17,16,1),                 --paso 8 (M8 4 posterior)
 
+-- MUEBLE ACTIU ARMARIO MODULAR
+(18,17,1),(18,18,1),   -- paso 1
+(19,19,1),(19,20,1),   -- paso 2
+(20,21,1),             -- paso 3
+(21,22,1),             -- paso 4
+(22,23,1),(22,24,1),   -- paso 5
+(23,25,1),             -- paso 6
+(24,26,1)              -- paso 7
+;            
 -- ============================
--- 11. Asignar herramientas a pasos
+-- STEP_TOOL (asocia herramientas a los pasos)
 -- ============================
 INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (1,1),(1,2),                -- mueble 1
@@ -176,7 +478,7 @@ INSERT INTO Step_Tool (stepId, tool_id) VALUES
 (8,1),(9,2);                -- silla
 
 -- ============================
--- 12. Insertar issues
+-- ISSUES
 -- ============================
 INSERT INTO Issue (description, user_email, furniture_id) VALUES
 ('Problema con el ensamblaje','user1@example.com',1),
@@ -186,7 +488,7 @@ INSERT INTO Issue (description, user_email, furniture_id) VALUES
 ('Rasguño en superficie','user2@example.com',4);
 
 -- ============================
--- 13. Insertar archivos
+-- FILES
 -- ============================
 INSERT INTO File (uri, name, format, size, issue_id) VALUES
 ('file1.png','Foto problema 1','png',1.5,1),
@@ -196,7 +498,7 @@ INSERT INTO File (uri, name, format, size, issue_id) VALUES
 ('file4.jpg','Foto problema 4','jpg',2.0,4);
 
 -- ============================
--- 14. Insertar reviews
+-- REVIEWS
 -- ============================
 INSERT INTO Review (stars, text, furniture_id) VALUES
 (5,'Excelente producto',1),
@@ -206,7 +508,7 @@ INSERT INTO Review (stars, text, furniture_id) VALUES
 (2,'No muy satisfecho',4);
 
 -- ============================
--- 15. Insertar KPIs
+-- KPIs
 -- ============================
 INSERT INTO KPIs (n_issues, n_suppliers, n_reviews, provider_id) VALUES
 (4,2,5,4),

@@ -1,4 +1,5 @@
 @import "../../../styles.css";
+
 .logo-container {
   position: relative;
   display: inline-block;
@@ -18,14 +19,25 @@
 }
 
 .header-expanded {
-  @apply py-5; /* más alto al inicio */
+  @apply py-5;
+  /* más alto al inicio */
 }
 
 .header-compact {
-  @apply py-2  bg-marron-oscuro/70 ; /* se reduce al hacer scroll */
+  @apply py-2 bg-marron-oscuro/70;
+  /* se reduce al hacer scroll */
+}
+
+.header-mini {
+  @apply backdrop-blur-none bg-transparent w-[20%] px-5;
 
 }
 
 .header-assembly {
-  @apply w-3/4; /* ancho del header en modo montaje */
+  @apply lg:w-[75%] px-5 bg-marron-oscuro/70;
+  /* ancho del header en modo montaje */
+}
+
+.logo-panel {
+  @apply w-[75%];
 }

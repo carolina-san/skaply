@@ -3,9 +3,10 @@ import { AuthService } from '@/services/authService';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import passport from 'passport';
-import { RegisterUser } from '@/types';
-
+import { RegisterUser, RegistrationStatus, UserRole } from '@/types';
 import { ApiError } from '@/utils/ApiError';
+import { validateCorrectPassword, validateEmail, validateProviderData, hashPassword } from '@/utils/auth.utils';
+import { validateRequiredFields } from '@/utils/common.utils';
 
 export class AuthController {
   private authService: AuthService;
@@ -17,44 +18,37 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
     try {
-      const comparePass = await this.authService.checkPassword(email);
+      // validate
+      validateEmail(email);
+      const user = await this.authService.getUserByEmail(email);
+      if (!user) { throw new ApiError("NOT_FOUND", "User not found"); }
+      if (!user.enabled) { throw new ApiError("FORBIDDEN", "Account is not enabled"); }
 
-      if (comparePass.rows.length === 0) {
-        throw new ApiError('NOT_FOUND', 'User not found');
-      }
-      // Verificar si la contraseña ya está hasheada o es texto plano (para desarrollo)
-      let validPass = false;
+      // Check password
+      await validateCorrectPassword(password, user.password);
 
-      if (comparePass.rows[0].password.startsWith('$2b$')) {
-        // Contraseña hasheada con bcrypt
-        validPass = await bcrypt.compare(password, comparePass.rows[0].password);
-      } else {
-        // Contraseña en texto plano (solo para desarrollo) 
-        validPass = password === comparePass.rows[0].password;
-      }
-
-      if (!validPass) {
-        throw new ApiError('UNAUTHORIZED', 'Invalid password');
-      }
-
-      const role = await this.authService.checkRole(email);
-
-      // Generar token JWT
+      // Token JWT
       const token = jwt.sign(
-        //{ emailuser: email, role: 'provider' },
-        { emailuser: email, role: role },
+        {
+          id: user.id,
+          emailuser: email,
+          role: user.role
+        },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: '24h' });
 
-      // Configurar cookie HttpOnly
+      // Cookie HttpOnly
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Solo https en producción
+        secure: process.env.NODE_ENV === 'production', // https production
         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+        maxAge: 24 * 60 * 60 * 1000 // 24 h
       });
 
+      // Response
       res.status(200).json({ message: 'Login successful', data: { email } });
+
+      // Error
     } catch (error) {
       if (error instanceof ApiError) next(error);
       else next(new ApiError('INTERNAL_SERVER', 'Error during login process'));
@@ -62,77 +56,63 @@ export class AuthController {
   };
 
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { email, password, company_name, cif, tax_address, telephone } = req.body;
-
     try {
-      // Validar que todos los campos requeridos estén presentes
-      if (!email || !password || !company_name || !cif || !tax_address || !telephone) {
-        next(new ApiError('BAD_REQUEST', 'All fields are required'));
-        return;
-      }
+      // required fields
+      const requiredFields = [
+        'email',
+        'password',
+        'company_name',
+        'cif',
+        'tax_address',
+        'telephone'
+      ];
 
-      // Validar formato de Email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid email format'));
-        return;
-      }
+      // validate fields
+      validateRequiredFields(req.body, requiredFields);
+      validateProviderData(req.body);
 
-      // Validar formato de CIF: Letra inicial + 7 dígitos + (Letra o Dígito)
-      // Cubre: "Letra + 8 dígitos" (control es dígito) y "Letra + 7 dígitos + Letra" (control es letra)
-      const cifRegex = /^[a-zA-Z]\d{7}[0-9a-zA-Z]$/;
-      if (!cifRegex.test(cif)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid CIF format. Must be Letter + 7 digits + Control Character'));
-        return;
-      }
-
-      // Validar longitud de contraseña (mínimo 12 caracteres)
-      if (password.length < 12) {
-        next(new ApiError('BAD_REQUEST', 'Password must be at least 12 characters long'));
-        return;
-      }
-
-      // Validar teléfono (formato básico internacional o local, mínimo 9 dígitos)
-      const phoneRegex = /^\+?[0-9]{9,15}$/;
-      if (!phoneRegex.test(telephone)) {
-        next(new ApiError('BAD_REQUEST', 'Invalid telephone format'));
-        return;
-      }
-
-      // Verificar si el usuario ya existe
-      const canRegister = await this.authService.checkUser(email);
-      if (!canRegister) {
+      // check user exists by email
+      const existsEmail = await this.authService.userExistsByEmail(req.body.email);
+      if (existsEmail) {
         next(new ApiError('CONFLICT', 'User already exists with this email'));
         return;
       }
 
-      // Hash de la contraseña
-      const hashedPass = await bcrypt.hash(password, 10);
+      // check user exists by CIF
+      const existsCIF = await this.authService.userExistsByCIF(req.body.cif);
+      if (existsCIF) {
+        next(new ApiError('CONFLICT', 'A provider already exists with this CIF'));
+        return;
+      }
 
-      const reqUser: RegisterUser = {
+      // hash password
+      const hashedPassword = await hashPassword(req.body.password);
+
+      // prepare data
+      const { email, company_name, cif, tax_address, telephone } = req.body;
+      const userData = {
         email,
-        password: hashedPass,
         company_name,
         cif,
         tax_address,
-        telephone
+        telephone,
+        password: hashedPassword
       };
 
-      // Registrar usuario
-      const result = await this.authService.register(reqUser);
+      // register
+      const user = await this.authService.registerProvider(userData);
 
+      // response
       res.status(201).json({
-        message: 'User registered successfully',
-        user: {
-          email: reqUser.email,
-          company_name: reqUser.company_name,
-          cif: reqUser.cif
-        }
+        message: 'Provider registered successfully',
+        user
       });
 
+      // error
     } catch (error) {
       console.error('Registration error:', error);
-      next(new ApiError('INTERNAL_SERVER', 'Registration failed'));
+      if (error instanceof ApiError) { return next(error); }
+      next(new ApiError('INTERNAL_SERVER', 'Failed to register provider'));
     }
   };
 
@@ -161,7 +141,7 @@ export class AuthController {
 
   googleCallback = [
     passport.authenticate('google', {
-      failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=google_auth_failed`,
+      failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed`,
       session: false
     }),
     async (req: Request, res: Response): Promise<void> => {
@@ -169,14 +149,15 @@ export class AuthController {
         const user = req.user as any;
 
         if (!user) {
-          res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=no_user_data`);
+          res.redirect(`${process.env.FRONTEND_URL}/login?error=no_user_data`);
           return;
         }
 
         // Generate JWT token (same format as traditional login)
         const token = jwt.sign({
+          id: user.id,
           emailuser: user.email,
-          role: 'provider'
+          role: user.role || 'provider'
         }, process.env.JWT_SECRET_KEY as string, { expiresIn: '24h' });
 
         // Set HttpOnly cookie
@@ -188,16 +169,76 @@ export class AuthController {
         });
 
         // Redirect to frontend without token in URL
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
-        res.redirect(`${frontendUrl}/login/success?email=${encodeURIComponent(user.email)}`); // Removed token from URL
+        const frontendUrl = process.env.FRONTEND_URL;
+        res.redirect(`${frontendUrl}/catalogo`); // Redirige al catálogo después del login OAuth
       } catch (error) {
         console.error('Google callback error:', error);
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:4200'}/login?error=callback_failed`);
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=callback_failed`);
       }
     }
   ];
 
-  me = async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json(req.user);
+  me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new ApiError('UNAUTHORIZED', 'User not authenticated');
+      }
+
+      const user = await this.authService.getUserById(req.user.id);
+
+      if (!user) {
+        throw new ApiError('NOT_FOUND', 'User not found');
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      next(error);
+    }
   };
+
+  updateMyProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        throw new ApiError('UNAUTHORIZED', 'User not authenticated');
+      }
+
+      const { name, company_name, email, telephone, password } = req.body;
+      const updates: any = {};
+
+      if (name !== undefined) updates.name = name;
+      if (company_name !== undefined) updates.company_name = company_name;
+      if (email !== undefined) {
+        validateEmail(email);
+        // Check if email already exists for another user
+        const existingUser = await this.authService.getUserByEmail(email);
+        if (existingUser && existingUser.id !== req.user.id) {
+          throw new ApiError('CONFLICT', 'Email already in use by another user');
+        }
+        updates.email = email;
+      }
+      if (telephone !== undefined) updates.telephone = telephone;
+      if (password !== undefined && password.trim() !== '') {
+        const hashedPassword = await hashPassword(password);
+        updates.password = hashedPassword;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        throw new ApiError('BAD_REQUEST', 'No fields to update');
+      }
+
+      const updatedUser = await this.authService.updateMyProfile(req.user.id, updates);
+
+      res.status(200).json({
+        message: 'Profile updated successfully',
+        data: updatedUser
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        next(error);
+      } else {
+        next(new ApiError('INTERNAL_SERVER', 'Error updating profile'));
+      }
+    }
+  };
+
 }
