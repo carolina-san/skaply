@@ -113,8 +113,11 @@
     <video #video autoplay muted playsinline
       class="absolute top-0 left-0 w-full h-full object-cover z-0 pointer-events-none"></video>
     }
-    <canvas #canvas class="absolute top-0 left-0 w-full h-full cursor-grabbing" [class.bg-transparent]="isARActive()"
-      [class.z-10]="isARActive()"></canvas>
+    <!-- Main Canvas -->
+    <canvas #canvas class="absolute top-0 left-0 w-full h-full cursor-grabbing"
+      style="touch-action: none; overscroll-behavior: none; outline: none;" (mousedown)="onCanvasInteraction()"
+      (touchstart)="onCanvasInteraction()">
+    </canvas>
 
     @if(isARActive()) {
     <div class="absolute top-20 left-1/2 -translate-x-1/2 z-20">
@@ -155,6 +158,11 @@
     </div>
     }
     }
+
+    <!-- Reset Camera Button Overlay -->
+    @if (isCameraMoved() && mode() !== 'simulation') {
+    <button (click)="resetCameraPosition()"
+      class="absolute bottom-1 left-0 flex px-3 py-2 bg-beige justify-center items-center rounded-full transition-all duration-200 transform hover:scale-105 z-50 shadow-lg text-marron-oscuro hover:bg-marron-claro hover:text-beige">
   </div>
 
   <!-- Footer Controls -->
@@ -171,127 +179,135 @@
           d="M480-360v-60q0-25 17.5-42.5T540-480h60L480-360Zm0 161v-85l196-196h85L480-199Zm2 75 353-354q16 4 27.5 15.5T878-435L524-82q-16-5-26.5-15.5T482-124Zm117 44 281-281v85L684-80h-85Zm161 0 120-120v60q0 25-17.5 42.5T820-80h-60ZM480-760q-117 0-198.5 81.5T200-480q0 72 32.5 132t87.5 98v-70q0-17 11.5-28.5T360-360q17 0 28.5 11.5T400-320v160q0 17-11.5 28.5T360-120H200q-17 0-28.5-11.5T160-160q0-17 11.5-28.5T200-200h54q-62-50-98-122.5T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q114 0 204 62.5T814-615q6 16 0 31t-22 21q-16 6-31.5 0T739-585q-31-78-100.5-126.5T480-760Z" />
       </svg>
     </button>
+    }
+</div>
 
-    <!--Primera fila de botones-->
-    <div *ngIf="mode() !== 'final'" class="flex items-left justify-left w-full mb-2 h-10">
+<!-- Footer Controls -->
+@if(showFooterControls() && !isARActive()) {
+<footer class="flex flex-col items-start justify-center bg-transparent  text-marron-oscuro"
+  [class.pointer-events-none]="areControlsDisabled()"
+  [class.opacity-60]="areControlsDisabled() || isolatedPart() !== null">
 
-      <!-- Mode Toggle, no aparece en el modo final -->
-      <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
 
-        <button (click)="setMode('manual')" class="btn-opciones-mueble" [ngClass]="{ 'active': mode() === 'manual' }">
-          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
-            <path
-              d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
-          </svg>
-          <p *ngIf="mode() === 'simulation'">Manual</p>
-        </button>
-        <button (click)="setMode('simulation')" class="btn-opciones-mueble"
-          [ngClass]="{ 'active': mode() === 'simulation' }">
-          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
-            <path
-              d="M701-535q14-9 14-25t-14-25L506-710q-15-10-30.5-1.5T460-685v250q0 18 15.5 26.5T506-410l195-125ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-520q0-17 11.5-28.5T120-720q17 0 28.5 11.5T160-680v520h520q17 0 28.5 11.5T720-120q0 17-11.5 28.5T680-80H160Zm160-720v480-480Z" />
-          </svg>
-          <p *ngIf="mode() === 'manual'">Auto</p>
-        </button>
-      </div>
+  <!--Primera fila de botones-->
+  <div *ngIf="mode() !== 'final'" class="flex items-left justify-left w-full mb-2 h-10">
+
+    <!-- Mode Toggle, no aparece en el modo final -->
+    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
+
+      <button (click)="setMode('manual')" class="btn-opciones-mueble" [ngClass]="{ 'active': mode() === 'manual' }">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+          <path
+            d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
+        </svg>
+        <p *ngIf="mode() === 'simulation'">Manual</p>
+      </button>
+      <button (click)="setMode('simulation')" class="btn-opciones-mueble"
+        [ngClass]="{ 'active': mode() === 'simulation' }">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+          <path
+            d="M701-535q14-9 14-25t-14-25L506-710q-15-10-30.5-1.5T460-685v250q0 18 15.5 26.5T506-410l195-125ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-520q0-17 11.5-28.5T120-720q17 0 28.5 11.5T160-680v520h520q17 0 28.5 11.5T720-120q0 17-11.5 28.5T680-80H160Zm160-720v480-480Z" />
+        </svg>
+        <p *ngIf="mode() === 'manual'">Auto</p>
+      </button>
     </div>
+  </div>
 
-    <!--Segunda fila de botones-->
-    <div
-      class="w-full flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1">
+  <!--Segunda fila de botones-->
+  <div
+    class="w-full flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1">
 
-      <!--Boton volver al inicio-->
-      <button *ngIf="mode()==='manual'"
-        class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStep(0)"
-        [class.bg-beige-oscuro]="manualStep() === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-          <path
-            d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
+    <!--Boton volver al inicio-->
+    <button *ngIf="mode()==='manual'" class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
+      (click)="goToStep(0)" [class.bg-beige-oscuro]="manualStep() === 0">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
+      </svg>
+    </button>
+
+    <!--Boton volver al montaje-->
+    <button *ngIf="mode()==='final'" (click)="setMode('manual')"
+      class="bg-beige px-3 py-2 flex items-center gap-1 rounded-full hover:bg-azul-claro transition-all duration-200 ">
+
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="m142-480 294 294q15 15 14.5 35T435-116q-15 15-35 15t-35-15L57-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T436-844q15 15 15 35t-15 35L142-480Z" />
+      </svg>
+      Volver al montaje
+    </button>
+
+    <!--Boton play/pause-->
+    <button *ngIf="mode()==='simulation'" (click)="togglePause()"
+      class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige">
+      @if(isSimulationPaused()) {
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      } @else {
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+      </svg>
+      }
+    </button>
+
+
+    <!--Botones siguiente anterior-->
+    <div *ngIf="mode()==='manual'" class="flex flex-row items-center justify-center gap-2 w-full">
+      <!--Boton anterior-->
+      <button *ngIf="mode()==='manual'" (click)="prevStep()" [disabled]="isManualFirstStep()"
+        class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200  disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
+          xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       </button>
 
-      <!--Boton volver al montaje-->
-      <button *ngIf="mode()==='final'" (click)="setMode('manual')"
-        class="bg-beige px-3 py-2 flex items-center gap-1 rounded-full hover:bg-azul-claro transition-all duration-200 ">
-
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-          <path
-            d="m142-480 294 294q15 15 14.5 35T435-116q-15 15-35 15t-35-15L57-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T436-844q15 15 15 35t-15 35L142-480Z" />
-        </svg>
-        Volver al montaje
-      </button>
-
-      <!--Boton play/pause-->
-      <button *ngIf="mode()==='simulation'" (click)="togglePause()"
-        class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige">
-        @if(isSimulationPaused()) {
-        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-        } @else {
-        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="6" y="4" width="4" height="16"></rect>
-          <rect x="14" y="4" width="4" height="16"></rect>
-        </svg>
-        }
-      </button>
-
-
-      <!--Botones siguiente anterior-->
-      <div *ngIf="mode()==='manual'" class="flex flex-row items-center justify-center gap-2 w-full">
-        <!--Boton anterior-->
-        <button *ngIf="mode()==='manual'" (click)="prevStep()" [disabled]="isManualFirstStep()"
-          class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200  disabled:opacity-50 disabled:cursor-not-allowed">
-          <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
+      @if (manualStep() < totalSteps() - 1) { <!--Boton siguiente-->
+        <button *ngIf="mode()==='manual'" (click)="nextStep()"
+          class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
         </button>
 
-        @if (manualStep() < totalSteps() - 1) { <!--Boton siguiente-->
-          <button *ngIf="mode()==='manual'" (click)="nextStep()"
-            class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-            <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
-              xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-
-          } @else {
-          <!--Boton terminar-->
-          <button *ngIf="mode()==='manual'" (click)="openFinishModal()"
-            class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform  disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
-            Terminar
-          </button>
-          }
-      </div>
-
-      <!--Botones velocidad-->
-      <div *ngIf="mode()==='simulation'"
-        class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige">
-        @for(speed of simulationSpeeds; track speed) {
-        <button (click)="setSimulationSpeed(speed)" class="btn-opciones-mueble"
-          [ngClass]="{ 'active': simulationSpeed() === speed }">
-          {{speed}}x
+        } @else {
+        <!--Boton terminar-->
+        <button *ngIf="mode()==='manual'" (click)="openFinishModal()"
+          class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform  disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
+          Terminar
         </button>
         }
-      </div>
-
-      <!--Boton modo final-->
-      <button (click)="setMode('final')"
-        class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
-        [class.bg-beige-oscuro]="mode() === 'final'">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-          <path
-            d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
-        </svg>
-      </button>
     </div>
-  </footer>
+
+    <!--Botones velocidad-->
+    <div *ngIf="mode()==='simulation'"
+      class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige">
+      @for(speed of simulationSpeeds; track speed) {
+      <button (click)="setSimulationSpeed(speed)" class="btn-opciones-mueble"
+        [ngClass]="{ 'active': simulationSpeed() === speed }">
+        {{speed}}x
+      </button>
+      }
+    </div>
+
+    <!--Boton modo final-->
+    <button (click)="setMode('final')"
+      class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
+      [class.bg-beige-oscuro]="mode() === 'final'">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
+      </svg>
+    </button>
+  </div>
+</footer>
 </div>

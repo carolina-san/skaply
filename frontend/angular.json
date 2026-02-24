@@ -28,6 +28,11 @@
                 "glob": "**/*",
                 "input": "public",
                 "output": "/"
+              },
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/assimpjs/dist",
+                "output": "assets/assimp"
               }
             ],
             "styles": [

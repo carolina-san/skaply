@@ -33,6 +33,7 @@
     "@loaders.gl/gltf": "^4.3.4",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/three": "^0.180.0",
+    "assimpjs": "^0.0.10",
     "gl-matrix": "^3.4.4",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.1.0",

@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { Resource } from './resource';
 
 export class ShaderResource extends Resource {
@@ -97,6 +97,12 @@ export class ShaderResource extends Resource {
         if (!this.program) return;
         const loc = this.gl.getUniformLocation(this.program, name);
         if (loc !== null) this.gl.uniform1f(loc, value);
+    }
+
+    setVec3(name: string, vec: vec3): void {
+        if (!this.program) return;
+        const loc = this.gl.getUniformLocation(this.program, name);
+        if (loc !== null) this.gl.uniform3fv(loc, vec);
     }
 
     setMat4(name: string, mat: mat4): void {
