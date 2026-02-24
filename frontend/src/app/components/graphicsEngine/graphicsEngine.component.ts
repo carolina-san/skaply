@@ -46,7 +46,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   arStateChange = output<boolean>();
 
   // Elegir el tipo de motor
-  engineUse = signal<'threeJS' | 'webGL'>('webGL');
+  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API

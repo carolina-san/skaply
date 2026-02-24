@@ -195,7 +195,13 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('','pata01', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','pata02', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','travesaño', 1),
+('','M8_flat_head_20mm_1', 1),
+('','M8_flat_head_20mm_2_izquierda', 1),
+('','M8_flat_head_20mm_2_derecha', 1), -- Nuevo antes de uniones
+('','uniones_tornillos', 1),
+('','M8_flat_head_20mm_3', 1), -- Nuevo antes del tablero
 ('','tablero', 1),
+('','M8_flat_head_20mm_4', 1), -- Nuevo después del tablero
 -- PARTES MUEBLE ACTIU ARMRIO MODULAR
 ('','patas', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','tablon_inferior', 1),   --pata01 y pata02 deberían de ser la misma pieza
@@ -332,7 +338,7 @@ VALUES
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
-    '/storage//vital_pro.glb', -- prueba
+    '/storage//vital_pro_tornillos.glb', -- prueba
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
@@ -375,19 +381,25 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 -- MUEBLE DE ACTIU VITAL PRO
 (6,7,1,'y',0.0),    --pata
 (6,8,1,'y',0.0),    --pata
-(6,9,1,'y',0.3),    --travesaño                       
-(6,10,1,'y',0.3),   --tablero          
+(6,9,1,'y',0.3),    --travesaño
+(6,10,1,'y',0.25),  --M8_1
+(6,11,1,'x',0.25), --M8_2_izquierda
+(6,12,1,'x',-0.25),   --M8_2_derecha
+(6,13,1,'y',0.25),  --uniones_tornillos
+(6,14,1,'y',0.25),  --M8_3 (antes tablero)
+(6,15,1,'y',0.3),   --tablero
+(6,16,1,'y',-0.35),  --M8_4 (después tablero)
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(7,11,1,'y',0.0),    --patas
-(7,12,1,'y',0.3),    --tablon
-(7,13,1,'y',0.5),    --travesaño                       
-(7,14,1,'y',0.5),
-(7,15,1,'z',-0.4),
-(7,16,1,'y',0.5),
-(7,17,1,'z',0.4),
-(7,18,1,'z',0.4),
-(7,19,1,'z',0.4),
-(7,20,1,'z',0.4);   --tablero     
+(7,17,1,'y',0.0),    --patas
+(7,18,1,'y',0.3),    --tablon
+(7,19,1,'y',0.5),    --travesaño
+(7,20,1,'y',0.5),
+(7,21,1,'z',-0.4),
+(7,22,1,'y',0.5),
+(7,23,1,'z',0.4),
+(7,24,1,'z',0.4),
+(7,25,1,'z',0.4),
+(7,26,1,'z',0.4);   --tablero     
 
 -- ============================
 -- STEPS
@@ -403,7 +415,13 @@ INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id) 
 (5,2,'Fijar asiento a la estructura',NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
 (6,1,'Ensamblar patas y travesaño',NULL),     -- patas + travesaño
-(6,2,'Ensamblar tablero',NULL),       --(patas + travesaño) + tablero     
+(6,2,'2 Tornillos M8 L= 20 mm',NULL),
+(6,3,'2 Tornillos M8 L= 17 mm',NULL),
+(6,4,'2 Tornillos M8 L= 17 mm',NULL), -- Nuevo
+(6,5,'4 Soportes Uniones tornillos',NULL), -- Antes paso 3
+(6,6,'4 Tornillos M8 L= 20 mm',NULL),
+(6,7,'Ensamblar tablero',NULL),
+(6,8,'4 Tornillos M6 L= 16 mm',NULL),
 -- MUEBLE DE ACTIU ARMARIO MODULAR
 (7,1,'Ensamblar tablon inferior y patas',NULL),     -- tablon inferior y patas
 (7,2,'Ensamblar laterales',NULL),     -- (tablon inferior y patas) + laterales
@@ -423,17 +441,23 @@ INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (7,1,2),(7,2,2),                    -- mueble 4
 (8,4,1),(8,5,1),(9,6,1),            -- silla azul
 -- MUEBLE ACTIU VITAL PRO
-(10,7,1),(10,8,1),(10,9,1),  --paso 1
-(11,10,1),                 --paso 2
+(10,7,1),(10,8,1),(10,9,1),  --paso 1 Vital Pro
+(11,10,1),                 --paso 2 (M8 1)
+(12,11,1),                 --paso 3 (M8 2)
+(13,12,1),                 --paso 4 (soporte lateral)
+(14,13,1),                 --paso 5 (uniones tornillos)
+(15,14,1),                 --paso 6 (M8 3 previo)
+(16,15,1),                 --paso 7 (tablero)
+(17,16,1),                 --paso 8 (M8 4 posterior)
 
 -- MUEBLE ACTIU ARMARIO MODULAR
-(12,11,1),(12,12,1),  --paso 1
-(13,13,1),(13,14,1),   -- paso 2
-(14,15,1),          -- paso 3
-(15,16,1),          -- paso 4
-(16,17,1),(16,18,1), -- pao 5
-(17,19,1), -- paso 6
-(18,20,1) -- paso 7
+(18,17,1),(18,18,1),   -- paso 1
+(19,19,1),(19,20,1),   -- paso 2
+(20,21,1),             -- paso 3
+(21,22,1),             -- paso 4
+(22,23,1),(22,24,1),   -- paso 5
+(23,25,1),             -- paso 6
+(24,26,1)              -- paso 7
 ;            
 -- ============================
 -- STEP_TOOL (asocia herramientas a los pasos)
