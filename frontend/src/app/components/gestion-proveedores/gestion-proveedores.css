@@ -1,5 +1,9 @@
 @import "../../../styles.css";
 
 .btn-acciones {
-    @apply flex flex-col items-center justify-center p-2 hover:bg-azul-claro/30 rounded-full transition gap-1 text-xs;
+    @apply flex flex-col items-center justify-center px-2 hover:bg-azul-claro/30 rounded-full transition gap-0.5 text-xs;
+}
+
+.filtros-select {
+    @apply w-40 px-2 py-1.5 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro;
 }

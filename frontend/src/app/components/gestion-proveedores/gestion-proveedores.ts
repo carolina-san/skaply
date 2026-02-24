@@ -1,11 +1,12 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
@@ -16,6 +17,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   currentPage: number = 1;
   itemsPerPage: number = 6;
   totalItems: number = 0;
+  selectedVisibility: boolean | null = null;
 
   constructor(private apiService: ApiService) { }
 
@@ -31,8 +33,13 @@ export class GestionProveedores implements OnInit, OnChanges {
 
   }
 
+  onVisibilityChange() {
+    this.currentPage = 1;
+    this.fetchProviders();
+  }
+
   fetchProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText).subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility).subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
@@ -87,6 +94,21 @@ export class GestionProveedores implements OnInit, OnChanges {
       this.currentPage = page;
       this.fetchProviders();
     }
+  }
+
+  toggleVisibility(provider: any) {
+    const newStatus = !provider.visible;
+    this.apiService.updateProvider(provider.id, { visible: newStatus }).subscribe(
+      (response) => {
+        console.log('Provider visibility updated successfully:', response);
+        provider.visible = newStatus;
+        this.fetchProviders();
+      },
+      (error) => {
+        console.error('Error updating provider visibility:', error);
+        alert('Error al actualizar la visibilidad del proveedor');
+      }
+    );
   }
 
   // Calcular rango de items mostrados

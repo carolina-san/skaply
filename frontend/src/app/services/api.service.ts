@@ -41,6 +41,10 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
   }
 
+  updateProvider(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${id}`, data);
+  }
+
   deleteFurniture(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/private/furniture/${id}`);
   }
@@ -73,10 +77,13 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = ''): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
+    }
+    if (visible !== null) {
+      url += `&visible=${visible}`;
     }
     return this.http.get(url);
   }

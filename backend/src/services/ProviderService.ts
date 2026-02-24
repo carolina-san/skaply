@@ -237,7 +237,7 @@ export class ProviderService {
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${fields.length + 1}
         AND role = $${fields.length + 2}
-      RETURNING id, email, company_name, cif, telephone, tax_address
+      RETURNING id, email, company_name, cif, telephone, tax_address, visible
     `;
     return (await pool.query(query, [...values, providerId, UserRole.PROV])).rows[0];
   }

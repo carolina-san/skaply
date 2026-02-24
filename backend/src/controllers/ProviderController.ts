@@ -259,7 +259,8 @@ export class ProviderController {
         'cif',
         'company_name',
         'telephone',
-        'tax_address'
+        'tax_address',
+        'visible'
       ];
 
       // pick fields and validate
