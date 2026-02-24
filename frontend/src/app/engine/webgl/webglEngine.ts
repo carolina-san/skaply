@@ -300,6 +300,10 @@ export class WebGLEngine extends EngineFacade {
     private _onTouchMove = this.onTouchMove.bind(this);
     private _onTouchEnd = this.onTouchEnd.bind(this);
 
+    rotateCamera(_axis: 'x' | 'y' | 'z', _angleDegrees: number): void {
+        // No implementado en WebGL por ahora (funcionalidad específica de ThreeJS)
+    }
+
     // Touch state
     private lastTouchX = 0;
     private lastTouchY = 0;
