@@ -13,18 +13,27 @@
   </div>
 
   <!-- tabla proveedores -->
-  <div *ngIf="totalItems > 0 || !searchText" class="mx-8 mt-4 bg-white rounded-3xl overflow-hidden flex-shrink-0">
-    <div class="grid grid-cols-3 bg-azul-claro px-3 py-2.5 font-semibold text-marron-oscuro">
-      <div>Nombre de empresa</div>
-      <div>Fecha alta</div>
-      <div class="text-center">Acciones</div>
+  <div *ngIf="totalItems > 0 || !searchText"
+    class="mt-2 bg-white rounded-xl overflow-hidden flex-shrink-0 flex flex-col">
+    <div class="grid grid-cols-5 bg-azul-claro px-3 py-1 text-sm  text-marron-oscuro">
+      <h4 class="col-span-2 font-bold">
+        Nombre
+      </h4>
+
+      <h4 class="text-center font-bold">
+        Fecha alta
+      </h4>
+
+      <h4 class="col-span-2 text-center font-bold">
+        Acciones
+      </h4>
     </div>
 
     <div>
       <div *ngFor="let provider of paginatedProviders"
-        class="grid grid-cols-3 px-3 py-1 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+        class="grid grid-cols-5 px-2 py-0.25 items-center hover:bg-gray-50 transition">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+          <div class="w-10 h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 col-span-2">
             <img *ngIf="provider.image_url" [src]="provider.image_url" [alt]="provider.company_name"
               class="w-full h-full object-cover" />
             <div *ngIf="!provider.image_url" class="w-full h-full flex items-center justify-center text-gray-400">

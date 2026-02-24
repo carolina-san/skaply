@@ -338,7 +338,8 @@ export class FurnitureService {
             cl.hex AS color_hex,
             f.difficulty,
             f.short_description,
-            f.visible
+            f.visible,
+            f.created_at
         ${baseSql}`;
       console.log(sql);
       if (page && limit) {

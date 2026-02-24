@@ -121,7 +121,8 @@ CREATE TABLE Furniture (
     short_description TEXT,
     qr_url VARCHAR(255),
     required_people INTEGER NOT NULL DEFAULT 1,
-    visible BOOLEAN NOT NULL DEFAULT FALSE
+    visible BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================

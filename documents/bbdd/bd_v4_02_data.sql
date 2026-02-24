@@ -235,7 +235,8 @@ INSERT INTO Furniture (
     image_url,
     qr_url, -- (no tiene sentido si es casi el "reference_number") ??
     assemblyPDF_uri,
-    visible
+    visible,
+    created_at
 )
 VALUES
 -- mueble1 |- pieza1 x1 -|
@@ -253,7 +254,8 @@ VALUES
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F001',
     'pdf1',
-    true
+    true,
+    NOW()
 ),
 -- mueble2 |- pieza1 x1 -|
 --         |             |- paso1 -|
@@ -271,7 +273,8 @@ VALUES
     'https://plus.unsplash.com/premium_photo-1675744019321-f90d6d719da7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F003',
      'pdf1',
-     true   
+     true,
+     NOW()
 ),
 -- mueble3 |- pieza1 x1 -|
 --         |             |- paso1 --|
@@ -291,7 +294,8 @@ VALUES
     'https://images.unsplash.com/photo-1759722667832-48e555120458?q=80&w=754&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F006',
      'pdf1',
-     true   
+     true,
+     NOW()   
 ),
 -- mueble4 |- pieza1 x2 -|
 --         |             |- paso1
@@ -309,7 +313,8 @@ VALUES
     'https://images.unsplash.com/photo-1642399403814-360bc87e12fb?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F007',
      'pdf1',
-     true   
+     true,
+     NOW()   
 ),
 -- MUEBLE SILLA PRUEBA RAMA FEATURE/THREEJS
 -- silla   |- PSILLA01 x1 -|
@@ -328,7 +333,8 @@ VALUES
     'https://plus.unsplash.com/premium_photo-1723874468810-3147a74bb3a7?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     'https://skaply.ovh/catalogo?furniture=F008',
      'pdf1',
-     true   
+     true,
+     NOW()   
 ),
 -- MUEBLE DE ACTIU VITAL PRO
 (
@@ -343,7 +349,8 @@ VALUES
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
     'https://skaply.ovh/catalogo?furniture=VR515F200',
     'pdf1',
-    true
+    true,
+    NOW()
 ),
     -- MUEBLE DE ACTIU ARMARIO MODULAR
 (
@@ -358,7 +365,8 @@ VALUES
     'https://actiucdn.net/cdn-cgi/image/width=960,height=999,fit=contain,format=auto,quality=95/uploads/images/modules/5531/img-6-2.jpg', --cambiar
     'https://skaply.ovh/catalogo?furniture=123456',
     'pdf2',
-    true
+    true,
+    NOW()
 );
 
 -- ============================
