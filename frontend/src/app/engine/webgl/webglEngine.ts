@@ -6,6 +6,7 @@ import { Node } from '../../engine/webgl/engine-core/node';
 import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
+import { Light } from './engine-core/light';
 
 
 class WebGlRenderableObject implements RenderableObject {
@@ -15,6 +16,7 @@ class WebGlRenderableObject implements RenderableObject {
     castShadow = false;
     receiveShadow = false;
     
+    // ⚠️NO SE NECESITA EN EL WRAPPER, SUPONDRIA DUPLICACION DE LOGICA 
 
     //children: WebGlRenderableObject[] = [];
     //visible = true;
@@ -22,10 +24,18 @@ class WebGlRenderableObject implements RenderableObject {
     //position = { x: 0, y: 0, z: 0 };
     //rotation = { x: 0, y: 0, z: 0 };
 
+    // ⚠️NO SE NECESITA EN EL WRAPPER, SUPONDRIA DUPLICACION DE LOGICA 
+
+
     constructor(public node: Node) {}
 
     get nativeObject(): Node {
         return this.node;
+    }
+
+    getPosition(): Vector3 {
+        const t = this.node.getTranslation();
+        return { x: t[0], y: t[1], z: t[2] };
     }
 
     setPosition(x: number, y: number, z: number): void {
@@ -53,13 +63,10 @@ class WebGlRenderableObject implements RenderableObject {
         this.node.removeChild(webglChild.node);
     }
 
-    getPosition(): Vector3 {
-        const t = this.node.getTranslation();
-        return { x: t[0], y: t[1], z: t[2] };
-    }
 
     lookAt(target: Vector3): void {
         //this.node.lookAt?.(target);
+        // solo existe lokkAt en camara 
     }
 }
 
@@ -68,77 +75,89 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private gl!: WebGL2RenderingContext;
     private canvas!: HTMLCanvasElement;
-    private root!: Node;
-    private camera!: Camera;
-    private cameraNode!: Node;
-    private shader!: any;
-    private sceneObjects: WebGlRenderableObject[] = [];
+    private clear = { r: 0, g: 0, b: 0, a: 0 };
+
+    private resourceManager = new ResourceManager();
+    private shader!: ShaderResource;
+
+    private rootNode = new Node();
+
+    private cameraEntity = new Camera();
+    private cameraNode = new Node();
+
+    private lightEntity = new Light();
+    private lightNode = new Node();
+
+    //private sceneObjects: WebGlRenderableObject[] = [];  // NO HACE FALTA
     private highlightedObjects: WebGlRenderableObject[] = [];
-    private controlsEnabled: boolean = false;
-    private controlsAutoRotate: boolean = false;
-    private controlsAutoRotateSpeed: number = 2;
-    private initialControlsState: boolean = false;
-    private resourceManager!: ResourceManager;
+
+    private controlsEnabled = false;
+    private controlsAutoRotate = false;
+    private controlsAutoRotateSpeed = 2;
+
+    private ready = false;
 
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
 
-        // gl context
+        // gl 
         this.canvas = canvas;
         this.gl = canvas.getContext('webgl2')!;
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.disable(this.gl.CULL_FACE);
-        this.gl.clearColor(0.95, 0.95, 0.95, 1);
-
-        // resource manager
-        this.resourceManager = new ResourceManager();
-
-        // root node
-        this.root = new Node();
-
-        // camera setup
-        this.camera = new Camera();
-        this.cameraNode = new Node();
-        this.cameraNode.setEntity(this.camera);
-        this.root.addChild(this.cameraNode);
-        
-        // resize canvas
         this.resize(width, height);
+
+        // camera 
+        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+        this.cameraNode.setEntity(this.cameraEntity);
+        this.cameraNode.setTranslation(0, 5, 10);
+        this.rootNode.addChild(this.cameraNode);
+        
+        // light 
+        this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
+        this.lightNode.setEntity(this.lightEntity);
+        this.lightNode.setTranslation(8, 10, 5);
+        this.rootNode.addChild(this.lightNode);
+
+        // shaders  
+        this.initShader().then(() => {
+            this.ready = true;
+            //this.initControls();
+        });
     }
-    
-    // ASYNC INITIALIZATION - Métodos comentados sobre shaders
-    // private async initializeAsyncShaderAndSceneGraph() { ... }
-    // private async initializeShader(): Promise<void> { ... }
-    // private async createSceneGraph(): Promise<void> { ... }
+
+    private async initShader(): Promise<void> {
+        this.shader = new ShaderResource(this.gl, 'basic');
+        await this.shader.loadFile('assets/shaders/basic.vert', 'vertex');
+        await this.shader.loadFile('assets/shaders/basic.frag', 'fragment');
+        this.shader.buildProgram();
+    }
 
     resize(width: number, height: number): void {
+        if (!this.canvas || !this.gl) return;
         this.canvas.width = width;
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
-        
-        // Update camera aspect ratio if needed
-        if (this.camera) {
-            const aspect = width / height;
-            this.camera.setPerspective(45, aspect, 0.1, 100);
-        }
+        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
     }
 
     render(): void {
+        if (!this.ready) return;
+        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
+        this.shader.use();
+
         const identity = mat4.create();
-        this.root.traverse(identity, this.shader, false);
+        this.rootNode.traverse(identity, this.shader, false);
 
-        // Apply auto-rotation if enabled
-        if (this.controlsEnabled && this.controlsAutoRotate) {
-            this.applyAutoRotation();
-        }
+        this.updateControls();
     }
 
-    private applyAutoRotation(): void {
-        // Incrementally rotate the scene based on controlsAutoRotateSpeed
-        const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
-        this.cameraNode.rotate(0, rotationDelta, 0);
-    }
+    // private applyAutoRotation(): void {
+    //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
+    //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
+    //     this.cameraNode.rotate(0, rotationDelta, 0);
+    // }
 
 
     // ===== OBJECT CREATION METHODS =====
@@ -146,13 +165,13 @@ export class WebGLEngineAdapter extends EngineFacade {
     createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject {
         const mesh = this.createPrimitive(geometry, material);
         const wrapper = new WebGlRenderableObject(mesh);
-        this.sceneObjects.push(wrapper);
         return wrapper;
     }
 
     createGroup(): RenderableObject {
         const groupNode = new Node();
-        return new WebGlRenderableObject(groupNode);
+        const wrapperGroupNode = new WebGlRenderableObject(groupNode);
+        return wrapperGroupNode;
     }
 
     createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
@@ -176,7 +195,6 @@ export class WebGLEngineAdapter extends EngineFacade {
         // TODO: Create cone mesh resource and set as entity
         arrowGroup.addChild(headNode);
 
-        this.sceneObjects.push(arrowWrapper);
         return arrowWrapper;
     }
 
@@ -184,28 +202,29 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     addToScene(object: RenderableObject): void {
         const obj = object as WebGlRenderableObject;
-        this.root.addChild(obj.node);
+        this.rootNode.addChild(obj.node);
     }
 
     removeFromScene(object: RenderableObject): void {
         const obj = object as WebGlRenderableObject;
-        this.root.removeChild(obj.node);
-        
-        // Remove from sceneObjects tracking
-        const index = this.sceneObjects.indexOf(obj);
-        if (index > -1) {
-            this.sceneObjects.splice(index, 1);
-        }
+        this.rootNode.removeChild(obj.node);
     }
 
     setBackground(color: number | string | null): void {
         if (color === null) {
-            this.gl.clearColor(0, 0, 0, 0);
+            this.clear = { r: 0, g: 0, b: 0, a: 0 };
             return;
         }
-
-        const c = this.parseColor(color);
-        this.gl.clearColor(c.r, c.g, c.b, 1);
+        // soporta number tipo 0xRRGGBB
+        if (typeof color === 'number') {
+            const r = ((color >> 16) & 255) / 255;
+            const g = ((color >> 8) & 255) / 255;
+            const b = (color & 255) / 255;
+            this.clear = { r, g, b, a: 1 };
+            return;
+        }
+        // string => fallback
+        this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
     }
 
     // ===== CAMERA & CONTROLS METHODS =====
@@ -295,7 +314,6 @@ export class WebGLEngineAdapter extends EngineFacade {
             groupNode.addChild(meshNode);
             
             const wrapper = new WebGlRenderableObject(meshNode);
-            this.sceneObjects.push(wrapper);
         }
 
         return group;
@@ -306,111 +324,11 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     dispose(): void {
-        this.sceneObjects = [];
         this.highlightedObjects = [];
         // Clear the scene by resetting root node
-        this.root = new Node();
+        this.rootNode = new Node();
         this.cameraNode = new Node();
-        this.cameraNode.setEntity(this.camera);
-        this.root.addChild(this.cameraNode);
-    }
-
-    // ===== PRIVATE HELPER METHODS =====
-
-    private createPrimitive(
-        geometry: GeometryConfig,
-        material: MaterialConfig
-    ): Node {
-        const node = new Node();
-
-        // Create a simple colored mesh based on geometry type
-        try {
-            let mesh: any;
-
-            switch (geometry.type) {
-                case 'box':
-                    mesh = this.createBoxMesh(geometry.args, material);
-                    break;
-                case 'cylinder':
-                    mesh = this.createCylinderMesh(geometry.args, material);
-                    break;
-                case 'plane':
-                    mesh = this.createPlaneMesh(geometry.args, material);
-                    break;
-                default:
-                    console.warn(`Unknown geometry type: ${geometry.type}`);
-                    break;
-            }
-
-            if (mesh) {
-                node.setEntity(mesh);
-            }
-        } catch (error) {
-            console.error('Error creating primitive:', error);
-        }
-
-        return node;
-    }
-
-    private createBoxMesh(args: number[], material: MaterialConfig): any {
-        // args: [width, height, depth]
-        const [width, height, depth] = args.length >= 3 ? args : [1, 1, 1];
-        
-        // TODO: Create actual mesh with vertices, normals, UVs
-        // For now, return a placeholder that can be rendered
-        return {
-            type: 'box',
-            dimensions: { width, height, depth },
-            material: material,
-            draw: () => { /* TODO: Implement */ }
-        };
-    }
-
-    private createCylinderMesh(args: number[], material: MaterialConfig): any {
-        // args: [radiusTop, radiusBottom, height, radialSegments]
-        const [radiusTop, radiusBottom, height, radialSegments] = 
-            args.length >= 4 ? args : [1, 1, 2, 32];
-
-        return {
-            type: 'cylinder',
-            dimensions: { radiusTop, radiusBottom, height, radialSegments },
-            material: material,
-            draw: () => { /* TODO: Implement */ }
-        };
-    }
-
-    private createPlaneMesh(args: number[], material: MaterialConfig): any {
-        // args: [width, height]
-        const [width, height] = args.length >= 2 ? args : [1, 1];
-
-        return {
-            type: 'plane',
-            dimensions: { width, height },
-            material: material,
-            draw: () => { /* TODO: Implement */ }
-        };
-    }
-
-    private parseColor(color: number | string) {
-        if (typeof color === 'number') {
-            const r = ((color >> 16) & 255) / 255;
-            const g = ((color >> 8) & 255) / 255;
-            const b = (color & 255) / 255;
-            return { r, g, b };
-        }
-
-        // Handle string colors (e.g., '#FFFFFF', 'blue', etc.)
-        if (typeof color === 'string') {
-            if (color.startsWith('#')) {
-                const hex = color.slice(1);
-                const num = parseInt(hex, 16);
-                const r = ((num >> 16) & 255) / 255;
-                const g = ((num >> 8) & 255) / 255;
-                const b = (num & 255) / 255;
-                return { r, g, b };
-            }
-        }
-
-        return { r: 1, g: 1, b: 1 };
+        this.cameraNode.setEntity(this.cameraEntity);
+        this.rootNode.addChild(this.cameraNode);
     }
 }

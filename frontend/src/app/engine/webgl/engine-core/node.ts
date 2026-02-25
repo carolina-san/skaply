@@ -119,7 +119,7 @@ export class Node {
 
         // draw entity 
         if (this.entity) {
-            console.log('Node: Dibujando entidad', this.entity.constructor.name);
+            //console.log('Node: Dibujando entidad', this.entity.constructor.name);
             this.entity.draw(this.transformMatrix, shader);
         }
 

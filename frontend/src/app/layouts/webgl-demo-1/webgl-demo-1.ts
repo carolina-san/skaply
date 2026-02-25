@@ -84,14 +84,21 @@ export class WebglSceneComponent implements AfterViewInit {
     const meshNode = new Node();
     root.addChild(meshNode);
 
+    //let num = 1;
+
     for (let mesh of meshes) {
       const node = new Node();
       node.setEntity(mesh);
       //root.addChild(node);
       meshNode.addChild(node);
+      //console.log("Mesh added to scene:" + num + " - " + mesh);
+      //num++;
     }
 
+
+
     // centrar un poco
+
     //meshNode.setTranslation(0, -1, -5);
     //root.addChild(meshNode);
 

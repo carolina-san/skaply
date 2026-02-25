@@ -54,12 +54,17 @@ class ThreeRenderableObject implements RenderableObject {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.add(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
+
+        // const threeChild = child as ThreeRenderableObject;
+        // this.threeObject.add(threeChild.nativeObject);
     }
 
     remove(child: RenderableObject): void {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.remove(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     getPosition(): Vector3 {
@@ -209,12 +214,14 @@ export class ThreeEngineAdapter extends EngineFacade {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.add(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     removeFromScene(object: RenderableObject): void {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.remove(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     setBackground(color: number | string | null): void {

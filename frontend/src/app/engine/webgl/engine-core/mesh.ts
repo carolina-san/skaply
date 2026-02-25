@@ -26,7 +26,7 @@ export class Mesh extends Entity {
     draw (modelMatrix: mat4, shader: ShaderResource): void {
         const gl = this.gl;
 
-        console.log('mesh model matrix:' ,modelMatrix);
+        //console.log('mesh model matrix:' ,modelMatrix);
         
         if (!this.initialized) {
             this.initializeBuffers();
@@ -46,9 +46,9 @@ export class Mesh extends Entity {
         gl.bindVertexArray(this.vao!);
 
         // logs
-        console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
-        console.log('ELEMENT_ARRAY_BUFFER bound:', gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING));
-        console.log('Mesh.draw: indexCount=', this.indexCount, 'vao=', !!this.vao);
+        //console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
+        //console.log('ELEMENT_ARRAY_BUFFER bound:', gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING));
+        //console.log('Mesh.draw: indexCount=', this.indexCount, 'vao=', !!this.vao);
 
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.bindVertexArray(null);

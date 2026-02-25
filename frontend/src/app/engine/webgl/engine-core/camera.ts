@@ -61,8 +61,8 @@ export class Camera extends Entity {
     
     draw(modelMatrix: mat4, shader: ShaderResource): void {
         
-        console.log('Camera viewMatrix:', this.viewMatrix);
-        console.log('Camera projectionMatrix:', this.projectionMatrix);
+        //console.log('Camera viewMatrix:', this.viewMatrix);
+        //console.log('Camera projectionMatrix:', this.projectionMatrix);
 
         // update camera lookAt (fixed)
         this.lookAt(modelMatrix, vec3.fromValues(0, 0, 0)); 
