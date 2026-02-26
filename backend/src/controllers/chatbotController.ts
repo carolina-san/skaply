@@ -95,7 +95,7 @@ export class ChatbotController {
                     res.status(200).json(result);
                     return;
                 }
-                case 'get.dificultad': {
+                case 'get.difficulty': {
                     let ref = parameters?.furniture_ref2;
 
                     if (!ref) {
@@ -139,7 +139,7 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.filterByCategory(category));
                     return;
                 }
-                case 'get.furniture.recomendation': {
+                case 'get.furniture.recommendation': {
                     const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
                         c.name.endsWith('/contexts/flujo_busqueda')
                     );
@@ -153,9 +153,9 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getFurnitureRecomendation(ctx.parameters.furniture_category, ctx.parameters.furniture_color, session));
                     return;
                 }
-                case 'get.furniture.recomendation.more': {
+                case 'get.furniture.recommendation.more': {
                     const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
-                        c.name.endsWith('/contexts/recommendation_vars')
+                        c.name.endsWith('/contexts/recommendation_vars') //para que no aparezca la que ya había mostrado
                     ) || req.body.queryResult.outputContexts?.find((c: any) =>
                         c.name.endsWith('/contexts/flujo_busqueda')
                     );
@@ -184,7 +184,7 @@ export class ChatbotController {
                 }
                 default:
                     res.status(200).json({
-                        fulfillmentText: 'No entiendo esa consulta. (backend)'
+                        fulfillmentText: 'No he podido obtener esa información de la base de datos. Prueba con otras palabras.'
                     });
                     return;
             }
