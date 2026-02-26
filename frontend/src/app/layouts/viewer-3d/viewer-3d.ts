@@ -27,7 +27,7 @@ export class Viewer3D implements OnInit {
   isSubmittingReview = signal(false);
   submitStatus = signal<'idle' | 'success' | 'error'>('idle');
   submitMessage = signal('');
-
+  hasTriedSubmit = signal(false);
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
   furnitureId: string = '';
@@ -258,5 +258,12 @@ export class Viewer3D implements OnInit {
     this.currentModelIndex = (this.currentModelIndex + 1) % this.modelPaths.length;
     this.modelPath = this.modelPaths[this.currentModelIndex];
     // this.furnitureViewer?.loadModel(this.modelPath);
+  }
+  onSubmitClick() {
+    this.hasTriedSubmit.set(true);
+
+    if (this.reviewStars() === 0) return;
+
+    this.submitReview();
   }
 }

@@ -18,7 +18,7 @@ import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule, EngineSwitch, Modal],
+  imports: [CommonModule, FormsModule, EngineSwitch],
   providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
