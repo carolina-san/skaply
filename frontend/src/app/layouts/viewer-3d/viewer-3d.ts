@@ -25,6 +25,8 @@ export class Viewer3D implements OnInit {
   reviewStars = signal(0);
   reviewText = signal('');
   isSubmittingReview = signal(false);
+  submitStatus = signal<'idle' | 'success' | 'error'>('idle');
+  submitMessage = signal('');
 
   vistaActiva: string = 'mueble';
   modelPath: string = '/assets/models/EKET_70332124_35x25x35.glb';
@@ -176,12 +178,16 @@ export class Viewer3D implements OnInit {
     this.isReviewModalOpen.set(true);
     this.reviewStars.set(0);
     this.reviewText.set('');
+    this.submitStatus.set('idle');
+    this.submitMessage.set('');
   }
 
   closeReviewModal(): void {
     this.isReviewModalOpen.set(false);
     this.reviewStars.set(0);
     this.reviewText.set('');
+    this.submitStatus.set('idle');
+    this.submitMessage.set('');
   }
 
   setRating(stars: number): void {
@@ -208,21 +214,28 @@ export class Viewer3D implements OnInit {
     }
 
     this.isSubmittingReview.set(true);
+    this.submitStatus.set('idle');
+    this.submitMessage.set('');
 
     this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
       next: (response) => {
+        this.submitStatus.set('success');
+        this.submitMessage.set('¡Gracias por tu reseña!');
         this.isSubmittingReview.set(false);
-        this.closeReviewModal();
-        alert('¡Gracias por tu reseña!');
-        // Redirigir al catálogo después de enviar
-        this.finMontaje();
-        this.router.navigate(['/catalogo']);
+
+        // Retrasar el cierre para que se vea el mensaje
+        setTimeout(() => {
+          this.closeReviewModal();
+          this.finMontaje();
+          this.router.navigate(['/catalogo']);
+        }, 1500);
       },
       error: (error) => {
         console.error('Error al guardar la review:', error);
         this.isSubmittingReview.set(false);
         const errorMessage = error.error?.message || error.message || 'Error desconocido';
-        alert('Error al guardar la reseña: ' + errorMessage);
+        this.submitStatus.set('error');
+        this.submitMessage.set('Error al guardar la reseña: ' + errorMessage);
       }
     });
   }
