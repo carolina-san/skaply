@@ -63,7 +63,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                     top: container.scrollHeight,
                     behavior: 'smooth'
                 });
-            });
+            }, 100);
         }
     }
 

@@ -157,7 +157,8 @@
 
         <div class="flex w-full items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
             <input #messageInput type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
-                (keydown.enter)="sendMessage()" class="input-chat" focused />
+                (keydown.enter)="sendMessage()" (focus)="scrollToBottom()" (click)="scrollToBottom()" class="input-chat"
+                focused />
 
             <button
                 class="p-2 absolute right-4 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
