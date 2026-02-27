@@ -57,13 +57,11 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
 
     scrollToBottom(): void {
         if (this.messagesContainer) {
+
             setTimeout(() => {
                 const container = this.messagesContainer.nativeElement;
-                container.scrollTo({
-                    top: container.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+                container.scrollTop = container.scrollHeight;
+            }, 400);
         }
     }
 
@@ -168,6 +166,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                 if (isKeyboardOpen) {
                     wrapper.style.height = `${vv.height}px`;
                     wrapper.style.maxHeight = `${vv.height}px`;
+                    this.scrollToBottom();
                 } else {
                     wrapper.style.height = '85dvh';
                     wrapper.style.maxHeight = '85dvh';
