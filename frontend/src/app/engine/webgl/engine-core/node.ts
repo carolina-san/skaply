@@ -24,6 +24,12 @@ export class Node {
     // visibility
     private visible: boolean = true;
 
+    // materials / effects
+    public isHighlighted: boolean = false;
+    public highlightColor: vec3 = vec3.fromValues(0, 1, 1);
+    public isUnlit: boolean = false;
+    public unlitColor: vec3 = vec3.fromValues(0, 1, 1);
+
 
     // CHILDREN MANAGEMENT
 
@@ -132,6 +138,10 @@ export class Node {
 
         // draw entity 
         if (this.entity) {
+            shader.setFloat('uHighlight', this.isHighlighted ? 1.0 : 0.0);
+            shader.setVec3('uHighlightColor', this.highlightColor);
+            shader.setFloat('uIsUnlit', this.isUnlit ? 1.0 : 0.0);
+            shader.setVec3('uUnlitColor', this.unlitColor);
             this.entity.draw(this.transformMatrix, shader);
         }
 
