@@ -1,0 +1,180 @@
+<div class="w-full h-full bg-beige flex flex-col">
+
+  <!-- Mensaje de no hay resultados -->
+  <div *ngIf="providers.length === 0 && searchText" class="flex-1 flex items-center justify-center">
+    <div class="text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355"
+        class="mx-auto mb-4">
+        <path
+          d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+      </svg>
+      <p class="text-xl font-semibold text-marron-oscuro mb-2">No hay resultados</p>
+      <p class="text-gray-600">No se encontraron solicitudes que coincidan con "{{ searchText }}"</p>
+    </div>
+  </div>
+
+  <!-- Mensaje de no hay solicitudes pendientes -->
+  <div *ngIf="providers.length === 0 && !searchText" class="flex-1 flex items-center justify-center">
+    <div class="text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355"
+        class="mx-auto mb-4">
+        <path
+          d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+      </svg>
+      <p class="text-xl font-semibold text-marron-oscuro mb-2">No hay solicitudes pendientes</p>
+      <p class="text-gray-600">Todas las solicitudes han sido procesadas</p>
+    </div>
+  </div>
+
+  <!-- Tabla de solicitudes -->
+  <div *ngIf="providers.length > 0"
+    class="mt-2 bg-white rounded-xl overflow-hidden flex-shrink-0 flex flex-col">
+
+    <!-- HEADER -->
+    <div class="grid grid-cols-6 bg-azul-claro px-3 py-1 text-sm text-marron-oscuro">
+      <h4 class="col-span-2 font-bold">Empresa</h4>
+      <h4 class="text-center font-bold">CIF</h4>
+      <h4 class="text-center font-bold">Fecha de solicitud</h4>
+      <h4 class="col-span-2 text-center font-bold">Acciones</h4>
+    </div>
+
+    <!-- BODY -->
+    <div class="divide-y divide-gray-200">
+      <div *ngFor="let provider of paginatedProviders"
+        class="grid grid-cols-6 px-2 py-2 items-center hover:bg-gray-50 transition">
+
+        <!-- Empresa + Email -->
+        <div class="col-span-2 min-w-0">
+          <div class="font-medium text-gray-800 text-sm truncate">
+            {{ provider.company_name }}
+          </div>
+          <div class="text-xs text-gray-500 truncate">
+            {{ provider.email }}
+          </div>
+        </div>
+
+        <!-- CIF -->
+        <div class="text-center text-gray-600 font-mono text-xs">
+          {{ provider.cif }}
+        </div>
+
+        <!-- Fecha de solicitud -->
+        <div class="text-center text-gray-600 text-xs">
+          {{ provider.created_at | date:'dd/MM/yyyy' }}
+        </div>
+
+        <!-- Acciones -->
+        <div class="col-span-2 flex justify-center gap-2">
+          <button (click)="openApproveModal(provider)"
+            class="px-4 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+              <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+            </svg>
+            Aprobar
+          </button>
+          <button (click)="openRejectModal(provider)"
+            class="px-4 py-2 bg-red-600 text-white text-sm rounded-full hover:bg-red-700 transition flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+              <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+            </svg>
+            Rechazar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Aprobación -->
+  <app-modal [(open)]="isApproveModalOpen">
+    <div class="p-8 bg-white rounded-2xl">
+      <div class="flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#16a34a">
+            <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+          </svg>
+        </div>
+
+        <h2 class="text-2xl font-bold text-marron-oscuro mb-2">Aprobar solicitud</h2>
+        <p class="text-gray-600 mb-6">
+          ¿Estás seguro de que quieres aprobar a <strong>"{{ selectedProvider?.company_name }}"</strong>?
+          <br>
+          El proveedor podrá acceder al sistema después de la aprobación.
+        </p>
+
+        <div class="flex justify-center gap-3 w-full">
+          <button type="button" (click)="closeApproveModal()"
+            class="flex-1 px-6 py-2 border bg-azul-claro text-marron-oscuro border-gray-300 rounded-full hover:bg-azul-claro/80 transition">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmApprove()"
+            class="flex-1 px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition">
+            Aprobar
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Modal de Confirmación de Rechazo -->
+  <app-modal [(open)]="isRejectModalOpen">
+    <div class="p-8 bg-white rounded-2xl">
+      <div class="flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#dc2626">
+            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
+          </svg>
+        </div>
+
+        <h2 class="text-2xl font-bold text-marron-oscuro mb-2">Rechazar solicitud</h2>
+        <p class="text-gray-600 mb-6">
+          ¿Estás seguro de que quieres rechazar a <strong>"{{ selectedProvider?.company_name }}"</strong>?
+          <br>
+          Esta acción no se puede deshacer.
+        </p>
+
+        <div class="flex justify-center gap-3 w-full">
+          <button type="button" (click)="closeRejectModal()"
+            class="flex-1 px-6 py-2 border bg-azul-claro text-marron-oscuro border-gray-300 rounded-full hover:bg-azul-claro/80 transition">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmReject()"
+            class="flex-1 px-6 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition">
+            Rechazar
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Espaciador -->
+  <div class="flex-1"></div>
+
+  <!-- Paginación -->
+  <div *ngIf="providers.length > 0"
+    class="flex justify-end items-center mt-6 gap-4 flex-shrink-0 pb-6">
+    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
+
+    <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+          <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
+        </svg>
+      </button>
+
+      <button *ngFor="let page of pageNumbers" (click)="goToPage(page)" [class.bg-beige]="page === currentPage"
+        [class.text-marron-oscuro]="page === currentPage" [class.bg-white]="page !== currentPage"
+        class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium hover:bg-beige-oscuro transition shadow-sm">
+        {{ page }}
+      </button>
+
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages <= 1"
+        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

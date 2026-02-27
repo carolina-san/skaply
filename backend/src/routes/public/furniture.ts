@@ -14,6 +14,7 @@ const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
 router.get('/', furnitureController.getAllFurniture);
 router.get('/visible', furnitureController.getVisibleFurniture);
+router.post('/catalog', furnitureController.furnitureCatalogo);
 router.get('/:id', furnitureController.getFurnitureById);
 router.get('/:id/issues', issueControllerInstance.getFurnitureIssues);
 router.get('/:id/reviews', reviewControllerInstance.getFurnitureReviews);

@@ -260,7 +260,8 @@ export class ProviderController {
         'company_name',
         'telephone',
         'tax_address',
-        'visible'
+        'visible',
+        'enabled'
       ];
 
       // pick fields and validate

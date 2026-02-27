@@ -7,6 +7,12 @@
     'h-15': !chatVisible && (!inMontajeMode || isMobile),
     '!z-999': chatVisible
   }">
+    <!-- Siempre abierto en modo montaje si está en desktop
+        Ocupa un cuarto de la pantalla si está en desktop, da igual el modo
+        Si está visible en móvil o en catálogo, ocupa toda la pantalla en movil y 96 en pequeño y 85 de alto
+        Si está cerrado en móvil o en catálogo, ocupa 15 de alto -->
+
+
 
     <!-- Icono del chatbot -->
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
@@ -149,12 +155,12 @@
 
 
 
-        <div class="flex items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
+        <div class="flex w-full items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
             <input #messageInput type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
                 (keydown.enter)="sendMessage()" class="input-chat" focused />
 
             <button
-                class="p-2 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
+                class="p-2 absolute right-4 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
                 (click)="sendMessage()">
                 <span class="material-symbols-rounded w-6 h-6">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">

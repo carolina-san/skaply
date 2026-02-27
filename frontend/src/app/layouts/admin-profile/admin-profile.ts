@@ -6,11 +6,12 @@ import { SeoService } from '../../services/seo.service';
 import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
 import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
+import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles],
+  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })

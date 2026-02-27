@@ -37,6 +37,12 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
   }
 
+  getFurnitureCatalogo(filters: FilterOptions): Observable<any> {
+    console.log('Filters sent to API Service for catalog:', filters);
+    return this.http.post(`${this.apiUrl}/furniture/catalog`, filters);
+  }
+  
+
   updateFurniture(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
   }
@@ -77,13 +83,16 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
     }
     if (visible !== null) {
       url += `&visible=${visible}`;
+    }
+    if (registration_status) {
+      url += `&registration_status=${registration_status}`;
     }
     return this.http.get(url);
   }
@@ -104,7 +113,15 @@ export class ApiService {
   }
 
   deleteProvider(providerId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/providers/${providerId}`);
+    return this.http.delete(`${this.apiUrl}/private/providers/${providerId}`);
+  }
+
+  approveProvider(providerId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${providerId}/registration/approve`, {});
+  }
+
+  rejectProvider(providerId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${providerId}/registration/reject`, {});
   }
 
   postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {

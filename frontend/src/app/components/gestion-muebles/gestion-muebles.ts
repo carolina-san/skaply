@@ -24,7 +24,9 @@ export class GestionMuebles implements OnInit, OnChanges {
 
   // Modal
   isEditModalOpen: boolean = false;
+  isDeleteModalOpen: boolean = false;
   selectedFurniture: any = null;
+  furnitureToDelete: any = null;
   editForm: any = {
     name: '',
     short_description: '',
@@ -95,7 +97,7 @@ export class GestionMuebles implements OnInit, OnChanges {
   }
 
   loadProviders() {
-    this.apiService.getProviders(1, 1000).subscribe( // Loading all providers for dropdown
+    this.apiService.getProviders(1, 1000, '', null, 'approved').subscribe( // Loading all approved providers for dropdown
       (response) => {
         this.providers = response.data || [];
       },
@@ -262,20 +264,32 @@ export class GestionMuebles implements OnInit, OnChanges {
     );
   }
 
-  deleteFurniture(furniture: any) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el mueble "${furniture.name}"?`)) {
-      this.apiService.deleteFurniture(furniture.id).subscribe(
-        (response) => {
-          console.log('Furniture deleted:', response);
-          // Eliminar de la lista local
-          this.furniture = this.furniture.filter(item => item.id !== furniture.id);
-          this.totalItems = this.furniture.length;
-        },
-        (error) => {
-          console.error('Error deleting furniture:', error);
-          alert('Error al eliminar el mueble');
-        }
-      );
-    }
+  openDeleteModal(furniture: any) {
+    this.furnitureToDelete = furniture;
+    this.isDeleteModalOpen = true;
+  }
+
+  closeDeleteModal() {
+    this.isDeleteModalOpen = false;
+    this.furnitureToDelete = null;
+  }
+
+  confirmDeleteFurniture() {
+    if (!this.furnitureToDelete) return;
+
+    this.apiService.deleteFurniture(this.furnitureToDelete.id).subscribe(
+      (response) => {
+        console.log('Furniture deleted:', response);
+        // Eliminar de la lista local
+        this.furniture = this.furniture.filter(item => item.id !== this.furnitureToDelete.id);
+        this.totalItems = this.furniture.length;
+        this.closeDeleteModal();
+      },
+      (error) => {
+        console.error('Error deleting furniture:', error);
+        alert('Error al eliminar el mueble');
+        this.closeDeleteModal();
+      }
+    );
   }
 }

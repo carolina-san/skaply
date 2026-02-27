@@ -166,7 +166,7 @@ export class ChatbotService {
    * Obtiene lista de proveedores
    */
   async getProviders(): Promise<any> {
-    const result = await this.providerService.getVisibleProviders(); // no debería devolver providers que tengan active = false
+    const result = await this.providerService.getVisibleProviders();
 
     return {
       fulfillmentMessages: [
@@ -283,7 +283,7 @@ export class ChatbotService {
 
     return {
       fulfillmentText:
-        'Tu incidencia ha sido creada con éxito y será atendida pronto. Gracias.'
+        'Tu incidencia ha sido cr eada con éxito y será atendida pronto. Gracias.'
     };
   }
 
