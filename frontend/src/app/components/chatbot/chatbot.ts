@@ -103,17 +103,21 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             this.chatVisible = !this.chatVisible;
 
             if (this.chatVisible) {
-                this.scrollPosition = window.scrollY || document.documentElement.scrollTop;
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${this.scrollPosition}px`;
-                document.body.style.width = '100%';
-                document.body.style.overflow = 'hidden';
+                if (this.isMobile) {
+                    this.scrollPosition = window.scrollY || document.documentElement.scrollTop;
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = `-${this.scrollPosition}px`;
+                    document.body.style.width = '100%';
+                    document.body.style.overflow = 'hidden';
+                }
             } else {
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.width = '';
-                document.body.style.overflow = '';
-                window.scrollTo({ top: this.scrollPosition, behavior: 'auto' });
+                if (this.isMobile) {
+                    document.body.style.position = '';
+                    document.body.style.top = '';
+                    document.body.style.width = '';
+                    document.body.style.overflow = '';
+                    window.scrollTo({ top: this.scrollPosition, behavior: 'auto' });
+                }
             }
 
 
