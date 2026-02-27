@@ -1,12 +1,9 @@
 <!-- Comportamiento del chatbot según el tamaño -->
-<div id="chatbot-wrapper" class="flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
-    'fixed': !inMontajeMode || isMobile,
-    'absolute': inMontajeMode && isDesktop,
-    'right-0 bottom-0': isMobile || (inMontajeMode && isDesktop),
-    'right-5 md:right-10 lg:right-17 bottom-5': isDesktop && !inMontajeMode,
-    'inset-y-0 h-[100dvh] w-1/4': inMontajeMode && isDesktop,     
-    'w-96 h-[80vh]': isDesktop && !inMontajeMode,  
-    'w-full sm:w-96 max-h-[85dvh] sm:max-h-[85dvh]': isMobile,
+<div id="chatbot-wrapper"
+    class="absolute right-0 bottom-0 flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
+    ' inset-y-0 h-[100dvh]': inMontajeMode && isDesktop,     
+    'w-1/4 min-h-[85vh]':  isDesktop,  
+    ' w-full sm:w-96 max-h-[85dvh] sm:max-h-[85dvh] ': !inMontajeMode || !isDesktop,
     'h-15': !chatVisible && (!inMontajeMode || isMobile),
     '!z-999': chatVisible
   }">
@@ -25,10 +22,8 @@
 
     <!-- Chatbot abierto y renderizado de rich content -->
     <div id="chatbot-container" *ngIf="chatVisible"
-        class="relative bg-beige overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
-        [ngClass]="{
-    'rounded-t-3xl': isMobile,
-    'rounded-2xl': isDesktop && !inMontajeMode}">
+        class="absolute bg-beige overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
+        [ngClass]="{'rounded-t-3xl': isMobile || !inMontajeMode}">
 
         <header class="flex justify-between items-center px-1 mb-2">
             <div class="flex items-center gap-2">
