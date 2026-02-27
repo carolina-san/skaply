@@ -131,6 +131,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             if (this.chatVisible) {
                 setTimeout(() => {
                     this.messageInput?.nativeElement?.focus({ preventScroll: true });
+                    this.messageInput?.nativeElement?.focus({ preventScroll: true });
                 }, 100);
             }
             if (window.visualViewport) {
