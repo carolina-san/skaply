@@ -1,8 +1,8 @@
 <!-- Comportamiento del chatbot según el tamaño -->
-<div class="fixed right-0 bottom-0 transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
+<div class="fixed right-0 bottom-0 top-0 flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
     ' top-0 h-screen': inMontajeMode && isDesktop,     
     'w-1/4  ':  isDesktop,                    
-    ' w-full sm:w-96  h-[85dvh] ': !inMontajeMode || !isDesktop,
+    ' w-full sm:w-96  min-h-[400px] max-h-[85dvh] ': !inMontajeMode || !isDesktop,
     'h-15': !chatVisible && (!inMontajeMode || isMobile),
     '!z-999': chatVisible
   }">
@@ -19,7 +19,7 @@
 
     <!-- Chatbot abierto y renderizado de rich content -->
     <div *ngIf="chatVisible"
-        class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
+        class="bg-beige  overflow-hidden shadow-2xl flex flex-col flex-1 min-h-0 w-full px-3 py-4 pointer-events-auto "
         [ngClass]="{
     'rounded-t-3xl': !inMontajeMode || isMobile}">
 
@@ -40,7 +40,7 @@
             </button>
         </header>
 
-        <div #messagesContainer class="flex-1 overflow-y-auto p-0 scrollbar-hide pb-11">
+        <div #messagesContainer class="flex-1  min-h-0 overflow-y-auto p-0 scrollbar-hide pb-11">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
