@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -21,7 +21,7 @@ interface ChatMessage {
     styleUrls: ['./chatbot.css']
 })
 
-export class Chatbot implements OnInit, AfterViewChecked {
+export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
     chatVisible: boolean = false;
     isDesktop: boolean = false;
     inMontajeMode: boolean = false;
@@ -86,6 +86,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (this.inMontajeMode && this.isDesktop) {
             this.chatVisible = true;
         }
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this.updateChatLayout);
+            window.visualViewport.addEventListener('scroll', this.updateChatLayout);
+        }
     }
     ngAfterViewChecked() {
         if (this.shouldScroll) {
@@ -116,6 +120,9 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     this.messageInput?.nativeElement?.focus();
                 }, 100);
             }
+            if (window.visualViewport) {
+                setTimeout(() => this.updateChatLayout(), 0);
+            }
         }
     }
 
@@ -129,6 +136,41 @@ export class Chatbot implements OnInit, AfterViewChecked {
         this.isMobile = !this.isDesktop;
         if (this.inMontajeMode && this.isDesktop) {
             this.chatVisible = true;
+        }
+    }
+
+    updateChatLayout = () => {
+        const wrapper = document.getElementById('chatbot-wrapper');
+        if (!wrapper) return;
+
+        if (this.isMobile && this.chatVisible) {
+            const vv = window.visualViewport;
+            if (vv) {
+                wrapper.style.position = 'fixed';
+                const bottomOffset = window.innerHeight - (vv.offsetTop + vv.height);
+                wrapper.style.bottom = `${Math.max(0, bottomOffset)}px`;
+
+                const isKeyboardOpen = vv.height < window.screen.height * 0.75;
+                if (isKeyboardOpen) {
+                    wrapper.style.height = `${vv.height}px`;
+                    wrapper.style.maxHeight = `${vv.height}px`;
+                } else {
+                    wrapper.style.height = '85dvh';
+                    wrapper.style.maxHeight = '85dvh';
+                }
+            }
+        } else {
+            wrapper.style.position = '';
+            wrapper.style.bottom = '';
+            wrapper.style.height = '';
+            wrapper.style.maxHeight = '';
+        }
+    }
+
+    ngOnDestroy() {
+        if (window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this.updateChatLayout);
+            window.visualViewport.removeEventListener('scroll', this.updateChatLayout);
         }
     }
 
