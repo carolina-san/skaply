@@ -31,6 +31,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
     sessionId: string = '';
     private shouldScroll = false;
     private welcomeEventSent: boolean = false;
+    private scrollPosition: number = 0;
     isCatalogPage = false;
 
     isPlaying: boolean = false;
@@ -102,9 +103,17 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             this.chatVisible = !this.chatVisible;
 
             if (this.chatVisible) {
+                this.scrollPosition = window.scrollY || document.documentElement.scrollTop;
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${this.scrollPosition}px`;
+                document.body.style.width = '100%';
                 document.body.style.overflow = 'hidden';
             } else {
-                document.body.style.overflow = 'auto';
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+                window.scrollTo({ top: this.scrollPosition, behavior: 'auto' });
             }
 
 
@@ -117,7 +126,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             // Hacer focus en el input cuando se abre el chatbot
             if (this.chatVisible) {
                 setTimeout(() => {
-                    this.messageInput?.nativeElement?.focus();
+                    this.messageInput?.nativeElement?.focus({ preventScroll: true });
                 }, 100);
             }
             if (window.visualViewport) {
@@ -171,6 +180,12 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
         if (window.visualViewport) {
             window.visualViewport.removeEventListener('resize', this.updateChatLayout);
             window.visualViewport.removeEventListener('scroll', this.updateChatLayout);
+        }
+        if (this.chatVisible && (!this.inMontajeMode || !this.isDesktop)) {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
         }
     }
 
@@ -277,7 +292,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                     this.speakMessage(fallbackMessage);
                 }
                 this.shouldScroll = true;
-                this.messageInput?.nativeElement?.focus();
+                this.messageInput?.nativeElement?.focus({ preventScroll: true });
 
             });
     }
