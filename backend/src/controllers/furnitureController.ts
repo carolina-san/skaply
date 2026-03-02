@@ -131,7 +131,7 @@ export class FurnitureController {
     try {
       let filters = req.body;
       filters.visible = true;
-
+      filters.onlyVisibleProviders = true;
       const result = await this.furnitureService.getFilteredFurniture(filters);
       res.status(200).json({
         message: 'Furniture catalog fetched successfully',
