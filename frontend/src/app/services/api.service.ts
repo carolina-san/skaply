@@ -193,7 +193,7 @@ export class ApiService {
   }
 
   getVisits(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/private/stats/visits`);
+    return this.http.get(`${this.apiUrl}/private/stats/analytics`);
   }
 
   getDashboardStats(): Observable<any> {

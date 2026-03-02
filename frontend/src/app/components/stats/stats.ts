@@ -10,11 +10,11 @@ import { ApiService } from '../../services/api.service';
   styleUrl: './stats.css'
 })
 export class Stats implements OnInit {
-  visits: number = 0;
-  users: number = 0;
+  admins: number = 0;
   providers: number = 0;
   furniture: number = 0;
-
+  overview: any = { activeUsers: 0, newUsers: 0, engagementRate: '0%' };
+  topPages: any[] = [];
   constructor(private apiService: ApiService) { }
 
   ngOnInit() {
@@ -24,11 +24,16 @@ export class Stats implements OnInit {
 
   loadVisits() {
     this.apiService.getVisits().subscribe({
-      next: (visits) => {
-        this.visits = visits;
+      next: (analyticsData: any) => {
+        if (analyticsData.overview) {
+          this.overview = analyticsData.overview;
+        }
+        if (analyticsData.topPages) {
+          this.topPages = analyticsData.topPages;
+        }
       },
-      error: (error) => {
-        console.error('Error loading visits:', error);
+      error: (error: any) => {
+        console.error('Error loading analytics:', error);
       }
     });
   }
@@ -36,7 +41,7 @@ export class Stats implements OnInit {
   loadDashboardStats() {
     this.apiService.getDashboardStats().subscribe({
       next: (stats) => {
-        this.users = stats.users || 0;
+        this.admins = stats.admins || 0;
         this.providers = stats.providers || 0;
         this.furniture = stats.furniture || 0;
       },
@@ -44,5 +49,11 @@ export class Stats implements OnInit {
         console.error('Error loading dashboard stats:', error);
       }
     });
+  }
+
+  format(title: string): string {
+    let furnitureName = title.replace('Montaje 3D de', '');
+    furnitureName = furnitureName.replace('- Skäply', '');
+    return furnitureName;
   }
 }

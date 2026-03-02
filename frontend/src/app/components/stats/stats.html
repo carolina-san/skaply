@@ -1,15 +1,15 @@
-<div>
-    <div class="flex justify-between items-center mb-8 mt-8">
+<div class="h-full overflow-y-hidden">
+    <div class="flex justify-between items-center mb-5 mt-5">
         <h1 class="text-3xl font-bold text-marron-oscuro">Dashboard de Estadísticas</h1>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Card Visitas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+
         <div
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
                 <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Visitas Mensuales</p>
-                <h3 class="text-3xl font-bold text-marron-oscuro">{{ visits }}</h3>
+                <h3 class="text-3xl font-bold text-marron-oscuro">{{ overview.activeUsers }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-azul-claro">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -20,12 +20,41 @@
             </div>
         </div>
 
-        <!-- Card Usuarios -->
         <div
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
-                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Usuarios</p>
-                <h3 class="text-3xl font-bold text-marron-oscuro">{{ users }}</h3>
+                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Usuarios Nuevos</p>
+                <h3 class="text-3xl font-bold text-marron-oscuro">{{ overview.newUsers }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-500">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="currentColor">
+                    <path
+                        d="M720-360v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-320-40q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-32q0-34 17.5-62.5T224-298q62-31 126-46.5T480-360q66 0 130 15.5T736-298q29 15 46.5 43.5T800-192v32H160Z" />
+                </svg>
+            </div>
+        </div>
+
+        <div
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Interacción</p>
+                <h3 class="text-3xl font-bold text-marron-oscuro">{{ overview.engagementRate }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="currentColor">
+                    <path
+                        d="M120-120v-80h720v80H120Zm354-214L216-592l56-56 202 202 142-142 228 228-56 56-172-172-142 142Z" />
+                </svg>
+            </div>
+        </div>
+
+        <div
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Administradores</p>
+                <h3 class="text-3xl font-bold text-marron-oscuro">{{ admins }}</h3>
             </div>
             <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-azul-claro">
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
@@ -36,11 +65,10 @@
             </div>
         </div>
 
-        <!-- Card Proveedores -->
         <div
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
-                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Proveedores aprobados
+                <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Proveedores activos
                 </p>
                 <h3 class="text-3xl font-bold text-marron-oscuro">{{ providers }}</h3>
             </div>
@@ -53,9 +81,8 @@
             </div>
         </div>
 
-        <!-- Card Muebles -->
         <div
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            class="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
                 <p class="text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1">Muebles Creados</p>
                 <h3 class="text-3xl font-bold text-marron-oscuro">{{ furniture }}</h3>
@@ -67,6 +94,37 @@
                         d="M741-280H219q-24 0-41.5-17.5T160-339v-401q0-24 17.5-41.5T219-800h522q24 0 41.5 17.5T800-740v401q0 24-17.5 41.5T741-280ZM240-360h480v-360H240v360Zm40 40h400l40 160H240l40-160Zm200-220q33 0 56.5-23.5T560-620q0-33-23.5-56.5T480-700q-33 0-56.5 23.5T400-620q0 33 23.5 56.5T480-540Zm0-80Zm-240 80h480v-120H240v120Zm0 160h480v-100H240v100Z" />
                 </svg>
             </div>
+        </div>
+    </div>
+
+    <div class="mt-5 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-marron-oscuro">Muebles más visitados</h3>
+            <span class="text-sm text-gray-400">Últimos 30 días</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50/50 text-marron-oscuro/70 uppercase text-xs tracking-wider">
+                    <tr>
+                        <th scope="col" class="px-4 py-2 font-semibold">Mueble</th>
+                        <th scope="col" class="px-4 py-2 font-semibold text-right">Visualizaciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+
+                    <tr *ngFor="let page of topPages" class="hover:bg-gray-50/80 transition-colors">
+                        <td class="px-4 py-2 font-medium text-marron-oscuro">{{ format(page.title) }}</td>
+                        <td class="px-4 py-2 text-right">
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-azul-claro">
+                                {{ page.views }}
+                            </span>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
