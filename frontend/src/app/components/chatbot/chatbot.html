@@ -2,7 +2,7 @@
 <div id="chatbot-wrapper"
     class="absolute right-0 bottom-0 flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
     ' inset-y-0 h-[100dvh]': inMontajeMode && isDesktop,     
-    'w-1/4 min-h-[85vh]':  isDesktop,  
+    'w-1/4 min-h-[85vh] fixed':  isDesktop,  
     ' w-full sm:w-96 max-h-[85dvh] sm:max-h-[85dvh] ': !inMontajeMode || !isDesktop,
     'h-15': !chatVisible && (!inMontajeMode || isMobile),
     '!z-999': chatVisible
