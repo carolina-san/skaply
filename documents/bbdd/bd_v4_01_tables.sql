@@ -169,7 +169,8 @@ CREATE TABLE  Step (
     step_number INTEGER NOT NULL,
     description TEXT,
     used_in_step_with_id INTEGER REFERENCES  Step(id) ON DELETE SET NULL,
-    scene_camera_angle INTEGER DEFAULT NULL
+    scene_camera_angle INTEGER DEFAULT NULL,
+    scene_camera_rotation_axis CHAR(1) CHECK (scene_camera_rotation_axis IN ('x','y','z')) DEFAULT  NULL
 );
 
 -- ============================
