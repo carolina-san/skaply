@@ -36,7 +36,8 @@ export interface AssemblyStep {
     step_number: number;
     description: string | null;
     used_in_step_with_id: number | null;
-    scene_camera_angle: string | null;
+    scene_camera_angle: number | null;
+    scene_camera_rotation_axis: string | null;
     parts: AssemblyPartRef[];
     tools: any[]; // Define tool interface if needed
 }

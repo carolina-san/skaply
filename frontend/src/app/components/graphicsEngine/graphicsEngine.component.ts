@@ -71,6 +71,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private engine!: EngineFacade;
   private parts: AssemblyPart[] = [];
+  private stepsData = signal<AssemblyStep[]>([]);
+  private lastProcessedStep = -1;
+  private lastRotationConfig = { angle: null as number | null, axis: null as string | null };
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
 
@@ -119,11 +122,43 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   constructor(private apiService: ApiService, private route: ActivatedRoute) {
     effect(() => {
-      // Logic for scrolling active step
-      this.currentLogicalStep();
-      setTimeout(() => {
-        this.centerActiveStep();
-      }, 100);
+      const stepIndex = this.currentLogicalStep();
+      const steps = this.stepsData();
+
+      // Guard to only run when the logical step actually changes or data arrives
+      if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
+      this.lastProcessedStep = stepIndex;
+
+      // Scrolling logic
+      setTimeout(() => this.centerActiveStep(), 100);
+
+      // Camera rotation logic
+      if (steps.length > 0 && steps[stepIndex]) {
+        const stepData = steps[stepIndex];
+
+        const hasNewRotation = stepData.scene_camera_angle !== null && stepData.scene_camera_rotation_axis !== null;
+        const rotationChanged = stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
+          stepData.scene_camera_rotation_axis !== this.lastRotationConfig.axis;
+
+        if (rotationChanged) {
+          if (hasNewRotation) {
+            // Apply new rotation smoothly
+            this.engine.rotateCamera(
+              stepData.scene_camera_rotation_axis as 'x' | 'y' | 'z',
+              Number(stepData.scene_camera_angle)
+            );
+          } else {
+            // No rotation for this step, but previously there was one -> Reset
+            this.engine.resetControls();
+          }
+
+          // Update last known rotation configuration
+          this.lastRotationConfig = {
+            angle: stepData.scene_camera_angle,
+            axis: stepData.scene_camera_rotation_axis
+          };
+        }
+      }
     });
   }
 
@@ -506,6 +541,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     // Sort steps by step_number just in case
     const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
+    this.stepsData.set(sortedSteps);
 
     for (const step of sortedSteps) {
       const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;

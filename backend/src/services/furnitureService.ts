@@ -422,6 +422,7 @@ export class FurnitureService {
         s.description,
         s.used_in_step_with_id,
         s.scene_camera_angle,
+        s.scene_camera_rotation_axis,
         COALESCE(json_agg(
           DISTINCT jsonb_build_object(
             'part_id', p.id,
@@ -451,7 +452,12 @@ export class FurnitureService {
       WHERE s.furniture_id = $1
       GROUP BY 
         f.required_people,
-        s.id
+        s.id,
+        s.step_number,
+        s.description,
+        s.used_in_step_with_id,
+        s.scene_camera_angle,
+        s.scene_camera_rotation_axis
       ORDER BY s.step_number ASC
     `;
 
