@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
 import { ResourceManager } from '../../engine/webgl/resource/resource-manager';
 import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
 import { Node } from '../../engine/webgl/engine-core/node';
@@ -83,9 +83,13 @@ export class CameraController {
     private readonly defaultTheta: number;
     private readonly defaultPhi: number;
     private readonly defaultTarget: vec3;
-
+    
+    // limits
     private readonly minRadius = 0.1;
     private readonly maxRadius = 100;
+
+    // epsilon to avoid gimbal lock at poles
+    private static readonly PHI_EPSILON = 0.01;
 
     constructor(
         private cameraNode: Node,
@@ -93,6 +97,7 @@ export class CameraController {
         private canvas: HTMLCanvasElement,
         isMobile: boolean
     ) {
+        // initial orbit state (spherical coordinates)
         this.radius = isMobile ? 3.84 : 3.5355;
         this.theta  = isMobile ? 0.785 : 0.896;
         this.phi    = isMobile ? 1.17  : 1.132;
@@ -108,6 +113,38 @@ export class CameraController {
         this.initListeners();
     }
 
+    // GETTERS
+
+    getCameraPosition(): Vector3 {
+        const pos = vec3.create();
+        vec3.transformMat4(pos, vec3.fromValues(0, 0, 0), this.cameraNode.getTransformMatrix());
+        return { x: pos[0], y: pos[1], z: pos[2] };
+    }
+
+    getViewMatrix(): Float32Array {
+        return new Float32Array(this.cameraEntity.getViewMatrix());
+    }
+
+    getProjectionMatrix(): Float32Array {
+        return new Float32Array(this.cameraEntity.getProjectionMatrix());
+    }
+
+    getOrbitState() {
+        return {
+            radius: this.radius,
+            theta: this.theta,
+            phi: this.phi
+        };
+    }
+
+    getTarget(): Vector3 {
+        return {
+            x: this.target[0],
+            y: this.target[1],
+            z: this.target[2]
+        };
+    }
+
     // ORBIT, ZOOM, PAN
 
     orbit(deltaTheta: number, deltaPhi: number): void {
@@ -117,31 +154,37 @@ export class CameraController {
         this.phi   += deltaPhi;
 
         // clamp phi to avoid gimbal lock 
-        const eps = 0.01;
-        this.phi = Math.max(eps, Math.min(Math.PI - eps, this.phi));
+        this.phi = this.normalizePhi(this.phi);
 
         this.updateOrbit();
     }
 
     zoom(delta: number): void {
+        
+        // update radius
         this.radius += delta;
-        if (this.radius < this.minRadius) this.radius = this.minRadius;
-        if (this.radius > this.maxRadius) this.radius = this.maxRadius;
+        
+        // clamp radius to limits
+        if (this.radius < this.minRadius) { this.radius = this.minRadius; }
+        if (this.radius > this.maxRadius) { this.radius = this.maxRadius; }
+
         this.updateOrbit();
     }
 
     pan(deltaX: number, deltaY: number): void {
+
+        // compute camera basis vectors
         const eye = this.computeEye();
         const { right, up } = this.computeCameraBasis(eye);
 
+        // pan speed adjusted based on radius
         const panSpeed = 0.002 * this.radius;
 
+        // move target in camera's right and up directions
         const moveX = vec3.create();
         const moveY = vec3.create();
-
         vec3.scale(moveX, right, -deltaX * panSpeed);
         vec3.scale(moveY, up, deltaY * panSpeed);
-
         vec3.add(this.target, this.target, moveX);
         vec3.add(this.target, this.target, moveY);
 
@@ -159,8 +202,12 @@ export class CameraController {
     }
 
     hasMovedFromDefault(): boolean {
+
+        // compare current eye and target to default values
         const eye        = this.computeEye();
         const defaultEye = this.computeEyeFrom(this.defaultRadius, this.defaultTheta, this.defaultPhi, this.defaultTarget);
+
+        // check if current eye or target differ significantly from default
         return vec3.dist(eye, defaultEye) > 0.1
             || vec3.dist(this.target, this.defaultTarget) > 0.1;
     }
@@ -170,25 +217,36 @@ export class CameraController {
     setCameraProps(position: Vector3, target: Vector3): void {
        
         // save target
-        const t = vec3.fromValues(target.x, target.y, target.z);
-        vec3.copy(this.target, t);
+        const targetVec = vec3.fromValues(target.x, target.y, target.z);
+        vec3.copy(this.target, targetVec);
 
         // compute radius, theta, phi from position
         const dx = position.x - target.x;
         const dy = position.y - target.y;
         const dz = position.z - target.z;
+        const computedRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        this.radius = Math.min(this.maxRadius,Math.max(this.minRadius, computedRadius));
+        const safeRadius = Math.max(this.radius, 0.00001); // avoid division by zero
         this.radius = Math.max(0.001, Math.sqrt(dx*dx + dy*dy + dz*dz));
-        this.phi    = Math.acos(Math.max(-1, Math.min(1, dy / this.radius)));
         this.theta  = Math.atan2(dx, dz);
+        this.phi    = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
+        this.phi    = this.normalizePhi(this.phi); // avoid gimbal lock
 
         this.updateOrbit();
     }
+
+    // DISPOSE
 
     dispose(): void {
         this.removeListeners();
     }
 
     // PRIVATE METHODS
+
+    private normalizePhi(phi: number): number {
+        const eps = CameraController.PHI_EPSILON;
+        return Math.max(eps, Math.min(Math.PI - eps, phi));
+    }
 
     private computeEye(): vec3 {
         return this.computeEyeFrom(this.radius, this.theta, this.phi, this.target);
@@ -438,6 +496,10 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraController.setCameraProps(position, target);
     }
 
+    updateControls(): void {
+        // this.cameraController.updateOrbit();     
+    }
+
     resetControls(): void { 
         this.cameraController.reset(); 
     }
@@ -447,9 +509,26 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     toggleControls(enable: boolean): void {
-        enable ? this.cameraController.initListeners()   // o exponer enable/disable
-            : this.cameraController.dispose();
+        enable  ?  this.cameraController.initListeners()   // o exponer enable/disable
+                :  this.cameraController.dispose();
     }
+
+    setControlsAutoRotateSpeed(speed: number): void {
+
+    }
+
+    getCamera(): CameraState {
+        return {
+            position: this.cameraController.getCameraPosition(),
+            target: this.cameraController.getTarget(),
+            viewMatrix: this.cameraController.getViewMatrix(),
+            projectionMatrix: this.cameraController.getProjectionMatrix(),
+            mode: 'orbit',
+            orbit: this.cameraController.getOrbitState()
+        };
+    }
+
+    // DISPOSE
 
     dispose(): void {
         this.cameraController.dispose();
