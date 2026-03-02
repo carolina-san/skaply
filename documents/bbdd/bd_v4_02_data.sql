@@ -406,38 +406,38 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 (7,22,1,'y',0.5),
 (7,23,1,'z',0.4),
 (7,24,1,'z',0.4),
-(7,25,1,'z',0.4),
+(7,25,1,'z',0.4),              
 (7,26,1,'z',0.4);   --tablero     
 
 -- ============================
 -- STEPS
 -- ============================
-INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id) VALUES 
+INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id, scene_camera_angle, scene_camera_rotation_axis) VALUES 
 -- MUEBLES DE PRUEBA
-(1,1,'Ensamblar estructura base',NULL),                     
-(2,1,'Unir piezas laterales',3),(2,2,'Montar estructura completa',NULL),    
-(3,1,'Preparar base inferior',6),(3,2,'Añadir soportes laterales',6),(3,3,'Completar ensamblaje',NULL),     
-(4,1,'Montar estructura principal',NULL),  
+(1,1,'Ensamblar estructura base',NULL, NULL, NULL),                     
+(2,1,'Unir piezas laterales',3, NULL, NULL),(2,2,'Montar estructura completa',NULL, NULL, NULL),    
+(3,1,'Preparar base inferior',6, NULL, NULL),(3,2,'Añadir soportes laterales',6, NULL, NULL),(3,3,'Completar ensamblaje',NULL, NULL, NULL),     
+(4,1,'Montar estructura principal',NULL, NULL, NULL),  
 -- MUEBLE SILLA PRUEBA RAMA THREEJS                   
-(5,1,'Ensamblar respaldo y base',9),
-(5,2,'Fijar asiento a la estructura',NULL),
+(5,1,'Ensamblar respaldo y base',9, NULL, NULL),
+(5,2,'Fijar asiento a la estructura',NULL, NULL, NULL),
 -- MUEBLE DE ACTIU VITAL PRO 
-(6,1,'Ensamblar patas y travesaño',NULL),     -- patas + travesaño
-(6,2,'2 Tornillos M8 L= 20 mm',NULL),
-(6,3,'2 Tornillos M8 L= 17 mm',NULL),
-(6,4,'2 Tornillos M8 L= 17 mm',NULL), -- Nuevo
-(6,5,'4 Soportes Uniones tornillos',NULL), -- Antes paso 3
-(6,6,'4 Tornillos M8 L= 20 mm',NULL),
-(6,7,'Ensamblar tablero',NULL),
-(6,8,'4 Tornillos M6 L= 16 mm',NULL),
+(6,1,'Ensamblar patas y travesaño',NULL, NULL, NULL),     -- patas + travesaño
+(6,2,'2 Tornillos M8 L= 20 mm',NULL, NULL, NULL),
+(6,3,'2 Tornillos M8 L= 17 mm',NULL, NULL, NULL),
+(6,4,'2 Tornillos M8 L= 17 mm',NULL, NULL, NULL), -- Nuevo
+(6,5,'4 Soportes Uniones tornillos',NULL, NULL, NULL), -- Antes paso 3
+(6,6,'4 Tornillos M8 L= 20 mm',NULL, NULL, NULL),
+(6,7,'Ensamblar tablero',NULL, NULL, NULL),
+(6,8,'4 Tornillos M6 L= 16 mm',NULL, 120.00, 'x'),
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(7,1,'Ensamblar tablon inferior y patas',NULL),     -- tablon inferior y patas
-(7,2,'Ensamblar laterales',NULL),     -- (tablon inferior y patas) + laterales
-(7,3,'Ensamblar tablon trasero',NULL),   -- (tablon inferior y patas + laterales) + tablon trasero
-(7,4,'Ensamblar tablon superior',NULL),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
-(7,5,'Ensamblar estantes',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
-(7,6,'Ensamblar puerta izquierda',NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
-(7,7,'Ensamblar puerta derecha',NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
+(7,1,'Ensamblar tablon inferior y patas',NULL, NULL, NULL),     -- tablon inferior y patas
+(7,2,'Ensamblar laterales',NULL, NULL, NULL),     -- (tablon inferior y patas) + laterales
+(7,3,'Ensamblar tablon trasero',NULL, NULL, NULL),   -- (tablon inferior y patas + laterales) + tablon trasero
+(7,4,'Ensamblar tablon superior',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
+(7,5,'Ensamblar estantes',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
+(7,6,'Ensamblar puerta izquierda',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
+(7,7,'Ensamblar puerta derecha',NULL, NULL, NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
 ;       
 -- ============================
 -- SETP_PART (asocia las piezas a los pasos)
