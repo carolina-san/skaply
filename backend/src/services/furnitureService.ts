@@ -303,69 +303,6 @@ export class FurnitureService {
     }
   }
 
-  // Devuelve toda la iformación necesaria para el motor gráfico
-  async getFurnitureAssembly(furnitureId: number) {
-    try {
-      const query = `
-      SELECT
-        f.required_people,
-        s.id AS step_id,
-        s.step_number,
-        s.description,
-        s.used_in_step_with_id,
-        s.scene_camera_angle,
-        COALESCE(json_agg(
-          DISTINCT jsonb_build_object(
-            'part_id', p.id,
-            'reference_number', p.reference_number,
-            'file_uri', p.file_uri,
-            'color_id', p.color_id,
-            'quantity', sp.quantity,
-            'axis', fp.exploded_axis,
-            'distance', fp.exploded_distance
-          )
-        ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
-        COALESCE(json_agg(
-          DISTINCT jsonb_build_object(
-            'tool_id', t.id,
-            'name', t.name
-          )
-        ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tools
-      FROM Step s
-      JOIN Furniture f ON f.id = s.furniture_id
-      LEFT JOIN Step_Part sp ON sp.stepid = s.id  -- Changed stepId to stepid
-      LEFT JOIN Part p ON p.id = sp.part_id
-      LEFT JOIN Furniture_Part fp 
-        ON fp.part_id = p.id 
-        AND fp.furniture_id = s.furniture_id
-      LEFT JOIN Step_Tool st ON st.stepid = s.id  -- Changed stepId to stepid
-      LEFT JOIN Tool t ON t.id = st.tool_id
-      WHERE s.furniture_id = $1
-      GROUP BY 
-        f.required_people,
-        s.id
-      ORDER BY s.step_number ASC
-    `;
-
-      const result = await pool.query(query, [furnitureId]);
-
-      // Check if we found any steps; if not, return null or an empty object
-      if (result.rows.length === 0) return null;
-
-      return {
-        furniture_id: furnitureId,
-        required_people: result.rows[0].required_people,
-        steps: result.rows
-      };
-
-    } catch (error) {
-      // SECURITY TIP: Log the actual error internally, but don't expose 
-      // DB details to the user.
-      console.error('Database Error:', error);
-      throw error;
-    }
-  }
-
   // Devuelve todos los muebles filtrados con paginación
   async getFilteredFurniture(filters: {
     difficulties?: ('low' | 'medium' | 'high')[];
@@ -373,12 +310,13 @@ export class FurnitureService {
     category_ids?: number[];
     color_ids?: number[];
     visible?: boolean;
+    onlyVisibleProviders?: boolean;
     search?: string;
     page?: number;
     limit?: number;
   }) {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, onlyVisibleProviders, search, page, limit } = filters;
 
       let baseSql = `
         FROM public.furniture f
@@ -427,6 +365,12 @@ export class FurnitureService {
         paramIndex++;
       }
 
+      if (onlyVisibleProviders !== null && onlyVisibleProviders !== undefined) {
+        baseSql += ` AND p.visible = $${paramIndex}`;
+        params.push(onlyVisibleProviders);
+        paramIndex++;
+      }
+
       let sql = `
         SELECT DISTINCT 
             f.id, 
@@ -472,47 +416,6 @@ export class FurnitureService {
     } catch (error) {
       console.error('Error fetching filtered furniture:', error);
       throw new Error('Error fetching furniture parts')
-    }
-  }
-
-  async getFurnitureIdByRef(ref: string): Promise<number> {
-    try {
-      const result = await pool.query(`SELECT id FROM furniture 
-        WHERE reference_number = $1`, [ref]);
-
-      if (result.rows.length === 0) {
-        throw new Error(`Furniture with reference ${ref} not found`);
-      }
-
-      return result.rows[0].id;
-    } catch (error) {
-      throw new Error('Error fetching the furniture id by the ref provided');
-    }
-  }
-
-  async getFurnitureDifficulty(furnitureId: number): Promise<string> {
-    try {
-      const result = await pool.query(
-        'SELECT difficulty FROM furniture WHERE id = $1',
-        [furnitureId]
-      );
-      if (result.rows.length === 0) {
-        throw new Error('Furniture not found');
-      }
-
-      const difficulty = result.rows[0].difficulty.toLowerCase();
-
-      // Map database values to Difficulty enum
-      const difficultyMap: { [key: string]: string } = {
-        'low': Difficulty.LOW,
-        'medium': Difficulty.MEDIUM,
-        'high': Difficulty.HIGH
-      };
-
-      return difficultyMap[difficulty] || result.rows[0].difficulty;
-
-    } catch (error) {
-      throw new Error('Error fetching furniture difficulty');
     }
   }
 
