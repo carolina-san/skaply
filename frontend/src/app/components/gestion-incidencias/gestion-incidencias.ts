@@ -15,7 +15,6 @@ import { Modal } from '../modal/modal';
 })
 export class GestionIncidencias implements OnInit {
   issues: Issue[] = [];
-  filteredIssues: Issue[] = [];
   paginatedIssues: Issue[] = [];
   providers: any[] = [];
   currentUser: User | null = null;
@@ -53,20 +52,24 @@ export class GestionIncidencias implements OnInit {
 
   loadIssues(): void {
     if (this.currentUser?.role === 'admin') {
-      this.apiService.getAllIssues().subscribe({
+      this.apiService.getAllIssues(this.selectedStatus || undefined, this.selectedProviderId || undefined).subscribe({
         next: (response) => {
           this.issues = response.data || [];
-          this.applyFilters();
+          this.totalItems = this.issues.length;
+          this.calculatePagination();
+          this.updatePaginatedIssues();
         },
         error: (error) => {
           console.error('Error loading issues:', error);
         }
       });
     } else if (this.currentUser?.role === 'provider') {
-      this.apiService.getProviderIssues(this.currentUser.id!).subscribe({
+      this.apiService.getProviderIssues(this.currentUser.id!, this.selectedStatus || undefined).subscribe({
         next: (response) => {
           this.issues = response.data || [];
-          this.applyFilters();
+          this.totalItems = this.issues.length;
+          this.calculatePagination();
+          this.updatePaginatedIssues();
         },
         error: (error) => {
           console.error('Error loading provider issues:', error);
@@ -86,33 +89,14 @@ export class GestionIncidencias implements OnInit {
     });
   }
 
-  applyFilters(): void {
-    let filtered = [...this.issues];
-
-    // Filtro por estado
-    if (this.selectedStatus) {
-      filtered = filtered.filter(issue => issue.status === this.selectedStatus);
-    }
-
-    // Filtro por proveedor (solo admin)
-    if (this.selectedProviderId && this.currentUser?.role === 'admin') {
-      filtered = filtered.filter(issue => issue.provider_id === this.selectedProviderId);
-    }
-
-    this.filteredIssues = filtered;
-    this.totalItems = filtered.length;
-    this.calculatePagination();
-    this.updatePaginatedIssues();
-  }
-
   onStatusChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    this.loadIssues();
   }
 
   onProviderChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    this.loadIssues();
   }
 
   calculatePagination(): void {
@@ -138,7 +122,7 @@ export class GestionIncidencias implements OnInit {
   updatePaginatedIssues(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedIssues = this.filteredIssues.slice(startIndex, endIndex);
+    this.paginatedIssues = this.issues.slice(startIndex, endIndex);
   }
 
   goToPage(page: number): void {
