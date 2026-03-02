@@ -13,6 +13,7 @@
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "dependencies": {
+    "@google-analytics/data": "^5.2.1",
     "@google-cloud/dialogflow": "^7.4.0",
     "@scalar/express-api-reference": "^0.8.28",
     "@types/pg": "^8.15.5",

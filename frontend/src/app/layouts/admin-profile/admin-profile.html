@@ -55,8 +55,8 @@
         class="h-full block"></app-gestion-muebles>
       <app-gestion-solicitudes *ngIf="activeTab === 'solicitudes'" [searchText]="searchText"
         class="h-full block"></app-gestion-solicitudes>
-      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
-        class="h-full block"></app-gestion-incidencias>
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'" class="h-full block"></app-gestion-incidencias>
+      <app-stats *ngIf="activeTab === 'dashboard'" class="h-full block"></app-stats>
     </div>
   </div>
 </div>

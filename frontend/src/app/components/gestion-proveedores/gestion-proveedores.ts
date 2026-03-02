@@ -167,6 +167,8 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.isEditModalOpen = false;
     this.selectedProvider = null;
     this.editForm.reset();
+    this.errorMessage = null;
+    this.successMessage = null;
   }
 
   onSubmit() {
@@ -192,10 +194,13 @@ export class GestionProveedores implements OnInit, OnChanges {
 
     this.apiService.updateProvider(this.selectedProvider.id, updateData).subscribe(
       (response) => {
+        this.successMessage = 'Proveedor actualizado correctamente';
         this.isSubmitting = false;
-        this.showSuccess('Proveedor actualizado correctamente');
-        this.closeEditModal();
-        this.fetchProviders();
+
+        setTimeout(() => {
+          this.closeEditModal();
+          this.fetchProviders();
+        }, 1500);
       },
       (error) => {
         this.isSubmitting = false;

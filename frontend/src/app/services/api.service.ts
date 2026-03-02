@@ -184,4 +184,12 @@ export class ApiService {
     }
     return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
   }
+
+  getVisits(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/visits`);
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/dashboard`);
+  }
 }

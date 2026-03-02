@@ -8,12 +8,13 @@ import { GestionProveedores } from '../../components/gestion-proveedores/gestion
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
 import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
 import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { Stats } from '../../components/stats/stats';
 import { Issue } from '../../types/issue.types';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias],
+  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias, Stats],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
@@ -34,6 +35,8 @@ export class AdminProfile implements OnInit {
     });
     this.loadPendingIssuesCount();
   }
+
+
 
   loadPendingIssuesCount() {
     this.apiService.getAllIssues().subscribe({
