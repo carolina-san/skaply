@@ -3,7 +3,7 @@
 -- DROP EXISTING TABLES
 -- ============================
 DROP TABLE IF EXISTS  Step_Tool,Assemblystep, Assemblystep_part,Assemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
-DROP TYPE IF EXISTS user_role, diff, user_status;
+DROP TYPE IF EXISTS user_role, diff, user_status, issue_status;
 
 -- ============================
 -- ENUMS
@@ -11,6 +11,7 @@ DROP TYPE IF EXISTS user_role, diff, user_status;
 CREATE TYPE user_role AS ENUM ('admin', 'user', 'provider');
 CREATE TYPE diff AS ENUM ('low','medium','high');
 CREATE TYPE user_status AS ENUM ('pending', 'approved', 'rejected');
+CREATE TYPE issue_status AS ENUM ('pending', 'resolved', 'escalated');
 
 -- ============================
 -- TABLE: User
@@ -199,7 +200,11 @@ CREATE TABLE Issue (
     description TEXT NOT NULL,
     date TIMESTAMP DEFAULT NOW(),
     user_email VARCHAR(50) NOT NULL,
-    furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE
+    furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
+    status issue_status NOT NULL DEFAULT 'pending',
+    resolved_at TIMESTAMP NULL,
+    resolved_by VARCHAR(100) NULL,
+    escalated_to_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ============================

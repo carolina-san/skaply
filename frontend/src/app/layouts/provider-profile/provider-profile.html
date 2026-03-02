@@ -10,11 +10,11 @@
         </button>
         <button (click)="setActiveTab('incidencias')"
           [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="relative hover:opacity-100 transition">
+          class="hover:opacity-100 transition flex items-center gap-2">
           Incidencias
-          <span
-            class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
-            2
+          <span *ngIf="pendingIssuesCount > 0" 
+                class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-[20px] text-center">
+            {{ pendingIssuesCount }}
           </span>
         </button>
         <button (click)="setActiveTab('estadisticas')"
@@ -40,6 +40,8 @@
     <div class="flex-1 min-h-0">
       <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"
         class="h-full block"></app-gestion-muebles>
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+        class="h-full block"></app-gestion-incidencias>
     </div>
   </div>
 </main>

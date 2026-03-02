@@ -32,16 +32,14 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}/assembly`);
   }
 
-  getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
-    console.log('Filters sent to API Service:', filters);
+  getAllFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
+    return this.http.post(`${this.apiUrl}/private/furniture/filter`, filters);
+  }
+
+  getFilteredCatalog(filters: FilterOptions): Observable<any> {
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
   }
 
-  getFurnitureCatalogo(filters: FilterOptions): Observable<any> {
-    console.log('Filters sent to API Service for catalog:', filters);
-    return this.http.post(`${this.apiUrl}/furniture/catalog`, filters);
-  }
-  
 
   updateFurniture(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
@@ -126,6 +124,22 @@ export class ApiService {
 
   postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
+  }
+
+  getAllIssues(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/issues`);
+  }
+
+  getProviderIssues(providerId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/issues/provider/${providerId}`);
+  }
+
+  resolveIssue(issueId: number, resolvedBy: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/resolve`, { resolved_by: resolvedBy });
+  }
+
+  escalateIssue(issueId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/escalate`, {});
   }
 
   sendChatbotMessage(text: string): Observable<any> {

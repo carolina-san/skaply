@@ -7,17 +7,20 @@ import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar
 import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
 import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
+import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { Issue } from '../../types/issue.types';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes],
+  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
 export class AdminProfile implements OnInit {
-  activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' = 'proveedores'; // Default tab
+  activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
+  pendingIssuesCount: number = 0;
 
   constructor(private seo: SeoService, private apiService: ApiService) {
   }
@@ -29,9 +32,24 @@ export class AdminProfile implements OnInit {
       canonical: `https://skaply.ovh/profile`,
       index: false
     });
+    this.loadPendingIssuesCount();
   }
 
-  setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles') {
+  loadPendingIssuesCount() {
+    this.apiService.getAllIssues().subscribe({
+      next: (issues) => {
+        this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+      },
+      error: (error) => {
+        console.error('Error loading pending issues count:', error);
+      }
+    });
+  }
+
+  setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias') {
     this.activeTab = tab;
+    if (tab === 'incidencias') {
+      this.loadPendingIssuesCount();
+    }
   }
 }

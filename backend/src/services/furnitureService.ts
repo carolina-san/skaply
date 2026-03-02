@@ -262,6 +262,111 @@ export class FurnitureService {
     }
   }
 
+  async getFurnitureIdByRef(ref: string): Promise<number> {
+    try {
+      const result = await pool.query(`SELECT id FROM furniture 
+        WHERE reference_number = $1`, [ref]);
+
+      if (result.rows.length === 0) {
+        throw new Error(`Furniture with reference ${ref} not found`);
+      }
+
+      return result.rows[0].id;
+    } catch (error) {
+      throw new Error('Error fetching the furniture id by the ref provided');
+    }
+  }
+
+  async getFurnitureDifficulty(furnitureId: number): Promise<string> {
+    try {
+      const result = await pool.query(
+        'SELECT difficulty FROM furniture WHERE id = $1',
+        [furnitureId]
+      );
+      if (result.rows.length === 0) {
+        throw new Error('Furniture not found');
+      }
+
+      const difficulty = result.rows[0].difficulty.toLowerCase();
+
+      // Map database values to Difficulty enum
+      const difficultyMap: { [key: string]: string } = {
+        'low': Difficulty.LOW,
+        'medium': Difficulty.MEDIUM,
+        'high': Difficulty.HIGH
+      };
+
+      return difficultyMap[difficulty] || result.rows[0].difficulty;
+
+    } catch (error) {
+      throw new Error('Error fetching furniture difficulty');
+    }
+  }
+
+  // Devuelve toda la iformación necesaria para el motor gráfico
+  async getFurnitureAssembly(furnitureId: number) {
+    try {
+      const query = `
+      SELECT
+        f.required_people,
+        s.id AS step_id,
+        s.step_number,
+        s.description,
+        s.used_in_step_with_id,
+        s.scene_camera_angle,
+        COALESCE(json_agg(
+          DISTINCT jsonb_build_object(
+            'part_id', p.id,
+            'reference_number', p.reference_number,
+            'file_uri', p.file_uri,
+            'color_id', p.color_id,
+            'quantity', sp.quantity,
+            'axis', fp.exploded_axis,
+            'distance', fp.exploded_distance
+          )
+        ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
+        COALESCE(json_agg(
+          DISTINCT jsonb_build_object(
+            'tool_id', t.id,
+            'name', t.name
+          )
+        ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tools
+      FROM Step s
+      JOIN Furniture f ON f.id = s.furniture_id
+      LEFT JOIN Step_Part sp ON sp.stepid = s.id  -- Changed stepId to stepid
+      LEFT JOIN Part p ON p.id = sp.part_id
+      LEFT JOIN Furniture_Part fp 
+        ON fp.part_id = p.id 
+        AND fp.furniture_id = s.furniture_id
+      LEFT JOIN Step_Tool st ON st.stepid = s.id  -- Changed stepId to stepid
+      LEFT JOIN Tool t ON t.id = st.tool_id
+      WHERE s.furniture_id = $1
+      GROUP BY 
+        f.required_people,
+        s.id
+      ORDER BY s.step_number ASC
+    `;
+
+      const result = await pool.query(query, [furnitureId]);
+
+      // Check if we found any steps; if not, return null or an empty object
+      if (result.rows.length === 0) return null;
+
+      return {
+        furniture_id: furnitureId,
+        required_people: result.rows[0].required_people,
+        steps: result.rows
+      };
+
+    } catch (error) {
+      // SECURITY TIP: Log the actual error internally, but don't expose 
+      // DB details to the user.
+      console.error('Database Error:', error);
+      throw error;
+    }
+  }
+
+  // Devuelve todos los muebles filtrados con paginación
   async getFilteredFurniture(filters: {
     difficulties?: ('low' | 'medium' | 'high')[];
     provider_ids?: number[];
@@ -364,90 +469,6 @@ export class FurnitureService {
         const result = await pool.query(sql, params);
         return result.rows;
       }
-    } catch (error) {
-      console.error('Error fetching filtered furniture:', error);
-      throw new Error('Error fetching furniture parts')
-    }
-  }
-
-  async getFurnitureCatalogo(filters: {
-    difficulties?: ('low' | 'medium' | 'high')[];
-    provider_ids?: number[];
-    category_ids?: number[];
-    color_ids?: number[];
-    search?: string;
-  }) {
-    try {
-      const { difficulties, provider_ids, category_ids, color_ids, search } = filters;
-
-      let baseSql = `
-        FROM public.furniture f
-        INNER JOIN Step s ON s.furniture_id = f.id
-        INNER JOIN Category c ON f.category_id = c.id
-        INNER JOIN "User" p ON f.provider_id = p.id
-        INNER JOIN Color cl ON f.color_id = cl.id
-        WHERE 1=1 AND f.visible = true AND p.visible = true AND p.enabled = true`;
-
-      const params: any[] = [];
-      let paramIndex = 1;
-
-      if (color_ids && color_ids.length > 0) {
-        baseSql += ` AND color_id = ANY($${paramIndex}::int[])`;
-        params.push(color_ids);
-        paramIndex++;
-      }
-
-      if (difficulties && difficulties.length > 0) {
-        baseSql += ` AND difficulty = ANY($${paramIndex}::diff[])`;
-        params.push(difficulties);
-        paramIndex++;
-      }
-
-      if (provider_ids && provider_ids.length > 0) {
-        baseSql += ` AND provider_id = ANY($${paramIndex}::int[])`;
-        params.push(provider_ids);
-        paramIndex++;
-      }
-
-      if (category_ids && category_ids.length > 0) {
-        baseSql += ` AND category_id = ANY($${paramIndex}::int[])`;
-        params.push(category_ids);
-        paramIndex++;
-      }
-
-      if (search && search.trim() !== '') {
-        baseSql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
-        params.push(`%${search}%`);
-        paramIndex++;
-      }
-
-      let sql = `
-        SELECT DISTINCT 
-            f.id, 
-            f.name, 
-            f.file_uri, 
-            f.image_url,
-            f.reference_number, 
-            f.category_id, 
-            c.name AS category_name, 
-            f.provider_id, 
-            p.company_name as provider_name, 
-            f.color_id, 
-            cl.name AS color_name,
-            cl.hex AS color_hex,
-            f.difficulty,
-            f.short_description,
-            f.visible,
-            f.created_at
-        ${baseSql}`;
-      console.log(sql);
-
-      const result = await pool.query(sql, params);
-
-      return {
-        rows: result.rows,
-      };
-
     } catch (error) {
       console.error('Error fetching filtered furniture:', error);
       throw new Error('Error fetching furniture parts')

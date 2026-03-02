@@ -1,20 +1,53 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
+import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
+import { Issue } from '../../types/issue.types';
 
 @Component({
   selector: 'app-provider-profile',
-  imports: [ProfileSidebar, GestionMuebles, CommonModule, FormsModule],
+  imports: [ProfileSidebar, GestionMuebles, GestionIncidencias, CommonModule, FormsModule],
   templateUrl: './provider-profile.html',
   styleUrls: ['./provider-profile.css']
 })
-export class ProviderProfile {
+export class ProviderProfile implements OnInit {
   activeTab: 'estadisticas' | 'muebles' | 'incidencias' = 'muebles';
   searchText: string = '';
+  pendingIssuesCount: number = 0;
+
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadPendingIssuesCount();
+  }
+
+  loadPendingIssuesCount(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser?.id) {
+      this.apiService.getProviderIssues(currentUser.id).subscribe({
+        next: (response) => {
+          const issues = response.data || [];
+          this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+        },
+        error: (error) => {
+          console.error('Error loading issues count:', error);
+        }
+      });
+    }
+  }
 
   setActiveTab(tab: 'estadisticas' | 'muebles' | 'incidencias') {
     this.activeTab = tab;
+    if (tab === 'incidencias') {
+      // Refrescar el contador cuando se cambia a la pestaña de incidencias
+      this.loadPendingIssuesCount();
+    }
   }
 }

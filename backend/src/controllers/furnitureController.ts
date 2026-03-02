@@ -127,21 +127,24 @@ export class FurnitureController {
     }
   }
 
-  furnitureCatalogo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  filterVisibleFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const filters = req.body;
-      const result = await this.furnitureService.getFurnitureCatalogo(filters);
+      let filters = req.body;
+      filters.visible = true;
+
+      const result = await this.furnitureService.getFilteredFurniture(filters);
       res.status(200).json({
         message: 'Furniture catalog fetched successfully',
-        data: result.rows
+        data: result
       });
     } catch (error) {
-      console.error('getFurnitureCatalogo error:', error);
+      console.error('getFilteredCatalog error:', error);
       next(new ApiError('INTERNAL_SERVER', 'Failed to fetch furniture catalog'));
     }
   };
 
-  filterFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  //PRIVATE ROUTES
+  filterAllFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = req.body;
 

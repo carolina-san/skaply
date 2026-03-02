@@ -19,6 +19,7 @@ router.post('/', authMiddleware, authorize([UserRole.ADMIN]), furnitureControlle
 router.put('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.updateFurniture); // revisar
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.deleteFurniture); // revisar
 
-// todo el filtrado de la parte privada
+// filtrado de la parte privada, permite filtrar por todas las propiedades de furniture y paginación, también muestra los no visibles
+router.post("/filter", authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), furnitureController.filterAllFurniture);
 
 export default router; 
