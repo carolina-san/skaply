@@ -20,6 +20,11 @@
           Solicitudes
 
         </button>
+        <button (click)="setActiveTab('incidencias')"
+          [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Incidencias
+        </button>
         <button (click)="setActiveTab('dashboard')"
           [ngClass]="[activeTab === 'dashboard' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
           class="hover:opacity-100 transition">
@@ -47,6 +52,8 @@
         class="h-full block"></app-gestion-muebles>
       <app-gestion-solicitudes *ngIf="activeTab === 'solicitudes'" [searchText]="searchText"
         class="h-full block"></app-gestion-solicitudes>
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+        class="h-full block"></app-gestion-incidencias>
     </div>
   </div>
 </div>

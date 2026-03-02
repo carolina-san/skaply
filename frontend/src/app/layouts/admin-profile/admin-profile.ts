@@ -7,16 +7,17 @@ import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar
 import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
 import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
+import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes],
+  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
 export class AdminProfile implements OnInit {
-  activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' = 'proveedores'; // Default tab
+  activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
 
   constructor(private seo: SeoService, private apiService: ApiService) {
@@ -31,7 +32,7 @@ export class AdminProfile implements OnInit {
     });
   }
 
-  setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles') {
+  setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias') {
     this.activeTab = tab;
   }
 }

@@ -12,10 +12,6 @@
           [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
           class="relative hover:opacity-100 transition">
           Incidencias
-          <span
-            class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
-            2
-          </span>
         </button>
         <button (click)="setActiveTab('estadisticas')"
           [ngClass]="[activeTab === 'estadisticas' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
@@ -40,6 +36,8 @@
     <div class="flex-1 min-h-0">
       <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"
         class="h-full block"></app-gestion-muebles>
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+        class="h-full block"></app-gestion-incidencias>
     </div>
   </div>
 </main>
