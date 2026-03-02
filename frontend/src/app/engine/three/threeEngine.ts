@@ -94,6 +94,12 @@ export class ThreeEngineAdapter extends EngineFacade {
     private raycaster = new THREE.Raycaster();
     private gltfLoader = new GLTFLoader(); //3D model 
 
+    // Smooth transition state
+    private targetPosition = new THREE.Vector3();
+    private targetLookAt = new THREE.Vector3();
+    private isTransitioning = false;
+    private lerpFactor = 0.1; // Adjust for speed/smoothness
+
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
 
@@ -128,6 +134,10 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.controls.target.set(0, 1, 0);
         this.controls.saveState();
 
+        // Initialize targets with starting state
+        this.targetPosition.copy(this.camera.position);
+        this.targetLookAt.copy(this.controls.target);
+
         this.composer = new EffectComposer(this.renderer);
         const renderPass = new RenderPass(this.scene, this.camera);
         this.composer.addPass(renderPass);
@@ -151,7 +161,24 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
     render(): void {
-        this.controls?.update();
+        if (this.isTransitioning) {
+            // Lerp camera position
+            this.camera.position.lerp(this.targetPosition, this.lerpFactor);
+            // Lerp controls target (lookAt)
+            this.controls.target.lerp(this.targetLookAt, this.lerpFactor);
+            this.controls.update();
+
+            // Check if we've arrived
+            if (this.camera.position.distanceTo(this.targetPosition) < 0.001 &&
+                this.controls.target.distanceTo(this.targetLookAt) < 0.001) {
+                this.camera.position.copy(this.targetPosition);
+                this.controls.target.copy(this.targetLookAt);
+                this.controls.update();
+                this.isTransitioning = false;
+            }
+        } else {
+            this.controls?.update();
+        }
         this.composer?.render();
     }
 
@@ -226,19 +253,22 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
     setCameraProps(position: Vector3, target: Vector3): void {
-        this.camera.position.set(position.x, position.y, position.z);
-        this.controls.target.set(target.x, target.y, target.z);
-        this.controls.update();
+        this.targetPosition.set(position.x, position.y, position.z);
+        this.targetLookAt.set(target.x, target.y, target.z);
+        this.isTransitioning = true;
     }
 
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
         if (!this.camera || !this.controls) return;
 
-        const target = this.controls.target;
-        // Vector from target to camera
-        const offset = new THREE.Vector3().subVectors(this.camera.position, target);
+        // Calculate the target position starting from the DEFAULT (reset) position
+        // to ensure deterministic rotations.
+        const c: any = this.controls;
+        const basePosition = c.position0 ? new THREE.Vector3(c.position0.x, c.position0.y, c.position0.z) : this.camera.position.clone();
+        const baseTarget = c.target0 ? new THREE.Vector3(c.target0.x, c.target0.y, c.target0.z) : this.controls.target.clone();
 
-        // Rotation axis
+        const offset = new THREE.Vector3().subVectors(basePosition, baseTarget);
+
         const rotationAxis = new THREE.Vector3();
         if (axis === 'x') rotationAxis.set(1, 0, 0);
         else if (axis === 'y') rotationAxis.set(0, 1, 0);
@@ -247,8 +277,9 @@ export class ThreeEngineAdapter extends EngineFacade {
         const angleRadians = angleDegrees * (Math.PI / 180);
         offset.applyAxisAngle(rotationAxis, angleRadians);
 
-        this.camera.position.copy(target).add(offset);
-        this.controls.update();
+        this.targetPosition.copy(baseTarget).add(offset);
+        this.targetLookAt.copy(baseTarget);
+        this.isTransitioning = true;
     }
 
     updateControls(): void {
@@ -265,7 +296,14 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
     resetControls(): void {
-        this.controls.reset();
+        const c: any = this.controls;
+        if (c.position0 && c.target0) {
+            this.targetPosition.set(c.position0.x, c.position0.y, c.position0.z);
+            this.targetLookAt.set(c.target0.x, c.target0.y, c.target0.z);
+            this.isTransitioning = true;
+        } else {
+            this.controls.reset();
+        }
     }
 
     raycast(x: number, y: number): RenderableObject | null {
