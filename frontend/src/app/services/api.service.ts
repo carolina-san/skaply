@@ -126,6 +126,22 @@ export class ApiService {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
 
+  getAllIssues(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/issues`);
+  }
+
+  getProviderIssues(providerId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/issues/provider/${providerId}`);
+  }
+
+  resolveIssue(issueId: number, resolvedBy: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/resolve`, { resolved_by: resolvedBy });
+  }
+
+  escalateIssue(issueId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/escalate`, {});
+  }
+
   sendChatbotMessage(text: string): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot`, { text, sessionId });
