@@ -15,7 +15,7 @@ import { Issue } from '../../types/issue.types';
   styleUrls: ['./provider-profile.css']
 })
 export class ProviderProfile implements OnInit {
-  activeTab: 'estadisticas' | 'muebles' | 'incidencias' = 'muebles';
+  activeTab: 'muebles' | 'incidencias' | 'estadisticas' = 'muebles';
   searchText: string = '';
   pendingIssuesCount: number = 0;
 
