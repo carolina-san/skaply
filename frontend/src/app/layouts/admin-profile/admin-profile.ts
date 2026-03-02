@@ -39,9 +39,9 @@ export class AdminProfile implements OnInit {
 
 
   loadPendingIssuesCount() {
-    this.apiService.getAllIssues().subscribe({
-      next: (issues) => {
-        this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+    this.apiService.getAllIssues('pending').subscribe({
+      next: (response) => {
+        this.pendingIssuesCount = response.data?.length || 0;
       },
       error: (error) => {
         console.error('Error loading pending issues count:', error);

@@ -126,12 +126,19 @@ export class ApiService {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
 
-  getAllIssues(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/private/issues`);
+  getAllIssues(status?: string, providerId?: number): Observable<any> {
+    let url = `${this.apiUrl}/private/issues`;
+    const params: string[] = [];
+    if (status) params.push(`status=${status}`);
+    if (providerId) params.push(`providerId=${providerId}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return this.http.get(url);
   }
 
-  getProviderIssues(providerId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/private/issues/provider/${providerId}`);
+  getProviderIssues(providerId: number, status?: string): Observable<any> {
+    let url = `${this.apiUrl}/private/issues/provider/${providerId}`;
+    if (status) url += `?status=${status}`;
+    return this.http.get(url);
   }
 
   resolveIssue(issueId: number, resolvedBy: string): Observable<any> {
