@@ -24,77 +24,76 @@ export class Mesh extends Entity {
     }
 
     draw (modelMatrix: mat4, shader: ShaderResource): void {
+        //console.log('mesh model matrix:' ,modelMatrix);
         const gl = this.gl;
 
-        //console.log('mesh model matrix:' ,modelMatrix);
-        
-        if (!this.initialized) {
-            this.initializeBuffers();
-        }
+        if (!this.initialized) { this.initializeBuffers(); }
         
         shader.setMat4("uModelMatrix", modelMatrix);
         
-        // Bind texture if present
-        // (some MeshResource producers may attach a texture)
-        // @ts-ignore
-        if ((this.resource as any).texture) {
+        // Bind texture if available
+        if (this.resource.texture) {
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, (this.resource as any).texture as WebGLTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.resource.texture);
             shader.setInt("uDiffuseTexture", 0);
         }
  
         gl.bindVertexArray(this.vao!);
-
+        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
+        gl.bindVertexArray(null);
+        
         // logs
         //console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
         //console.log('ELEMENT_ARRAY_BUFFER bound:', gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING));
         //console.log('Mesh.draw: indexCount=', this.indexCount, 'vao=', !!this.vao);
-
-        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
-        gl.bindVertexArray(null);
+        
     }
+
+    private createArrayBuffer(location: number, size: number, data: Float32Array) {
+        const gl = this.gl;
+        const vbo = gl.createBuffer()!; // VBO: Vertex Buffer Objet
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(location);
+        gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+        return vbo;
+    }
+
+    private createElementArrayBuffer(data: Uint32Array) {
+        const gl = this.gl;            
+        const ebo = gl.createBuffer()!; // EBO: Element Buffer Object
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        return ebo;
+    }
+
 
     private initializeBuffers() {
 
         const gl = this.gl;
-
         this.vao = gl.createVertexArray()!;
         gl.bindVertexArray(this.vao);
 
-        // vertices
-        const vbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, this.resource.vertices, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+        // VBO vertices
+        this.createArrayBuffer(0, 3, this.resource.vertices);
 
-        // normals
+        // VBO normals
         if (this.resource.normals.length) {
-            const nbo = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-            gl.bufferData(gl.ARRAY_BUFFER, this.resource.normals, gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(1);
-            gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+            this.createArrayBuffer(1, 3, this.resource.normals);
         }
 
-        // text coords
+        // VBO text coords
         if (this.resource.texCoords.length) {
-            const tbo = gl.createBuffer()!;
-            gl.bindBuffer(gl.ARRAY_BUFFER, tbo);
-            gl.bufferData(gl.ARRAY_BUFFER, this.resource.texCoords, gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(2);
-            gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
-        }
+            this.createArrayBuffer(2, 2, this.resource.texCoords);
+        } 
 
-        // indices
-        const ebo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.resource.indices, gl.STATIC_DRAW);
-
-        this.indexCount = this.resource.indices.length;
+        // EBO indices
+        this.createElementArrayBuffer(this.resource.indices);
 
         gl.bindVertexArray(null);
-
+        this.indexCount = this.resource.indices.length;
         this.initialized = true;
+
     }
+
 }

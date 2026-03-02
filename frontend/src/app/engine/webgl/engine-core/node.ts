@@ -11,8 +11,8 @@ export class Node {
     private parent: Node | null = null;
 
     // local transformations
-    private translation: vec3 = vec3.create(); // local position
-    private rotation: vec3 = vec3.create(); // local rotation (radians: pitch, yaw, roll)
+    private translation: vec3 = vec3.create();      // local position
+    private rotation: vec3 = vec3.create();         // local rotation
     private scale: vec3 = vec3.fromValues(1, 1, 1); // local scale
 
     // final transformation (parent x node)
@@ -20,7 +20,7 @@ export class Node {
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
-
+    //private name: string;
 
 
     // CHILDREN MANAGEMENT
@@ -63,6 +63,10 @@ export class Node {
         mat4.copy(this.transformMatrix, matrix);
         this.needsUpdate = false;
     }
+
+    // setName(name: string): void {
+    //     this.name = name;
+    // }
     
     // GETTERS
     
@@ -89,6 +93,10 @@ export class Node {
     getTransformMatrix(): mat4 {
         return this.transformMatrix;
     }
+
+    // getName(): string {
+    //     return this.name;
+    // }
 
     // LOCAL MATRIX (PRIVATE)
 
