@@ -3,13 +3,14 @@
 EXPLICACIÓN TEÓRICA 
 --------------------------------------------------------------------
 
-- Definición de MESH y PRIMITIVAS
+Definición de MESH y PRIMITIVAS
 
     MESH -> PRIMITIVAS
     Cada objeto en blender es un MESH.
     Si el MESH tiene zonas con distintos materiales, cada zona es una PRIMITIVA.
 
-- Para dibujar las PRIMITIVAS como un solo MESH en GPU, se combinan sus atributos.
+
+Para dibujar las PRIMITIVAS como un solo MESH en GPU, se combinan sus atributos.
 
     Primitiva 1:
         Vértices:   [v0, v1, v2]
@@ -96,6 +97,57 @@ export class MeshResource extends Resource {
         return { verts, norms, uvs, inds, texture, vertexCount };
     }
 
+    // mala logica!! eliminar!
+    private bakeRawMesh(raw: RawMesh, transformMatrix: mat4) {
+        const finalVerts = new Float32Array(raw.verts.length);
+        const finalNorms = new Float32Array(raw.norms.length);
+
+        const normalMatrix = mat3.create();
+        mat3.normalFromMat4(normalMatrix, transformMatrix);
+
+        // Transform vertices
+        for (let i = 0; i < raw.verts.length; i += 3) {
+            const v = vec3.fromValues(raw.verts[i], raw.verts[i + 1], raw.verts[i + 2]);
+            vec3.transformMat4(v, v, transformMatrix);
+            finalVerts[i] = v[0];
+            finalVerts[i + 1] = v[1];
+            finalVerts[i + 2] = v[2];
+        }
+
+        // Transform normals
+        for (let i = 0; i < raw.norms.length; i += 3) {
+            const n = vec3.fromValues(raw.norms[i], raw.norms[i + 1], raw.norms[i + 2]);
+            vec3.transformMat3(n, n, normalMatrix);
+            vec3.normalize(n, n);
+            finalNorms[i] = n[0];
+            finalNorms[i + 1] = n[1];
+            finalNorms[i + 2] = n[2];
+        }
+
+        return {
+            verts: finalVerts,
+            norms: finalNorms,
+            uvs: new Float32Array(raw.uvs),
+            inds: new Uint32Array(raw.inds),
+            tex: raw.tex
+        };
+    }
+
+    private generateUniqueName(base: string, used: Set<string>): string { 
+        const clean = (base || '').trim() || 'mesh_unknown'; 
+        let name = clean; 
+
+        let counter = 2; 
+
+        while (used.has(name)) { name = `${clean}_${counter++}`; } 
+
+        used.add(name); 
+        return name; 
+    }
+
+
+
+
     // LOAD
 
     async loadFile(url: string): Promise<void> {
@@ -131,12 +183,7 @@ export class MeshResource extends Resource {
                     
                     // extract primitive attributes
                     const { 
-                        verts, 
-                        norms, 
-                        uvs, 
-                        inds, 
-                        texture: primitiveTexture, 
-                        vertexCount } = this.mergePrimitive(primitive, baseIndex);
+                        verts, norms, uvs, inds, texture: primitiveTexture, vertexCount } = this.mergePrimitive(primitive, baseIndex);
                     
                     // if mesh has no texture assigned yet, use the first primitive's texture
                     if (!texture && primitiveTexture) { texture = primitiveTexture; }
