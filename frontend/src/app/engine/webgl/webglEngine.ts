@@ -440,6 +440,8 @@ export class WebGLEngineAdapter extends EngineFacade {
     private controlsAutoRotateSpeed = 2;
     
     private ready = false;
+
+    // INIT
     
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
 
@@ -447,7 +449,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas = canvas;
         this.gl = canvas.getContext('webgl2')!;
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.disable(this.gl.CULL_FACE);
+        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR!
         this.resize(width, height);
 
         // camera 
@@ -465,7 +467,6 @@ export class WebGLEngineAdapter extends EngineFacade {
         // shaders  
         this.initShader().then(() => {
             this.ready = true;
-            //this.initControls();
             this.cameraController = new CameraController(
                 this.cameraNode,
                 this.cameraEntity,
@@ -535,6 +536,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         // ...resto cleanup...
     }
 
+    // RENDER 
 
     render(): void {
         if (!this.ready) return;
@@ -549,15 +551,15 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.updateControls();
     }
 
-    // private applyAutoRotation(): void {
-    //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
-    //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
-    //     this.cameraNode.rotate(0, rotationDelta, 0);
-    // }
+    // OBJECT MANAGEMENT
 
-
+    createGroup(): RenderableObject {
+        const node = new Node();
+        const group = new WebGlRenderableObject(node);
+        //this.wrappers.add(group); // ⚠️ VER SI HACE REALMENTE FALTA
+        return group;
+    }
     
-
     addToScene(object: RenderableObject): void {
         const obj = object as WebGlRenderableObject;
         this.rootNode.addChild(obj.node);
@@ -584,4 +586,12 @@ export class WebGLEngineAdapter extends EngineFacade {
         // string => fallback
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
     }    
+
+    // ------------------------------------------
+
+    // private applyAutoRotation(): void {
+    //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
+    //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
+    //     this.cameraNode.rotate(0, rotationDelta, 0);
+    // }
 }

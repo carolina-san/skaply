@@ -1,170 +1,180 @@
+/*
+
+EXPLICACIÓN TEÓRICA 
+--------------------------------------------------------------------
+
+- Definición de MESH y PRIMITIVAS
+
+    MESH -> PRIMITIVAS
+    Cada objeto en blender es un MESH.
+    Si el MESH tiene zonas con distintos materiales, cada zona es una PRIMITIVA.
+
+- Para dibujar las PRIMITIVAS como un solo MESH en GPU, se combinan sus atributos.
+
+    Primitiva 1:
+        Vértices:   [v0, v1, v2]
+        Índices:    [0,1,2]       <- empiezan en 0
+
+    Primitiva 2:
+        Vértices:   [v3, v4, v5]
+        Índices:    [0,1,2]       <- empiezan en 0 
+
+    Combinación de atributos:
+        Combinación de vértices: [v0,v1,v2,v3,v4,v5]
+        Combinación de índices:  [0,1,2, 3,4,5]        <- se ajustan para ser secuenciales
+
+--------------------------------------------------------------------
+
+El código de Álvaro solo coge la textura de la 1ª PRIMITIVA como textura generica de todo el MESH. Es correcto esto? No lo sé.
+
+*/
+
 import { Resource } from './resource';
 import { Mesh } from '../engine-core/mesh';
+import { load } from '@loaders.gl/core';
+import { GLTFLoader, postProcessGLTF } from '@loaders.gl/gltf';
+import { mat4, vec3, quat, mat3 } from 'gl-matrix';
 
+
+export type RawMesh = {
+    verts: number[];
+    norms: number[];
+    uvs: number[];
+    inds: number[];
+    tex?: WebGLTexture;
+};
+
+export type NamedMesh = { 
+    name: string; 
+    mesh: Mesh 
+};
 
 export class MeshResource extends Resource {
-
-    vertices!: Float32Array;
-    normals!: Float32Array;
-    texCoords!: Float32Array;
-    indices!: Uint32Array;
     
-    private textures: Map<number, WebGLTexture> = new Map();
-
+    private namedMeshes: NamedMesh[] = [];
+    private textures: Map<any, WebGLTexture> = new Map();
     meshes: Mesh[] = [];
 
     constructor(name: string, private gl: WebGL2RenderingContext) {
         super(name);
     }
 
-    async loadFile(url: string): Promise<void> {
+    // PRIVATE METHODS
 
-        console.log("Cargando modelo con Assimp:", url);
+    private mergePrimitive(primitive: any, baseIndex: number): 
+    {   verts: number[]; 
+        norms: number[]; 
+        uvs:   number[]; 
+        inds:  number[]; 
+        texture?: WebGLTexture; 
+        vertexCount: number } {
+        
+        // get primitive attributes
+        const attributes = primitive.attributes;
 
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-
-        const assimpModule = await import('assimpjs');
-
-        const a = await assimpModule.default({
-            locateFile: (file: string) => `assets/assimp/${file}`
-        });
-
-        const fileList = new a.FileList();
-        fileList.AddFile(url, new Uint8Array(arrayBuffer));
-
-        const result = a.ConvertFileList(fileList, 'assjson');
-
-        if (!result.IsSuccess()) {
-            throw new Error(result.GetErrorCode());
+        // if primitive has no vertices (therefore, no position), return empty values
+        if (!attributes['POSITION']) {
+            return { verts: [], norms: [], uvs: [], inds: [], vertexCount: 0 };
         }
 
-        const json = JSON.parse(new TextDecoder().decode(result.GetFile(0).GetContent()));
+        // extract attributes
+        const verts = attributes['POSITION'].value;
+        const norms = attributes['NORMAL']?.value ?? [];
+        const uvs   = attributes['TEXCOORD_0']?.value ?? [];
 
-        await this.loadTextures(json);
+        // calculate number of vertex (verts = [x0,y0,z0,  x1,y1,z1,  ...] )
+        const vertexCount = verts.length / 3;
 
-        const allMeshes = json.meshes;
+        // adjust index
+        const inds = primitive.indices?.value
+            ? primitive.indices.value.map((idx: number)  => idx + baseIndex)
+            : Array.from({ length: vertexCount }, (_, i) => i + baseIndex);
 
-        for (let m of allMeshes) {
+        // get texture
+        const texture = primitive.material ? this.textures.get(primitive.material) : undefined;
 
-            const vertices = new Float32Array(m.vertices.flat());
-
-            const normals = m.normals
-                ? new Float32Array(m.normals.flat())
-                : new Float32Array();
-
-            const texCoords = m.texturecoords?.length
-                ? new Float32Array(m.texturecoords[0].flat())
-                : new Float32Array();
-
-            const indices = new Uint32Array(m.faces.flat());
-
-            const materialIndex = m.materialindex;
-            const texture = this.textures.get(materialIndex);
-
-            const mesh = this.createMesh(vertices, normals, texCoords, indices, texture);
-            this.meshes.push(mesh);
-        }
+        return { verts, norms, uvs, inds, texture, vertexCount };
     }
 
-    private async loadTextures(json: any) {
-        if (!json.materials) return;
+    // LOAD
 
-        for (let i = 0; i < json.materials.length; i++) {
+    async loadFile(url: string): Promise<void> {
+        console.log('Cargando modelo con @loaders.gl/gltf:', url);
 
-            const material = json.materials[i];
-            const props = material.properties;
+        // download resource and parse to gltf
+        const res = await fetch(url);
+        const buffer = await res.arrayBuffer();
+        const rawGltf = await load(buffer, GLTFLoader);
+        const gltf = postProcessGLTF(rawGltf);
 
-            const texProp = props?.find((p: any) => p.key === '$tex.file'); // ruta de imagen
-            const colorProp = props?.find((p: any) => p.key === '$clr.diffuse'); // color base
+        // get textures
+        await this.loadTextures(gltf);
 
-            const gl = this.gl;
+        const allMeshes = gltf.meshes ?? [];
+        const rawMeshObjs: RawMesh[] = [];
+        
+        // process all meshes and their primitives (mesh -> primitives)
+        for (const mesh of allMeshes) {
+            
+            // if mesh has no geometry (not renderable)
+            if (!mesh.primitives || mesh.primitives.length === 0) {
+                rawMeshObjs.push({ verts: [], norms: [], uvs: [], inds: [] });
+                continue;
+            }
 
-            if (texProp && typeof texProp.value === 'string') {
-                // --- textura desde archivo ---
-                try {
-                    const img = new Image();
-                    img.src = `assets/models/${texProp.value}`;
-                    await img.decode();
+            let baseIndex = 0; 
+            let texture: WebGLTexture | undefined;
 
-                    const texture = gl.createTexture()!;
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-                    gl.generateMipmap(gl.TEXTURE_2D);
+            // combine all primitive attributes into a single mesh
+            const merged = mesh.primitives.reduce(
+                (acc, primitive) => {
+                    
+                    // extract primitive attributes
+                    const { 
+                        verts, 
+                        norms, 
+                        uvs, 
+                        inds, 
+                        texture: primitiveTexture, 
+                        vertexCount } = this.mergePrimitive(primitive, baseIndex);
+                    
+                    // if mesh has no texture assigned yet, use the first primitive's texture
+                    if (!texture && primitiveTexture) { texture = primitiveTexture; }
+                    
+                    // update the total vertex count of the mesh
+                    baseIndex += vertexCount;
 
-                    this.textures.set(i, texture);
-                } catch (e) {
-                    console.warn(`No se pudo cargar la textura: ${texProp.value}`, e);
+                    return {
+                        // append current primitive data to the accumulated data
+                        verts:  [...acc.verts,  ...verts],
+                        norms:  [...acc.norms,  ...norms],
+                        uvs:    [...acc.uvs,    ...uvs],
+                        inds:   [...acc.inds,   ...inds]
+                    };
+                },
+                {   // initial accumulator state
+                    verts: []   as number[], 
+                    norms: []   as number[], 
+                    uvs:   []   as number[], 
+                    inds:  []   as number[] 
                 }
 
-            } else if (colorProp && Array.isArray(colorProp.value)) {
-                // --- textura 1x1 de color ---
-                const c = colorProp.value;
-                const data = new Uint8Array([
-                    Math.round(c[0] * 255),
-                    Math.round(c[1] * 255),
-                    Math.round(c[2] * 255),
-                    Math.round((c[3] ?? 1) * 255),
-                ]);
-
-                const texture = gl.createTexture()!;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(
-                    gl.TEXTURE_2D,
-                    0,
-                    gl.RGBA,
-                    1,
-                    1,
-                    0,
-                    gl.RGBA,
-                    gl.UNSIGNED_BYTE,
-                    data
-                );
-                gl.generateMipmap(gl.TEXTURE_2D);
-
-                this.textures.set(i, texture);
-
-            } else {
-                // --- fallback ---
-                const data = new Uint8Array([255, 255, 255, 255]);
-                const texture = gl.createTexture()!;
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(
-                    gl.TEXTURE_2D,
-                    0,
-                    gl.RGBA,
-                    1,
-                    1,
-                    0,
-                    gl.RGBA,
-                    gl.UNSIGNED_BYTE,
-                    data
-                );
-                gl.generateMipmap(gl.TEXTURE_2D);
-                this.textures.set(i, texture);
-            }
+            );
+            
+            // add raw mesh to array
+            rawMeshObjs.push({
+                verts:  merged.verts,
+                norms:  merged.norms,
+                uvs:    merged.uvs,
+                inds:   merged.inds,
+                tex:    texture
+            });
         }
+
+        console.log('Mallas procesadas:', rawMeshObjs.length);
     }
 
-
-    private createMesh(
-        vertices: Float32Array,
-        normals: Float32Array,
-        texCoords: Float32Array,
-        indices: Uint32Array,
-        texture?: WebGLTexture
-    ): Mesh {
-
-    return new Mesh({
-        vertices,
-        normals,
-        texCoords,
-        indices,
-        texture
-    }, this.gl);
-    }
-
-    getMeshes(): Mesh[] {
-        return this.meshes;
-    }
 }
+    
+
+
