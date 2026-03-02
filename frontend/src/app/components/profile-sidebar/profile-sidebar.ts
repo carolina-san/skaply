@@ -69,7 +69,7 @@ export class ProfileSidebar implements OnInit {
         });
       }
       else if (this.currentUser && this.currentUser.role === 'provider') {
-        this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id], page: 1, limit: 1 }).subscribe({
+        this.apiService.getAllFilteredFurniture({ provider_ids: [this.currentUser.id], page: 1, limit: 1 }).subscribe({
           next: (res) => {
             if (res.meta && res.meta.total !== undefined) {
               this.totalFurniture = res.meta.total;

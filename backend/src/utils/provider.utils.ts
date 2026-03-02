@@ -7,9 +7,9 @@ import bcrypt from "bcryptjs";
 
 
 export const validateExistsProvider = (provider: any) => {
-    if (!provider) {
+  if (!provider) {
     throw new ApiError('NOT_FOUND', 'Provider not found');
-    }
+  }
 };
 
 export const validateRoleProvider = (provider: any) => {
@@ -20,13 +20,13 @@ export const validateRoleProvider = (provider: any) => {
 
 export const validateApprovedProvider = (provider: any) => {
   if (provider.registration_status !== RegistrationStatus.APPROVED) {
-    throw new ApiError('CONFLICT', `Provider registration status is "${provider.registration_status}"`); 
+    throw new ApiError('CONFLICT', `Provider registration status is "${provider.registration_status}"`);
   }
 };
 
 export const validatePendingProvider = (provider: any) => {
   if (provider.registration_status !== RegistrationStatus.PENDING) {
-    throw new ApiError('CONFLICT', `Provider registration status is "${provider.registration_status}"`); 
+    throw new ApiError('CONFLICT', `Provider registration status is "${provider.registration_status}"`);
   }
 };
 
@@ -79,7 +79,7 @@ export async function validateProvider(
   providerService: ProviderService,
   providerId: number,
   options: ValidateProviderOptions = {}
-): Promise<void>  {
+): Promise<any> {
   const {
     checkEnabled = false,
     checkApprovedRegistration = false,
@@ -89,10 +89,11 @@ export async function validateProvider(
   const provider = await providerService.checkProviderById(providerId);
   validateExistsProvider(provider);
   validateRoleProvider(provider);
-  if (checkEnabled) { validateEnabledProvider(provider);}
-  if (checkApprovedRegistration) { validateApprovedProvider(provider);}
-  if (checkPendingRegistration) {validatePendingProvider(provider); }
-  if (checkVisible) {validateVisibleProvider(provider);}
+  if (checkEnabled) { validateEnabledProvider(provider); }
+  if (checkApprovedRegistration) { validateApprovedProvider(provider); }
+  if (checkPendingRegistration) { validatePendingProvider(provider); }
+  if (checkVisible) { validateVisibleProvider(provider); }
+  return provider;
 }
 
 export async function getAndValidateIdFromEmailToken(
@@ -109,7 +110,7 @@ export async function getAndValidateIdFromEmailToken(
   return providerId;
 }
 
-export async function validateNotSamePassword(newPassword: string,storedPassword: string): Promise<void> {
+export async function validateNotSamePassword(newPassword: string, storedPassword: string): Promise<void> {
 
   if (!storedPassword) {
     throw new ApiError('INTERNAL_SERVER', 'No stored password found');
@@ -120,7 +121,7 @@ export async function validateNotSamePassword(newPassword: string,storedPassword
   // bcrypt hash
   if (storedPassword.startsWith('$2b$')) {
     isSame = await bcrypt.compare(newPassword, storedPassword);
-  } 
+  }
   // plain text (development only)
   else {
     isSame = newPassword === storedPassword;

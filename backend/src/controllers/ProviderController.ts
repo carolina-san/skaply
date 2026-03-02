@@ -251,9 +251,8 @@ export class ProviderController {
     try {
       // validation
       const providerId = validateParameterId(req.params.id || "");
-      await validateProvider(this.providerService, providerId);
 
-      // allowed filed
+      // allowed fields
       const allowedFields = [
         'email',
         'cif',
@@ -268,6 +267,26 @@ export class ProviderController {
       const updateData = pickFields(req.body, allowedFields);
       validateNotEmptyObject(updateData, 'No fields to update');
       validateProviderData(updateData);
+
+      const validateOptions: any = {};
+      if (updateData.enabled === true) {
+        validateOptions.checkApprovedRegistration = true;
+      }
+      const currentProvider = await validateProvider(this.providerService, providerId, validateOptions);
+
+      // Validate business rules for visible
+      if ('visible' in updateData) {
+        const finalEnabled = 'enabled' in updateData ? updateData.enabled : currentProvider.enabled;
+
+        if (updateData.visible === true && finalEnabled === false) {
+          throw new ApiError('BAD_REQUEST', 'Cannot make provider visible when it is not enabled. Enable the provider first.');
+        }
+      }
+
+      // If disabling provider, also make it invisible
+      if ('enabled' in updateData && updateData.enabled === false) {
+        updateData.visible = false;
+      }
 
       // fetch
       const result = await this.providerService.updateProvider(providerId, updateData);

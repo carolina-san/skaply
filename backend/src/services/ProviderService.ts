@@ -228,41 +228,6 @@ export class ProviderService {
 
   async updateProvider(providerId: number, data: Record<string, any>) {
     try {
-      // Get current provider state
-      const currentProvider = await this.getProviderById(providerId);
-      
-      if (!currentProvider) {
-        throw new ApiError('NOT_FOUND', 'Provider not found');
-      }
-
-      console.log('Current provider state:', {
-        id: currentProvider.id,
-        enabled: currentProvider.enabled,
-        visible: currentProvider.visible,
-        registration_status: currentProvider.registration_status
-      });
-      console.log('Update data:', data);
-
-      // Validate business rules for visible
-      if ('visible' in data) {
-        const finalEnabled = 'enabled' in data ? data.enabled : currentProvider.enabled;
-        
-        if (data.visible === true && finalEnabled === false) {
-          throw new ApiError('BAD_REQUEST', 'Cannot make provider visible when it is not enabled. Enable the provider first.');
-        }
-      }
-
-      // Validate business rules for enabled
-      if ('enabled' in data && data.enabled === true) {
-        if (currentProvider.registration_status !== RegistrationStatus.APPROVED) {
-          throw new ApiError('BAD_REQUEST', `Cannot enable provider with registration status: ${currentProvider.registration_status}. Provider must be approved first.`);
-        }
-      }
-
-      // If disabling provider, also make it invisible
-      if ('enabled' in data && data.enabled === false) {
-        data.visible = false;
-      }
 
       // Handle enabled changes with timestamps
       if ('enabled' in data) {
@@ -275,7 +240,7 @@ export class ProviderService {
 
       const fields = Object.keys(data);
       const values = Object.values(data);
-      
+
       const setClause = fields
         .map((field, index) => {
           // Handle timestamp fields specially
@@ -288,7 +253,7 @@ export class ProviderService {
 
       // Filter out CURRENT_TIMESTAMP from values array
       const filteredValues = values.filter(v => v !== 'CURRENT_TIMESTAMP');
-      
+
       const query = `
         UPDATE "User"
         SET ${setClause}, updated_at = CURRENT_TIMESTAMP
@@ -296,9 +261,8 @@ export class ProviderService {
           AND role = $${filteredValues.length + 2}
         RETURNING id, email, company_name, cif, telephone, tax_address, visible, enabled, registration_status
       `;
-      
+
       const result = await pool.query(query, [...filteredValues, providerId, UserRole.PROV]);
-      console.log('Update result:', result.rows[0]);
       return result.rows[0];
     } catch (error) {
       if (error instanceof ApiError) {
@@ -321,22 +285,9 @@ export class ProviderService {
     }
   }
 
-  // CHATBOT (PUBLIC) (revisar enabled/visible etc) CHATBOT DEVUELVE SOLO LO VISIBLE!
-
-  async getAllProvidersChatbot() { // ¿por qué no se usa getActiveProviders()?
-    try {
-      const result = await pool.query(`
-        SELECT id, company_name, email, cif, tax_address, name,image_url
-        FROM public."User" where role = 'provider'`);
-      return result.rows;
-    } catch (error) {
-      throw new Error('Unable to fetch providers for chatbot')
-    }
-  }
-
   async getProviderByName(name: string) {
     try {
-      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 ', [UserRole.PROV, `%${name}%`]);
+      const result = await pool.query('SELECT * FROM public."User" WHERE role = $1 AND company_name ILIKE $2 AND visible = true', [UserRole.PROV, `%${name}%`]);
       return result.rows;
     } catch (error) {
       throw new Error('Unable to fetch the provided with this name');
