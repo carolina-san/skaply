@@ -310,12 +310,13 @@ export class FurnitureService {
     category_ids?: number[];
     color_ids?: number[];
     visible?: boolean;
+    onlyVisibleProviders?: boolean;
     search?: string;
     page?: number;
     limit?: number;
   }) {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, onlyVisibleProviders, search, page, limit } = filters;
 
       let baseSql = `
         FROM public.furniture f
@@ -361,6 +362,12 @@ export class FurnitureService {
       if (visible !== null && visible !== undefined) {
         baseSql += ` AND f.visible = $${paramIndex}`;
         params.push(visible);
+        paramIndex++;
+      }
+
+      if (onlyVisibleProviders !== null && onlyVisibleProviders !== undefined) {
+        baseSql += ` AND p.visible = $${paramIndex}`;
+        params.push(onlyVisibleProviders);
         paramIndex++;
       }
 
