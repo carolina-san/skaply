@@ -199,7 +199,7 @@ export class Home implements OnInit {
 
     this.isLoadingFurnitures = true;
 
-    this.apiService.getFurnitureCatalogo(filters).subscribe(
+    this.apiService.getFilteredCatalog(filters).subscribe(
       (response) => {
         console.log('Catálogo obtenido con filtros:', filters, 'Respuesta:', response);
         this.furnitures = response.data || [];

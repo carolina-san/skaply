@@ -32,16 +32,14 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}/assembly`);
   }
 
-  getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
-    console.log('Filters sent to API Service:', filters);
+  getAllFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
+    return this.http.post(`${this.apiUrl}/private/furniture/filter`, filters);
+  }
+
+  getFilteredCatalog(filters: FilterOptions): Observable<any> {
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
   }
 
-  getFurnitureCatalogo(filters: FilterOptions): Observable<any> {
-    console.log('Filters sent to API Service for catalog:', filters);
-    return this.http.post(`${this.apiUrl}/furniture/catalog`, filters);
-  }
-  
 
   updateFurniture(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);

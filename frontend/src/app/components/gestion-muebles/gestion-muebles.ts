@@ -153,7 +153,7 @@ export class GestionMuebles implements OnInit, OnChanges {
     else if (this.currentUser.role === 'provider') {
       this.filters.provider_ids = [this.currentUser.id];
     }
-    this.apiService.getFilteredFurniture(this.filters).subscribe(
+    this.apiService.getAllFilteredFurniture(this.filters).subscribe(
       (response) => {
         console.log('Filtered furniture fetched successfully:', response);
         this.furniture = response.data || [];
