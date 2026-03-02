@@ -8,6 +8,7 @@ import { GestionProveedores } from '../../components/gestion-proveedores/gestion
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
 import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
 import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { Issue } from '../../types/issue.types';
 
 @Component({
   selector: 'app-admin-profile',
@@ -19,6 +20,7 @@ import { GestionIncidencias } from '../../components/gestion-incidencias/gestion
 export class AdminProfile implements OnInit {
   activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
+  pendingIssuesCount: number = 0;
 
   constructor(private seo: SeoService, private apiService: ApiService) {
   }
@@ -30,9 +32,24 @@ export class AdminProfile implements OnInit {
       canonical: `https://skaply.ovh/profile`,
       index: false
     });
+    this.loadPendingIssuesCount();
+  }
+
+  loadPendingIssuesCount() {
+    this.apiService.getAllIssues().subscribe({
+      next: (issues) => {
+        this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+      },
+      error: (error) => {
+        console.error('Error loading pending issues count:', error);
+      }
+    });
   }
 
   setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias') {
     this.activeTab = tab;
+    if (tab === 'incidencias') {
+      this.loadPendingIssuesCount();
+    }
   }
 }
