@@ -1,13 +1,13 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, Modal],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
@@ -22,9 +22,27 @@ export class GestionProveedores implements OnInit, OnChanges {
 
   // Modal de confirmación
   isDeleteModalOpen: boolean = false;
+  isEditModalOpen: boolean = false;
   providerToDelete: any = null;
 
-  constructor(private apiService: ApiService) { }
+  // Notificaciones
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
+  // Formulario y Usuario
+  editForm!: FormGroup;
+  currentUser: any = null;
+  selectedProvider: any = null;
+  originalData: any = {};
+  isSubmitting: boolean = false;
+  hasChanges: boolean = false;
+
+  constructor(
+    private apiService: ApiService,
+    private fb: FormBuilder
+  ) {
+    this.initForm();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['searchText']) {
@@ -34,13 +52,50 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.fetchProviders();
+    this.currentUser = { role: 'admin' }; // Dummy for simulation if they don't have AuthService yet, user template requires it
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      this.currentUser = JSON.parse(storedUser);
+    }
 
+    this.fetchProviders();
+    this.onFormChanges();
+  }
+
+  initForm() {
+    this.editForm = this.fb.group({
+      company_name: [''],
+      name: [''],
+      email: ['', [Validators.required, Validators.email]],
+      telephone: [''],
+      password: ['', [Validators.minLength(6)]]
+    });
+  }
+
+  onFormChanges() {
+    this.editForm.valueChanges.subscribe(val => {
+      this.hasChanges = Object.keys(this.originalData).some(key => {
+        if (key === 'password' && val[key] === '') return false;
+        return val[key] !== this.originalData[key];
+      });
+    });
   }
 
   onVisibilityChange() {
     this.currentPage = 1;
     this.fetchProviders();
+  }
+
+  showError(message: string) {
+    this.errorMessage = message;
+    this.successMessage = null;
+    setTimeout(() => this.errorMessage = null, 3000);
+  }
+
+  showSuccess(message: string) {
+    this.successMessage = message;
+    this.errorMessage = null;
+    setTimeout(() => this.successMessage = null, 3000);
   }
 
   fetchProviders() {
@@ -76,23 +131,78 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.apiService.deleteProvider(this.providerToDelete.id).subscribe(
       (response) => {
         console.log('Provider deleted successfully:', response);
+        this.showSuccess('Proveedor eliminado correctamente');
         this.closeDeleteModal();
         this.fetchProviders();
       },
       (error) => {
         console.error('Error deleting provider:', error);
-        alert('Error al eliminar el proveedor');
+        this.showError('Error al eliminar el proveedor');
         this.closeDeleteModal();
       }
     );
   }
 
-  // Ya no usamos getters para filtrar localmente
-  // get filteredProviders() ... eliminado
+  // --- MÉTODOS DE EDICIÓN ---
 
-  get paginatedProviders() {
-    // Retornamos los providers actuales ya que vienen paginados del backend
-    return this.providers;
+  openEditModal(provider: any) {
+    this.selectedProvider = provider;
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.hasChanges = false;
+
+    this.editForm.patchValue({
+      company_name: provider.company_name || '',
+      name: provider.name || '',
+      email: provider.email || '',
+      telephone: provider.telephone || '',
+      password: ''
+    });
+
+    this.originalData = { ...this.editForm.value, password: '' };
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+    this.selectedProvider = null;
+    this.editForm.reset();
+  }
+
+  onSubmit() {
+    if (this.editForm.invalid || !this.selectedProvider || !this.hasChanges) return;
+
+    this.isSubmitting = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    const formValues = this.editForm.value;
+    const updateData: any = {};
+
+    Object.keys(formValues).forEach(key => {
+      if (formValues[key] !== this.originalData[key] && formValues[key] !== '') {
+        updateData[key] = formValues[key];
+      }
+    });
+
+    if (Object.keys(updateData).length === 0) {
+      this.isSubmitting = false;
+      return;
+    }
+
+    this.apiService.updateProvider(this.selectedProvider.id, updateData).subscribe(
+      (response) => {
+        this.isSubmitting = false;
+        this.showSuccess('Proveedor actualizado correctamente');
+        this.closeEditModal();
+        this.fetchProviders();
+      },
+      (error) => {
+        this.isSubmitting = false;
+        console.error('Error updating provider:', error);
+        this.errorMessage = error.error?.message || 'Error al actualizar el proveedor';
+      }
+    );
   }
 
   // Calcular el total de páginas
@@ -119,12 +229,14 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.apiService.updateProvider(provider.id, { visible: newStatus }).subscribe(
       (response) => {
         console.log('Provider visibility updated successfully:', response);
+        this.showSuccess(newStatus ? 'Proveedor visible en el catálogo' : 'Proveedor oculto en el catálogo');
         provider.visible = newStatus;
         this.fetchProviders();
       },
       (error) => {
         console.error('Error updating provider visibility:', error);
-        alert('Error al actualizar la visibilidad del proveedor');
+
+        this.showError('Error al actualizar la visibilidad del proveedor. Verifica si está habilitado.');
       }
     );
   }
@@ -134,13 +246,14 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.apiService.updateProvider(provider.id, { enabled: newStatus }).subscribe(
       (response) => {
         console.log('Provider enabled status updated successfully:', response);
+        this.showSuccess(newStatus ? 'Proveedor habilitado correctamente' : 'Proveedor bloqueado correctamente');
         provider.enabled = newStatus;
         this.fetchProviders();
       },
       (error) => {
         console.error('Error updating provider enabled status:', error);
-        alert('Error al actualizar el estado del proveedor');
-      } 
+        this.showError('Error al actualizar el estado del proveedor');
+      }
     );
   }
 
