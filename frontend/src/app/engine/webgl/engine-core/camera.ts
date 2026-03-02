@@ -4,21 +4,23 @@ import { mat4, vec3 } from 'gl-matrix';
 
 export class Camera extends Entity {
 
-    //private target: vec3 = vec3.create(); // point camera is looking at
-    
-    private viewMatrix: mat4 = mat4.create(); // world coord -> camera coord
+    // MATRICES
+
+    private viewMatrix: mat4 = mat4.create();       // world coord -> camera coord
     private projectionMatrix: mat4 = mat4.create(); // camera coord -> clip coord
-    
-    private isPerspective: boolean = true; // false for orthographic
+    private target: vec3 = vec3.create();           // point camera is looking at
+
+    // PROJECTION PARAMETERS
+
+    private isPerspective: boolean = true;      // false for orthographic
     private near: number = 0.1;
     private far: number = 100;
     private fov: number = 45;
-    private aspect: number = 1.0; // aspect ratio (width / height)
-
+    private aspect: number = 1.0;               // aspect ratio (width / height)
     
     // GETTERS
 
-    // getTarget(): vec3 { return this.target; }
+    getTarget(): vec3 {  return vec3.clone(this.target); }
     getViewMatrix(): mat4 { return this.viewMatrix; }
     getProjectionMatrix(): mat4 { return this.projectionMatrix; }
     getIsPerspective(): boolean { return this.isPerspective; }
@@ -29,9 +31,9 @@ export class Camera extends Entity {
 
     // SETTERS
 
-    // setTarget(target: vec3) {
+    // setTarget(modelMatrix: mat4, target: vec3) {
     //     vec3.copy(this.target, target);
-    //     this.updateViewMatrix();
+    //     this.updateViewMatrix(modelMatrix);
     // }
 
     setPerspective(fov: number, aspect: number, near: number, far: number): void {
@@ -55,6 +57,7 @@ export class Camera extends Entity {
         const cameraWorldPosition = vec3.create();
         vec3.transformMat4(cameraWorldPosition, cameraLocalPosition, modelMatrix);
         mat4.lookAt(this.viewMatrix, cameraWorldPosition, target, [0, 1, 0]);
+        vec3.copy(this.target, target);
     }
     
     // DRAW
@@ -64,9 +67,6 @@ export class Camera extends Entity {
         //console.log('Camera viewMatrix:', this.viewMatrix);
         //console.log('Camera projectionMatrix:', this.projectionMatrix);
 
-        // update camera lookAt (fixed)
-        this.lookAt(modelMatrix, vec3.fromValues(0, 0, 0)); 
-        
         // camera world position    
         const cameraLocalPosition = vec3.fromValues(0, 0, 0);
         const cameraWorldPosition = vec3.create();
@@ -80,7 +80,10 @@ export class Camera extends Entity {
 
     // PRIVATE METHODS
 
-    // private updateViewMatrix() {
-    //     mat4.lookAt(this.viewMatrix, this.position, this.target, [0, 1, 0]);
+    // private updateViewMatrix(modelMatrix: mat4) {
+    //     const cameraLocalPosition = vec3.fromValues(0, 0, 0);
+    //     const cameraWorldPosition = vec3.create();
+    //     vec3.transformMat4(cameraWorldPosition, cameraLocalPosition, modelMatrix);
+    //     mat4.lookAt(this.viewMatrix, cameraWorldPosition, this.target, [0, 1, 0]);
     // }
 }
