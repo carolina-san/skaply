@@ -1,16 +1,25 @@
 <!-- Comportamiento del chatbot según el tamaño -->
-<div class="fixed right-0 bottom-0 transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
-    ' top-0 h-screen': inMontajeMode && isDesktop,     
-    'w-1/4  ':  isDesktop,                    
-    ' w-full sm:w-96  h-[85vh] ': !inMontajeMode || !isDesktop,
-    'h-20': !chatVisible && (!inMontajeMode || isMobile),
+<div id="chatbot-wrapper"
+    class="absolute right-0 bottom-0 flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
+    ' inset-y-0 h-[100dvh]': inMontajeMode && isDesktop,     
+    'w-1/4 min-h-[85vh] fixed':  isDesktop,  
+    ' w-full sm:w-96 max-h-[85dvh] sm:max-h-[85dvh] ': !inMontajeMode || !isDesktop,
+    'h-15': !chatVisible && (!inMontajeMode || isMobile),
     '!z-999': chatVisible
   }">
+    <!-- Siempre abierto en modo montaje si está en desktop
+        Ocupa un cuarto de la pantalla si está en desktop, da igual el modo
+        Si está visible en móvil o en catálogo, ocupa toda la pantalla en movil y 96 en pequeño y 85 de alto
+        Si está cerrado en móvil o en catálogo, ocupa 15 de alto -->
+
+
 
     <!-- Icono del chatbot -->
     <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
-        class="absolute flex right-5 md:right-10 lg:right-17 items-center justify-center h-20 w-20 p-2 rounded-full  hover:scale-110 transition-transform pointer-events-auto "
+        class="flex right-5 md:right-10 lg:right-17 items-center justify-center h-15 w-15 md:h-20 md:w-20 p-2 rounded-full hover:scale-110 transition-transform pointer-events-auto "
         [ngClass]="{
+        'fixed': !inMontajeMode || isMobile,
+        'absolute': inMontajeMode && isDesktop,
         'bottom-5 bg-marron-oscuro shadow-lg border-1 border-beige/50': isCatalogPage,
         'bottom-14 right-2!': !isCatalogPage
     }" (click)="toggleChat()">
@@ -18,10 +27,9 @@
     </button>
 
     <!-- Chatbot abierto y renderizado de rich content -->
-    <div *ngIf="chatVisible"
-        class="bg-beige  overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
-        [ngClass]="{
-    'rounded-t-3xl': !inMontajeMode || isMobile}">
+    <div id="chatbot-container" *ngIf="chatVisible"
+        class="absolute bg-beige overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
+        [ngClass]="{'rounded-t-3xl': isMobile || !inMontajeMode}">
 
         <header class="flex justify-between items-center px-1 mb-2">
             <div class="flex items-center gap-2">
@@ -40,7 +48,7 @@
             </button>
         </header>
 
-        <div #messagesContainer class="flex-1 overflow-y-auto p-0 scrollbar-hide pb-11">
+        <div #messagesContainer class="flex-1 min-h-[200px] overflow-y-auto p-0 scrollbar-hide pb-11">
             <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
                 'text-right': msg.sender === 'user',
                 'text-left': msg.sender === 'bot'
@@ -137,7 +145,7 @@
                 (stop)="onStopSpeaking()">
             </app-voice-controls>
 
-            <button *ngIf="!isCatalogPage" class="btn-incidencia " (click)="abrirIncidencia()">
+            <button class="btn-incidencia " (click)="abrirIncidencia()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
                     <path
                         d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />
@@ -147,12 +155,13 @@
 
 
 
-        <div class="flex items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
+        <div class="flex w-full items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
             <input #messageInput type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
-                (keydown.enter)="sendMessage()" class="input-chat" focused />
+                (keydown.enter)="sendMessage()" (focus)="scrollToBottom()" (click)="scrollToBottom()" class="input-chat"
+                focused />
 
             <button
-                class="p-2 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
+                class="p-2 absolute right-4 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
                 (click)="sendMessage()">
                 <span class="material-symbols-rounded w-6 h-6">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">

@@ -1,13 +1,14 @@
 
 
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../engine/interfaces';
 import { ApiService } from '../../services/api.service';
 import { Furniture } from '../../types';
-import { Modal } from '../modal/modal';
+import { EngineSwitch } from '../engine-switch/engine-switch';
 import { ActivatedRoute } from '@angular/router'
+import { Modal } from '../modal/modal';
 
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 //import { WebGLEngine } from '../../engine/webgl/webglEngine';
@@ -18,7 +19,8 @@ import { WebGLEngineAdapter } from '../../engine/webgl/webglEngine';
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, Modal, FormsModule],
+  imports: [CommonModule, FormsModule, EngineSwitch],
+  providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,23 +30,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
-  private engine!: EngineFacade;
-
-  constructor(private apiService: ApiService, private route: ActivatedRoute) {
-    effect(() => {
-      // Track changes to logical step
-      const step = this.currentLogicalStep();
-
-      // Execute scroll after render
-      setTimeout(() => {
-        this.centerActiveStep();
-      }, 100);
-    });
-  }
+  @Output() engineChanged = new EventEmitter<string>();
 
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
   arStateChange = output<boolean>();
+  finished = output<void>();
 
   // Elegir el tipo de motor
   engineUse = signal<'threeJS' | 'webGL'>('webGL');
@@ -75,6 +66,48 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
   isSmallScreen = signal(false);
 
+  autoStartSimulation = input<boolean>(false);
+
+  isSimulating = computed(() => this.mode() === 'simulation');
+  isManualFirstStep = computed(() => this.manualStep() === 0);
+  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
+
+  isSimulationPaused = signal(false);
+  simulationSpeed = signal(1);
+  readonly simulationSpeeds = [0.5, 1, 1.5, 2];
+
+  backgroundColor = signal<'dark' | 'light'>('dark');
+  isCameraMoved = signal(false);
+
+  stepDescriptions = signal<string[]>([]);
+
+  // Methods/Signals used in template
+  showFooterControls = signal(true);
+  areControlsDisabled = signal(false);
+
+  private engine!: EngineFacade;
+  private parts: AssemblyPart[] = [];
+  private stepsData = signal<AssemblyStep[]>([]);
+  private lastProcessedStep = -1;
+  private lastRotationConfig = { angle: null as number | null, axis: null as string | null };
+  private animationFrameId: number | null = null;
+  private resizeObserver!: ResizeObserver;
+
+  private simulationDirection = signal<'forward' | 'backward'>('forward');
+  private lastStepTime = 0;
+  private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
+  private videoStream: MediaStream | null = null;
+
+  private isViewInitialized = false;
+
+  get modelUrl(): string {
+    return this.furniture?.file_uri || '';
+  }
+
+  get modelAssembly(): any {
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+  }
+
   currentStep = computed(() => {
     switch (this.mode()) {
       case 'manual':
@@ -88,11 +121,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   });
 
-  // Ratio between total animation states and logical steps (usually 2:1)
   stepsRatio = computed(() => {
     const total = this.totalSteps();
-    const descriptions = this.stepDescriptions().length;
-    return (total > 0 && descriptions > 0) ? total / descriptions : 1;
+    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
+    return (total > 0 && logical > 0) ? total / logical : 1;
   });
 
   currentLogicalStep = computed(() => {
@@ -100,51 +132,54 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   });
 
   visibleSteps = computed(() => {
-    // Show one bubble per logical step (based on descriptions)
-    return this.stepDescriptions().length > 0
-      ? Array.from({ length: this.stepDescriptions().length }, (_, i) => i)
-      : [];
+    const count = this.furniture?.total_steps || this.stepDescriptions().length;
+    return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
   });
 
-  goToStep(logicalStepIndex: number): void {
-    const ratio = this.stepsRatio();
-    // Jump to the start of the logical step
-    const targetStep = logicalStepIndex * ratio;
-    if (targetStep >= 0 && targetStep < this.totalSteps()) {
-      this.manualStep.set(targetStep);
-    }
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {
+    effect(() => {
+      const stepIndex = this.currentLogicalStep();
+      const steps = this.stepsData();
+
+      // Guard to only run when the logical step actually changes or data arrives
+      if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
+      this.lastProcessedStep = stepIndex;
+
+      // Scrolling logic
+      setTimeout(() => this.centerActiveStep(), 100);
+
+      // Camera rotation logic
+      if (steps.length > 0 && steps[stepIndex]) {
+        const stepData = steps[stepIndex];
+
+        const hasNewRotation = stepData.scene_camera_angle !== null && stepData.scene_camera_rotation_axis !== null;
+        const rotationChanged = stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
+          stepData.scene_camera_rotation_axis !== this.lastRotationConfig.axis;
+
+        if (rotationChanged) {
+          if (hasNewRotation) {
+            // Apply new rotation smoothly
+            this.engine.rotateCamera(
+              stepData.scene_camera_rotation_axis as 'x' | 'y' | 'z',
+              Number(stepData.scene_camera_angle)
+            );
+          } else {
+            // No rotation for this step, but previously there was one -> Reset
+            this.engine.resetControls();
+          }
+
+          // Update last known rotation configuration
+          this.lastRotationConfig = {
+            angle: stepData.scene_camera_angle,
+            axis: stepData.scene_camera_rotation_axis
+          };
+        }
+      }
+    });
   }
 
-  isSimulating = computed(() => this.mode() === 'simulation');
-
-  isManualFirstStep = computed(() => this.manualStep() === 0);
-  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
-
-  isSimulationPaused = signal(false);
-  simulationSpeed = signal(1);
-  readonly simulationSpeeds = [0.5, 1, 1.5, 2];
-
-  backgroundColor = signal<'dark' | 'light'>('dark');
-  isCameraMoved = signal(false);
-  isModalOpen = signal(false);
-  reviewStars = signal(0);
-  reviewText = signal('');
-  isSubmittingReview = signal(false);
-
-  stepDescriptions = signal<string[]>([]);
-
-
-  private parts: AssemblyPart[] = [];
-  private animationFrameId: number | null = null;
-  private resizeObserver!: ResizeObserver;
-
-  private simulationDirection = signal<'forward' | 'backward'>('forward');
-  private lastStepTime = 0;
-  private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
-  private videoStream: MediaStream | null = null;
-
-  private initialCameraState: any = null; // Store initial state manually if needed
-  private isViewInitialized = false;
+  private boundWindowResize = this.onWindowResize.bind(this);
+  private boundScreenResize = () => this.checkScreenSize();
 
   ngOnInit(): void {
     // Initialize Engine based on signal
@@ -157,9 +192,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     let ref = this.route.snapshot.params['ref'];
-    // Cargar mueble por defecto (ID 1) si no se pasa nada, o usar el input si existiera lógica para ello
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
-      this.furniture = f.data ? f.data[0] : f;
+      this.furniture = f.data ? f.data : f;
       console.log('Furniture loaded:', this.furniture);
 
       if (this.useExternalModel && this.isViewInitialized) {
@@ -170,18 +204,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
+  private createEngineInstance(): void {
+    if (this.engineUse() === 'webGL') {
+      console.log('Using WebGL Custom Engine');
+      this.engine = new WebGLEngine();
+    } else {
+      console.log('Using ThreeJS Adapter');
+      this.engine = new ThreeEngineAdapter();
+    }
+  }
+
   ngAfterViewInit(): void {
     this.checkScreenSize();
-    window.addEventListener('resize', () => this.checkScreenSize());
+    window.addEventListener('resize', this.boundScreenResize);
 
     this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
         this.initThree();
+        this.setupEventListeners();
         this.isViewInitialized = true;
 
         if (this.useExternalModel) {
-          // Si ya tenemos datos, creamos el mueble. Si no, esperamos a ngOnInit
           if (this.furniture) {
             this.createFurniture().then(() => this.animate());
           }
@@ -203,8 +247,51 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.stopAR();
     this.resizeObserver?.disconnect();
-    window.removeEventListener('resize', () => this.checkScreenSize());
-    this.engine.dispose();
+    window.removeEventListener('resize', this.boundScreenResize);
+    window.removeEventListener('resize', this.boundWindowResize);
+
+    const canvas = this.canvasRef?.nativeElement;
+    if (canvas) {
+      canvas.removeEventListener('mousemove', this.onPointerMove);
+      canvas.removeEventListener('dblclick', this.onDoubleClick);
+    }
+
+    this.engine?.dispose();
+  }
+
+  public onEngineChange(newEngine: string): void {
+    if (this.selectedEngine === newEngine) return;
+
+    console.log('Switching engine to:', newEngine);
+    this.selectedEngine = newEngine;
+    this.engineUse.set(newEngine === 'threejs' ? 'threeJS' : 'webGL');
+    this.engineChanged.emit(newEngine);
+
+    if (this.isViewInitialized) {
+      // 1. Dispose old engine
+      this.engine?.dispose();
+
+      // 2. Create new instance
+      this.createEngineInstance();
+
+      // 3. Re-initialize viewport
+      this.initThree();
+
+      // 4. Reload furniture
+      if (this.furniture) {
+        this.createFurniture().then(() => {
+          if (!this.animationFrameId) this.animate();
+        });
+      }
+    }
+  }
+
+  goToStep(logicalStepIndex: number): void {
+    const ratio = this.stepsRatio();
+    const targetStep = logicalStepIndex * ratio;
+    if (targetStep >= 0 && targetStep < this.totalSteps()) {
+      this.manualStep.set(targetStep);
+    }
   }
 
   nextStep(): void {
@@ -220,15 +307,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   openFinishModal(): void {
-    this.isModalOpen.set(true);
-    this.reviewStars.set(0);
-    this.reviewText.set('');
-  }
-
-  closeModal(): void {
-    this.isModalOpen.set(false);
-    this.reviewStars.set(0);
-    this.reviewText.set('');
+    this.finished.emit();
   }
 
 
@@ -251,6 +330,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public setMode(newMode: 'manual' | 'simulation' | 'final'): void {
+    if (this.mode() === 'final' && newMode === 'final') {
+      newMode = 'manual';
+    };
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
@@ -395,12 +477,22 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // this.engine.init(canvas, width, height);
     await this.engine.init(canvas, width, height);
     this.engine.setControlsAutoRotateSpeed(1.0);
+  }
 
-    this.onPointerMove = this.onPointerMove.bind(this);
-    this.onDoubleClick = this.onDoubleClick.bind(this);
+  private setupEventListeners(): void {
+    const canvas = this.canvasRef.nativeElement;
+
+    // Use property reassignment for binding to match existing method structure
+    // but ensure they are stable references
+    const originalMove = this.onPointerMove;
+    const originalClick = this.onDoubleClick;
+
+    this.onPointerMove = originalMove.bind(this);
+    this.onDoubleClick = originalClick.bind(this);
+
     canvas.addEventListener('mousemove', this.onPointerMove);
     canvas.addEventListener('dblclick', this.onDoubleClick);
-    window.addEventListener('resize', this.onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundWindowResize);
   }
   private async createFurniture(): Promise<void> {
 
@@ -416,6 +508,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         baseModel.castShadow = true;
         baseModel.receiveShadow = true;
         this.engine.addToScene(baseModel);
+        console.log('[GLB NAMES]', baseModel.nativeObject.getObjectNames());
       } catch (error) {
         console.error('Error pre-loading base model:', error);
       }
@@ -472,6 +565,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     // Sort steps by step_number just in case
     const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
+    this.stepsData.set(sortedSteps);
 
     for (const step of sortedSteps) {
       const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
@@ -492,6 +586,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             mesh = await this.engine.loadGLTF(partRef.file_uri);
           } catch (e) {
             console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
+            console.error('file_uri que falla:', partRef.file_uri);
           }
         }
 
@@ -574,7 +669,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           const len = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
           if (len > 0) {
             const arrowDir = { x: dir.x / len, y: dir.y / len, z: dir.z / len };
-            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, { x: 0, y: 0, z: 0 }, 0.5, 0x00ffff);
+            const arrowLength = 0.6;
+            const originOffset = {
+              x: -arrowDir.x * arrowLength,
+              y: -arrowDir.y * arrowLength + 0.3,
+              z: -arrowDir.z * arrowLength
+            };
+            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
             assemblyPart.object.add(assemblyPart.arrow);
           }
         }
@@ -742,6 +843,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  onCanvasInteraction(): void {
+    // Prevent default browser behavior if needed, or trigger specific app logic
+  }
+
   private onPointerMove(event: MouseEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
 
@@ -791,44 +896,5 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
 
-  setRating(stars: number): void {
-    this.reviewStars.set(stars);
-  }
 
-  submitReview(): void {
-    // Obtener y convertir el furniture ID
-    let furnitureId = 1; // ID por defecto
-    const inputId = this.furnitureId();
-
-    if (inputId) {
-      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
-      if (!isNaN(parsedId) && parsedId > 0) {
-        furnitureId = parsedId;
-      }
-    }
-
-    const stars = this.reviewStars();
-    const text = this.reviewText().trim();
-
-    if (stars === 0) {
-      return;
-    }
-
-    this.isSubmittingReview.set(true);
-
-    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
-      next: (response) => {
-        this.isSubmittingReview.set(false);
-        this.closeModal();
-        alert('¡Gracias por tu reseña!');
-      },
-      error: (error) => {
-        console.error('Error al guardar la review:', error);
-        console.error('Error completo:', JSON.stringify(error, null, 2));
-        this.isSubmittingReview.set(false);
-        const errorMessage = error.error?.message || error.message || 'Error desconocido';
-        alert('Error al guardar la reseña: ' + errorMessage);
-      }
-    });
-  }
 }

@@ -13,13 +13,14 @@ const reviewServiceInstance = new ReviewService();
 const reviewControllerInstance = new ReviewController(reviewServiceInstance);
 
 router.get('/', furnitureController.getAllFurniture);
+router.get('/visible', furnitureController.getVisibleFurniture);
+router.post('/filter', furnitureController.filterVisibleFurniture);
 router.get('/:id', furnitureController.getFurnitureById);
 router.get('/:id/issues', issueControllerInstance.getFurnitureIssues);
 router.get('/:id/reviews', reviewControllerInstance.getFurnitureReviews);
 router.get('/:id/assembly', furnitureController.getFurnitureAssembly);
 router.get('/:reference/qr', furnitureController.generateQR);
 
-router.post("/filter", furnitureController.filterFurniture);
 router.post('/:id/issues', issueControllerInstance.postIssue);
 router.post('/:id/reviews', reviewControllerInstance.createFurnitureReview);
 

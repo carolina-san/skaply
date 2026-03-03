@@ -3,7 +3,7 @@ import { ProviderService } from '../services/ProviderService';
 import { ApiError } from '@/utils/ApiError';
 import { validateProvider, validateNotSamePassword, getAndValidateIdFromEmailToken } from '@/utils/provider.utils';
 import { validateCorrectPassword, validateProviderData, validatePasswordStrenght, hashPassword } from '@/utils/auth.utils';
-import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery  } from '@/utils/common.utils';
+import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery } from '@/utils/common.utils';
 import { validateRequiredFields } from '@/utils/common.utils';
 import { RegistrationStatus, UserRole } from '@/types';
 import bcrypt from "bcryptjs";
@@ -52,52 +52,62 @@ export class ProviderController {
 
   // PRIVATE ROUTES (ADMIN ONLY)
 
-getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const filters: {
-      registration_status?: RegistrationStatus;
-      enabled?: boolean;
-      visible?: boolean;
-    } = {};
+  getProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const filters: {
+        registration_status?: RegistrationStatus;
+        enabled?: boolean;
+        visible?: boolean;
+      } = {};
 
-    const enabled = parseBooleanQuery(req.query.enabled as string | undefined);
-    const visible = parseBooleanQuery(req.query.visible as string | undefined);
-    const registrationStatus = req.query.registration_status as RegistrationStatus | undefined;
+      const enabled = parseBooleanQuery(req.query.enabled as string | undefined);
+      const visible = parseBooleanQuery(req.query.visible as string | undefined);
+      const registrationStatus = req.query.registration_status as RegistrationStatus | undefined;
 
-    if (enabled !== undefined) {
-      filters.enabled = enabled;
-    }
-
-    if (visible !== undefined) {
-      filters.visible = visible;
-    }
-
-    if (registrationStatus !== undefined) {
-      if (!Object.values(RegistrationStatus).includes(registrationStatus)) {
-        throw new ApiError('BAD_REQUEST', 'Invalid registration status');
+      if (enabled !== undefined) {
+        filters.enabled = enabled;
       }
-      filters.registration_status = registrationStatus;
+
+      if (visible !== undefined) {
+        filters.visible = visible;
+      }
+
+      if (registrationStatus !== undefined) {
+        if (!Object.values(RegistrationStatus).includes(registrationStatus)) {
+          throw new ApiError('BAD_REQUEST', 'Invalid registration status');
+        }
+        filters.registration_status = registrationStatus;
+      }
+
+      if (filters.visible === true && filters.enabled === false) {
+        throw new ApiError(
+          'BAD_REQUEST',
+          'Visible providers must be enabled'
+        );
+      }
+
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string;
+
+      const result = await this.providerService.getProviders({ ...filters, page, limit, search });
+
+      res.status(200).json({
+        message: 'Providers fetched successfully',
+        data: result.rows,
+        meta: {
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages
+        }
+      });
+
+    } catch (error) {
+      if (error instanceof ApiError) return next(error);
+      next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
     }
-
-    if (filters.visible === true && filters.enabled === false) {
-      throw new ApiError(
-        'BAD_REQUEST',
-        'Visible providers must be enabled'
-      );
-    }
-
-    const result = await this.providerService.getProviders(filters);
-
-    res.status(200).json({
-      message: 'Providers fetched successfully',
-      data: result
-    });
-
-  } catch (error) {
-    if (error instanceof ApiError) return next(error);
-    next(new ApiError('INTERNAL_SERVER', 'Failed to fetch providers'));
-  }
-};
+  };
 
 
   getProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -241,21 +251,42 @@ getProviders = async (req: Request, res: Response, next: NextFunction): Promise<
     try {
       // validation
       const providerId = validateParameterId(req.params.id || "");
-      await validateProvider(this.providerService, providerId);
 
-      // allowed filed
+      // allowed fields
       const allowedFields = [
         'email',
         'cif',
         'company_name',
         'telephone',
-        'tax_address'
+        'tax_address',
+        'visible',
+        'enabled'
       ];
 
       // pick fields and validate
       const updateData = pickFields(req.body, allowedFields);
       validateNotEmptyObject(updateData, 'No fields to update');
       validateProviderData(updateData);
+
+      const validateOptions: any = {};
+      if (updateData.enabled === true) {
+        validateOptions.checkApprovedRegistration = true;
+      }
+      const currentProvider = await validateProvider(this.providerService, providerId, validateOptions);
+
+      // Validate business rules for visible
+      if ('visible' in updateData) {
+        const finalEnabled = 'enabled' in updateData ? updateData.enabled : currentProvider.enabled;
+
+        if (updateData.visible === true && finalEnabled === false) {
+          throw new ApiError('BAD_REQUEST', 'Cannot make provider visible when it is not enabled. Enable the provider first.');
+        }
+      }
+
+      // If disabling provider, also make it invisible
+      if ('enabled' in updateData && updateData.enabled === false) {
+        updateData.visible = false;
+      }
 
       // fetch
       const result = await this.providerService.updateProvider(providerId, updateData);
@@ -277,7 +308,7 @@ getProviders = async (req: Request, res: Response, next: NextFunction): Promise<
     try {
       // validation
       const providerId = validateParameterId(req.params.id || "");
-      await validateProvider(this.providerService, providerId, {checkApprovedRegistration: true});
+      await validateProvider(this.providerService, providerId, { checkApprovedRegistration: true });
 
       // validate fields
       const requiredFields = ['newPassword'];
@@ -369,17 +400,17 @@ getProviders = async (req: Request, res: Response, next: NextFunction): Promise<
 
       // get stored password
       const storedPassword = await this.providerService.getProviderPassword(providerId);
-      
+
       // validations
       await validateCorrectPassword(currentPassword, storedPassword);
       await validateNotSamePassword(newPassword, storedPassword);
       validatePasswordStrenght(newPassword);
-      
+
       // hash new password
       const hashedPassword = await hashPassword(newPassword);
-      
+
       // update provider with new password
-      const result = await this.providerService.updateProvider(providerId, {password: hashedPassword});
+      const result = await this.providerService.updateProvider(providerId, { password: hashedPassword });
 
       // response
       res.status(200).json({

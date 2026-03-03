@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-profile-sidebar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, Modal],
   templateUrl: './profile-sidebar.html',
   styleUrl: './profile-sidebar.css'
 })
@@ -15,7 +16,7 @@ export class ProfileSidebar implements OnInit {
   currentUser: User | null = null;
   totalProviders: number = 0;
   totalFurniture: number = 0;
-  showEditModal: boolean = false;
+  isEditModalOpen: boolean = false;
   editForm: FormGroup;
   isSubmitting: boolean = false;
   errorMessage: string = '';
@@ -24,7 +25,7 @@ export class ProfileSidebar implements OnInit {
   initialFormValues: any = {};
 
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private apiService: ApiService,
     private fb: FormBuilder
   ) {
@@ -42,17 +43,25 @@ export class ProfileSidebar implements OnInit {
       this.currentUser = user;
 
       if (this.currentUser && this.currentUser.role === 'admin') {
-        this.apiService.getProviders().subscribe({
+        this.apiService.getProviders(1, 1, '', null, null, 'approved').subscribe({
           next: (res) => {
-            this.totalProviders = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalProviders = res.meta.total;
+            } else {
+              this.totalProviders = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching providers count:', err);
           }
         });
-        this.apiService.getAllFurniture().subscribe({
+        this.apiService.getAllFurniture(1, 1).subscribe({
           next: (res) => {
-            this.totalFurniture = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalFurniture = res.meta.total;
+            } else {
+              this.totalFurniture = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching furniture count:', err);
@@ -60,9 +69,13 @@ export class ProfileSidebar implements OnInit {
         });
       }
       else if (this.currentUser && this.currentUser.role === 'provider') {
-        this.apiService.getFilteredFurniture({ provider_ids: [this.currentUser.id] }).subscribe({
+        this.apiService.getAllFilteredFurniture({ provider_ids: [this.currentUser.id], page: 1, limit: 1 }).subscribe({
           next: (res) => {
-            this.totalFurniture = res.data.length;
+            if (res.meta && res.meta.total !== undefined) {
+              this.totalFurniture = res.meta.total;
+            } else {
+              this.totalFurniture = res.data.length;
+            }
           },
           error: (err) => {
             console.error('Error fetching furniture count:', err);
@@ -85,7 +98,7 @@ export class ProfileSidebar implements OnInit {
       };
 
       this.editForm.patchValue(this.initialFormValues);
-      this.showEditModal = true;
+      this.isEditModalOpen = true;
       this.errorMessage = '';
       this.successMessage = '';
       this.hasChanges = false;
@@ -99,7 +112,7 @@ export class ProfileSidebar implements OnInit {
 
   checkForChanges() {
     const currentValues = this.editForm.value;
-    
+
     // Comparar si hay cambios significativos
     const nameChanged = currentValues.name?.trim() !== this.initialFormValues.name;
     const companyNameChanged = currentValues.company_name?.trim() !== this.initialFormValues.company_name;
@@ -111,7 +124,7 @@ export class ProfileSidebar implements OnInit {
   }
 
   closeEditModal() {
-    this.showEditModal = false;
+    this.isEditModalOpen = false;
     this.editForm.reset();
     this.errorMessage = '';
     this.successMessage = '';
@@ -124,7 +137,7 @@ export class ProfileSidebar implements OnInit {
       this.successMessage = '';
 
       const updates: any = {};
-      
+
       // Solo enviar campos que han cambiado o que tienen valor
       if (this.currentUser?.role === 'admin' && this.editForm.value.name && this.editForm.value.name.trim() !== '') {
         updates.name = this.editForm.value.name.trim();
@@ -133,15 +146,15 @@ export class ProfileSidebar implements OnInit {
       if (this.currentUser?.role === 'provider' && this.editForm.value.company_name && this.editForm.value.company_name.trim() !== '') {
         updates.company_name = this.editForm.value.company_name.trim();
       }
-      
+
       if (this.editForm.value.email && this.editForm.value.email !== this.currentUser?.email) {
         updates.email = this.editForm.value.email;
       }
-      
+
       if (this.editForm.value.telephone && this.editForm.value.telephone.trim() !== '') {
         updates.telephone = this.editForm.value.telephone.trim();
       }
-      
+
       if (this.editForm.value.password && this.editForm.value.password.trim() !== '') {
         updates.password = this.editForm.value.password;
       }
@@ -156,7 +169,7 @@ export class ProfileSidebar implements OnInit {
         next: (response) => {
           this.successMessage = 'Perfil actualizado correctamente';
           this.isSubmitting = false;
-          
+
           // Actualizar la sesión actual
           setTimeout(() => {
             this.authService.checkAuthStatus();

@@ -4,7 +4,7 @@ import { Mesh } from './mesh';
 import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
-    
+
     // entity and nodes
     private entity: Entity | null = null;
     private children: Node[] = [];
@@ -43,17 +43,17 @@ export class Node {
     setEntity(entity: Entity): void {
         this.entity = entity;
     }
-    
+
     setTranslation(x: number, y: number, z: number): void {
         vec3.set(this.translation, x, y, z);
         this.needsUpdate = true;
     }
-    
+
     setRotation(x: number, y: number, z: number): void {
         vec3.set(this.rotation, x, y, z);
         this.needsUpdate = true;
     }
-    
+
     setScale(x: number, y: number, z: number): void {
         vec3.set(this.scale, x, y, z);
         this.needsUpdate = true;
@@ -69,7 +69,7 @@ export class Node {
     }
     
     // GETTERS
-    
+
     getEntity(): Entity | null {
         return this.entity;
     }
@@ -81,11 +81,11 @@ export class Node {
     getTranslation(): vec3 {
         return this.translation;
     }
-    
+
     getRotation(): vec3 {
         return this.rotation;
     }
-    
+
     getScale(): vec3 {
         return this.scale;
     }
@@ -100,7 +100,7 @@ export class Node {
 
     // LOCAL MATRIX (PRIVATE)
 
-    private computeLocalMatrix(): mat4 { 
+    private computeLocalMatrix(): mat4 {
         const matrix = mat4.create();
         mat4.translate(matrix, matrix, this.translation);
         mat4.rotateX(matrix, matrix, this.rotation[0]);

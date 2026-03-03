@@ -166,7 +166,7 @@ export class ChatbotService {
    * Obtiene lista de proveedores
    */
   async getProviders(): Promise<any> {
-    const result = await this.providerService.getVisibleProviders(); // no debería devolver providers que tengan active = false
+    const result = await this.providerService.getVisibleProviders();
 
     return {
       fulfillmentMessages: [
@@ -204,7 +204,7 @@ export class ChatbotService {
 
     const result = await this.providerService.getProviderByName(name);
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return {
         fulfillmentText: `No, "${name}" no forma parte de Skäply todavía.`
       };
@@ -215,7 +215,7 @@ export class ChatbotService {
         {
           text: { text: [`Sí, el proveedor "${name}" está registrado en Skäply:`] }
         },
-        ...result.rows.map((p: any) => ({
+        ...result.map((p: any) => ({
           card: {
             title: p.company_name,
             subtitle: `${p.email}\n${p.tax_address}`,
@@ -250,7 +250,7 @@ export class ChatbotService {
         {
           text: { text: [`Para montar este mueble necesitas las siguientes herramientas`] }
         },
-        ...result.rows.map((t: any) => ({
+        ...result.map((t: any) => ({
           card: {
             title: t.name,
             imageUri: t.image_url || 'https://via.placeholder.com/150'
@@ -283,7 +283,7 @@ export class ChatbotService {
 
     return {
       fulfillmentText:
-        'Tu incidencia ha sido creada con éxito y será atendida pronto. Gracias.'
+        'Tu incidencia ha sido cr eada con éxito y será atendida pronto. Gracias.'
     };
   }
 
@@ -312,13 +312,13 @@ export class ChatbotService {
       const furniture = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
       const furnitureData = await this.furnitureService.getFurnitureById(furniture);
 
-      if (furnitureData.rows.length === 0) {
+      if (furnitureData.length === 0) {
         return {
           fulfillmentText: `No encontré el mueble con referencia "${furnitureRef}".`
         };
       }
 
-      const furnitureDetails = furnitureData.rows[0];
+      const furnitureDetails = furnitureData;
       const difficulty = await this.furnitureService.getFurnitureDifficulty(furniture);
 
       return {
@@ -546,7 +546,7 @@ export class ChatbotService {
       [
 
         {
-          options: categories.rows.map((c: any) => ({
+          options: categories.map((c: any) => ({
             text: c.name
           })),
           type: 'chips'
@@ -578,7 +578,7 @@ export class ChatbotService {
           type: 'info'
         },
         {
-          options: categories.rows.map((c: any) => ({
+          options: categories.map((c: any) => ({
             text: c.name
           })),
           type: 'chips'
@@ -601,7 +601,7 @@ export class ChatbotService {
     const richContent = [
       [
         {
-          options: colors.rows.map((c: any) => ({
+          options: colors.map((c: any) => ({
             text: c.name
           })),
           type: 'chips'
@@ -626,7 +626,7 @@ export class ChatbotService {
     try {
       const colorResult = await this.colorService.getColorByName(colorName);
 
-      if (colorResult.rows.length > 0) {
+      if (colorResult) {
         return {
           fulfillmentMessages: [
             {
@@ -667,7 +667,8 @@ export class ChatbotService {
     try {
       const categoryResult = await this.categoryService.getCategoryByName(categoryName);
 
-      if (categoryResult.rows.length > 0) {
+      if (categoryResult) {
+        console.log("Category found:", categoryResult);
         return {
           fulfillmentMessages: [
             {
@@ -709,14 +710,14 @@ export class ChatbotService {
     let color_id = null;
     if (category) {
       const categoryResult = await this.categoryService.getCategoryByName(category);
-      if (categoryResult.rows.length > 0) {
-        category_id = categoryResult.rows[0].id;
+      if (categoryResult) {
+        category_id = categoryResult.id;
       }
     }
     if (color) {
       const colorResult = await this.colorService.getColorByName(color);
-      if (colorResult.rows.length > 0) {
-        color_id = colorResult.rows[0].id;
+      if (colorResult) {
+        color_id = colorResult.id;
       }
     }
     const filters: any = {};
@@ -724,23 +725,23 @@ export class ChatbotService {
     if (color_id) filters.color_ids = [color_id];
 
     try {
-      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters) as any[];
       let matchType = 'exact';
 
-      if (furnitureResult.rows.length === 0 && category_id) {
+      if (furnitureResult.length === 0 && category_id) {
         const fallbackFilters = { category_ids: [category_id], color_ids: [] };
-        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters) as any[];
         matchType = 'fallback';
       }
 
-      if (furnitureResult.rows.length === 0) {
+      if (furnitureResult.length === 0) {
         return {
           fulfillmentText: "Lo siento, no encontré muebles con esas características."
         };
       }
 
-      const randomIndex = Math.floor(Math.random() * furnitureResult.rows.length);
-      const exactMatch = furnitureResult.rows[randomIndex];
+      const randomIndex = Math.floor(Math.random() * furnitureResult.length);
+      const exactMatch = furnitureResult[randomIndex];
 
       let introText = 'Este es tu mueble ideal:';
       if (matchType === 'fallback') {
@@ -809,14 +810,14 @@ export class ChatbotService {
     let color_id = null;
     if (category) {
       const categoryResult = await this.categoryService.getCategoryByName(category);
-      if (categoryResult.rows.length > 0) {
-        category_id = categoryResult.rows[0].id;
+      if (categoryResult) {
+        category_id = categoryResult.id;
       }
     }
     if (color) {
       const colorResult = await this.colorService.getColorByName(color);
-      if (colorResult.rows.length > 0) {
-        color_id = colorResult.rows[0].id;
+      if (colorResult.length > 0) {
+        color_id = colorResult.id;
       }
     }
     const filters: any = {};
@@ -824,14 +825,14 @@ export class ChatbotService {
     if (color_id) filters.color_ids = [color_id];
 
     try {
-      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters);
+      let furnitureResult = await this.furnitureService.getFilteredFurniture(filters) as any[];
 
-      if (furnitureResult.rows.length === 0 && category_id) {
+      if (furnitureResult.length === 0 && category_id) {
         const fallbackFilters = { category_ids: [category_id], color_ids: [] };
-        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters);
+        furnitureResult = await this.furnitureService.getFilteredFurniture(fallbackFilters) as any[];
       }
 
-      const moreOptions = furnitureResult.rows.filter((f: any) => f.id != shownId);
+      const moreOptions = furnitureResult.filter((f: any) => f.id != shownId);
 
       if (moreOptions.length === 0) {
         return {

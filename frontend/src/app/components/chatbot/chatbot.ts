@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -21,7 +21,7 @@ interface ChatMessage {
     styleUrls: ['./chatbot.css']
 })
 
-export class Chatbot implements OnInit, AfterViewChecked {
+export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
     chatVisible: boolean = false;
     isDesktop: boolean = false;
     inMontajeMode: boolean = false;
@@ -31,6 +31,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
     sessionId: string = '';
     private shouldScroll = false;
     private welcomeEventSent: boolean = false;
+    private scrollPosition: number = 0;
     isCatalogPage = false;
 
     isPlaying: boolean = false;
@@ -56,13 +57,11 @@ export class Chatbot implements OnInit, AfterViewChecked {
 
     scrollToBottom(): void {
         if (this.messagesContainer) {
+
             setTimeout(() => {
                 const container = this.messagesContainer.nativeElement;
-                container.scrollTo({
-                    top: container.scrollHeight,
-                    behavior: 'smooth'
-                });
-            });
+                container.scrollTop = container.scrollHeight;
+            }, 400);
         }
     }
 
@@ -86,6 +85,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (this.inMontajeMode && this.isDesktop) {
             this.chatVisible = true;
         }
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this.updateChatLayout);
+            window.visualViewport.addEventListener('scroll', this.updateChatLayout);
+        }
     }
     ngAfterViewChecked() {
         if (this.shouldScroll) {
@@ -97,6 +100,25 @@ export class Chatbot implements OnInit, AfterViewChecked {
         if (!this.inMontajeMode || !this.isDesktop) {
             this.chatVisible = !this.chatVisible;
 
+            if (this.chatVisible) {
+                if (this.isMobile) {
+                    this.scrollPosition = window.scrollY || document.documentElement.scrollTop;
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = `-${this.scrollPosition}px`;
+                    document.body.style.width = '100%';
+                    document.body.style.overflow = 'hidden';
+                }
+            } else {
+                if (this.isMobile) {
+                    document.body.style.position = '';
+                    document.body.style.top = '';
+                    document.body.style.width = '';
+                    document.body.style.overflow = '';
+                    window.scrollTo({ top: this.scrollPosition, behavior: 'auto' });
+                }
+            }
+
+
             // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
             if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
                 this.sendWelcomeEvent();
@@ -106,8 +128,12 @@ export class Chatbot implements OnInit, AfterViewChecked {
             // Hacer focus en el input cuando se abre el chatbot
             if (this.chatVisible) {
                 setTimeout(() => {
-                    this.messageInput?.nativeElement?.focus();
+                    this.messageInput?.nativeElement?.focus({ preventScroll: true });
+                    this.messageInput?.nativeElement?.focus({ preventScroll: true });
                 }, 100);
+            }
+            if (window.visualViewport) {
+                setTimeout(() => this.updateChatLayout(), 0);
             }
         }
     }
@@ -122,6 +148,48 @@ export class Chatbot implements OnInit, AfterViewChecked {
         this.isMobile = !this.isDesktop;
         if (this.inMontajeMode && this.isDesktop) {
             this.chatVisible = true;
+        }
+    }
+
+    updateChatLayout = () => {
+        const wrapper = document.getElementById('chatbot-wrapper');
+        if (!wrapper) return;
+
+        if (this.isMobile && this.chatVisible) {
+            const vv = window.visualViewport;
+            if (vv) {
+                wrapper.style.position = 'fixed';
+                const bottomOffset = window.innerHeight - (vv.offsetTop + vv.height);
+                wrapper.style.bottom = `${Math.max(0, bottomOffset)}px`;
+
+                const isKeyboardOpen = vv.height < window.screen.height * 0.75;
+                if (isKeyboardOpen) {
+                    wrapper.style.height = `${vv.height}px`;
+                    wrapper.style.maxHeight = `${vv.height}px`;
+                    this.scrollToBottom();
+                } else {
+                    wrapper.style.height = '85dvh';
+                    wrapper.style.maxHeight = '85dvh';
+                }
+            }
+        } else {
+            wrapper.style.position = '';
+            wrapper.style.bottom = '';
+            wrapper.style.height = '';
+            wrapper.style.maxHeight = '';
+        }
+    }
+
+    ngOnDestroy() {
+        if (window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this.updateChatLayout);
+            window.visualViewport.removeEventListener('scroll', this.updateChatLayout);
+        }
+        if (this.chatVisible && (!this.inMontajeMode || !this.isDesktop)) {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
         }
     }
 
@@ -173,10 +241,11 @@ export class Chatbot implements OnInit, AfterViewChecked {
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
                                 window.location.href = "/register";
-
-
                             }
-                        }, 4000);
+                            if (payload.fields.redirect.stringValue === "issue.form") {
+                                this.abrirIncidencia();
+                            }
+                        }, 1000);
                         handled = true;
                     }
                     else if (payload?.fields?.action?.stringValue === "filter.by.category") {
@@ -187,10 +256,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                                 next: (categoryResponse) => {
                                     const categoryData = categoryResponse.data || [];
 
-                                    if (categoryData.length > 0) {
+                                    if (categoryData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedCategory(categoryData[0].id);
+                                        this.filterSharingService.setSelectedCategory(categoryData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },
@@ -207,10 +276,10 @@ export class Chatbot implements OnInit, AfterViewChecked {
                             this.api.getColorByName(color).subscribe({
                                 next: (colorResponse) => {
                                     const colorData = colorResponse.data || [];
-                                    if (colorData.length > 0) {
+                                    if (colorData) {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
-                                        this.filterSharingService.setSelectedColor(colorData[0].id);
+                                        this.filterSharingService.setSelectedColor(colorData.id);
                                         this.router.navigate(['/catalogo']);
                                     }
                                 },
@@ -227,7 +296,7 @@ export class Chatbot implements OnInit, AfterViewChecked {
                     this.speakMessage(fallbackMessage);
                 }
                 this.shouldScroll = true;
-                this.messageInput?.nativeElement?.focus();
+                this.messageInput?.nativeElement?.focus({ preventScroll: true });
 
             });
     }

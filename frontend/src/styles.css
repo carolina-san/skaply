@@ -14,8 +14,14 @@
   font-style: normal;
 }
 
+app-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 html {
-  min-height: 100vh;
+  min-height: 100dvh;
   scroll-behavior: smooth;
 }
 
@@ -24,6 +30,9 @@ body {
   /*OPCIÓN 1: fondo marron y sombra marron oscuro*/
   /*background: radial-gradient(circle at center, var(--color-marron-oscuro) 0%, var(--color-marron-secundario) 80%);*/
   background-color: var(--color-marron-oscuro);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 h1,
@@ -86,10 +95,9 @@ button {
   @apply flex items-center justify-between w-full p-3 pl-6 pr-6 bg-marron-oscuro text-beige font-semibold rounded-[25px] shadow-md transition-colors duration-200 hover:bg-azul-claro hover:text-marron-oscuro cursor-pointer;
 }
 
-/*Fondo marron hover azul*/
 
 .btn-azul {
-  @apply flex flex-row items-center bg-azul-claro text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 cursor-pointer;
+  @apply flex flex-row items-center bg-azul-claro text-marron-oscuro px-4 py-2 rounded-full font-bold hover:bg-azul-medio transition-all duration-300 cursor-pointer;
 }
 
 .btn-azul:hover {

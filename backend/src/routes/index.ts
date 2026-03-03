@@ -10,7 +10,9 @@ import {
 } from './public';
 import {
   privateFurnitureRoutes,
-  privateProviderRoutes
+  privateProviderRoutes,
+  privateIssueRoutes,
+  privateStatsRoutes
 } from './private';
 import { ToolService } from '@/services/toolService';
 import { ApiError } from '@/utils/ApiError';
@@ -25,7 +27,7 @@ router.get('/health', async (_req, res, next: NextFunction) => {
     res.status(200).json({
       message: 'API is running',
       timestamp: new Date().toISOString(),
-      healthTool: healthTool.rows
+      healthTool: healthTool
     });
   } catch (error) {
     next(new ApiError('INTERNAL_SERVER', 'Api check health failed'));
@@ -43,5 +45,8 @@ router.use('/colors', colorRoutes);
 // PRIVATE routes
 router.use('/private/furniture', privateFurnitureRoutes);
 router.use('/private/providers', privateProviderRoutes);
+router.use('/private/issues', privateIssueRoutes);
+router.use('/private/stats', privateStatsRoutes);
+
 
 export default router;

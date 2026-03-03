@@ -3,7 +3,7 @@ import { Entity } from './entity';
 import { vec3, mat4 } from 'gl-matrix';
 
 export class Light extends Entity {
-    
+
     // PARAMETERS
 
     private intensity: vec3 = vec3.fromValues(1, 1, 1); // white light

@@ -1,7 +1,7 @@
-<main class="pt-20 md:pt-35 flex flex-col fondo">
-  <h1 class="sm:text-5xl text-3xl font-bold text-azul-claro mb-3 text-left page-main">Catálogo de Muebles</h1>
+<main class="pt-20 md:pt-25 flex flex-col fondo">
+  <h1 class="sm:text-5xl text-3xl font-bold text-azul-claro mb-2 text-left page-main">Catálogo de Muebles</h1>
   <!-- Barra de búsqueda y filtros -->
-  <div class="sticky top-[57px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
+  <div class="sticky top-[46px] lg:top-[68px] z-20  backdrop-blur-lg py-2 px-2 md:px-0 page-main"
     [class.busqueda-expanded]="!scrolled" [class.busqueda-compact]="scrolled">
     <section class="w-full  flex gap-3 items-center flex-shrink-0 transition-all duration-300"
       [ngClass]="scrolled ? 'mb-2' : 'mb-3'">
@@ -140,7 +140,7 @@
 
   <!-- Grid de muebles-->
   <section *ngIf="furnitures.length > 0"
-    class="grid py-1 md:py-7 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 page-main">
+    class="grid py-1 md:py-5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 page-main">
     <app-card-furniture *ngFor="let furniture of furnitures" [furniture]="furniture"
       (click)="openFurnitureModal(furniture)"></app-card-furniture>
   </section>
@@ -167,14 +167,18 @@
 
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
-    <div class="flex flex-col sm:flex-row w-full h-full md:max-h-[50vh]">
+    <div class="flex flex-col sm:flex-row w-full h-full max-h-[85vh] sm:max-h-[50vh] overflow-hidden">
       <!-- IMAGEN -->
-      <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0">
-        <img [src]="selectedFurniture?.image_url" loading="lazy"
-          class="w-full h-full sm:h-auto object-cover aspect-[4/4] sm:aspect-auto rounded-tl-xl lg:rounded-bl-xl">
+      <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0 overflow-hidden">
+        <img [src]="selectedFurniture?.image_url" loading="lazy" class="w-full
+         h-[28vh] sm:h-auto
+         max-h-[220px] sm:max-h-full
+         object-cover
+         rounded-tl-xl rounded-tr-xl
+         sm:rounded-bl-xl sm:rounded-tr-none">
       </div>
       <!-- TEXTO -->
-      <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full overflow-y-auto flex-1">
+      <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full">
         <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2">
           <span class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-bold rounded-full" [ngClass]="{
             'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
@@ -186,6 +190,8 @@
           <span class="text-xs text-gray-500">
             REF: {{ selectedFurniture?.reference_number }}
           </span>
+
+
         </div>
         <div class="mt-auto">
           <h2 class="text-2xl sm:text-4xl font-extrabold text-marron-oscuro">
@@ -205,23 +211,19 @@
 
 
         <!-- BOTÓN -->
-        <button class="btn-azul flex items-center justify-between border border-marron-oscuro text-sm sm:text-base"
-          (click)="goToViewer3D()">
-          Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
-            class="w-5 sm:w-7 h-5 sm:h-7">
-            <path
-              d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
-          </svg>
-        </button>
+        <div class="flex w-full gap-2">
+          <app-export [selectedFurniture]="selectedFurniture"></app-export>
 
-        <button class="btn-azul flex items-center justify-between border border-marron-oscuro text-sm sm:text-base"
-          (click)="downloadPDF()">
-          Descargar ficha PDF
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
-            class="w-5 sm:w-7 h-5 sm:h-7">
-            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM160-160v-80h640v80H160Z" />
-          </svg>
-        </button>
+          <button
+            class="btn-azul w-full flex items-center justify-between border border-marron-oscuro text-sm sm:text-base"
+            (click)="goToViewer3D()">
+            Empezar montaje <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"
+              class="w-5 sm:w-7 h-5 sm:h-7">
+              <path
+                d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </app-modal>
@@ -231,6 +233,7 @@
     [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
-  <app-chatbot></app-chatbot>
+  <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
+  <app-issue-form></app-issue-form>
 </main>
 <app-footer></app-footer>

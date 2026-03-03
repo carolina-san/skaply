@@ -1,25 +1,47 @@
-<main class="w-full h-screen flex flex-row bg-marron-oscuro">
+<main class="w-full flex-1 flex flex-row bg-beige">
   <app-profile-sidebar class="w-[20%]"></app-profile-sidebar>
-  <div class="w-[80%] flex flex-col">
-    <div class="flex items-center gap-10 text-lg font-semibold px-8 py-6 pt-20 bg-beige">
-      <button (click)="setActiveTab('estadisticas')" [class.opacity-40]="activeTab !== 'estadisticas'"
-        [class.border-b-2]="activeTab === 'estadisticas'" [class.border-beige]="activeTab === 'estadisticas'"
-        class="hover:opacity-100 transition pb-1">
-        Estadísiticas
-      </button>
-      <button (click)="setActiveTab('muebles')" [class.opacity-40]="activeTab !== 'muebles'"
-        [class.border-b-2]="activeTab === 'muebles'" [class.border-beige]="activeTab === 'muebles'"
-        class="hover:opacity-100 transition pb-1">
-        Muebles
-      </button>
-      <button (click)="setActiveTab('incidencias')" class="relative opacity-40 hover:opacity-100 transition">
-        Incidencias
-        <span
-          class="absolute -top-2 -right-4 bg-[#e74242] text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
-          2
-        </span>
-      </button>
+  <div class="px-5 lg:px-10 w-[80%] pt-5 flex flex-col min-h-0">
+    <div class="flex flex-row items-center justify-between text-xl font-bold mb-2 flex-shrink-0">
+      <div class="flex items-center gap-10">
+        <button (click)="setActiveTab('muebles')"
+          [ngClass]="[activeTab === 'muebles' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Muebles
+        </button>
+        <button (click)="setActiveTab('incidencias')"
+          [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition flex items-center gap-2">
+          Incidencias
+          <span *ngIf="pendingIssuesCount > 0" 
+                class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-[20px] text-center">
+            {{ pendingIssuesCount }}
+          </span>
+        </button>
+        <button (click)="setActiveTab('estadisticas')"
+          [ngClass]="[activeTab === 'estadisticas' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Estadísticas
+        </button>
+      </div>
+
+      <!-- barra de búsqueda -->
+      <div class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+          <path
+            d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+        </svg>
+        <input type="text" [(ngModel)]="searchText"
+          [placeholder]="activeTab === 'muebles' ? 'Buscar muebles' : activeTab === 'incidencias' ? 'Buscar incidencias' : 'Buscar estadísticas'"
+          class="w-full py-1.5 text-sm outline-none text-marron-oscuro placeholder-marron-oscuro" />
+      </div>
+
+
     </div>
-    <app-gestion-muebles class="flex-1"></app-gestion-muebles>
+    <div class="flex-1 min-h-0">
+      <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"
+        class="h-full block"></app-gestion-muebles>
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+        class="h-full block"></app-gestion-incidencias>
+    </div>
   </div>
 </main>

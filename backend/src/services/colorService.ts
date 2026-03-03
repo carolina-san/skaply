@@ -1,24 +1,26 @@
 import pool from '@config/database';
 
 export class ColorService {
-    
-    async getAllColorsFoundInFurniture(){
-        try{    
+
+    async getAllColorsFoundInFurniture() {
+        try {
             const result = await pool.query(`
                 SELECT DISTINCT c.id, c.name, c.hex
                 FROM Color c
                 JOIN Furniture f ON f.color_id = c.id`);
-            return result;
-        }catch(error){
+            return result.rows;
+        } catch (error) {
             throw new Error('No colors found in furniture')
         }
     }
 
-    async getColorByName(name: string){
-        try{
+    async getColorByName(name: string) {
+        try {
+            console.log("getColorByName");
             const result = await pool.query('SELECT * FROM public.color WHERE name = $1', [name]);
-            return result;
-        }catch(error){
+            console.log("Color found:", result.rows[0]);
+            return result.rows[0];
+        } catch (error) {
             throw new Error('Color not found');
         }
     }

@@ -12,8 +12,16 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   //MUEBLES
-  getAllFurniture(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/furniture`);
+  getAllFurniture(page?: number, limit?: number): Observable<any> {
+    let url = `${this.apiUrl}/furniture`;
+    if (page && limit) {
+      url += `?page=${page}&limit=${limit}`;
+    }
+    return this.http.get(url);
+  }
+
+  getVisibleFurniture(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/visible`);
   }
 
   getFurnitureById(id: string): Observable<any> {
@@ -24,9 +32,25 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/furniture/${id}/assembly`);
   }
 
-  getFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
-    console.log('Filters sent to API Service:', filters);
+  getAllFilteredFurniture(filters: FilterOptions): Observable<any> { // filter
+    return this.http.post(`${this.apiUrl}/private/furniture/filter`, filters);
+  }
+
+  getFilteredCatalog(filters: FilterOptions): Observable<any> {
     return this.http.post(`${this.apiUrl}/furniture/filter`, filters);
+  }
+
+
+  updateFurniture(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
+  }
+
+  updateProvider(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${id}`, data);
+  }
+
+  deleteFurniture(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/private/furniture/${id}`);
   }
 
   getCategories(): Observable<any> {
@@ -37,6 +61,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/categories/name/${name}`);
   }
 
+  getCategoryById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/categories/${id}`);
+  }
+
   getColors(): Observable<any> {
     return this.http.get(`${this.apiUrl}/colors`);
   }
@@ -45,12 +73,29 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/colors/name/${name}`);
   }
 
+  getProviderById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/providers/${id}`);
+  }
+
   getVisibleProviders(): Observable<any> { // Modificado para obtener solo proveedores activos
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
-    return this.http.get(`${this.apiUrl}/private/providers`);
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+    let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
+    if (search) {
+      url += `&search=${search}`;
+    }
+    if (visible !== null) {
+      url += `&visible=${visible}`;
+    }
+    if (enabled !== null) {
+      url += `&enabled=${enabled}`;
+    }
+    if (registration_status) {
+      url += `&registration_status=${registration_status}`;
+    }
+    return this.http.get(url);
   }
 
 
@@ -69,11 +114,42 @@ export class ApiService {
   }
 
   deleteProvider(providerId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/providers/${providerId}`);
+    return this.http.delete(`${this.apiUrl}/private/providers/${providerId}`);
+  }
+
+  approveProvider(providerId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${providerId}/registration/approve`, {});
+  }
+
+  rejectProvider(providerId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/private/providers/${providerId}/registration/reject`, {});
   }
 
   postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
+  }
+
+  getAllIssues(status?: string, providerId?: number): Observable<any> {
+    let url = `${this.apiUrl}/private/issues`;
+    const params: string[] = [];
+    if (status) params.push(`status=${status}`);
+    if (providerId) params.push(`providerId=${providerId}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return this.http.get(url);
+  }
+
+  getProviderIssues(providerId: number, status?: string): Observable<any> {
+    let url = `${this.apiUrl}/private/issues/provider/${providerId}`;
+    if (status) url += `?status=${status}`;
+    return this.http.get(url);
+  }
+
+  resolveIssue(issueId: number, resolvedBy: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/resolve`, { resolved_by: resolvedBy });
+  }
+
+  escalateIssue(issueId: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/issues/${issueId}/escalate`, {});
   }
 
   sendChatbotMessage(text: string): Observable<any> {
@@ -117,5 +193,13 @@ export class ApiService {
       body.text = text;
     }
     return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
+  }
+
+  getVisits(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/analytics`);
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/dashboard`);
   }
 }
