@@ -23,20 +23,18 @@
             </svg>
         </span>
         <input 
-            type="email" 
+            type="text" 
             name="email"
             placeholder="E-mail" 
             class="btn-registro"
             [(ngModel)]="email"
             [disabled]="loading"
             required
-            email
             #emailField="ngModel"
             [class.border-red-500]="emailField.invalid && emailField.touched">
         
         <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1 ml-1">
-            <span *ngIf="emailField.errors?.['required']">El email es obligatorio</span>
-            <span *ngIf="emailField.errors?.['email']">El email no es válido</span>
+            <span *ngIf="emailField.errors?.['required']">Este campo es obligatorio</span>
         </div>
     </div>
 
