@@ -52,8 +52,8 @@ export abstract class EngineFacade {
     abstract render(): void;
 
     // Object Creation
-    abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
-    abstract createGroup(): RenderableObject;
+    // abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
+    // abstract createGroup(): RenderableObject;
     abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject;
 
     // Scene Management

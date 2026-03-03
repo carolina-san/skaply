@@ -103,10 +103,10 @@ export class MeshResource extends Resource {
             texture:   raw.tex
         }, this.gl));
 
-        this.namedMeshes = this.meshes.map((mesh, i) => ({
-            name: gltf.meshes[i]?.name || `mesh_${i}`,
-            mesh
-        }));
+        this.namedMeshes = this.meshes.map((mesh, i) => {
+            const nodeName = gltf.nodes[i]?.name || `mesh_${i}`;
+            return { name: nodeName, mesh };
+        });
     }
 
     // PRIVATE METHODS: LOAD TEXTURE

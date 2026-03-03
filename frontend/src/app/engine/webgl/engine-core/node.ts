@@ -20,7 +20,7 @@ export class Node {
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
-    //private name: string;
+    private name: string = '';
 
 
     // CHILDREN MANAGEMENT
@@ -64,9 +64,9 @@ export class Node {
         this.needsUpdate = false;
     }
 
-    // setName(name: string): void {
-    //     this.name = name;
-    // }
+    setName(name: string): void {
+        this.name = name;
+    }
     
     // GETTERS
     
@@ -94,9 +94,9 @@ export class Node {
         return this.transformMatrix;
     }
 
-    // getName(): string {
-    //     return this.name;
-    // }
+    getName(): string {
+        return this.name;
+    }
 
     // LOCAL MATRIX (PRIVATE)
 
@@ -154,5 +154,16 @@ export class Node {
         this.scale[1] *= sy;
         this.scale[2] *= sz;
         this.needsUpdate = true;
+    }
+
+    // ⚠️ PRUEBA
+
+    getObjectByName(name: string): Node | null {
+        if (this.name === name) return this;
+        for (const child of this.children) {
+            const found = child.getObjectByName(name);
+            if (found) return found;
+        }
+        return null;
     }
 }

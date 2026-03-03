@@ -13,6 +13,7 @@ import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 //import { WebGLEngine } from '../../engine/webgl/webglEngine';
 import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../types/furniture.types';
 import { firstValueFrom } from 'rxjs';
+import { WebGLEngineAdapter } from '../../engine/webgl/webglEngine';
 
 @Component({
   selector: 'app-graphics-engine',
@@ -46,7 +47,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   arStateChange = output<boolean>();
 
   // Elegir el tipo de motor
-  engineUse = signal<'threeJS' | 'webGL'>('threeJS');
+  engineUse = signal<'threeJS' | 'webGL'>('webGL');
   // Configuración de modelo
   useExternalModel = true; // Cambiar a true para cargar modelo externo
   furniture?: Furniture; // Mueble cargado desde API
@@ -149,7 +150,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // Initialize Engine based on signal
     if (this.engineUse() === 'webGL') {
       console.log('Using WebGL Custom Engine');
-      //this.engine = new WebGLEngine();
+      this.engine = new WebGLEngineAdapter();
     } else {
       console.log('Using ThreeJS Adapter');
       this.engine = new ThreeEngineAdapter();
@@ -386,12 +387,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.engine.toggleControls(true, shouldRotate);
   }
 
-  private initThree(): void {
+  private async initThree(): Promise<void> {
     const canvas = this.canvasRef.nativeElement;
     const container = canvas.parentElement!;
     const { width, height } = container.getBoundingClientRect();
 
-    this.engine.init(canvas, width, height);
+    // this.engine.init(canvas, width, height);
+    await this.engine.init(canvas, width, height);
     this.engine.setControlsAutoRotateSpeed(1.0);
 
     this.onPointerMove = this.onPointerMove.bind(this);
@@ -514,9 +516,17 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         }
 
         if (!mesh) {
+            throw new Error(`No mesh available for part ${partRef.reference_number}`);
+        }
+
+        if (!usingExistingMesh) {
+            this.engine.addToScene(mesh);
+        }
+
+        if (!mesh) {
           // Case C: Fallback placeholder
           const args = [0.2, 0.2, 0.2];
-          mesh = this.engine.createMesh({ type: 'box', args: args }, defaultMaterial);
+         // mesh = this.engine.createMesh({ type: 'box', args: args }, defaultMaterial);
         }
 
         // If we created a new mesh (Case A or C), we need to add it to scene.

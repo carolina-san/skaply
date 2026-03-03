@@ -53,6 +53,14 @@ class WebGlRenderableObject implements RenderableObject {
         //this.node.setVisible(visible);
     }
 
+    get name(): string {
+        return this.node.getName();
+    }
+
+    set name(value: string) {
+        this.node.setName(value);
+    }
+
     add(child: RenderableObject): void {
         const webglChild = child as WebGlRenderableObject;
         this.node.addChild(webglChild.node);
@@ -85,8 +93,8 @@ export class CameraController {
     private readonly defaultTarget: vec3;
     
     // limits
-    private readonly minRadius = 0.1;
-    private readonly maxRadius = 100;
+    private readonly minRadius = 1;
+    private readonly maxRadius = 10;
 
     // epsilon to avoid gimbal lock at poles
     private static readonly PHI_EPSILON = 0.01;
@@ -160,14 +168,9 @@ export class CameraController {
     }
 
     zoom(delta: number): void {
-        
-        // update radius
-        this.radius += delta;
-        
-        // clamp radius to limits
-        if (this.radius < this.minRadius) { this.radius = this.minRadius; }
-        if (this.radius > this.maxRadius) { this.radius = this.maxRadius; }
-
+        const zoomSpeed = 0.0015; 
+        this.radius *= 1 + delta * zoomSpeed;
+        this.radius = Math.max(this.minRadius, Math.min(this.maxRadius, this.radius));
         this.updateOrbit();
     }
 
@@ -444,7 +447,7 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     // INIT
     
-    init(canvas: HTMLCanvasElement, width: number, height: number): void {
+    async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void>  {
 
         // gl 
         this.canvas = canvas;
@@ -466,15 +469,25 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.rootNode.addChild(this.lightNode);
 
         // shaders  
-        this.initShader().then(() => {
-            this.ready = true;
-            this.cameraController = new CameraController(
-                this.cameraNode,
-                this.cameraEntity,
-                canvas,
-                width < this.mobileThreshold
-            );
-        });
+        // this.initShader().then(() => {
+        //     this.ready = true;
+        //     this.cameraController = new CameraController(
+        //         this.cameraNode,
+        //         this.cameraEntity,
+        //         canvas,
+        //         width < this.mobileThreshold
+        //     );
+        // });
+
+        await this.initShader();
+
+        this.ready = true;
+        this.cameraController = new CameraController(
+            this.cameraNode,
+            this.cameraEntity,
+            canvas,
+            width < this.mobileThreshold
+        );
     }
 
     private async initShader(): Promise<void> {
@@ -569,27 +582,40 @@ export class WebGLEngineAdapter extends EngineFacade {
         );
 
         const modelNode = new Node();
+        const namedMeshes = meshResource.getNamedMeshes();
         
-        meshResource.getMeshes().forEach(mesh => {
+        console.log('Meshes cargados:', namedMeshes.map(m => m.name));
+        
+        // meshResource.getMeshes().forEach(mesh => {
+        //     const meshNode = new Node();
+        //     meshNode.setEntity(mesh);
+        //     modelNode.addChild(meshNode);
+        // });
+
+        // using namedMeshes instead (does it work??)
+        namedMeshes.forEach(namedMesh => {
             const meshNode = new Node();
-            meshNode.setEntity(mesh);
+            meshNode.setEntity(namedMesh.mesh);
+            meshNode.setName(namedMesh.name);
             modelNode.addChild(meshNode);
         });
+
+
         return this.wrapNativeObject(modelNode);
     }
 
     // ⚠️ puede que ni se use este método
-    createGroup(): RenderableObject {
-        const node = new Node();
-        const group = new WebGlRenderableObject(node);
-        //this.wrappers.add(group); // ⚠️ VER SI HACE REALMENTE FALTA
-        return group;
-    }
+    // createGroup(): RenderableObject {
+    //     const node = new Node();
+    //     const group = new WebGlRenderableObject(node);
+    //     //this.wrappers.add(group); // ⚠️ VER SI HACE REALMENTE FALTA
+    //     return group;
+    // }
 
-    // ⚠️ Método no utilizado. Devuelve un grupo vacío para cumplir la interfaz
-    createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
-        return this.createGroup();
-    }
+    // // ⚠️ Método no utilizado. Devuelve un grupo vacío para cumplir la interfaz
+    // createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
+    //     return this.createGroup();
+    // }
 
     wrapNativeObject(native: any): RenderableObject {
         if (!(native instanceof Node)) {
