@@ -182,45 +182,6 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.composer?.render();
     }
 
-    createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject {
-        let geo: THREE.BufferGeometry;
-        switch (geometry.type) {
-            case 'box':
-                geo = new THREE.BoxGeometry(...geometry.args);
-                break;
-            case 'cylinder':
-                geo = new THREE.CylinderGeometry(...geometry.args);
-                break;
-            case 'plane':
-                geo = new THREE.PlaneGeometry(...geometry.args);
-                break;
-            default:
-                throw new Error(`Unknown geometry type: ${geometry.type}`);
-        }
-
-        let mat: THREE.Material;
-        const matProps: any = { color: material.color };
-        if (material.roughness !== undefined) matProps.roughness = material.roughness;
-        if (material.metalness !== undefined) matProps.metalness = material.metalness;
-
-        switch (material.type) {
-            case 'standard':
-                mat = new THREE.MeshStandardMaterial(matProps);
-                break;
-            case 'basic':
-                mat = new THREE.MeshBasicMaterial(matProps);
-                break;
-            default:
-                mat = new THREE.MeshStandardMaterial(matProps);
-        }
-
-        const mesh = new THREE.Mesh(geo, mat);
-        return new ThreeRenderableObject(mesh);
-    }
-
-    createGroup(): RenderableObject {
-        return new ThreeRenderableObject(new THREE.Group());
-    }
 
     createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
         const arrow = new THREE.ArrowHelper(

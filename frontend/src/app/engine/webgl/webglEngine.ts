@@ -311,18 +311,8 @@ export class WebGLEngine extends EngineFacade {
         gl.disable(gl.CULL_FACE);
     }
 
-    // ------------------ Creación de objetos ------------------
-
-    createGroup(): RenderableObject {
-        const n = new Node();
-        const native = new NativeLikeObject(`group_${crypto.randomUUID()}`);
-        const w = new WebGlRenderableObject(n, native);
-        this.wrappers.add(w);
-        return w;
-    }
-
     createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
-        if (!this.gl) return this.createGroup();
+
 
         const gl = this.gl;
         const vao = gl.createVertexArray()!;
@@ -380,10 +370,10 @@ export class WebGLEngine extends EngineFacade {
         return w;
     }
 
-    createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
+    /*createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
         // Método no utilizado actualmente. Retornamos un grupo vacío para cumplir la interfaz.
         return this.createGroup();
-    }
+    }*/
 
 
 
