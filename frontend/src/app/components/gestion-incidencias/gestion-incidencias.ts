@@ -44,10 +44,12 @@ export class GestionIncidencias implements OnInit {
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
-    this.loadIssues();
+    // Para admins, establecer filtro predeterminado a escaladas
     if (this.currentUser?.role === 'admin') {
+      this.selectedStatus = 'escalated';
       this.loadProviders();
     }
+    this.loadIssues();
   }
 
   loadIssues(): void {
@@ -79,7 +81,7 @@ export class GestionIncidencias implements OnInit {
   }
 
   loadProviders(): void {
-    this.apiService.getProviders(1, 1000, '', null, 'approved').subscribe({
+    this.apiService.getProviders(1, 1000, '', null, null, 'approved').subscribe({
       next: (response) => {
         this.providers = response.data || [];
       },

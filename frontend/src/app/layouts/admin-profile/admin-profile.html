@@ -24,8 +24,8 @@
           [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
           class="hover:opacity-100 transition flex items-center gap-2">
           Incidencias
-          <span *ngIf="pendingIssuesCount > 0" class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            {{ pendingIssuesCount }}
+          <span *ngIf="escalatedIssuesCount > 0" class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {{ escalatedIssuesCount }}
           </span>
         </button>
         <button (click)="setActiveTab('dashboard')"
