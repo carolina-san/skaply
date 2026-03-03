@@ -81,13 +81,16 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
     }
     if (visible !== null) {
       url += `&visible=${visible}`;
+    }
+    if (enabled !== null) {
+      url += `&enabled=${enabled}`;
     }
     if (registration_status) {
       url += `&registration_status=${registration_status}`;
@@ -126,12 +129,19 @@ export class ApiService {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
 
-  getAllIssues(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/private/issues`);
+  getAllIssues(status?: string, providerId?: number): Observable<any> {
+    let url = `${this.apiUrl}/private/issues`;
+    const params: string[] = [];
+    if (status) params.push(`status=${status}`);
+    if (providerId) params.push(`providerId=${providerId}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return this.http.get(url);
   }
 
-  getProviderIssues(providerId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/private/issues/provider/${providerId}`);
+  getProviderIssues(providerId: number, status?: string): Observable<any> {
+    let url = `${this.apiUrl}/private/issues/provider/${providerId}`;
+    if (status) url += `?status=${status}`;
+    return this.http.get(url);
   }
 
   resolveIssue(issueId: number, resolvedBy: string): Observable<any> {
@@ -183,5 +193,13 @@ export class ApiService {
       body.text = text;
     }
     return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
+  }
+
+  getVisits(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/analytics`);
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/dashboard`);
   }
 }

@@ -320,7 +320,6 @@ export class FurnitureService {
 
       let baseSql = `
         FROM public.furniture f
-        INNER JOIN Step s ON s.furniture_id = f.id
         INNER JOIN Category c ON f.category_id = c.id
         INNER JOIN "User" p ON f.provider_id = p.id
         INNER JOIN Color cl ON f.color_id = cl.id

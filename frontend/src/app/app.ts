@@ -5,7 +5,7 @@ import { CookieConsent } from './components/cookie-consent/cookie-consent';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header,CookieConsent],
+  imports: [RouterOutlet, Header, CookieConsent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

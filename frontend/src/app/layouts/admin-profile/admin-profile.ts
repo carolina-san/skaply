@@ -8,19 +8,20 @@ import { GestionProveedores } from '../../components/gestion-proveedores/gestion
 import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
 import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
 import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { Stats } from '../../components/stats/stats';
 import { Issue } from '../../types/issue.types';
 
 @Component({
   selector: 'app-admin-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias],
+  imports: [CommonModule, FormsModule, ProfileSidebar, GestionProveedores, GestionMuebles, GestionSolicitudes, GestionIncidencias, Stats],
   templateUrl: './admin-profile.html',
   styleUrls: ['./admin-profile.css']
 })
 export class AdminProfile implements OnInit {
   activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
-  pendingIssuesCount: number = 0;
+  escalatedIssuesCount: number = 0;
 
   constructor(private seo: SeoService, private apiService: ApiService) {
   }
@@ -32,16 +33,18 @@ export class AdminProfile implements OnInit {
       canonical: `https://skaply.ovh/profile`,
       index: false
     });
-    this.loadPendingIssuesCount();
+    this.loadEscalatedIssuesCount();
   }
 
-  loadPendingIssuesCount() {
-    this.apiService.getAllIssues().subscribe({
-      next: (issues) => {
-        this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+
+
+  loadEscalatedIssuesCount() {
+    this.apiService.getAllIssues('escalated').subscribe({
+      next: (response) => {
+        this.escalatedIssuesCount = response.data?.length || 0;
       },
       error: (error) => {
-        console.error('Error loading pending issues count:', error);
+        console.error('Error loading escalated issues count:', error);
       }
     });
   }
@@ -49,7 +52,7 @@ export class AdminProfile implements OnInit {
   setActiveTab(tab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias') {
     this.activeTab = tab;
     if (tab === 'incidencias') {
-      this.loadPendingIssuesCount();
+      this.loadEscalatedIssuesCount();
     }
   }
 }

@@ -15,7 +15,9 @@ export class IssueController {
 
     getAllIssues = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const result = await this.issueService.getAllIssues();
+            const status = req.query.status as string | undefined;
+            const providerId = req.query.providerId ? parseInt(req.query.providerId as string) : undefined;
+            const result = await this.issueService.getAllIssues(status, providerId);
             res.status(200).json({
                 data: result
             });
@@ -31,7 +33,8 @@ export class IssueController {
                 next(new ApiError('BAD_REQUEST', 'Invalid provider ID'));
                 return;
             }
-            const result = await this.issueService.getProviderIssues(providerId);
+            const status = req.query.status as string | undefined;
+            const result = await this.issueService.getProviderIssues(providerId, status);
             res.status(200).json({
                 data: result
             });
@@ -113,4 +116,5 @@ export class IssueController {
             next(new ApiError('INTERNAL_SERVER', 'Failed to escalate issue'));
         }
     }
+
 }

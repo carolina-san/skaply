@@ -97,7 +97,7 @@ export class GestionMuebles implements OnInit, OnChanges {
   }
 
   loadProviders() {
-    this.apiService.getProviders(1, 1000, '', null, 'approved').subscribe( // Loading all approved providers for dropdown
+    this.apiService.getProviders(1, 1000, '', null, null, 'approved').subscribe( // Loading all approved providers for dropdown
       (response) => {
         this.providers = response.data || [];
       },

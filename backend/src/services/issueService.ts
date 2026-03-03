@@ -3,33 +3,60 @@ import pool from "@/config/database";
 import { Issue } from "@/types";
 
 export class IssueService {
-    async getAllIssues() {
+    async getAllIssues(status?: string, providerId?: number) {
         try {
-            const result = await pool.query(`
+            let query = `
                 SELECT i.*, f.name as furniture_name, f.reference_number as furniture_reference, 
                        f.image_url as furniture_image, 
                        u.company_name as provider_name, u.id as provider_id
                 FROM issue i
                 LEFT JOIN furniture f ON i.furniture_id = f.id
                 LEFT JOIN "User" u ON f.provider_id = u.id
-                ORDER BY i.date DESC
-            `);
+                WHERE 1=1
+            `;
+            const params: any[] = [];
+            let paramCount = 1;
+
+            if (status) {
+                query += ` AND i.status = $${paramCount}`;
+                params.push(status);
+                paramCount++;
+            }
+
+            if (providerId) {
+                query += ` AND u.id = $${paramCount}`;
+                params.push(providerId);
+                paramCount++;
+            }
+
+            query += ' ORDER BY i.date DESC';
+
+            const result = await pool.query(query, params);
             return result.rows;
         } catch (error) {
             throw new Error('Error fetching all issues');
         }
     }
 
-    async getProviderIssues(providerId: number) {
+    async getProviderIssues(providerId: number, status?: string) {
         try {
-            const result = await pool.query(`
+            let query = `
                 SELECT i.*, f.name as furniture_name, f.reference_number as furniture_reference, 
                        f.image_url as furniture_image
                 FROM issue i
                 JOIN furniture f ON i.furniture_id = f.id
                 WHERE f.provider_id = $1
-                ORDER BY i.date DESC
-            `, [providerId]);
+            `;
+            const params: any[] = [providerId];
+
+            if (status) {
+                query += ' AND i.status = $2';
+                params.push(status);
+            }
+
+            query += ' ORDER BY i.date DESC';
+
+            const result = await pool.query(query, params);
             return result.rows;
         } catch (error) {
             throw new Error('Error fetching provider issues');
@@ -94,4 +121,5 @@ export class IssueService {
             throw new Error('Error escalating issue');
         }
     }
+
 }

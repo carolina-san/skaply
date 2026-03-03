@@ -15,7 +15,7 @@ import { Issue } from '../../types/issue.types';
   styleUrls: ['./provider-profile.css']
 })
 export class ProviderProfile implements OnInit {
-  activeTab: 'estadisticas' | 'muebles' | 'incidencias' = 'muebles';
+  activeTab: 'muebles' | 'incidencias' | 'estadisticas' = 'muebles';
   searchText: string = '';
   pendingIssuesCount: number = 0;
 
@@ -31,10 +31,9 @@ export class ProviderProfile implements OnInit {
   loadPendingIssuesCount(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser?.id) {
-      this.apiService.getProviderIssues(currentUser.id).subscribe({
+      this.apiService.getProviderIssues(currentUser.id, 'pending').subscribe({
         next: (response) => {
-          const issues = response.data || [];
-          this.pendingIssuesCount = issues.filter((issue: Issue) => issue.status === 'pending').length;
+          this.pendingIssuesCount = response.data?.length || 0;
         },
         error: (error) => {
           console.error('Error loading issues count:', error);

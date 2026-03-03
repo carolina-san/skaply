@@ -37,7 +37,7 @@ export class GestionSolicitudes implements OnInit, OnChanges {
   }
 
   fetchPendingProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, null, 'pending').subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, null, null, 'pending').subscribe(
       (response) => {
         console.log('Pending providers fetched successfully:', response);
         this.providers = response.data;
