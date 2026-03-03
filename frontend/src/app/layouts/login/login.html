@@ -1,91 +1,101 @@
-<div class="flex flex-col items-center mb-16 px-6 mt-50 text-azul-claro w-full max-w-lg mx-auto">
+<div
+    class="flex flex-col flex-1 items-center justify-center px-6 text-azul-claro w-full min-h-[100dvh] max-w-lg my-auto mx-auto">
 
     <h1 class="text-4xl font-bold mb-6 text-center">
         Inicia sesión
     </h1>
 
     <!-- Mensaje de error -->
-    <div *ngIf="error" class="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded transition-all duration-300">
+    <div *ngIf="error"
+        class="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded transition-all duration-300">
         <div class="flex items-center gap-2">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                <path fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd"></path>
             </svg>
             {{ error }}
         </div>
     </div>
 
     <form (ngSubmit)="onLogin()" class="w-full">
-    <div class="w-full relative mb-3">
-        <span class="material-symbols-rounded iconos-registro">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
-                <path
-                    d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z" />
-            </svg>
-        </span>
-        <input 
-            type="email" 
-            name="email"
-            placeholder="E-mail" 
-            class="btn-registro"
-            [(ngModel)]="email"
-            [disabled]="loading"
-            required
-            email
-            #emailField="ngModel"
-            [class.border-red-500]="emailField.invalid && emailField.touched">
-        
-        <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1 ml-1">
-            <span *ngIf="emailField.errors?.['required']">El email es obligatorio</span>
-            <span *ngIf="emailField.errors?.['email']">El email no es válido</span>
-        </div>
-    </div>
+        <div class="w-full relative mb-3">
+            <span class="material-symbols-rounded iconos-registro">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="#452621">
+                    <path
+                        d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z" />
+                </svg>
+            </span>
+            <input type="text" name="email" placeholder="E-mail" class="btn-registro" [(ngModel)]="email"
+                [disabled]="loading" required #emailField="ngModel"
+                [class.border-red-500]="emailField.invalid && emailField.touched">
 
-    <div class="w-full relative mb-3">
-        <span class="material-symbols-rounded iconos-registro">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#452621">
-                <path
-                    d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z" />
-            </svg>
-        </span>
-        <input 
-            type="password" 
-            name="password"
-            placeholder="Contraseña" 
-            class="btn-registro"
-            [(ngModel)]="password"
-            [disabled]="loading"
-            required
-            #passwordField="ngModel"
-            [class.border-red-500]="passwordField.invalid && passwordField.touched">
-        
-        <div *ngIf="passwordField.invalid && passwordField.touched" class="text-red-500 text-xs mt-1 ml-1">
-            La contraseña es obligatoria
+            <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1 ml-1">
+                <span *ngIf="emailField.errors?.['required']">Este campo es obligatorio</span>
+            </div>
         </div>
-    </div>
+        <div class="w-full relative mb-3">
+            <span class="material-symbols-rounded iconos-registro">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="#452621">
+                    <path
+                        d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm320-280L160-640v400h640v-400L480-440Zm0-80 320-200H160l320 200ZM160-640v-80 480-400Z" />
+                </svg>
+            </span>
+            <input type="email" name="email" placeholder="E-mail" class="btn-registro" [(ngModel)]="email"
+                [disabled]="loading" required email #emailField="ngModel"
+                [class.border-red-500]="emailField.invalid && emailField.touched">
 
-    <button 
-        type="submit"
-        class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full py-3 mb-6 transition-all duration-300 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        [disabled]="loading || emailField.invalid || passwordField.invalid">
-        <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        {{ loading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
-    </button>
+            <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1 ml-1">
+                <span *ngIf="emailField.errors?.['required']">El email es obligatorio</span>
+                <span *ngIf="emailField.errors?.['email']">El email no es válido</span>
+            </div>
+        </div>
+
+        <div class="w-full relative mb-3">
+            <span class="material-symbols-rounded iconos-registro">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                    fill="#452621">
+                    <path
+                        d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z" />
+                </svg>
+            </span>
+            <input type="password" name="password" placeholder="Contraseña" class="btn-registro" [(ngModel)]="password"
+                [disabled]="loading" required #passwordField="ngModel"
+                [class.border-red-500]="passwordField.invalid && passwordField.touched">
+
+            <div *ngIf="passwordField.invalid && passwordField.touched" class="text-red-500 text-xs mt-1 ml-1">
+                La contraseña es obligatoria
+            </div>
+        </div>
+
+        <button type="submit"
+            class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full py-3 mb-6 transition-all duration-300 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            [disabled]="loading || emailField.invalid || passwordField.invalid">
+            <svg *ngIf="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
+            {{ loading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+        </button>
     </form>
 
     <div class="flex items-center gap-4 w-full mb-4">
         <span class="flex-1 h-px bg-beige"></span>
-        <span>or</span>
-        <span class="flex-1 h-px bg-beige"></span>
+
     </div>
 
-    <button 
-        class="w-full border bg-beige rounded-full py-3 flex items-center justify-center gap-2"
-        (click)="onGoogleLogin()"
-        [disabled]="loading">
+    <button class="w-full border bg-beige rounded-full py-3 flex items-center justify-center gap-2"
+        (click)="onGoogleLogin()" [disabled]="loading">
         <img src="assets/imgs/google.png" class="h-5 w-5">
         <span class="text-marron-oscuro">Continuar con Google</span>
     </button>
+    <p class="text-center mt-4 ">¿Aún no eres proveedor?<br> <a href="/register"
+            class="text-azul-claro hover:underline">Haz
+            click aquí para
+            mandar tu solicitud</a>
+    </p>
 </div>

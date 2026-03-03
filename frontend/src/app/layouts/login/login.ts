@@ -67,11 +67,9 @@ export class Login implements OnInit {
         this.loading = false;
         console.error('Login error:', error);
 
-        // Manejar diferentes tipos de errores
-        if (error.status === 404) {
-          this.error = 'Usuario no encontrado';
-        } else if (error.status === 401) {
-          this.error = 'Contraseña incorrecta';
+        // Mensaje genérico por seguridad
+        if (error.status === 404 || error.status === 401) {
+          this.error = 'Datos incorrectos. Verifica tu email y contraseña';
         } else {
           this.error = 'Error al iniciar sesión. Inténtalo de nuevo';
         }

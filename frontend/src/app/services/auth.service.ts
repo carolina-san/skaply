@@ -75,7 +75,7 @@ export class AuthService {
   }
 
   // Método para actualizar el perfil del usuario
-  updateMyProfile(updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string }): Observable<any> {
+  updateMyProfile(updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string; image_url?: string }): Observable<any> {
     return this.http.put('/api/auth/me', updates);
   }
 }
