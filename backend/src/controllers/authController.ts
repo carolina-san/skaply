@@ -202,7 +202,7 @@ export class AuthController {
         throw new ApiError('UNAUTHORIZED', 'User not authenticated');
       }
 
-      const { name, company_name, email, telephone, password } = req.body;
+      const { name, company_name, email, telephone, password, image_url } = req.body;
       const updates: any = {};
 
       if (name !== undefined) updates.name = name;
@@ -221,6 +221,7 @@ export class AuthController {
         const hashedPassword = await hashPassword(password);
         updates.password = hashedPassword;
       }
+      if (image_url !== undefined) updates.image_url = image_url;
 
       if (Object.keys(updates).length === 0) {
         throw new ApiError('BAD_REQUEST', 'No fields to update');
