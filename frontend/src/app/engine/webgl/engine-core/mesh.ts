@@ -1,4 +1,5 @@
 import { ShaderResource } from '../resource/shader-resource';
+import { TextureResource } from '../resource/texture-resource';
 import { Entity } from './entity';
 import { mat4 } from 'gl-matrix';
 
@@ -7,7 +8,7 @@ export interface MeshResource {
     normals: Float32Array;
     texCoords: Float32Array;
     indices: Uint32Array;
-    texture?: WebGLTexture;
+    texture?: TextureResource;
 }
 
 export class Mesh extends Entity {
@@ -33,8 +34,7 @@ export class Mesh extends Entity {
         
         // Bind texture if available
         if (this.resource.texture) {
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.resource.texture);
+            this.resource.texture.bind(0);
             shader.setInt("uDiffuseTexture", 0);
         }
  

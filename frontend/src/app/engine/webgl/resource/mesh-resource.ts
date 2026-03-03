@@ -44,7 +44,7 @@ export type RawMesh = {
     norms: number[];
     uvs: number[];
     inds: number[];
-    tex?: WebGLTexture;
+    tex?: TextureResource;
 };
 
 export type NamedMesh = { 
@@ -58,7 +58,7 @@ export class MeshResource extends Resource {
     
     meshes: Mesh[] = [];
     private namedMeshes: NamedMesh[] = [];
-    private textures: Map<any, WebGLTexture> = new Map();
+    private textures = new Map<any, TextureResource>();
 
     constructor(name: string, private gl: WebGL2RenderingContext) {
         super(name);
@@ -115,59 +115,35 @@ export class MeshResource extends Resource {
         if (!gltf.materials) return;
         for (let i = 0; i < gltf.materials.length; i++) {
             const material = gltf.materials[i];
-            const texture = this.buildTextureFromMaterial(material, i);
-            this.textures.set(material, texture);
+            const textureResource = this.buildTextureFromMaterial(material, i);
+            this.textures.set(material, textureResource);
         }
     }
 
-    private buildTextureFromMaterial(material: any, index: number): WebGLTexture {
+    private buildTextureFromMaterial(material: any, index: number): TextureResource {
+        const texture = new TextureResource(`mat_${index}`, this.gl);
         const pbr = material.pbrMetallicRoughness;
-        const image = this.extractBaseColorImage(pbr);
-        if (image) { return this.createGLTextureFromImage(image); }
-        return this.createFallbackTexture(pbr, index);
-    }
-    
-    private extractBaseColorImage(pbr: any): HTMLImageElement | undefined {
-        return pbr?.baseColorTexture?.texture?.source?.image;
-    }
+        const image = pbr?.baseColorTexture?.texture?.source?.image;
 
-    private createGLTextureFromImage(img: HTMLImageElement): WebGLTexture {
-        const gl = this.gl;
-        const texture = gl.createTexture()!;
-        
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.generateMipmap(gl.TEXTURE_2D);
+        if (image) {
+            texture.loadFromImage(image);
+            return texture;
+        }
 
-        this.setDefaultTextureParameters(gl);
-        
-        return texture;
-    }
-
-    private setDefaultTextureParameters(gl: WebGLRenderingContext): void {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    }
-    
-    private createFallbackTexture(pbr: any, index: number): WebGLTexture {
-        const textureResource = new TextureResource(`mat_${index}`, this.gl);
-
+        // fallback color
         if (pbr?.baseColorFactor) {
             const c = pbr.baseColorFactor;
-            textureResource.loadFromColor(
+            texture.loadFromColor(
                 Math.round(c[0] * 255),
                 Math.round(c[1] * 255),
                 Math.round(c[2] * 255),
                 Math.round((c[3] ?? 1) * 255)
             );
         } else {
-            textureResource.loadFromColor(255, 255, 255);
+            texture.loadFromColor(255, 255, 255);
         }
 
-        return textureResource.texture!;
+        return texture;
     }
     
     // PRIVATE METHODS: UTILS AND GETTERS
@@ -200,8 +176,10 @@ export class MeshResource extends Resource {
         }
     }
 
-    private getTexture(primitive: any): WebGLTexture | undefined {
-        return primitive.material ? this.textures.get(primitive.material) : undefined;
+    private getTexture(primitive: any): TextureResource  | undefined {
+        return primitive.material 
+            ? this.textures.get(primitive.material) 
+            : undefined;
     }
 
     // PRIVATE METHODS: MERGE PRIMITIVES
@@ -221,7 +199,7 @@ export class MeshResource extends Resource {
 
     private mergePrimitivesOfMesh(primitives: any[]): {
         merged: { verts: number[]; norms: number[]; uvs: number[]; inds: number[] };
-        texture?: WebGLTexture;
+        texture?: TextureResource;
     } {
         type Accumulator = {
             verts: number[];
@@ -231,7 +209,7 @@ export class MeshResource extends Resource {
         };
 
         let baseIndex = 0;
-        let texture: WebGLTexture | undefined;
+        let texture: TextureResource | undefined;
 
         const merged = primitives.reduce((acc: Accumulator, primitive: any) => {
             
@@ -261,7 +239,7 @@ export class MeshResource extends Resource {
         norms: number[]; 
         uvs:   number[]; 
         inds:  number[]; 
-        text?: WebGLTexture; 
+        text?: TextureResource; 
         vertexCount: number } {
         
         const attributes = primitive.attributes;
