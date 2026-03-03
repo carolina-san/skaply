@@ -1,7 +1,5 @@
 import { Resource } from './resource';
-import { Resource } from './resource';
 
-export class TextureResource extends Resource {
 export class TextureResource extends Resource {
 
     texture?: WebGLTexture;
