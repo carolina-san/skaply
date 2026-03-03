@@ -1,6 +1,6 @@
 <div class="w-full h-full bg-beige flex flex-col">
 
-  <div class="flex pt-2 pb-2">
+  <div class="flex pt-2 pb-2 gap-2">
 
     <select [(ngModel)]="selectedVisibility" (change)="onVisibilityChange()" class="filtros-select">
       <option [ngValue]="null" [ngClass]="selectedVisibility === null ? 'hidden' : ''">{{ selectedVisibility === null
@@ -10,7 +10,7 @@
     </select>
     <select [(ngModel)]="selectedEnabled" (change)="onEnabledChange()" class="filtros-select">
       <option [ngValue]="null" [ngClass]="selectedEnabled === null ? 'hidden' : ''">{{ selectedEnabled === null
-        ? 'Habilitado' : 'Cualquier estado' }}</option>
+        ? 'Estado' : 'Cualquier estado' }}</option>
       <option [value]="true">Habilitado</option>
       <option [value]="false">Bloqueado</option>
     </select>

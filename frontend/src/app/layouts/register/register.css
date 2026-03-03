@@ -1,0 +1,13 @@
+@import "../../../styles.css";
+
+.input-registro {
+    @apply w-full flex flex-row gap-2 text-marron-oscuro items-center justify-start rounded-lg bg-beige px-3 py-2 transition-all duration-100;
+}
+
+.input-registro:focus-within {
+    @apply outline outline-2 outline-offset-1 outline-beige-oscuro shadow-md;
+}
+
+.iconos-registro {
+    @apply text-marron-oscuro;
+}
