@@ -89,7 +89,7 @@ export class Header {
 
   goHome(): void {
     this.finMontaje();
-    this.router.navigate(['/']);
+    this.router.navigate(['/catalogo']);
   }
   goLogin(): void {
     this.router.navigate(['/login']);
