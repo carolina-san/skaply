@@ -432,9 +432,10 @@ export class WebGLEngineAdapter extends EngineFacade {
     private lightEntity = new Light();
     private lightNode = new Node();
     
-    //private sceneObjects: WebGlRenderableObject[] = [];  // NO HACE FALTA
-    private highlightedObjects: WebGlRenderableObject[] = [];
+    private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
     
+    // ⚠️ DE MOMENTO NO HACEN FALTA
+    private highlightedObjects: WebGlRenderableObject[] = [];
     private controlsEnabled = false;
     private controlsAutoRotate = false;
     private controlsAutoRotateSpeed = 2;
@@ -449,7 +450,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas = canvas;
         this.gl = canvas.getContext('webgl2')!;
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR!
+        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO!
         this.resize(width, height);
 
         // camera 
@@ -528,14 +529,7 @@ export class WebGLEngineAdapter extends EngineFacade {
             orbit: this.cameraController.getOrbitState()
         };
     }
-
-    // DISPOSE
-
-    dispose(): void {
-        this.cameraController.dispose();
-        // ...resto cleanup...
-    }
-
+    
     // RENDER 
 
     render(): void {
@@ -545,19 +539,70 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         this.shader.use();
 
+        // ⚠️NO SE SI HACE FALTA HACER ESTO AQUI! 
+        // Sincronizar la posición de la cámara en el shader para el cálculo especular
+        //const camPos = this.cameraController.getCameraPosition();
+        //this.shader.setVec3("uViewPosition", vec3.fromValues(camPos.x, camPos.y, camPos.z));
+
         const identity = mat4.create();
         this.rootNode.traverse(identity, this.shader, false);
 
         this.updateControls();
     }
 
+    // DISPOSE
+
+    dispose(): void {
+        this.cameraController.dispose();
+        this.wrappers.clear();
+        this.ready = false;
+        // ...resto cleanup...
+    }
+
     // OBJECT MANAGEMENT
 
+    async loadGLTF(url: string): Promise<RenderableObject> {
+    
+        const meshResource = await this.resourceManager.getResource(
+            url, 
+            () => new MeshResource(url, this.gl)
+        );
+
+        const modelNode = new Node();
+        
+        meshResource.getMeshes().forEach(mesh => {
+            const meshNode = new Node();
+            meshNode.setEntity(mesh);
+            modelNode.addChild(meshNode);
+        });
+        return this.wrapNativeObject(modelNode);
+    }
+
+    // ⚠️ puede que ni se use este método
     createGroup(): RenderableObject {
         const node = new Node();
         const group = new WebGlRenderableObject(node);
         //this.wrappers.add(group); // ⚠️ VER SI HACE REALMENTE FALTA
         return group;
+    }
+
+    // ⚠️ Método no utilizado. Devuelve un grupo vacío para cumplir la interfaz
+    createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
+        return this.createGroup();
+    }
+
+    wrapNativeObject(native: any): RenderableObject {
+        if (!(native instanceof Node)) {
+            throw new Error("Object is not a WebGl valid Node.");
+        }
+        return new WebGlRenderableObject(native);
+    }
+    
+    // ⚠️ Metodo 'vacio' para que la clase no se queje.
+    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
+        const node = new Node();
+        const wrapper = new WebGlRenderableObject(node);
+        return wrapper;
     }
     
     addToScene(object: RenderableObject): void {
@@ -585,10 +630,43 @@ export class WebGLEngineAdapter extends EngineFacade {
         }
         // string => fallback
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
-    }    
+    }   
+    
+    // INTERACTION
+
+    // ⚠️ metodo de alvaro 
+    raycast(_x: number, _y: number): RenderableObject | null {
+        // En WebGL puro esto requiere picking (color buffer o ray/triangles).
+        // Para que el flujo no rompa, devolvemos null.
+        return null;
+    }
+
+    // ⚠️ metodo de alvaro 
+    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor.
+    setHighlight(objects: RenderableObject[]): void {
+        // const cyan = vec3.fromValues(0, 1, 1);
+
+        // this.wrappers.forEach(w => w.node.isHighlighted = false);
+
+        // objects.forEach(o => {
+        //     if (!o) return;
+        //     const w = o as WebGlRenderableObject;
+
+        //     const highlightSubtree = (n: Node | null) => {
+        //         if (!n) return;
+        //         n.isHighlighted = true;
+        //         n.highlightColor = cyan;
+        //         const children: Node[] = (n as any).children || [];
+        //         children.forEach(highlightSubtree);
+        //     };
+
+        //     highlightSubtree(w.node);
+        // });
+    }
 
     // ------------------------------------------
 
+    // metodo que no sé si hará falta o no.
     // private applyAutoRotation(): void {
     //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
     //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
