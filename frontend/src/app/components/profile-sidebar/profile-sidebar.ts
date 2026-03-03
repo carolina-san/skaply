@@ -23,6 +23,9 @@ export class ProfileSidebar implements OnInit {
   successMessage: string = '';
   hasChanges: boolean = false;
   initialFormValues: any = {};
+  imagePreview: string | null = null;
+  selectedImageFile: File | null = null;
+  imageBase64: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -119,8 +122,47 @@ export class ProfileSidebar implements OnInit {
     const emailChanged = currentValues.email !== this.initialFormValues.email;
     const telephoneChanged = currentValues.telephone?.trim() !== this.initialFormValues.telephone;
     const passwordChanged = currentValues.password?.trim() !== '';
+    const imageChanged = this.imageBase64 !== null;
 
-    this.hasChanges = nameChanged || companyNameChanged || emailChanged || telephoneChanged || passwordChanged;
+    this.hasChanges = nameChanged || companyNameChanged || emailChanged || telephoneChanged || passwordChanged || imageChanged;
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      // Validar tamaño (2MB máximo)
+      if (file.size > 2 * 1024 * 1024) {
+        this.errorMessage = 'La imagen es muy grande. El tamaño máximo es 2MB';
+        return;
+      }
+
+      // Validar tipo
+      if (!file.type.startsWith('image/')) {
+        this.errorMessage = 'Por favor selecciona un archivo de imagen válido';
+        return;
+      }
+
+      this.selectedImageFile = file;
+      this.errorMessage = '';
+
+      // Crear preview
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.imagePreview = e.target?.result as string;
+        this.imageBase64 = e.target?.result as string;
+        this.checkForChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(): void {
+    this.imagePreview = null;
+    this.selectedImageFile = null;
+    this.imageBase64 = null;
+    this.checkForChanges();
   }
 
   closeEditModal() {
@@ -128,6 +170,9 @@ export class ProfileSidebar implements OnInit {
     this.editForm.reset();
     this.errorMessage = '';
     this.successMessage = '';
+    this.imagePreview = null;
+    this.selectedImageFile = null;
+    this.imageBase64 = null;
   }
 
   onSubmit() {
@@ -157,6 +202,10 @@ export class ProfileSidebar implements OnInit {
 
       if (this.editForm.value.password && this.editForm.value.password.trim() !== '') {
         updates.password = this.editForm.value.password;
+      }
+
+      if (this.imageBase64) {
+        updates.image_url = this.imageBase64;
       }
 
       if (Object.keys(updates).length === 0) {
