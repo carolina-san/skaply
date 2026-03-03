@@ -81,13 +81,16 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
     }
     if (visible !== null) {
       url += `&visible=${visible}`;
+    }
+    if (enabled !== null) {
+      url += `&enabled=${enabled}`;
     }
     if (registration_status) {
       url += `&registration_status=${registration_status}`;

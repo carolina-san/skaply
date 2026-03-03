@@ -19,6 +19,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   itemsPerPage: number = 6;
   totalItems: number = 0;
   selectedVisibility: boolean | null = null;
+  selectedEnabled: boolean | null = null;
 
   // Modal de confirmación
   isDeleteModalOpen: boolean = false;
@@ -86,6 +87,11 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.fetchProviders();
   }
 
+  onEnabledChange() {
+    this.currentPage = 1;
+    this.fetchProviders();
+  }
+
   showError(message: string) {
     this.errorMessage = message;
     this.successMessage = null;
@@ -99,7 +105,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   fetchProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, 'approved').subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, this.selectedEnabled, 'approved').subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
