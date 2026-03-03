@@ -19,7 +19,6 @@ export class StatsService {
             ],
         });
 
-        // Top 5 Muebles/Páginas más vistas
         const topPagesQuery = analyticsDataClient.runReport({
             property: propertyId,
             dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
@@ -69,7 +68,6 @@ export class StatsService {
         };
     }
 
-    // Tu método de base de datos se queda igual, está perfecto
     async getDashboardStats(): Promise<{ furniture: number, admins: number, providers: number }> {
         const furnitureQuery = pool.query(`SELECT COUNT(*) FROM furniture`);
         const adminsQuery = pool.query(`SELECT COUNT(*) FROM "User" WHERE role = 'admin'`);
