@@ -3,41 +3,41 @@
   <div class="px-5 lg:px-10 w-[80%] pt-5 flex flex-col bg-beige text-marron-oscuro min-h-0">
 
     <div class="flex flex-row items-center justify-between text-xl font-bold mb-2 flex-shrink-0">
-      <div class="flex items-center gap-10">
+      <!-- barra de navegación -->
+      <nav aria-label="Navegación principal" class="flex items-center gap-8">
         <button (click)="setActiveTab('proveedores')"
-          [ngClass]="[activeTab === 'proveedores' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="hover:opacity-100 transition">
+          [ngClass]="[activeTab === 'proveedores' ? 'selected-tab' : 'opacity-40']" class="nav-tab">
           Proveedores
         </button>
-        <button (click)="setActiveTab('muebles')"
-          [ngClass]="[activeTab === 'muebles' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="hover:opacity-100 transition">
+        <button (click)="setActiveTab('muebles')" [ngClass]="[activeTab === 'muebles' ? 'selected-tab' : 'opacity-40']"
+          class="nav-tab">
           Muebles
         </button>
         <button (click)="setActiveTab('solicitudes')"
-          [ngClass]="[activeTab === 'solicitudes' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="relative hover:opacity-100 transition">
+          [ngClass]="[activeTab === 'solicitudes' ? 'selected-tab' : 'opacity-40']" class="nav-tab">
           Solicitudes
-
+          <span *ngIf="pendingProvidersCount > 0"
+            class=" bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            {{ pendingProvidersCount }}
+          </span>
         </button>
         <button (click)="setActiveTab('incidencias')"
-          [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="hover:opacity-100 transition flex items-center gap-2">
+          [ngClass]="[activeTab === 'incidencias' ? 'selected-tab' : 'opacity-40']" class="nav-tab">
           Incidencias
-          <span *ngIf="escalatedIssuesCount > 0" class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <span *ngIf="escalatedIssuesCount > 0"
+            class=" bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
             {{ escalatedIssuesCount }}
           </span>
         </button>
         <button (click)="setActiveTab('dashboard')"
-          [ngClass]="[activeTab === 'dashboard' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="hover:opacity-100 transition">
+          [ngClass]="[activeTab === 'dashboard' ? 'selected-tab' : 'opacity-40']" class="nav-tab">
           Estadísticas
         </button>
-      </div>
+      </nav>
 
       <!-- barra de búsqueda -->
-      <div *ngIf="activeTab !== 'dashboard'"
-        class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
+      <div [class.invisible]="activeTab === 'dashboard'"
+        class="flex items-center w-70 bg-white rounded-full px-3 shadow gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
             d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
@@ -45,11 +45,11 @@
         <input type="text" [(ngModel)]="searchText"
           [placeholder]="activeTab === 'muebles' ? 'Buscar muebles' : activeTab === 'solicitudes' ? 'Buscar solicitudes' : activeTab === 'incidencias' ? 'Buscar incidencias' : 'Buscar proveedores'"
           class="w-full py-1.5 text-sm outline-none text-marron-oscuro placeholder-marron-oscuro" />
-
       </div>
 
     </div>
     <div class="flex-1 min-h-0">
+      <!-- componentes -->
       <app-gestion-proveedores *ngIf="activeTab === 'proveedores'" [searchText]="searchText"
         class="h-full block"></app-gestion-proveedores>
       <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"

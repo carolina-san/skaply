@@ -1,7 +1,7 @@
 <div class="w-full h-full bg-beige flex flex-col">
 
 
-  <div class="flex pt-2 pb-2 gap-1">
+  <div class="flex pt-2 pb-2 gap-2">
     <!-- Filtro de Proveedor (Solo Admin) -->
     <div *ngIf="currentUser?.role === 'admin'" class="flex flex-row items-center justify-between ">
       <select [(ngModel)]="selectedProviderId" (change)="onProviderChange()" class="filtros-select">

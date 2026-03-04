@@ -4,6 +4,14 @@
     @apply flex flex-col items-center justify-center px-2 hover:bg-azul-claro/30 rounded-full transition gap-0.5 text-xs;
 }
 
-.filtros-select {
-    @apply w-40 px-2 py-1.5 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro;
+.filtros {
+    @apply w-40 px-2 pl-3 py-1 h-8 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro flex flex-row items-center justify-between;
+}
+
+.cuenta {
+    @apply text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full transition;
+}
+
+.activo {
+    @apply ring-1 ring-marron-oscuro;
 }

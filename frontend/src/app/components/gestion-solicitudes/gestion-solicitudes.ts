@@ -15,7 +15,7 @@ export class GestionSolicitudes implements OnInit, OnChanges {
 
   providers: any[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 6;
+  itemsPerPage: number = 8;
   totalItems: number = 0;
 
   // Modal de confirmación
@@ -23,23 +23,41 @@ export class GestionSolicitudes implements OnInit, OnChanges {
   isRejectModalOpen: boolean = false;
   selectedProvider: any = null;
 
+  activeFilter: string = 'pending';
+  pendingCount: number = 0;
+  approvedCount: number = 0;
+  rejectedCount: number = 0;
+
   constructor(private apiService: ApiService) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['searchText']) {
       this.currentPage = 1;
-      this.fetchPendingProviders();
+      this.fetchProviders();
     }
   }
 
   ngOnInit() {
-    this.fetchPendingProviders();
+    this.fetchProviders();
+    this.loadCounts();
   }
 
-  fetchPendingProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, null, null, 'pending').subscribe(
+  loadCounts() {
+    this.apiService.getProviders(1, 1, '', null, null, 'pending').subscribe(res => this.pendingCount = res.meta?.total || res.data?.length || 0);
+    this.apiService.getProviders(1, 1, '', null, null, 'approved').subscribe(res => this.approvedCount = res.meta?.total || res.data?.length || 0);
+    this.apiService.getProviders(1, 1, '', null, null, 'rejected').subscribe(res => this.rejectedCount = res.meta?.total || res.data?.length || 0);
+  }
+
+  setFilter(filter: string) {
+    this.activeFilter = filter;
+    this.currentPage = 1;
+    this.fetchProviders();
+  }
+
+  fetchProviders() {
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, null, null, this.activeFilter).subscribe(
       (response) => {
-        console.log('Pending providers fetched successfully:', response);
+        console.log(`${this.activeFilter} providers fetched successfully:`, response);
         this.providers = response.data;
         if (response.meta) {
           this.totalItems = response.meta.total;
@@ -48,7 +66,7 @@ export class GestionSolicitudes implements OnInit, OnChanges {
         }
       },
       (error) => {
-        console.error('Error fetching pending providers:', error);
+        console.error(`Error fetching ${this.activeFilter} providers:`, error);
       }
     );
   }
@@ -70,7 +88,8 @@ export class GestionSolicitudes implements OnInit, OnChanges {
       (response) => {
         console.log('Provider approved:', response);
         this.closeApproveModal();
-        this.fetchPendingProviders();
+        this.fetchProviders();
+        this.loadCounts();
       },
       (error) => {
         console.error('Error approving provider:', error);
@@ -97,7 +116,8 @@ export class GestionSolicitudes implements OnInit, OnChanges {
       (response) => {
         console.log('Provider rejected:', response);
         this.closeRejectModal();
-        this.fetchPendingProviders();
+        this.fetchProviders();
+        this.loadCounts();
       },
       (error) => {
         console.error('Error rejecting provider:', error);
@@ -122,7 +142,7 @@ export class GestionSolicitudes implements OnInit, OnChanges {
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.fetchPendingProviders();
+      this.fetchProviders();
     }
   }
 

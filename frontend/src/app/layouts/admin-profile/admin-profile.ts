@@ -22,6 +22,7 @@ export class AdminProfile implements OnInit {
   activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
   escalatedIssuesCount: number = 0;
+  pendingProvidersCount: number = 0;
 
   constructor(private seo: SeoService, private apiService: ApiService) {
   }
@@ -34,6 +35,7 @@ export class AdminProfile implements OnInit {
       index: false
     });
     this.loadEscalatedIssuesCount();
+    this.loadPendingProvidersCount();
   }
 
 
@@ -45,6 +47,17 @@ export class AdminProfile implements OnInit {
       },
       error: (error) => {
         console.error('Error loading escalated issues count:', error);
+      }
+    });
+  }
+
+  loadPendingProvidersCount() {
+    this.apiService.getProviders(1, 1000, '', null, null, 'pending').subscribe({
+      next: (response) => {
+        this.pendingProvidersCount = response.data?.length || 0;
+      },
+      error: (error) => {
+        console.error('Error loading pending providers count:', error);
       }
     });
   }

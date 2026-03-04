@@ -389,7 +389,7 @@ export class FurnitureService {
             f.visible,
             f.created_at
         ${baseSql}`;
-      console.log(sql);
+
       if (page && limit) {
         const offset = (page - 1) * limit;
         const countSql = `SELECT COUNT(DISTINCT f.id) ${baseSql}`;

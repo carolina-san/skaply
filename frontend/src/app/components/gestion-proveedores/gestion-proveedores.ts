@@ -16,7 +16,7 @@ export class GestionProveedores implements OnInit, OnChanges {
 
   providers: any[] = [];
   currentPage: number = 1;
-  itemsPerPage: number = 6;
+  itemsPerPage: number = 8;
   totalItems: number = 0;
   selectedVisibility: boolean | null = null;
   selectedEnabled: boolean | null = null;
@@ -69,7 +69,7 @@ export class GestionProveedores implements OnInit, OnChanges {
       name: [''],
       email: ['', [Validators.required, Validators.email]],
       telephone: [''],
-      password: ['', [Validators.minLength(6)]]
+      password: ['', [Validators.minLength(12)]]
     });
   }
 
