@@ -182,6 +182,19 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getFurnitureRef(name, session));
                     return;
                 }
+                case 'get.people': {
+                    let ref = parameters?.furniture_ref2;
+
+                    if (!ref) {
+                        const ctx = outputContexts.find((c: any) =>
+                            c.name.endsWith('/contexts/montaje_context')
+                        );
+                        ref = ctx?.parameters?.furniture_ref;
+                    }
+
+                    res.status(200).json(await this.chatbotService.getNeededPeople(ref || '', session));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No he podido obtener esa información de la base de datos. Prueba con otras palabras.'
@@ -278,4 +291,5 @@ export class ChatbotController {
             next(new ApiError('INTERNAL_SERVER', 'Error al obtener las recomendaciones de muebles'));
         }
     };
+
 }

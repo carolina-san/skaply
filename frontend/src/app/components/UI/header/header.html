@@ -5,7 +5,7 @@
     'header-mini': currentRoute === '/admin' || currentRoute === '/provider',
     'header-assembly': isViewer3D 
   }"
-  class="fixed w-full top-0 left-0 transition-all duration-300 z-30 flex items-center justify-center lg:justify-between px-5 lg:px-20">
+  class="fixed w-full top-0 left-0 transition-all duration-300 !z-1 flex items-center justify-center lg:justify-between px-5 lg:px-20">
 
   <div class="flex items-center gap-2">
     <button *ngIf="canGoBack()" (click)="goBack()"

@@ -462,7 +462,38 @@ export class ChatbotService {
       };
     }
   }
+  async getNeededPeople(furnitureRef: string, session: string): Promise<any> {
+    if (!furnitureRef) {
+      return {
+        fulfillmentText:
+          'Dime la referencia del mueble del que quieres saber las personas necesarias.',
+        outputContexts: [
+          {
+            name: `${session}/contexts/pedir_referencia_context`,
+            lifespanCount: 2,
+            parameters: {}
+          },
+          {
+            name: `${session}/contexts/personas_necesarias_context`,
+            lifespanCount: 2
+          }
+        ]
+      };
+    }
 
+    try {
+      const furniture = await this.furnitureService.getFurnitureByIdOrReference(furnitureRef);
+      console.log(furniture);
+
+      return {
+        fulfillmentText: `Para montar el mueble "${furniture.name}" se necesitan ${furniture.required_people} personas.`
+      };
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con la referencia "${furnitureRef}". Por favor, verifica la referencia e intenta de nuevo.`
+      };
+    }
+  }
   /**
    * Comprueba la referencia del mueble para registrar incidencia
    */
@@ -521,12 +552,20 @@ export class ChatbotService {
       c.name.endsWith('/contexts/dificultad_mueble_context')
     );
 
+    const hasNeededPeopleContext = outputContexts.some((c: any) =>
+      c.name.endsWith('/contexts/personas_necesarias_context')
+    );
+
     if (hasInfoContext && furnitureRef) {
       return this.getFurnitureInfo(furnitureRef, session);
     }
 
     if (hasDificultadContext && furnitureRef) {
       return this.getDifficulty(furnitureRef, session);
+    }
+
+    if (hasNeededPeopleContext && furnitureRef) {
+      return this.getNeededPeople(furnitureRef, session);
     }
 
     if (hasMontajeContext) {

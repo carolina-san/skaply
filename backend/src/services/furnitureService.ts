@@ -233,6 +233,7 @@ export class FurnitureService {
               cl.hex AS color_hex,
               f.difficulty,
               f.short_description,
+              f.required_people,
               COUNT(*) AS total_steps
           FROM public.furniture f
           INNER JOIN Step s ON s.furniture_id = f.id
