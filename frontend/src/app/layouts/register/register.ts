@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
+  standalone: true,
   selector: 'app-register',
   imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './register.html',

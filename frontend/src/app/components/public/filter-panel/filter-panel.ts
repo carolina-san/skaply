@@ -5,6 +5,7 @@ import { DifficultyOptions } from '../../../utils/difficulty-labels';
 
 
 @Component({
+  standalone: true,
   selector: 'app-filter-panel',
   imports: [CommonModule],
   templateUrl: './filter-panel.html'

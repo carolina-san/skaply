@@ -7,6 +7,7 @@ import { DemoLanding } from '../../components/public/demo-landing/demo-landing';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
+  standalone: true,
   selector: 'app-landing',
   imports: [Footer, CommonModule, DemoLanding],
   templateUrl: './landing.html',

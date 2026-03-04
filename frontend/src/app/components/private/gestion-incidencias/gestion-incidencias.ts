@@ -9,6 +9,7 @@ import { Modal } from '../../UI/modal/modal';
 import { Pagination } from '../pagination/pagination';
 
 @Component({
+  standalone: true,
   selector: 'app-gestion-incidencias',
   imports: [CommonModule, FormsModule, Modal, Pagination],
   templateUrl: './gestion-incidencias.html',

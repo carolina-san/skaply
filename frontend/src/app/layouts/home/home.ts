@@ -19,6 +19,7 @@ import { SeoService } from '../../services/seo.service';
 
 
 @Component({
+  standalone: true,
   selector: 'app-home',
   imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm],
   templateUrl: './home.html',

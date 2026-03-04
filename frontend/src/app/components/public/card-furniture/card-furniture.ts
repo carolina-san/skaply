@@ -4,6 +4,7 @@ import { DifficultyLabels } from '../../../utils/difficulty-labels';
 import { Furniture } from '../../../types';
 
 @Component({
+  standalone: true,
   selector: 'app-card-furniture',
   imports: [CommonModule],
   templateUrl: './card-furniture.html',

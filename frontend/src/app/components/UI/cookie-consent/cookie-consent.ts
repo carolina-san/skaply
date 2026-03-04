@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ConsentService } from '../../../services/consent.service';
 
 @Component({
+  standalone: true,
   selector: 'app-cookie-consent',
   imports: [CommonModule],
   templateUrl: './cookie-consent.html',

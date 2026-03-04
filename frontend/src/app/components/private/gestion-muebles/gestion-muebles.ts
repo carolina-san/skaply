@@ -8,6 +8,7 @@ import { FilterOptions } from '../../../types';
 import { Pagination } from '../pagination/pagination';
 
 @Component({
+  standalone: true,
   selector: 'app-gestion-muebles',
   imports: [CommonModule, FormsModule, Modal, Pagination],
   templateUrl: './gestion-muebles.html',

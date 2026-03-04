@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { Issue } from '../../types/issue.types';
 
 @Component({
+  standalone: true,
   selector: 'app-provider-profile',
   imports: [ProfileSidebar, GestionMuebles, GestionIncidencias, CommonModule, FormsModule],
   templateUrl: './provider-profile.html',
