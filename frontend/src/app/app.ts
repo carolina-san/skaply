@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Header } from './components/header/header';
-import { CookieConsent } from './components/cookie-consent/cookie-consent';
+import { Header } from './components/UI/header/header';
+import { CookieConsent } from './components/UI/cookie-consent/cookie-consent';
 
 @Component({
   selector: 'app-root',

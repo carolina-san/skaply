@@ -3,12 +3,12 @@ import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
-import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
-import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
-import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
-import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
-import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
-import { Stats } from '../../components/stats/stats';
+import { ProfileSidebar } from '../../components/private/profile-sidebar/profile-sidebar';
+import { GestionProveedores } from '../../components/private/gestion-proveedores/gestion-proveedores';
+import { GestionMuebles } from '../../components/private/gestion-muebles/gestion-muebles';
+import { GestionSolicitudes } from '../../components/private/gestion-solicitudes/gestion-solicitudes';
+import { GestionIncidencias } from '../../components/private/gestion-incidencias/gestion-incidencias';
+import { Stats } from '../../components/private/stats/stats';
 import { Issue } from '../../types/issue.types';
 
 @Component({

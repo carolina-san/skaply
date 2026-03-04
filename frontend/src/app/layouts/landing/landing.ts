@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { Router } from '@angular/router';
-import { Footer } from '../../components/footer/footer';
-import { DemoLanding } from '../../components/demo-landing/demo-landing';
+import { Footer } from '../../components/UI/footer/footer';
+import { DemoLanding } from '../../components/public/demo-landing/demo-landing';
 import { SeoService } from '../../services/seo.service';
 
 @Component({

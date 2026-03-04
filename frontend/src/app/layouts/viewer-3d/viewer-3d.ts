@@ -2,11 +2,11 @@ import { Component, ViewChild, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Chatbot } from '../../components/chatbot/chatbot';
+import { Chatbot } from '../../components/UI/chatbot/chatbot';
 // import { FurnitureViewer } from '../../components/furniture-viewer/furniture-viewer';
-import { Modal } from '../../components/modal/modal';
-import { IssueForm } from '../../components/issue-form/issue-form';
-import { GraphicsEngineComponent } from '../../components/graphicsEngine/graphicsEngine.component';
+import { Modal } from '../../components/UI/modal/modal';
+import { IssueForm } from '../../components/public/issue-form/issue-form';
+import { GraphicsEngineComponent } from '../../components/public/graphicsEngine/graphicsEngine.component';
 import { ApiService } from '../../services/api.service';
 import { SeoService } from '../../services/seo.service';
 
