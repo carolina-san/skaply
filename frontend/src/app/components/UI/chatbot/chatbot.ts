@@ -5,6 +5,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 import { TextToSpeechService } from '../../../services/text-to-speech.service';
 import { FilterSharingService } from '../../../services/filter-sharing.service';
+import { ChatbotInteractionService } from '../../../services/chatbot-interaction.service';
 import { VoiceControls } from '../voice-controls/voice-controls';
 
 interface ChatMessage {
@@ -45,7 +46,8 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
         private api: ApiService,
         private tts: TextToSpeechService,
         private router: Router,
-        private filterSharingService: FilterSharingService
+        private filterSharingService: FilterSharingService,
+        private chatbotInteractionService: ChatbotInteractionService
     ) {
         this.isCatalogPage = this.router.url.split('?')[0].includes('catalogo');
     }
@@ -205,7 +207,6 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             .subscribe(data => {
                 const messages = data.fulfillmentMessages || [];
                 let handled = false;
-
                 for (let m of messages) {
                     if (m.message === "text" && m.text?.text?.[0]) {
                         const botMessage = m.text.text[0];
@@ -237,6 +238,10 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                         handled = true;
                     }
                     const payload = m.payload;
+                    if (payload) {
+                        console.log("Received payload action:", payload?.fields?.action?.stringValue);
+                    }
+
                     if (payload?.fields?.redirect) {
                         setTimeout(() => {
                             if (payload.fields.redirect.stringValue === "register") {
@@ -285,6 +290,18 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                                 },
                                 error: (error) => { console.error('Error:', error); }
                             });
+                            handled = true;
+                        }
+                    }
+                    else if (payload?.fields?.action?.stringValue === "go.to.step") {
+                        console.log("Entra en go.to.step", payload.fields);
+                        const furnitureRef = payload.fields.furniture_ref?.stringValue;
+                        let stepNumber = payload.fields.step_number?.numberValue;
+                        if (stepNumber === undefined && payload.fields.step_number?.stringValue) {
+                            stepNumber = Number(payload.fields.step_number.stringValue);
+                        }
+                        if (furnitureRef && stepNumber !== undefined && !isNaN(stepNumber)) {
+                            this.chatbotInteractionService.requestStepChange(furnitureRef, stepNumber);
                             handled = true;
                         }
                     }

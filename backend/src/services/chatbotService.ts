@@ -494,6 +494,77 @@ export class ChatbotService {
       };
     }
   }
+  async getStepInfo(furnitureRef: string, stepNumber: number, session: string): Promise<any> {
+    if (!furnitureRef) {
+      return {
+        fulfillmentText:
+          'No puedo explicarte un paso sin que hayas iniciado el montaje de un mueble.'
+      };
+    }
+
+    try {
+      const step = await this.furnitureService.getStepByRef(furnitureRef, stepNumber);
+      console.log(step);
+
+      const messages: any[] = [
+        {
+          text: {
+            text: [`El paso ${step.step_number} consiste en: ${step.description}.`]
+          }
+        }
+      ];
+
+      if (step.pieces && step.pieces.length > 0) {
+        const piecesList = step.pieces.map((p: any) => `${p.quantity}x ${p.reference_number}`).join(', ');
+        messages.push({
+          text: {
+            text: [`Para este paso necesitarás las siguientes piezas: ${piecesList}.`]
+          }
+        });
+      }
+
+      messages.push(
+        {
+          text: {
+            text: ["¿Quieres que te lleve a ese paso?"]
+          }
+        },
+        {
+          payload: {
+            richContent: [
+              [
+                {
+                  type: "chips",
+                  options: [
+                    { text: "Sí" },
+                    { text: "No" }
+                  ]
+                }
+              ]
+            ]
+          }
+        }
+      );
+
+      return {
+        fulfillmentMessages: messages,
+        outputContexts: [
+          {
+            name: `${session}/contexts/funcionalidadinfopaso-followup`,
+            lifespanCount: 2,
+            parameters: {
+              step_number: step.step_number,
+              furniture_ref: furnitureRef
+            }
+          }
+        ]
+      };
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un paso con el número ${stepNumber}. Por favor, verifica el número del paso e intenta de nuevo.`
+      };
+    }
+  }
   /**
    * Comprueba la referencia del mueble para registrar incidencia
    */
@@ -934,6 +1005,41 @@ export class ChatbotService {
       console.error("Error in getFurnitureRef:", error);
       return {
         fulfillmentText: "Hubo un error al obtener el mueble."
+      };
+    }
+  }
+
+  async goToStep(furnitureRef: string, stepNumber: number, session?: string): Promise<any> {
+    console.log("Entra en goToStep service");
+    try {
+      return {
+        fulfillmentMessages: [
+          {
+            payload: {
+              action: "go.to.step",
+              step_number: stepNumber,
+              furniture_ref: furnitureRef,
+              richContent: [
+                [
+                  {
+                    type: "description",
+                    text: [
+                      `Te llevo al paso ${stepNumber}...`
+                    ]
+                  }
+                ]
+              ]
+            }
+          },
+          {
+            text: { text: [`¡Listo! Ya estás en el paso ${stepNumber}.`] }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in goToStep:", error);
+      return {
+        fulfillmentText: "Hubo un error al intentar ir a ese paso."
       };
     }
   }

@@ -13,7 +13,8 @@ import { Modal } from '../../UI/modal/modal';
 import { ThreeEngineAdapter } from '../../../engine/three/threeEngine';
 import { WebGLEngine } from '../../../engine/webgl/webglEngine';
 import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../../types/furniture.types';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { ChatbotInteractionService } from '../../../services/chatbot-interaction.service';
 
 @Component({
   selector: 'app-graphics-engine',
@@ -81,6 +82,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private lastStepTime = 0;
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private videoStream: MediaStream | null = null;
+  private chatbotSub?: Subscription;
 
   private isViewInitialized = false;
 
@@ -120,7 +122,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
   });
 
-  constructor(private apiService: ApiService, private route: ActivatedRoute) {
+  constructor(
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private chatbotInteractionService: ChatbotInteractionService
+  ) {
     effect(() => {
       const stepIndex = this.currentLogicalStep();
       const steps = this.stepsData();
@@ -179,6 +185,19 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
     });
+
+    this.chatbotSub = this.chatbotInteractionService.stepChange$.subscribe(({ furnitureRef, stepNumber }) => {
+      console.log('Chatbot request received for step:', stepNumber, 'ref:', furnitureRef);
+      // Optional: Verify furnitureRef matches this.furniture?.reference_number
+      // But usually the viewer only shows one furniture at a time
+      if (this.mode() !== 'manual') {
+        this.setMode('manual');
+      }
+
+      // goToStep uses 0-based logical index, so we subtract 1 if stepNumber is 1-based
+      const targetLogicalIndex = Math.max(0, stepNumber - 1);
+      this.goToStep(targetLogicalIndex);
+    });
   }
 
   private createEngineInstance(): void {
@@ -231,6 +250,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (canvas) {
       canvas.removeEventListener('mousemove', this.onPointerMove);
       canvas.removeEventListener('dblclick', this.onDoubleClick);
+    }
+
+    if (this.chatbotSub) {
+      this.chatbotSub.unsubscribe();
     }
 
     this.engine?.dispose();

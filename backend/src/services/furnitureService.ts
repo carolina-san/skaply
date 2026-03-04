@@ -488,6 +488,41 @@ export class FurnitureService {
     }
   }
 
+  async getStepByRef(furnitureRef: string, stepNumber: number) {
+    try {
+      const result = await pool.query(`
+        SELECT 
+            s.id, 
+            s.step_number, 
+            s.description,
+            COALESCE(json_agg(
+              DISTINCT jsonb_build_object(
+                'part_id', p.id,
+                'reference_number', p.reference_number,
+                'file_uri', p.file_uri,
+                'color_id', p.color_id,
+                'quantity', sp.quantity
+              )
+            ) FILTER (WHERE p.id IS NOT NULL), '[]') AS pieces
+        FROM Step s
+        JOIN Furniture f ON f.id = s.furniture_id
+        LEFT JOIN Step_Part sp ON sp.stepid = s.id
+        LEFT JOIN Part p ON p.id = sp.part_id
+        WHERE f.reference_number = $1 AND s.step_number = $2
+        GROUP BY s.id, s.step_number, s.description
+      `, [furnitureRef, stepNumber]);
+
+      if (result.rows.length === 0) {
+        throw new Error('Step not found');
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error fetching step by ref:', error);
+      throw error;
+    }
+  }
+
   async createFurniture(data: {
     name: string;
     file_uri: string;
