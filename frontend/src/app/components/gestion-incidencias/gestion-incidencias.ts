@@ -6,10 +6,11 @@ import { AuthService } from '../../services/auth.service';
 import { Issue, IssueStatus } from '../../types/issue.types';
 import { User } from '../../services/auth.service';
 import { Modal } from '../modal/modal';
+import { Pagination } from '../pagination/pagination';
 
 @Component({
   selector: 'app-gestion-incidencias',
-  imports: [CommonModule, FormsModule, Modal],
+  imports: [CommonModule, FormsModule, Modal, Pagination],
   templateUrl: './gestion-incidencias.html',
   styleUrl: './gestion-incidencias.css'
 })
@@ -40,7 +41,7 @@ export class GestionIncidencias implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -104,15 +105,15 @@ export class GestionIncidencias implements OnInit {
   calculatePagination(): void {
     this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
     this.pageNumbers = [];
-    
+
     const maxVisiblePages = 5;
     let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       this.pageNumbers.push(i);
     }

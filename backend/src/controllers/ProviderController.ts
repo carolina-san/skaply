@@ -260,7 +260,8 @@ export class ProviderController {
         'telephone',
         'tax_address',
         'visible',
-        'enabled'
+        'enabled',
+        'image_url'
       ];
 
       // pick fields and validate

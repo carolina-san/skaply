@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Modal } from '../modal/modal';
+import { Pagination } from '../pagination/pagination';
 
 @Component({
   selector: 'app-gestion-solicitudes',
-  imports: [CommonModule, FormsModule, Modal],
+  imports: [CommonModule, FormsModule, Modal, Pagination],
   templateUrl: './gestion-solicitudes.html',
   styleUrl: './gestion-solicitudes.css'
 })

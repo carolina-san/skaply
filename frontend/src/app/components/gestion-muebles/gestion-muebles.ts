@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { AuthService, User } from '../../services/auth.service';
 import { Modal } from '../modal/modal';
 import { FilterOptions } from '../../types';
+import { Pagination } from '../pagination/pagination';
 
 @Component({
   selector: 'app-gestion-muebles',
-  imports: [CommonModule, FormsModule, Modal],
+  imports: [CommonModule, FormsModule, Modal, Pagination],
   templateUrl: './gestion-muebles.html',
   styleUrl: './gestion-muebles.css'
 })

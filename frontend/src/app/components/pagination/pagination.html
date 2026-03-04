@@ -1,0 +1,43 @@
+<!-- Paginación fija en la parte inferior -->
+<div *ngIf="totalItems > 0" class="flex justify-end items-center mt-6 gap-4 flex-shrink-0 pb-6 w-full">
+    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
+
+    <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
+        <!-- Previous -->
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition ">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+                <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
+            </svg>
+        </button>
+
+        <!-- Page Numbers -->
+        <button *ngFor="let page of pageNumbers" (click)="goToPage(page)" [class.bg-beige]="page === currentPage"
+            [class.text-marron-oscuro]="page === currentPage" [class.bg-white]="page !== currentPage"
+            [class.text-marron-oscuro]="page !== currentPage"
+            class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium hover:bg-beige-oscuro transition shadow-sm">
+            {{ page }}
+        </button>
+
+        <!-- Ellipsis -->
+        <span *ngIf="totalPages > 5 && pageNumbers[pageNumbers.length - 1] < totalPages - 1"
+            class="px-2 text-gray-500">...</span>
+
+        <!-- Jump to 10 (or last page) -->
+        <button *ngIf="totalPages > 5 && pageNumbers[pageNumbers.length - 1] < totalPages"
+            (click)="goToPage(totalPages)" [class.bg-beige]="totalPages === currentPage"
+            [class.text-marron-oscuro]="totalPages === currentPage" [class.bg-white]="totalPages !== currentPage"
+            [class.text-marron-oscuro]="totalPages !== currentPage"
+            class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-100 transition shadow-sm">
+            {{ totalPages > 9 ? totalPages : totalPages }}
+        </button>
+
+        <!-- Next -->
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages === 0"
+            class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+                <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+            </svg>
+        </button>
+    </div>
+</div>

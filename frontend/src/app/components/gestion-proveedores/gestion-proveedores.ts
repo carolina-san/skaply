@@ -1,13 +1,15 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Modal } from '../modal/modal';
+import { EditUserModal } from '../edit-user-modal/edit-user-modal';
+import { Pagination } from '../pagination/pagination';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, Modal],
+  imports: [CommonModule, FormsModule, Modal, EditUserModal, Pagination],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
@@ -30,19 +32,14 @@ export class GestionProveedores implements OnInit, OnChanges {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  // Formulario y Usuario
-  editForm!: FormGroup;
+  // Usuario
   currentUser: any = null;
   selectedProvider: any = null;
-  originalData: any = {};
   isSubmitting: boolean = false;
-  hasChanges: boolean = false;
 
   constructor(
-    private apiService: ApiService,
-    private fb: FormBuilder
+    private apiService: ApiService
   ) {
-    this.initForm();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -53,33 +50,13 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.currentUser = { role: 'admin' }; // Dummy for simulation if they don't have AuthService yet, user template requires it
+    this.currentUser = { role: 'admin' };
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       this.currentUser = JSON.parse(storedUser);
     }
 
     this.fetchProviders();
-    this.onFormChanges();
-  }
-
-  initForm() {
-    this.editForm = this.fb.group({
-      company_name: [''],
-      name: [''],
-      email: ['', [Validators.required, Validators.email]],
-      telephone: [''],
-      password: ['', [Validators.minLength(12)]]
-    });
-  }
-
-  onFormChanges() {
-    this.editForm.valueChanges.subscribe(val => {
-      this.hasChanges = Object.keys(this.originalData).some(key => {
-        if (key === 'password' && val[key] === '') return false;
-        return val[key] !== this.originalData[key];
-      });
-    });
   }
 
   onVisibilityChange() {
@@ -155,43 +132,22 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.selectedProvider = provider;
     this.errorMessage = null;
     this.successMessage = null;
-    this.hasChanges = false;
-
-    this.editForm.patchValue({
-      company_name: provider.company_name || '',
-      name: provider.name || '',
-      email: provider.email || '',
-      telephone: provider.telephone || '',
-      password: ''
-    });
-
-    this.originalData = { ...this.editForm.value, password: '' };
     this.isEditModalOpen = true;
   }
 
   closeEditModal() {
     this.isEditModalOpen = false;
     this.selectedProvider = null;
-    this.editForm.reset();
     this.errorMessage = null;
     this.successMessage = null;
   }
 
-  onSubmit() {
-    if (this.editForm.invalid || !this.selectedProvider || !this.hasChanges) return;
+  onSaveProvider(updateData: any) {
+    if (!this.selectedProvider) return;
 
     this.isSubmitting = true;
     this.errorMessage = null;
     this.successMessage = null;
-
-    const formValues = this.editForm.value;
-    const updateData: any = {};
-
-    Object.keys(formValues).forEach(key => {
-      if (formValues[key] !== this.originalData[key] && formValues[key] !== '') {
-        updateData[key] = formValues[key];
-      }
-    });
 
     if (Object.keys(updateData).length === 0) {
       this.isSubmitting = false;

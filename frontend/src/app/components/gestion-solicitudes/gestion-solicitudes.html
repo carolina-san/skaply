@@ -219,29 +219,8 @@
   <div class="flex-1"></div>
 
   <!-- Paginación -->
-  <div *ngIf="providers.length > 0" class="flex justify-end items-center mt-6 gap-4 flex-shrink-0 pb-6">
-    <span class="text-sm text-marron-oscuro">Mostrando {{ startItem }} - {{ endItem }} de {{ totalItems }}</span>
-
-    <div class="flex gap-1 items-center rounded-full bg-white p-1 shadow">
-      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1"
-        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition">
-        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
-          <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
-        </svg>
-      </button>
-
-      <button *ngFor="let page of pageNumbers" (click)="goToPage(page)" [class.bg-beige]="page === currentPage"
-        [class.text-marron-oscuro]="page === currentPage" [class.bg-white]="page !== currentPage"
-        class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium hover:bg-beige-oscuro transition shadow-sm">
-        {{ page }}
-      </button>
-
-      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages <= 1"
-        class="w-9 h-9 flex items-center justify-center rounded-full bg-azul-claro border border-gray-300 hover:bg-beige disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
-          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-        </svg>
-      </button>
-    </div>
+  <div *ngIf="providers.length > 0">
+    <app-pagination [currentPage]="currentPage" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage"
+      (pageChange)="goToPage($event)"></app-pagination>
   </div>
 </div>
