@@ -193,9 +193,8 @@ export class GestionProveedores implements OnInit, OnChanges {
 
   toggleVisibility(provider: any) {
     const newStatus = !provider.visible;
-    this.apiService.updateProvider(provider.id, { visible: newStatus }).subscribe(
+    this.apiService.updateProviderVisibility(provider.id, newStatus).subscribe(
       (response) => {
-        console.log('Provider visibility updated successfully:', response);
         this.showSuccess(newStatus ? 'Proveedor visible en el catálogo' : 'Proveedor oculto en el catálogo');
         provider.visible = newStatus;
         this.fetchProviders();
@@ -210,9 +209,8 @@ export class GestionProveedores implements OnInit, OnChanges {
 
   toggleEnabled(provider: any) {
     const newStatus = !provider.enabled;
-    this.apiService.updateProvider(provider.id, { enabled: newStatus }).subscribe(
+    this.apiService.updateProviderEnabled(provider.id, newStatus).subscribe(
       (response) => {
-        console.log('Provider enabled status updated successfully:', response);
         this.showSuccess(newStatus ? 'Proveedor habilitado correctamente' : 'Proveedor bloqueado correctamente');
         provider.enabled = newStatus;
         this.fetchProviders();
