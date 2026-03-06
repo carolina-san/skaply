@@ -58,7 +58,7 @@ router.patch('/:id/visibility', authMiddleware, authorize([UserRole.ADMIN]), pro
 router.patch('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.updateProvider);
 
 // Update solo de contraseña
-router.put('/:id/change-password', authMiddleware, authorize([UserRole.ADMIN]), providerController.changePassword);
+router.patch('/:id/change-password', authMiddleware, authorize([UserRole.ADMIN]), providerController.changePassword);
 
 // Delete
 router.delete('/:id', authMiddleware, authorize([UserRole.ADMIN]), providerController.deleteProvider);

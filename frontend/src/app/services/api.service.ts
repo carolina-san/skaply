@@ -45,10 +45,6 @@ export class ApiService {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
   }
 
-  updateProvider(id: number, data: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/private/providers/${id}`, data);
-  }
-
   deleteFurniture(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/private/furniture/${id}`);
   }
@@ -131,6 +127,14 @@ export class ApiService {
 
   updateProviderEnabled(providerId: number, enabled: boolean): Observable<any> {
     return this.http.patch(`${this.apiUrl}/private/providers/${providerId}/enabled`, { enabled });
+  }
+
+  updateProvider(id: number, data: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/providers/${id}`, data);
+  }
+
+  updateProviderPassword(id: number, newPassword: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/private/providers/${id}/change-password`, { newPassword });
   }
 
   postIssue(furnitureId: number, issue: Omit<Issue, 'furniture_id'>): Observable<Issue> {
