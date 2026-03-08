@@ -257,7 +257,4 @@ export class MeshResource extends Resource {
         return { verts, norms, uvs, inds, text, vertexCount };
     }
 
-    getNamedMeshes(): NamedMesh[] {
-        return this.namedMeshes;
-    }
 }

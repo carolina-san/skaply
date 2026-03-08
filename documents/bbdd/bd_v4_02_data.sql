@@ -391,12 +391,12 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 (6,8,1,'y',0.0),    --pata
 (6,9,1,'y',0.3),    --travesaño
 (6,10,1,'y',0.25),  --M8_1
-(6,11,1,'x',0.25), --M8_2_izquierda
-(6,12,1,'x',-0.25),   --M8_2_derecha
+(6,11,1,'x',0.25),  --M8_2_izquierda
+(6,12,1,'x',-0.25), --M8_2_derecha
 (6,13,1,'y',0.25),  --uniones_tornillos
 (6,14,1,'y',0.25),  --M8_3 (antes tablero)
 (6,15,1,'y',0.3),   --tablero
-(6,16,1,'y',-0.35),  --M8_4 (después tablero)
+(6,16,1,'y',-0.35), --M8_4 (después tablero)
 -- MUEBLE DE ACTIU ARMARIO MODULAR
 (7,17,1,'y',0.0),    --patas
 (7,18,1,'y',0.3),    --tablon

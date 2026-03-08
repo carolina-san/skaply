@@ -520,6 +520,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     checkControlsState(): boolean { 
+        console.log('Camera Controller: ' + this.cameraController);
         return this.cameraController.hasMovedFromDefault(); 
     }
 
@@ -690,6 +691,10 @@ export class WebGLEngineAdapter extends EngineFacade {
         // });
     }
 
+    rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
+
+    }
+
     // ------------------------------------------
 
     // metodo que no sé si hará falta o no.
@@ -698,4 +703,6 @@ export class WebGLEngineAdapter extends EngineFacade {
     //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
     //     this.cameraNode.rotate(0, rotationDelta, 0);
     // }
+
+
 }
