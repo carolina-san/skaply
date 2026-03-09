@@ -6,11 +6,12 @@ import { AuthService, User } from '../../../services/auth.service';
 import { Modal } from '../../UI/modal/modal';
 import { FilterOptions } from '../../../types';
 import { Pagination } from '../pagination/pagination';
+import { SortButton } from '../../UI/sort-button/sort-button';
 
 @Component({
   standalone: true,
   selector: 'app-gestion-muebles',
-  imports: [CommonModule, FormsModule, Modal, Pagination],
+  imports: [CommonModule, FormsModule, Modal, Pagination, SortButton],
   templateUrl: './gestion-muebles.html',
   styleUrl: './gestion-muebles.css'
 })
@@ -23,6 +24,9 @@ export class GestionMuebles implements OnInit, OnChanges {
   itemsPerPage: number = 8;
   totalItems: number = 0;
   currentUser: User | null = null;
+
+  orderBy: string = '';
+  orderDir: string = '';
 
   // Modal
   isEditModalOpen: boolean = false;
@@ -134,6 +138,24 @@ export class GestionMuebles implements OnInit, OnChanges {
     this.fetchFurniture();
   }
 
+  onOrderByChange(column: string) {
+    if (this.orderBy === column) {
+      if (this.orderDir === 'ASC') {
+        this.orderDir = 'DESC';
+      } else if (this.orderDir === 'DESC') {
+        this.orderBy = '';
+        this.orderDir = '';
+      } else {
+        this.orderDir = 'ASC';
+      }
+    } else {
+      this.orderBy = column;
+      this.orderDir = 'ASC';
+    }
+    this.currentPage = 1;
+    this.fetchFurniture();
+  }
+
   fetchFurniture() {
     if (!this.currentUser) return;
     if (this.selectedCategoryId) {
@@ -145,6 +167,8 @@ export class GestionMuebles implements OnInit, OnChanges {
     this.filters.page = this.currentPage;
     this.filters.limit = this.itemsPerPage;
     this.filters.search = this.searchText;
+    this.filters.order_by = this.orderBy;
+    this.filters.order_dir = this.orderDir;
     // Si es admin
     if (this.currentUser.role === 'admin') {
       if (this.selectedProviderId) {
