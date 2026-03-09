@@ -314,10 +314,12 @@ export class FurnitureService {
     onlyVisibleProviders?: boolean;
     search?: string;
     page?: number;
-    limit?: number;
+    limit?: number; // Limit of items per page
+    order_by?: string; // Column to order by
+    order_dir?: string; // Direction of the order (ASC or DESC)
   }) {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, visible, onlyVisibleProviders, search, page, limit } = filters;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, onlyVisibleProviders, search, page, limit, order_by, order_dir } = filters;
 
       let baseSql = `
         FROM public.furniture f
@@ -391,6 +393,9 @@ export class FurnitureService {
             f.created_at
         ${baseSql}`;
 
+      if (order_by && order_dir) {
+        sql += ` ORDER BY f.${order_by} ${order_dir}`;
+      }
       if (page && limit) {
         const offset = (page - 1) * limit;
         const countSql = `SELECT COUNT(DISTINCT f.id) ${baseSql}`;
@@ -401,6 +406,7 @@ export class FurnitureService {
         params.push(limit, offset);
 
         const result = await pool.query(sql, params);
+        console.log(sql);
 
         return {
           rows: result.rows,
@@ -411,6 +417,8 @@ export class FurnitureService {
         };
       } else {
         const result = await pool.query(sql, params);
+        console.log(sql);
+
         return result.rows;
       }
     } catch (error) {
