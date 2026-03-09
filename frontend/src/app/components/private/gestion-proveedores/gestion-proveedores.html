@@ -59,13 +59,11 @@
         </h4>
       </div>
 
-      <!-- body -->
       <div class="divide-y divide-gray-200">
 
         <div *ngFor="let provider of providers"
           class="grid grid-cols-5 px-2 py-2 items-center hover:bg-gray-50 transition">
 
-          <!-- Nombre + imagen-->
           <div class="col-span-2 flex items-center gap-3 min-w-0">
 
             <div class="w-10 h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
@@ -83,13 +81,11 @@
 
             <span class="font-medium text-gray-800 text-sm truncate">{{ provider.company_name }}</span>
           </div>
-          <!-- Fecha alta -->
           <div class="text-center text-gray-600 font-mono text-xs">{{ provider.created_at | date:'dd/MM/yyyy' }}</div>
 
-          <!-- Acciones -->
           <div class="col-span-2 flex justify-center gap-0.5 text-gray-600">
 
-            <button class="btn-acciones" (click)="toggleEnabled(provider)">
+            <button class="btn-acciones" (click)="toggleEnabled(provider)" title="{{ provider.enabled ? 'Pulsa para bloquear y ocultar al proveedor' : 'Pulsa para habilitar y mostrar al proveedor' }}">
               <svg *ngIf="provider.enabled" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960"
                 width="18px" fill="#452621">
                 <path
@@ -102,7 +98,7 @@
               </svg> {{ provider.enabled ? 'Bloquear' : 'Habilitar' }}
             </button>
 
-            <button class="btn-acciones" (click)="toggleVisibility(provider)">
+            <button class="btn-acciones" (click)="toggleVisibility(provider)" title="{{ provider.visible ? 'Pulsa para ocultar al proveedor y sus muebles del catálogo' : 'Pulsa para mostrar al proveedor y sus muebles en el catálogo' }}">
               <svg *ngIf="provider.visible" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960"
                 width="18px" fill="#452621">
                 <path
@@ -115,7 +111,7 @@
               </svg> {{ provider.visible ? 'Ocultar' : 'Mostrar' }}
             </button>
 
-            <button class="btn-acciones" (click)="openEditModal(provider)">
+            <button class="btn-acciones" (click)="openEditModal(provider)" title="Editar proveedor">
               <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px"
                 fill="#452621">
                 <path
@@ -123,7 +119,7 @@
               </svg>Editar
             </button>
 
-            <button class="btn-acciones" (click)="openDeleteModal(provider)">
+            <button class="btn-acciones" (click)="openDeleteModal(provider)" title="Eliminar proveedor">
               <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                 fill="#452621">
                 <path
