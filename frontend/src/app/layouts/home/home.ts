@@ -313,25 +313,24 @@ export class Home implements OnInit {
   onQrScanned(code: string) {
     console.log('Código QR escaneado:', code);
 
-    // Intentar extraer el ID del mueble de diferentes formatos
+    //extraer el ID del mueble de diferentes formatos
     let furnitureId: string | null = null;
 
-    // Formato 1: URL con query parameter ?furniture=F001
+    //?furniture=F001
     if (code.includes('furniture=')) {
       const urlParams = new URLSearchParams(code.split('?')[1]);
       furnitureId = urlParams.get('furniture');
     }
-    // Formato 2: URL con path /furniture/F001
+    ///furniture/F001
     else if (code.includes('/furniture/')) {
       furnitureId = code.split('/furniture/')[1].split('?')[0].split('/')[0];
     }
-    // Formato 3: código directo F001
+    //F001
     else if (code.match(/^[A-Z]\d{3}$/)) {
       furnitureId = code;
     }
 
     if (furnitureId) {
-      // Obtener el mueble y abrir el modal en el catálogo
       this.apiService.getFurnitureById(furnitureId).subscribe({
         next: (response) => {
           const furniture = response.data;
@@ -348,7 +347,7 @@ export class Home implements OnInit {
       this.processConfiguration(configKey);
     }
     else {
-      // Si es una URL completa, navegar a ella
+      //URL completa, navegar a ella
       if (code.startsWith('http://') || code.startsWith('https://')) {
         window.location.href = code;
       } else {
