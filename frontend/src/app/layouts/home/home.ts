@@ -313,15 +313,33 @@ export class Home implements OnInit {
   onQrScanned(code: string) {
     console.log('Código QR escaneado:', code);
 
-    if (code.includes('furniture')) {
-      const furnitureId = code.split('/').pop();
-      this.apiService.getFurnitureById(furnitureId!).subscribe({
+    // Intentar extraer el ID del mueble de diferentes formatos
+    let furnitureId: string | null = null;
+
+    // Formato 1: URL con query parameter ?furniture=F001
+    if (code.includes('furniture=')) {
+      const urlParams = new URLSearchParams(code.split('?')[1]);
+      furnitureId = urlParams.get('furniture');
+    }
+    // Formato 2: URL con path /furniture/F001
+    else if (code.includes('/furniture/')) {
+      furnitureId = code.split('/furniture/')[1].split('?')[0].split('/')[0];
+    }
+    // Formato 3: código directo F001
+    else if (code.match(/^[A-Z]\d{3}$/)) {
+      furnitureId = code;
+    }
+
+    if (furnitureId) {
+      // Obtener el mueble y abrir el modal en el catálogo
+      this.apiService.getFurnitureById(furnitureId).subscribe({
         next: (response) => {
           const furniture = response.data;
-          alert(`Mueble escaneado: ${furniture.name}`);
+          this.openFurnitureModal(furniture);
         },
         error: (error) => {
           console.error('Error al obtener el mueble escaneado:', error);
+          alert('No se pudo encontrar el mueble escaneado');
         }
       });
     }
@@ -330,7 +348,12 @@ export class Home implements OnInit {
       this.processConfiguration(configKey);
     }
     else {
-      alert(`Código escaneado: ${code}`);
+      // Si es una URL completa, navegar a ella
+      if (code.startsWith('http://') || code.startsWith('https://')) {
+        window.location.href = code;
+      } else {
+        alert(`Código escaneado: ${code}`);
+      }
     }
   }
 
