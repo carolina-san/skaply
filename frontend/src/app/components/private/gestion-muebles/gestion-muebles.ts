@@ -157,7 +157,6 @@ export class GestionMuebles implements OnInit, OnChanges {
     }
     this.apiService.getAllFilteredFurniture(this.filters).subscribe(
       (response) => {
-        console.log('Filtered furniture fetched successfully:', response);
         this.furniture = response.data || [];
         if (response.meta) {
           this.totalItems = response.meta.total;
