@@ -11,24 +11,17 @@ export class Node {
     private parent: Node | null = null;
 
     // local transformations
-    private translation: vec3 = vec3.create(); // local position
-    private rotation: vec3 = vec3.create(); // local rotation (radians: pitch, yaw, roll)
+    private translation: vec3 = vec3.create();      // local position
+    private rotation: vec3 = vec3.create();         // local rotation
     private scale: vec3 = vec3.fromValues(1, 1, 1); // local scale
 
     // final transformation (parent x node)
-    private transformMatrix: mat4 = mat4.create();
+    private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
-
-    // visibility
-    private visible: boolean = true;
-
-    // materials / effects
-    public isHighlighted: boolean = false;
-    public highlightColor: vec3 = vec3.fromValues(0, 1, 1);
-    public isUnlit: boolean = false;
-    public unlitColor: vec3 = vec3.fromValues(0, 1, 1);
+    private name: string = '';
+    private visible: boolean = true;  // Add visibility flag
 
 
     // CHILDREN MANAGEMENT
@@ -72,11 +65,14 @@ export class Node {
         this.needsUpdate = false;
     }
 
-    // Visibility
-    setVisible(v: boolean): void {
-        this.visible = v;
+    setName(name: string): void {
+        this.name = name;
     }
 
+    setVisible(visible: boolean): void {
+        this.visible = visible;
+    }
+    
     // GETTERS
 
     getEntity(): Entity | null {
@@ -103,7 +99,10 @@ export class Node {
         return this.transformMatrix;
     }
 
-    // VISIBILITY
+    getName(): string {
+        return this.name;
+    }
+
     isVisible(): boolean {
         return this.visible;
     }
@@ -122,32 +121,30 @@ export class Node {
 
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
 
-    traverse(parentMatrix: mat4, shader: ShaderResource): void {
+    // duda de si 'parentUpdate' es la solucion limpia para actualizar la mtriz SI EL PADRE ha cambiado su matriz (antes no se contemplaba esto)
 
-        if (!this.visible) return;
-
-        // always update transform matrix based on parent
-        // (localMatrix can be cached if !needsUpdate, but composition must happen)
-        const localMatrix = this.computeLocalMatrix();
-        mat4.multiply(this.transformMatrix, parentMatrix, localMatrix);
-
-        // needsUpdate flag is only for local property changes, 
-        // but since we computeLocalMatrix every time (or we could cache it),
-        // let's just mark it clean.
-        this.needsUpdate = false;
-
-        // draw entity 
-        if (this.entity) {
-            shader.setFloat('uHighlight', this.isHighlighted ? 1.0 : 0.0);
-            shader.setVec3('uHighlightColor', this.highlightColor);
-            shader.setFloat('uIsUnlit', this.isUnlit ? 1.0 : 0.0);
-            shader.setVec3('uUnlitColor', this.unlitColor);
-            this.entity.draw(this.transformMatrix, shader);
+    traverse(parentMatrix: mat4, shader: ShaderResource, parentUpdated: boolean): void { 
+    
+        const mustUpdate = this.needsUpdate || parentUpdated;
+        
+        // create transform matrix
+        if (mustUpdate) {
+            const localMatrix = this.computeLocalMatrix();
+            mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); 
+            this.needsUpdate = false;
         }
 
-        // recursive
-        for (const child of this.children) {
-            child.traverse(this.transformMatrix, shader);
+        // Only draw if visible
+        if (this.visible) {
+            // draw entity 
+            if (this.entity) {
+                this.entity.draw(this.transformMatrix, shader);
+            }
+
+            // recursive - only traverse visible children
+            for (const child of this.children) {
+                child.traverse(this.transformMatrix, shader, mustUpdate);
+            }
         }
     }
 
@@ -170,4 +167,14 @@ export class Node {
         this.needsUpdate = true;
     }
 
+    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE)
+
+    getObjectByName(name: string): Node | null {
+        if (this.name === name) return this;
+        for (const child of this.children) {
+            const found = child.getObjectByName(name);
+            if (found) return found;
+        }
+        return null;
+    }
 }

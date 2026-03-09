@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class ThreeRenderableObject implements RenderableObject {
@@ -54,12 +54,17 @@ class ThreeRenderableObject implements RenderableObject {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.add(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
+
+        // const threeChild = child as ThreeRenderableObject;
+        // this.threeObject.add(threeChild.nativeObject);
     }
 
     remove(child: RenderableObject): void {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.remove(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     getPosition(): Vector3 {
@@ -197,12 +202,14 @@ export class ThreeEngineAdapter extends EngineFacade {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.add(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     removeFromScene(object: RenderableObject): void {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.remove(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     setBackground(color: number | string | null): void {
@@ -337,8 +344,31 @@ export class ThreeEngineAdapter extends EngineFacade {
         return false;
     }
 
-    getCamera(): any {
-        return this.camera;
+    // getCamera(): any {
+    //     return this.camera;
+    // }
+
+    getCamera(): CameraState {
+        return {
+            position: {
+                x: this.camera.position.x,
+                y: this.camera.position.y,
+                z: this.camera.position.z
+            },
+            target: {
+                x: this.controls.target.x,
+                y: this.controls.target.y,
+                z: this.controls.target.z
+            },
+            viewMatrix: new Float32Array(this.camera.matrixWorldInverse.elements),
+            projectionMatrix: new Float32Array(this.camera.projectionMatrix.elements),
+            mode: 'orbit',
+            orbit: {
+                radius: this.controls.getDistance(),
+                theta: this.controls.getAzimuthalAngle(),
+                phi: this.controls.getPolarAngle()
+            }
+        };
     }
 
     // Load the file GLT

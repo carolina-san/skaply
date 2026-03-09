@@ -32,6 +32,19 @@ export interface MaterialConfig {
     metalness?: number;
 }
 
+export interface CameraState {
+    position: Vector3;
+    target: Vector3;
+    viewMatrix: Float32Array;
+    projectionMatrix: Float32Array;
+    mode: 'orbit' | 'free';
+    orbit?: {
+        radius: number;
+        theta: number;
+        phi: number;
+    };
+}
+
 // Abstract class allows us to use it as a Token for DI directly, simpler than InjectionToken
 export abstract class EngineFacade {
     abstract init(canvas: HTMLCanvasElement, width: number, height: number): void;
@@ -39,6 +52,8 @@ export abstract class EngineFacade {
     abstract render(): void;
 
     // Object Creation
+    // abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
+    // abstract createGroup(): RenderableObject;
     abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject;
 
     // Scene Management
@@ -61,7 +76,8 @@ export abstract class EngineFacade {
     abstract checkControlsState(): boolean; // Returns true if moved from initial state
 
     // Camera getter for internal calculations if needed (e.g. projecting 3d to 2d)
-    abstract getCamera(): any;
+    //abstract getCamera(): any;
+    abstract getCamera(): CameraState;
 
     // LoadGLTF
     abstract loadGLTF(url: string): Promise<RenderableObject>;
