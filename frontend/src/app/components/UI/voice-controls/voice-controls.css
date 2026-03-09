@@ -1,0 +1,51 @@
+@import "../../../../styles.css";
+
+.voice-btn {
+  @apply p-1 rounded-full bg-white text-marron-oscuro transition-all duration-200 hover:scale-110;
+}
+
+.voice-btn-toggle {
+  @apply p-1 rounded-full transition-all duration-200 hover:scale-110 relative;
+}
+
+.voice-btn-toggle.active {
+  @apply bg-green-100 text-marron-oscuro;
+}
+
+.voice-btn-toggle.inactive {
+  @apply bg-gray-100 text-marron-oscuro/70;
+}
+
+/* Línea diagonal para estado inactivo */
+.voice-btn-toggle.inactive::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 1.5px;
+  height: 24px;
+  background-color: currentColor;
+  opacity: 0.7;
+  border-radius: 1px;
+}
+
+.volume-control {
+  @apply flex items-center bg-white p-1 rounded-full ml-1;
+}
+
+.volume-icon {
+  @apply w-5 h-5 text-marron-oscuro;
+}
+
+.volume-slider {
+  @apply w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  @apply appearance-none w-3 h-3 bg-marron-oscuro rounded-full cursor-pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+  @apply w-3 h-3 bg-marron-oscuro rounded-full cursor-pointer border-none;
+}

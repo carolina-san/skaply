@@ -134,7 +134,7 @@ export class AuthService {
     }
   }
 
-  async updateMyProfile(userId: number, updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string }) {
+  async updateMyProfile(userId: number, updates: { name?: string; company_name?: string; email?: string; telephone?: string; password?: string; image_url?: string }) {
     try {
       const fieldsToUpdate: string[] = [];
       const values: any[] = [];
@@ -170,6 +170,12 @@ export class AuthService {
         paramCount++;
       }
 
+      if (updates.image_url !== undefined) {
+        fieldsToUpdate.push(`image_url = $${paramCount}`);
+        values.push(updates.image_url);
+        paramCount++;
+      }
+
       if (fieldsToUpdate.length === 0) {
         throw new Error('No fields to update');
       }
@@ -184,7 +190,7 @@ export class AuthService {
         UPDATE "User" 
         SET ${fieldsToUpdate.join(', ')}
         WHERE id = $${paramCount}
-        RETURNING id, email, name, company_name, telephone, role
+        RETURNING id, email, name, company_name, telephone, role, image_url
       `;
 
       const result = await pool.query(query, values);

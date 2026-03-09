@@ -129,17 +129,21 @@ export class ProviderController {
     }
   };
 
-  enableProvider = async (req: Request, res: Response, next: NextFunction):
-    Promise<void> => {
+  updateProviderEnabled = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // validation
       const providerId = validateParameterId(req.params.id || "");
+      const enabled = req.body.enabled;
+      if (enabled === undefined) {
+        throw new ApiError('BAD_REQUEST', 'Missing enabled field');
+      }
       await validateProvider(this.providerService, providerId, { checkApprovedRegistration: true });
+
       // fetch
-      const result = await this.providerService.enableProvider(providerId);
+      const result = await this.providerService.updateProviderEnabled(providerId, enabled);
       // response
       res.status(200).json({
-        message: 'Provider enabled successfully',
+        message: 'Provider enabled/disabled successfully',
         data: result
       });
       // error
@@ -149,63 +153,28 @@ export class ProviderController {
     }
   };
 
-  disableProvider = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      // validation
-      const providerId = validateParameterId(req.params.id || "");
-      await validateProvider(this.providerService, providerId);
-      // fetch
-      const result = await this.providerService.disableProvider(providerId);
-      // response
-      res.status(200).json({
-        message: 'Provider disabled successfully',
-        data: result
-      });
-      // error
-    } catch (error) {
-      if (error instanceof ApiError) { return next(error); }
-      next(new ApiError('INTERNAL_SERVER', 'Failed to disable provider'));
-    }
-  };
-
-  makeProviderVisible = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  updateProviderVisibility = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // validation
       const providerId = validateParameterId(req.params.id || '');
-      await validateProvider(this.providerService, providerId, { checkEnabled: true });
-      // fecth
-      const result = await this.providerService.setProviderVisible(providerId, true);
-      // response
-      res.status(200).json({
-        message: 'Provider is now visible',
-        data: result
-      });
-      // error
-    } catch (error) {
-      if (error instanceof ApiError) return next(error);
-      next(new ApiError('INTERNAL_SERVER', 'Failed to make provider visible'));
-    }
-  };
-
-  makeProviderInvisible = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      // validation
-      const providerId = validateParameterId(req.params.id || '');
-      await validateProvider(this.providerService, providerId);
-      // fetch
-      const result = await this.providerService.setProviderVisible(providerId, false);
-      if (!result) {
-        throw new ApiError('NOT_FOUND', 'Provider not found');
+      const visible = req.body.visible;
+      if (visible === undefined) {
+        throw new ApiError('BAD_REQUEST', 'Missing visible field');
       }
+      if (visible) {
+        await validateProvider(this.providerService, providerId, { checkEnabled: true });
+      }
+      // fecth
+      const result = await this.providerService.updateProviderVisibility(providerId, visible);
       // response
       res.status(200).json({
-        message: 'Provider is now hidden',
+        message: 'Provider visibility updated successfully',
         data: result
       });
       // error
     } catch (error) {
       if (error instanceof ApiError) return next(error);
-      next(new ApiError('INTERNAL_SERVER', 'Failed to hide provider'));
+      next(new ApiError('INTERNAL_SERVER', 'Failed to update provider visibility'));
     }
   };
 
@@ -259,34 +228,13 @@ export class ProviderController {
         'company_name',
         'telephone',
         'tax_address',
-        'visible',
-        'enabled'
+        'image_url'
       ];
 
       // pick fields and validate
       const updateData = pickFields(req.body, allowedFields);
       validateNotEmptyObject(updateData, 'No fields to update');
       validateProviderData(updateData);
-
-      const validateOptions: any = {};
-      if (updateData.enabled === true) {
-        validateOptions.checkApprovedRegistration = true;
-      }
-      const currentProvider = await validateProvider(this.providerService, providerId, validateOptions);
-
-      // Validate business rules for visible
-      if ('visible' in updateData) {
-        const finalEnabled = 'enabled' in updateData ? updateData.enabled : currentProvider.enabled;
-
-        if (updateData.visible === true && finalEnabled === false) {
-          throw new ApiError('BAD_REQUEST', 'Cannot make provider visible when it is not enabled. Enable the provider first.');
-        }
-      }
-
-      // If disabling provider, also make it invisible
-      if ('enabled' in updateData && updateData.enabled === false) {
-        updateData.visible = false;
-      }
 
       // fetch
       const result = await this.providerService.updateProvider(providerId, updateData);

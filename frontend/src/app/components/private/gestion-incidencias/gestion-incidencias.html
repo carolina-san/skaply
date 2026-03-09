@@ -1,0 +1,192 @@
+<div class="w-full h-full bg-beige flex flex-col">
+
+  <!-- Filtros -->
+  <div class="flex pt-2 pb-2 gap-2">
+    <!-- Filtro de Estado -->
+    <select [(ngModel)]="selectedStatus" (change)="onStatusChange()" class="filtros-select">
+      <option [ngValue]="null" [ngClass]="selectedStatus === null ? 'hidden' : ''">{{
+        selectedStatus === null ? 'Estado' : 'Todos los estados' }}</option>
+      <option value="pending">Pendiente</option>
+      <option value="resolved">Resuelta</option>
+      <option value="escalated">Escalada</option>
+    </select>
+
+    <!-- Filtro de Proveedor (Solo Admin) -->
+    <div *ngIf="currentUser?.role === 'admin'">
+      <select [(ngModel)]="selectedProviderId" (change)="onProviderChange()" class="filtros-select">
+        <option [ngValue]="null" [ngClass]="selectedProviderId === null ? 'hidden' : ''">{{
+          selectedProviderId === null ? 'Proveedores' : 'Todos los proveedores' }}</option>
+        <option *ngFor="let provider of providers" [value]="provider.id">
+          {{ provider.company_name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mensaje de no hay resultados -->
+  <div *ngIf="totalItems === 0" class="flex-1 flex items-center justify-center">
+    <div class="text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355"
+        class="mx-auto mb-4">
+        <path
+          d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+      </svg>
+      <p class="text-xl font-semibold text-marron-oscuro mb-2">No hay resultados</p>
+      <p class="text-gray-600">No se encontraron incidencias que coincidan con los filtros seleccionados</p>
+    </div>
+  </div>
+
+  <!-- Tabla de incidencias -->
+  <div *ngIf="totalItems > 0" class="mt-2 bg-white rounded-xl overflow-hidden flex-shrink-0 flex flex-col">
+
+    <!-- HEADER -->
+    <div [ngClass]="currentUser?.role === 'admin' ? 'grid-cols-9' : 'grid-cols-8'"
+      class="grid bg-azul-claro px-3 py-1 text-sm text-marron-oscuro">
+      <h4 class="font-bold">Referencia</h4>
+      <h4 class="col-span-2 font-bold">Descripción</h4>
+      <h4 class="text-center font-bold">Usuario</h4>
+      <h4 class="text-center font-bold">Fecha</h4>
+      <h4 class="text-center font-bold">Estado</h4>
+      <h4 *ngIf="currentUser?.role === 'admin'" class="text-center font-bold">Proveedor</h4>
+      <h4 class="col-span-2 text-center font-bold">Acciones</h4>
+    </div>
+
+    <!-- BODY -->
+    <div class="divide-y divide-gray-200">
+      <div *ngFor="let issue of paginatedIssues"
+        [ngClass]="currentUser?.role === 'admin' ? 'grid-cols-9' : 'grid-cols-8'"
+        class="grid px-2 py-2 items-center hover:bg-gray-50 transition">
+
+        <!-- Referencia del mueble -->
+        <div class="px-2">
+          <p class="font-medium text-gray-800 text-sm truncate">{{ issue.furniture_reference || 'N/A' }}</p>
+        </div>
+
+        <!-- Descripción -->
+        <div class="col-span-2 px-2">
+          <p class="text-sm text-gray-700 line-clamp-2 leading-tight">{{ issue.description }}</p>
+        </div>
+
+        <!-- Usuario -->
+        <div class="text-center text-gray-600 text-xs truncate px-1">
+          {{ issue.user_email }}
+        </div>
+
+        <!-- Fecha -->
+        <div class="text-center text-gray-600 font-mono text-xs">
+          {{ issue.date | date:'dd/MM/yyyy' }}
+        </div>
+
+        <!-- Estado -->
+        <div class="text-center">
+          <span [ngClass]="{
+            'bg-yellow-100 text-yellow-800': issue.status === 'pending',
+            'bg-green-100 text-green-800': issue.status === 'resolved',
+            'bg-red-100 text-red-800': issue.status === 'escalated'
+          }" class="px-2 py-1 rounded-full text-xs font-medium">
+            {{ getStatusLabel(issue.status) }}
+          </span>
+        </div>
+
+        <!-- Proveedor (solo admin) -->
+        <div *ngIf="currentUser?.role === 'admin'" class="text-center text-gray-600 text-xs truncate px-1">
+          {{ issue.provider_name || 'N/A' }}
+        </div>
+
+        <!-- Acciones -->
+        <div class="col-span-2 flex justify-center gap-0.5 text-gray-600">
+
+          <!-- Botón Resolver (solo si está pendiente o escalada) -->
+          <button *ngIf="issue.status !== 'resolved'" class="btn-acciones" (click)="openResolveModal(issue)">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+            </svg>
+            Resolver
+          </button>
+
+          <!-- Botón Escalar (solo providers y si está pendiente) -->
+          <button *ngIf="currentUser?.role === 'provider' && issue.status === 'pending'" class="btn-acciones"
+            (click)="openEscalateModal(issue)">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
+              <path
+                d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+            </svg>
+            Escalar
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Espaciador -->
+  <div class="flex-1"></div>
+
+  <!-- Paginación -->
+  <div *ngIf="totalItems > 0">
+    <app-pagination [currentPage]="currentPage" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage"
+      (pageChange)="goToPage($event)"></app-pagination>
+  </div>
+
+  <!-- Modal de Resolver Incidencia -->
+  <app-modal [(open)]="isResolveModalOpen">
+    <div class="p-8 bg-white rounded-2xl">
+      <div class="flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#16a34a">
+            <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+          </svg>
+        </div>
+
+        <h2 class="text-2xl font-bold text-marron-oscuro mb-2">Resolver incidencia</h2>
+        <p class="text-gray-600 mb-6">
+          ¿Estás seguro de que quieres marcar esta incidencia como resuelta?
+        </p>
+
+        <div class="flex justify-center gap-3 w-full">
+          <button type="button" (click)="closeResolveModal()"
+            class="flex-1 px-6 py-2 border bg-azul-claro text-marron-oscuro border-gray-300 rounded-full hover:bg-azul-claro/80 transition">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmResolve()"
+            class="flex-1 px-6 py-2 bg-marron-oscuro text-white rounded-full hover:bg-marron-oscuro/80 transition">
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Modal de Escalar Incidencia -->
+  <app-modal [(open)]="isEscalateModalOpen">
+    <div class="p-8 bg-white rounded-2xl">
+      <div class="flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#ea580c">
+            <path
+              d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+          </svg>
+        </div>
+
+        <h2 class="text-2xl font-bold text-marron-oscuro mb-2">Escalar incidencia</h2>
+        <p class="text-gray-600 mb-6">
+          ¿Deseas escalar esta incidencia a los administradores?
+          <br>
+          Esta acción notificará al equipo administrativo.
+        </p>
+
+        <div class="flex justify-center gap-3 w-full">
+          <button type="button" (click)="closeEscalateModal()"
+            class="flex-1 px-6 py-2 border bg-azul-claro text-marron-oscuro border-gray-300 rounded-full hover:bg-azul-claro/80 transition">
+            Cancelar
+          </button>
+          <button type="button" (click)="confirmEscalate()"
+            class="flex-1 px-6 py-2 bg-marron-oscuro text-white rounded-full hover:bg-marron-oscuro/80 transition">
+            Escalar
+          </button>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+
+</div>

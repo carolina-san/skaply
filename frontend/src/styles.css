@@ -128,13 +128,6 @@ button {
 }
 
 
-.btn-registro {
-  @apply w-full rounded-lg bg-beige text-marron-oscuro py-3 pr-4 pl-12
-}
-
-.iconos-registro {
-  @apply absolute left-4 top-1/2 -translate-y-1/2 text-marron-oscuro;
-}
 
 /*Botón sin fondo con fondo marron claro en el hover*/
 .btn-hover-marron {
@@ -145,6 +138,7 @@ button {
   @apply flex flex-row items-center justify-between bg-beige text-marron-oscuro px-5 py-2 rounded-full font-bold hover:bg-beige-oscuro transition-all duration-300 cursor-pointer;
 }
 
+
 /*Clases generales*/
 
 /*Para que todo el contenido de las 
@@ -152,4 +146,13 @@ páginas tenga padding horizontal de 5-móvil, 10-tablet y 20-portátil
 Padding top para salvar el header*/
 .page-main {
   @apply px-3 md:px-10 lg:px-20;
+}
+
+/*Clases para el modal*/
+.btn-cancelar {
+  @apply px-6 py-2 border bg-azul-claro text-marron-oscuro border-gray-300 rounded-full hover:bg-azul-claro/80 transition;
+}
+
+.btn-eliminar {
+  @apply px-6 py-2 bg-marron-oscuro text-white rounded-full hover:bg-marron-oscuro/80 transition;
 }

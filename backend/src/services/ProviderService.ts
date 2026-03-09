@@ -131,8 +131,11 @@ export class ProviderService {
     }
   }
 
-  async enableProvider(id: number) {
+  async updateProviderEnabled(id: number, enabled: boolean) {
     try {
+      if (!enabled) {
+        await this.updateProviderVisibility(id, false);
+      }
       const result = await pool.query(
         `
         UPDATE "User"
@@ -142,7 +145,7 @@ export class ProviderService {
           AND registration_status = $4
         RETURNING id, company_name, enabled
         `,
-        [true, id, UserRole.PROV, RegistrationStatus.APPROVED]
+        [enabled, id, UserRole.PROV, RegistrationStatus.APPROVED]
       );
       return result.rows[0] || null;
     } catch (error) {
@@ -151,25 +154,7 @@ export class ProviderService {
     }
   }
 
-  async disableProvider(id: number) {
-    try {
-      const result = await pool.query(
-        `
-        UPDATE "User"
-        SET enabled = false, disabled_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-          AND role = $2
-        RETURNING id, company_name, enabled
-        `,
-        [id, UserRole.PROV]
-      );
-      return result.rows[0] || null;
-    } catch (error) {
-      throw new Error('Unable to disable provider');
-    }
-  }
-
-  async setProviderVisible(providerId: number, visible: boolean) {
+  async updateProviderVisibility(providerId: number, visible: boolean) {
     try {
       const result = await pool.query(
         `
@@ -261,7 +246,7 @@ export class ProviderService {
           AND role = $${filteredValues.length + 2}
         RETURNING id, email, company_name, cif, telephone, tax_address, visible, enabled, registration_status
       `;
-
+      console.log(setClause);
       const result = await pool.query(query, [...filteredValues, providerId, UserRole.PROV]);
       return result.rows[0];
     } catch (error) {

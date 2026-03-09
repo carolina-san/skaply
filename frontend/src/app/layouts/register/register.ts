@@ -12,9 +12,11 @@ import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
+  standalone: true,
   selector: 'app-register',
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './register.html'
+  templateUrl: './register.html',
+  styleUrl: './register.css'
 })
 export class Register {
   form: FormGroup;
@@ -42,7 +44,7 @@ export class Register {
       tax_address: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       telephone: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(12)]],
     })
   }
 
@@ -65,23 +67,19 @@ export class Register {
       telephone: this.form.value.telephone
     };
 
-    this.api.register(payload).subscribe({ 
+    this.api.register(payload).subscribe({
       next: (response) => {
         this.loading = false;
-        this.success = 'Registro exitoso. Redirigiendo al login...';
-        
-        // Redirigir al login después de 2 segundos
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        this.success = 'Solicitud de registro enviada correctamente. En breve nos pondremos en contacto contigo.';
+        this.form.reset();
       },
       error: (error) => {
         this.loading = false;
         console.error('Registration error:', error);
-        
+
         // Manejar diferentes tipos de errores
         if (error.status === 409) {
-          this.error = 'Ya existe una cuenta con este email';
+          this.error = 'Ya existe una cuenta con este email o CIF';
         } else if (error.status === 400) {
           this.error = 'Datos inv\u00e1lidos. Verifica los campos';
         } else {
@@ -89,6 +87,10 @@ export class Register {
         }
       }
     });
+  }
+
+  goHome() {
+    this.router.navigate(['/catalogo']);
   }
 
   onGoogleRegister(): void {
