@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
@@ -15,26 +15,21 @@ import { Pagination } from '../pagination/pagination';
   templateUrl: './gestion-incidencias.html',
   styleUrl: './gestion-incidencias.css'
 })
-export class GestionIncidencias implements OnInit {
+export class GestionIncidencias implements OnInit, OnChanges {
+  @Input() searchText: string = '';
+
   issues: Issue[] = [];
   paginatedIssues: Issue[] = [];
   providers: any[] = [];
   currentUser: User | null = null;
 
-  // Filtros
   selectedStatus: IssueStatus | null = null;
   selectedProviderId: number | null = null;
 
-  // Paginación
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalItems: number = 0;
-  totalPages: number = 0;
-  pageNumbers: number[] = [];
-  startItem: number = 0;
-  endItem: number = 0;
 
-  // Modales
   isResolveModalOpen: boolean = false;
   isEscalateModalOpen: boolean = false;
   selectedIssue: Issue | null = null;
@@ -50,17 +45,27 @@ export class GestionIncidencias implements OnInit {
     if (this.currentUser?.role === 'admin') {
       this.selectedStatus = 'escalated';
       this.loadProviders();
+      this.loadIssues();
     }
-    this.loadIssues();
   }
 
-  loadIssues(): void {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['searchText']) {
+      this.currentPage = 1;
+      this.fetchIssues();
+    }
+  }
+  
+  fetchIssues(): void {
     if (this.currentUser?.role === 'admin') {
-      this.apiService.getAllIssues(this.selectedStatus || undefined, this.selectedProviderId || undefined).subscribe({
+      this.apiService.getAllIssues(
+        this.selectedStatus || undefined, 
+        this.selectedProviderId || undefined,
+        this.searchText || undefined
+      ).subscribe({
         next: (response) => {
           this.issues = response.data || [];
           this.totalItems = this.issues.length;
-          this.calculatePagination();
           this.updatePaginatedIssues();
         },
         error: (error) => {
@@ -68,11 +73,14 @@ export class GestionIncidencias implements OnInit {
         }
       });
     } else if (this.currentUser?.role === 'provider') {
-      this.apiService.getProviderIssues(this.currentUser.id!, this.selectedStatus || undefined).subscribe({
+      this.apiService.getProviderIssues(
+        this.currentUser.id!, 
+        this.selectedStatus || undefined,
+        this.searchText || undefined
+      ).subscribe({
         next: (response) => {
           this.issues = response.data || [];
           this.totalItems = this.issues.length;
-          this.calculatePagination();
           this.updatePaginatedIssues();
         },
         error: (error) => {
@@ -80,6 +88,10 @@ export class GestionIncidencias implements OnInit {
         }
       });
     }
+  }
+
+  loadIssues(): void {
+    this.fetchIssues();
   }
 
   loadProviders(): void {
@@ -103,26 +115,6 @@ export class GestionIncidencias implements OnInit {
     this.loadIssues();
   }
 
-  calculatePagination(): void {
-    this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
-    this.pageNumbers = [];
-
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      this.pageNumbers.push(i);
-    }
-
-    this.startItem = this.totalItems > 0 ? (this.currentPage - 1) * this.itemsPerPage + 1 : 0;
-    this.endItem = Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
-  }
-
   updatePaginatedIssues(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -130,11 +122,8 @@ export class GestionIncidencias implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.calculatePagination();
-      this.updatePaginatedIssues();
-    }
+    this.currentPage = page;
+    this.updatePaginatedIssues();
   }
 
   getStatusLabel(status?: IssueStatus): string {

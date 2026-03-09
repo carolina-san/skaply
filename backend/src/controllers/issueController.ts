@@ -17,7 +17,8 @@ export class IssueController {
         try {
             const status = req.query.status as string | undefined;
             const providerId = req.query.providerId ? parseInt(req.query.providerId as string) : undefined;
-            const result = await this.issueService.getAllIssues(status, providerId);
+            const search = req.query.search as string | undefined;
+            const result = await this.issueService.getAllIssues(status, providerId, search);
             res.status(200).json({
                 data: result
             });
@@ -34,7 +35,8 @@ export class IssueController {
                 return;
             }
             const status = req.query.status as string | undefined;
-            const result = await this.issueService.getProviderIssues(providerId, status);
+            const search = req.query.search as string | undefined;
+            const result = await this.issueService.getProviderIssues(providerId, status, search);
             res.status(200).json({
                 data: result
             });
