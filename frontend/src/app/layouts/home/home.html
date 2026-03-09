@@ -127,12 +127,10 @@
     <div *ngIf="!hasSearched && activeFiltersCount === 0" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
       <button (click)="filterByCategory(null)" class="btn-filtros-home whitespace-nowrap"
         [class.!bg-azul-claro]="selectedCategoryId === null">
-        <!-- [class.!text-white]="selectedCategoryId === null" > -->
         Ver todo
       </button>
       <button *ngFor="let category of categories" (click)="filterByCategory(category.id)"
         class="btn-filtros-home whitespace-nowrap" [class.!bg-azul-claro]="selectedCategoryId === category.id">
-        <!-- [class.!text-white]="selectedCategoryId === category.id"> -->
         {{ category.name }}
       </button>
     </div>
@@ -153,7 +151,7 @@
     </div>
   </section>
 
-  <!-- Mensaje cuando no hay muebles -->
+  <!-- no hay muebles -->
   <section *ngIf="furnitures.length === 0 && !isLoadingFurnitures"
     class="flex items-center justify-center py-20 page-main">
     <div class="text-center">
@@ -168,7 +166,6 @@
   <!-- Modal de detalle del mueble -->
   <app-modal [(open)]="isFurnitureModalOpen">
     <div class="flex flex-col sm:flex-row w-full h-full max-h-[85vh] sm:max-h-[50vh] overflow-hidden">
-      <!-- IMAGEN -->
       <div class="w-full sm:max-w-[40%] flex flex-shrink-0 min-h-0 overflow-hidden">
         <img [src]="selectedFurniture?.image_url" loading="lazy" class="w-full
          h-[28vh] sm:h-auto
@@ -177,7 +174,6 @@
          rounded-tl-xl rounded-tr-xl
          sm:rounded-bl-xl sm:rounded-tr-none">
       </div>
-      <!-- TEXTO -->
       <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full">
         <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2">
           <span class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-bold rounded-full" [ngClass]="{
@@ -209,8 +205,6 @@
           <hr class="border-t-1 border-beige-oscuro mt-3 sm:mt-5">
         </div>
 
-
-        <!-- BOTÓN -->
         <div class="flex w-full gap-2">
           <app-export [selectedFurniture]="selectedFurniture"></app-export>
 
@@ -228,13 +222,11 @@
     </div>
   </app-modal>
 
-  <!-- Filter Panel -->
   <app-filter-panel [isOpen]="isFilterModalOpen" [providers]="providers" [colors]="colors"
     [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
 
-  <!-- QR Scanner -->
   <app-scanner 
     [(isOpen)]="isQrScannerOpen" 
     (onScanSuccess)="onQrScanned($event)"
