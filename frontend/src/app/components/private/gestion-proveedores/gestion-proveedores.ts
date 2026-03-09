@@ -5,11 +5,12 @@ import { ApiService } from '../../../services/api.service';
 import { Modal } from '../../UI/modal/modal';
 import { EditUserModal } from '../edit-user-modal/edit-user-modal';
 import { Pagination } from '../pagination/pagination';
+import { SortButton } from '../../UI/sort-button/sort-button';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, EditUserModal, Pagination],
+  imports: [CommonModule, FormsModule, Modal, EditUserModal, Pagination, SortButton],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
