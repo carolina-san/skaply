@@ -180,8 +180,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       console.log('Furniture loaded:', this.furniture);
 
       if (this.useExternalModel && this.isViewInitialized) {
-        // Wait for initThree to complete before calling animate
-        this.initThree().then(() => {
+        // Wait for initEngine to complete before calling animate
+        this.initEngine().then(() => {
           this.createFurniture().then(() => {
             if (!this.animationFrameId) this.animate();
           });
@@ -220,7 +220,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.resizeObserver = new ResizeObserver(entries => {
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-        this.initThree().then(() => {
+        this.initEngine().then(() => {
           this.setupEventListeners();
           this.isViewInitialized = true;
 
@@ -272,23 +272,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.engineChanged.emit(newEngine);
 
     if (this.isViewInitialized) {
-      // 1. Dispose old engine
       this.engine?.dispose();
-
-      // 2. Create new instance
       this.createEngineInstance();
-
-      // 3. Re-initialize viewport (wait for completion)
-      await this.initThree();
-
-      // 4. Reload furniture
-      if (this.furniture) {
-        // this.createFurniture().then(() => {
-        //   if (!this.animationFrameId) this.animate();
-        // });
-        await this.createFurniture();
-        if (!this.animationFrameId) this.animate();
-      }
+      this.initEngine().then(() => {
+        if (this.furniture) { 
+          this.createFurniture().then(() => {
+            if (!this.animationFrameId) this.animate();
+          });
+        }
+      });
     }
   }
 
@@ -477,7 +469,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.engine.toggleControls(true, shouldRotate);
   }
 
-  private async initThree(): Promise<void> {
+  private async initEngine(): Promise<void> {
     const canvas = this.canvasRef.nativeElement;
     const container = canvas.parentElement!;
     const { width, height } = container.getBoundingClientRect();
@@ -517,7 +509,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         baseModel.castShadow = true;
         baseModel.receiveShadow = true;
         this.engine.addToScene(baseModel);
-        //console.log('[GLB NAMES]', baseModel.nativeObject.getObjectNames()); //⚠️getObjectNames no existe!
       } catch (error) {
         console.error('Error pre-loading base model:', error);
       }

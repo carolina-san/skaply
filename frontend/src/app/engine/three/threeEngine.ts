@@ -156,6 +156,10 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.composer.addPass(this.outlinePass);
     }
 
+    // isReady(): boolean {
+    //     return true;
+    // }
+
     resize(width: number, height: number): void {
         if (!this.camera || !this.renderer) return;
         this.camera.aspect = width / height;

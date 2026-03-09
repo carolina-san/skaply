@@ -451,22 +451,23 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraNode.setEntity(this.cameraEntity);
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
-        
+
         // light 
         this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
         this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
         this.rootNode.addChild(this.lightNode);
-
-        await this.initShader();
-
-        this.ready = true;
+        
         this.cameraController = new CameraController(
             this.cameraNode,
             this.cameraEntity,
             canvas,
             width < this.mobileThreshold
         );
+
+        await this.initShader();
+
+        this.ready = true;
     }
 
     private async initShader(): Promise<void> {
@@ -550,7 +551,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     // DISPOSE
 
     dispose(): void {
-        this.cameraController.dispose();
+        if (this.cameraController) {this.cameraController.dispose();} 
         this.wrappers.clear();
         this.ready = false;
         // ...resto cleanup...

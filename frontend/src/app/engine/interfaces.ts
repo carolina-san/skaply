@@ -86,4 +86,6 @@ export abstract class EngineFacade {
     abstract wrapNativeObject(native: any): RenderableObject;
 
     abstract dispose(): void;
+
+    //abstract isReady(): boolean;
 }
