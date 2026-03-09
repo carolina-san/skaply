@@ -78,6 +78,7 @@ export class ProviderService {
         values.push(filters.visible);
       }
 
+
       const whereClause = conditions.join(' AND ');
 
       // Pagination
@@ -90,18 +91,18 @@ export class ProviderService {
       const countResult = await pool.query(countQuery, values);
       const total = parseInt(countResult.rows[0].count, 10);
 
-      const query = `
+      let query = `
         SELECT id, email, name, cif, company_name, telephone, tax_address,
               image_url, enabled, visible, registration_status,
               created_at, updated_at, approved_at, disabled_at, enabled_at
         FROM public."User"
         WHERE ${whereClause}
-        ORDER BY ${filters?.orderBy || 'company_name'} ${filters?.orderDir || 'ASC'}
-        LIMIT $${paramIndex++} OFFSET $${paramIndex++}
       `;
-
+      if (filters?.orderBy !== undefined && filters?.orderDir !== undefined) {
+        query = query + `ORDER BY ${filters.orderBy} ${filters.orderDir}`;
+      }
+      query = query + ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       values.push(limit, offset);
-
       const result = await pool.query(query, values);
 
       return {
