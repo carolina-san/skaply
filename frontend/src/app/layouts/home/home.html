@@ -16,7 +16,7 @@
         <input #searchInput type="text" placeholder="Buscar" [(ngModel)]="searchText"
           (keypress)="onSearchKeyPress($event)" (blur)="onSearchBlur()" class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none 
         focus:ring-2 focus:bg-beige-oscuro focus:ring-beige transition-all duration-300" />
-        <span class="btn-busqueda absolute right-1 block sm:hidden">
+        <span (click)="openQrScanner()" class="btn-busqueda absolute right-1 block sm:hidden cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
             fill="currentColor">
             <path
@@ -233,6 +233,14 @@
     [activeFilters]="activeFilters" [resetToggle]="resetFilterToggle" (close)="closeFilterModal()"
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
+
+  <!-- QR Scanner -->
+  <app-scanner 
+    [(isOpen)]="isQrScannerOpen" 
+    (onScanSuccess)="onQrScanned($event)"
+    (close)="closeQrScanner()">
+  </app-scanner>
+
   <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
   <app-issue-form></app-issue-form>
 </main>
