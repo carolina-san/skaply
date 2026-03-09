@@ -45,8 +45,8 @@ export class GestionIncidencias implements OnInit, OnChanges {
     if (this.currentUser?.role === 'admin') {
       this.selectedStatus = 'escalated';
       this.loadProviders();
-      this.loadIssues();
     }
+    this.loadIssues();
   }
 
   ngOnChanges(changes: SimpleChanges) {

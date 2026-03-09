@@ -40,7 +40,7 @@
     <div class="flex-1 min-h-0">
       <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"
         class="h-full block"></app-gestion-muebles>
-      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'" [searchText]="searchText"
         class="h-full block"></app-gestion-incidencias>
     </div>
   </div>
