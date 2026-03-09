@@ -7,6 +7,7 @@ import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
 import { Light } from './engine-core/light';
+import { Entity } from './engine-core/entity';
 
 
 class WebGlRenderableObject implements RenderableObject {
@@ -15,23 +16,21 @@ class WebGlRenderableObject implements RenderableObject {
     userData: any = {};
     castShadow = false;
     receiveShadow = false;
-    
-    // ⚠️NO SE NECESITA EN EL WRAPPER, SUPONDRIA DUPLICACION DE LOGICA 
-
-    //children: WebGlRenderableObject[] = [];
-    //visible = true;
-
-    //position = { x: 0, y: 0, z: 0 };
-    //rotation = { x: 0, y: 0, z: 0 };
-
-    // ⚠️NO SE NECESITA EN EL WRAPPER, SUPONDRIA DUPLICACION DE LOGICA 
-
 
     constructor(public node: Node) {}
 
     get nativeObject(): Node {
         return this.node;
     }
+
+    get name(): string {
+        return this.node.getName();
+    }
+
+    set name(value: string) {
+        this.node.setName(value);
+    }
+
 
     getPosition(): Vector3 {
         const t = this.node.getTranslation();
@@ -50,14 +49,6 @@ class WebGlRenderableObject implements RenderableObject {
 
     setVisible(visible: boolean): void {
         this.node.setVisible(visible);
-    }
-
-    get name(): string {
-        return this.node.getName();
-    }
-
-    set name(value: string) {
-        this.node.setName(value);
     }
 
     add(child: RenderableObject): void {
@@ -602,7 +593,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         return new WebGlRenderableObject(native);
     }
     
-    // ⚠️ Metodo 'vacio' para que la clase no se queje.
+    // ⚠️ FALTA POR HACER
     createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
         const node = new Node();
         const wrapper = new WebGlRenderableObject(node);
@@ -638,15 +629,13 @@ export class WebGLEngineAdapter extends EngineFacade {
     
     // INTERACTION
 
-    // ⚠️ metodo de alvaro 
+    // ⚠️ FALTA POR HACER
     raycast(_x: number, _y: number): RenderableObject | null {
-        // En WebGL puro esto requiere picking (color buffer o ray/triangles).
-        // Para que el flujo no rompa, devolvemos null.
         return null;
     }
 
-    // ⚠️ metodo de alvaro 
-    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor.
+    // ⚠️ FALTA POR HACER (metodo de alvaro) 
+    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor??
     setHighlight(objects: RenderableObject[]): void {
         // const cyan = vec3.fromValues(0, 1, 1);
 
