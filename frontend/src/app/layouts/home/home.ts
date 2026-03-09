@@ -2,15 +2,13 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import {
-  Chatbot,
-  Footer,
-  FilterPanelComponent,
-  CardFurniture,
-  Modal,
-  Export,
-  IssueForm
-} from '../../components';
+import { Chatbot } from '../../components/UI/chatbot/chatbot';
+import { Footer } from '../../components/UI/footer/footer';
+import { FilterPanelComponent } from '../../components/public/filter-panel/filter-panel';
+import { CardFurniture } from '../../components/public/card-furniture/card-furniture';
+import { Modal } from '../../components/UI/modal/modal';
+import { Export } from '../../components/public/export/export';
+import { IssueForm } from '../../components/public/issue-form/issue-form';
 import { ApiService } from '../../services/api.service';
 import { FilterSharingService } from '../../services/filter-sharing.service';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
@@ -19,6 +17,7 @@ import { SeoService } from '../../services/seo.service';
 
 
 @Component({
+  standalone: true,
   selector: 'app-home',
   imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm],
   templateUrl: './home.html',

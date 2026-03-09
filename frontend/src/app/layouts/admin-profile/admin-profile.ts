@@ -3,12 +3,12 @@ import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeoService } from '../../services/seo.service';
-import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
-import { GestionProveedores } from '../../components/gestion-proveedores/gestion-proveedores';
-import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
-import { GestionSolicitudes } from '../../components/gestion-solicitudes/gestion-solicitudes';
-import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
-import { Stats } from '../../components/stats/stats';
+import { ProfileSidebar } from '../../components/private/profile-sidebar/profile-sidebar';
+import { GestionProveedores } from '../../components/private/gestion-proveedores/gestion-proveedores';
+import { GestionMuebles } from '../../components/private/gestion-muebles/gestion-muebles';
+import { GestionSolicitudes } from '../../components/private/gestion-solicitudes/gestion-solicitudes';
+import { GestionIncidencias } from '../../components/private/gestion-incidencias/gestion-incidencias';
+import { Stats } from '../../components/private/stats/stats';
 import { Issue } from '../../types/issue.types';
 
 @Component({
@@ -22,6 +22,7 @@ export class AdminProfile implements OnInit {
   activeTab: 'dashboard' | 'proveedores' | 'solicitudes' | 'muebles' | 'incidencias' = 'proveedores'; // Default tab
   searchText: string = '';
   escalatedIssuesCount: number = 0;
+  pendingProvidersCount: number = 0;
 
   constructor(private seo: SeoService, private apiService: ApiService) {
   }
@@ -34,6 +35,7 @@ export class AdminProfile implements OnInit {
       index: false
     });
     this.loadEscalatedIssuesCount();
+    this.loadPendingProvidersCount();
   }
 
 
@@ -45,6 +47,17 @@ export class AdminProfile implements OnInit {
       },
       error: (error) => {
         console.error('Error loading escalated issues count:', error);
+      }
+    });
+  }
+
+  loadPendingProvidersCount() {
+    this.apiService.getProviders(1, 1000, '', null, null, 'pending').subscribe({
+      next: (response) => {
+        this.pendingProvidersCount = response.data?.length || 0;
+      },
+      error: (error) => {
+        console.error('Error loading pending providers count:', error);
       }
     });
   }

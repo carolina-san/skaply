@@ -182,6 +182,44 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.getFurnitureRef(name, session));
                     return;
                 }
+                case 'get.people': {
+                    let ref = parameters?.furniture_ref2;
+
+                    if (!ref) {
+                        const ctx = outputContexts.find((c: any) =>
+                            c.name.endsWith('/contexts/montaje_context')
+                        );
+                        ref = ctx?.parameters?.furniture_ref;
+                    }
+
+                    res.status(200).json(await this.chatbotService.getNeededPeople(ref || '', session));
+                    return;
+                }
+                case 'get.step.info': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/montaje_context')
+                    );
+                    const ref = ctx?.parameters?.furniture_ref;
+                    const step = parameters?.step;
+                    res.status(200).json(await this.chatbotService.getStepInfo(ref || '', step || '', session));
+                    return;
+                }
+                case 'go.to.step': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/funcionalidadinfopaso-followup')
+                    );
+                    const ref = ctx?.parameters?.furniture_ref;
+                    let step = ctx?.parameters?.step_number;
+                    if (typeof step === 'string') {
+                        step = Number(step);
+                    }
+                    if (isNaN(step)) {
+                        step = 1; // Default
+                    }
+                    console.log("Entra en goToStep controller", ref, step);
+                    res.status(200).json(await this.chatbotService.goToStep(ref || '', step || 1, session));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No he podido obtener esa información de la base de datos. Prueba con otras palabras.'
@@ -278,4 +316,5 @@ export class ChatbotController {
             next(new ApiError('INTERNAL_SERVER', 'Error al obtener las recomendaciones de muebles'));
         }
     };
+
 }

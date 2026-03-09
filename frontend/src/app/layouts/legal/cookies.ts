@@ -1,6 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Footer } from '../../components/footer/footer';
+import { Footer } from '../../components/UI/footer/footer';
 import { SeoService } from '../../services/seo.service';
 import { ConsentService } from '../../services/consent.service';
 
@@ -17,7 +17,7 @@ export class Cookies implements OnInit {
   constructor(
     private seo: SeoService,
     public consentService: ConsentService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.updateScrollButtonVisibility();

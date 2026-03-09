@@ -1,6 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Footer } from '../../components/footer/footer';
+import { Footer } from '../../components/UI/footer/footer';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
@@ -13,7 +13,7 @@ import { SeoService } from '../../services/seo.service';
 export class Privacy implements OnInit {
   showScrollButton = false;
 
-  constructor(private seo: SeoService) {}
+  constructor(private seo: SeoService) { }
 
   ngOnInit() {
     this.updateScrollButtonVisibility();
