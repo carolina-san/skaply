@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProfileSidebar } from '../../components/profile-sidebar/profile-sidebar';
-import { GestionMuebles } from '../../components/gestion-muebles/gestion-muebles';
-import { GestionIncidencias } from '../../components/gestion-incidencias/gestion-incidencias';
+import { ProfileSidebar } from '../../components/private/profile-sidebar/profile-sidebar';
+import { GestionMuebles } from '../../components/private/gestion-muebles/gestion-muebles';
+import { GestionIncidencias } from '../../components/private/gestion-incidencias/gestion-incidencias';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Issue } from '../../types/issue.types';
 
 @Component({
+  standalone: true,
   selector: 'app-provider-profile',
   imports: [ProfileSidebar, GestionMuebles, GestionIncidencias, CommonModule, FormsModule],
   templateUrl: './provider-profile.html',
@@ -22,7 +23,7 @@ export class ProviderProfile implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadPendingIssuesCount();

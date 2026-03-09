@@ -1,0 +1,174 @@
+<!-- Comportamiento del chatbot según el tamaño -->
+<div id="chatbot-wrapper"
+    class="absolute right-0 bottom-0 flex flex-col transition-all duration-400 z-40 pointer-events-none" [ngClass]="{
+    ' inset-y-0 h-[100dvh]': inMontajeMode && isDesktop,     
+    'w-1/4 min-h-[85vh] fixed':  isDesktop,  
+    ' w-full sm:w-96 max-h-[85dvh] sm:max-h-[85dvh] ': !inMontajeMode || !isDesktop,
+    'h-15': !chatVisible && (!inMontajeMode || isMobile),
+    '!z-500': chatVisible
+  }">
+    <!-- Siempre abierto en modo montaje si está en desktop
+        Ocupa un cuarto de la pantalla si está en desktop, da igual el modo
+        Si está visible en móvil o en catálogo, ocupa toda la pantalla en movil y 96 en pequeño y 85 de alto
+        Si está cerrado en móvil o en catálogo, ocupa 15 de alto -->
+
+
+
+    <!-- Icono del chatbot -->
+    <button *ngIf="!chatVisible && (!inMontajeMode || isMobile)"
+        class="flex right-5 md:right-10 lg:right-17 items-center justify-center h-15 w-15 md:h-20 md:w-20 p-2 rounded-full hover:scale-110 transition-transform pointer-events-auto "
+        [ngClass]="{
+        'fixed': !inMontajeMode || isMobile,
+        'absolute': inMontajeMode && isDesktop,
+        'bottom-5 bg-marron-oscuro shadow-lg border-1 border-beige/50': isCatalogPage,
+        'bottom-14 right-2!': !isCatalogPage
+    }" (click)="toggleChat()">
+        <img src="assets/imgs/Allen.png" alt="Allen" class="w-full">
+    </button>
+
+    <!-- Chatbot abierto y renderizado de rich content -->
+    <div id="chatbot-container" *ngIf="chatVisible"
+        class="absolute bg-beige overflow-hidden shadow-2xl flex flex-col h-full w-full px-3 py-4 pointer-events-auto "
+        [ngClass]="{'rounded-t-3xl': isMobile || !inMontajeMode}">
+
+        <header class="flex justify-between items-center px-1 mb-2">
+            <div class="flex items-center gap-2">
+                <div class="bg-marron-oscuro rounded-full p-1 w-11 h-11 flex items-center justify-center">
+                    <img src="assets/imgs/Allen.png" alt="Allen" class="w-9 h-auto object-cover">
+                </div>
+                <h2 class="mt-1 text-2xl font-semibold text-marron-oscuro">Allen</h2>
+            </div>
+            <button (click)="toggleChat()" class="btn-hover-marron" [ngClass]="{
+    'hidden': inMontajeMode && isDesktop}">
+                <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px"
+                    fill="var(--color-marron-secundario)">
+                    <path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 
+                    156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z" />
+                </svg>
+            </button>
+        </header>
+
+        <div #messagesContainer class="flex-1 min-h-[200px] overflow-y-auto p-0 scrollbar-hide pb-11">
+            <div *ngFor="let msg of messages" class="mb-2" [ngClass]="{
+                'text-right': msg.sender === 'user',
+                'text-left': msg.sender === 'bot'
+                }">
+                <div *ngIf="msg.text" [ngClass]="msg.sender === 'user'
+                    ? 'msg-user'
+                    : 'msg-bot'">
+                    {{ msg.text }}
+                </div>
+
+                <!-- Renderizado de richContent -->
+                <div *ngIf="msg.rich && !msg.text" class="">
+
+                    <!-- Cards -->
+                    <div *ngIf="msg.rich.type === 'card'" class="space-y-2 msg-bot p-2!">
+                        <img *ngIf="msg.rich.imageUri" [src]="msg.rich.imageUri" alt="Card image"
+                            class="w-full h-25 object-cover rounded-xl">
+                        <div>
+                            <h4 class="titulo">{{ msg.rich.title }}</h4>
+                            <p class="subtitulo">{{ msg.rich.subtitle }}</p>
+                        </div>
+                        <!-- Chips dentro de la card -->
+                        <div class="flex flex-wrap gap-2 justify-end">
+                            <button *ngFor="let btn of msg.rich.buttons" class=" chip" (click)="openLink(btn.postback)">
+                                {{ btn.text }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Items type (info, description, list, chips) -->
+                    <div *ngIf="msg.rich.items" class="space-y-2 flex flex-col ">
+                        <div *ngFor="let item of msg.rich.items">
+                            <!-- Info item -->
+                            <div *ngIf="item.type === 'info'" class="msg-bot">
+                                <h4 class="titulo">{{ item.title }}</h4>
+                                <p class="subtitulo">{{ item.subtitle }}</p>
+                            </div>
+
+                            <!-- Description item -->
+                            <div *ngIf="item.type === 'description'" class="msg-bot">
+                                <h4 class="titulo">{{ item.title }}</h4>
+                                <ul class="subtitulo ">
+                                    <li *ngFor="let text of item.text">{{ text }}</li>
+                                </ul>
+                            </div>
+
+                            <!-- List item -->
+                            <div *ngIf="item.type === 'list'" class="msg-bot">
+                                <h4 class="font-bold">{{ item.title }}</h4>
+                                <div *ngIf="item.items && item.items.length > 0" class="text-sm space-y-2 mt-1 ml-2">
+                                    <div *ngFor="let subitem of item.items">
+                                        <p class="titulo">{{ subitem.title }}</p>
+                                        <p class="subtitulo">{{ subitem.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chips item -->
+                            <div *ngIf="item.type === 'chips'" class="flex gap-2 ">
+                                <button *ngFor="let opt of item.options"
+                                    class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
+                                    (click)="handleChipClick(opt.text)">
+                                    {{ opt.text }}
+                                </button>
+                            </div>
+
+                            <!-- Button item -->
+                            <div *ngIf="item.type === 'button'" class="flex items-center gap-2 msg-bot">
+                                <button class="chip flex items-center gap-2" (click)="openLink(item.link)">
+                                    <span *ngIf="item.icon?.type" class="material-symbols-rounded">
+                                        {{ item.icon.type }}
+                                    </span>
+                                    {{ item.text }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direct chips type (sin items) -->
+                    <div *ngIf="msg.rich.type === 'chips' && !msg.rich.items" class="flex flex-wrap gap-2">
+                        <button *ngFor="let opt of msg.rich.options"
+                            class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
+                            (click)="handleChipClick(opt.text)">
+                            {{ opt.text }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles de voz e incidencia - overlay flotante semitransparente -->
+        <div class="absolute bottom-17 left-0 right-0 flex items-center justify-between gap-2 py-1 px-4 bg-transparent">
+            <app-voice-controls [messages]="messages" [isPlaying]="isPlaying" (speak)="onSpeak($event)"
+                (stop)="onStopSpeaking()">
+            </app-voice-controls>
+
+            <button class="btn-incidencia " (click)="abrirIncidencia()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                    <path
+                        d="M480-400q-17 0-28.5-11.5T440-440v-280q0-17 11.5-28.5T480-760q17 0 28.5 11.5T520-720v280q0 17-11.5 28.5T480-400Zm0 200q-17 0-28.5-11.5T440-240q0-17 11.5-28.5T480-280q17 0 28.5 11.5T520-240q0 17-11.5 28.5T480-200Z" />
+                </svg>
+            </button>
+        </div>
+
+
+
+        <div class="flex w-full items-center bg-white rounded-full justify-between py-[0.2em] pl-3 pr-1">
+            <input #messageInput type="text" placeholder="Escribe un mensaje..." [(ngModel)]="newMessage"
+                (keydown.enter)="sendMessage()" (focus)="scrollToBottom()" (click)="scrollToBottom()" class="input-chat"
+                focused />
+
+            <button
+                class="p-2 absolute right-4 bg-marron-oscuro rounded-full flex items-right justify-end text-white hover:opacity-90 transition "
+                (click)="sendMessage()">
+                <span class="material-symbols-rounded w-6 h-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                        <path
+                            d="M792-443 176-183q-20 8-38-3.5T120-220v-520q0-22 18-33.5t38-3.5l616 260q25 11 25 37t-25 37ZM200-280l474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
+                    </svg></span>
+            </button>
+        </div>
+    </div>
+</div>

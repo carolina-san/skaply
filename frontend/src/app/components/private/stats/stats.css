@@ -1,0 +1,17 @@
+@import "../../../../styles.css";
+
+.stat-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between hover:shadow-md transition-shadow;
+}
+
+.stat-card p {
+    @apply text-sm font-medium text-marron-oscuro/80 uppercase tracking-wider mb-1;
+}
+
+.stat-card h3 {
+    @apply text-2xl font-bold text-marron-oscuro;
+}
+
+.icon {
+    @apply w-12 h-12 rounded-full bg-azul-claro flex items-center justify-center text-white;
+}

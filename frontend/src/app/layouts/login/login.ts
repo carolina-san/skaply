@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
 
 @Component({
+  standalone: true,
   selector: 'app-login',
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
