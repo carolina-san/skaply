@@ -3,7 +3,7 @@ import pool from "@/config/database";
 import { Issue } from "@/types";
 
 export class IssueService {
-    async getAllIssues(status?: string, providerId?: number) {
+    async getAllIssues(status?: string, providerId?: number, search?: string) {
         try {
             let query = `
                 SELECT i.*, f.name as furniture_name, f.reference_number as furniture_reference, 
@@ -29,6 +29,12 @@ export class IssueService {
                 paramCount++;
             }
 
+            if (search) {
+                query += ` AND (LOWER(f.reference_number) LIKE $${paramCount} OR LOWER(i.user_email) LIKE $${paramCount})`;
+                params.push(`%${search.toLowerCase()}%`);
+                paramCount++;
+            }
+
             query += ' ORDER BY i.date DESC';
 
             const result = await pool.query(query, params);
@@ -38,7 +44,7 @@ export class IssueService {
         }
     }
 
-    async getProviderIssues(providerId: number, status?: string) {
+    async getProviderIssues(providerId: number, status?: string, search?: string) {
         try {
             let query = `
                 SELECT i.*, f.name as furniture_name, f.reference_number as furniture_reference, 
@@ -48,10 +54,18 @@ export class IssueService {
                 WHERE f.provider_id = $1
             `;
             const params: any[] = [providerId];
+            let paramCount = 2;
 
             if (status) {
-                query += ' AND i.status = $2';
+                query += ` AND i.status = $${paramCount}`;
                 params.push(status);
+                paramCount++;
+            }
+
+            if (search) {
+                query += ` AND (LOWER(f.reference_number) LIKE $${paramCount} OR LOWER(i.user_email) LIKE $${paramCount})`;
+                params.push(`%${search.toLowerCase()}%`);
+                paramCount++;
             }
 
             query += ' ORDER BY i.date DESC';

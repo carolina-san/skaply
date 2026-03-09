@@ -12,8 +12,8 @@ router.post('/logout', authController.logout);
 router.post('/refresh', authController.refreshToken);
 
 // Solo para admins
-router.get('/me', authMiddleware, authorize([UserRole.ADMIN]), authController.me);
-router.put('/me', authMiddleware, authorize([UserRole.ADMIN]), authController.updateMyProfile);
+router.get('/me', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), authController.me);
+router.put('/me', authMiddleware, authorize([UserRole.ADMIN, UserRole.PROV]), authController.updateMyProfile);
 
 // Google OAuth routes
 router.get('/google', authController.googleAuth);

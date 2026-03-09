@@ -9,6 +9,7 @@ import { CardFurniture } from '../../components/public/card-furniture/card-furni
 import { Modal } from '../../components/UI/modal/modal';
 import { Export } from '../../components/public/export/export';
 import { IssueForm } from '../../components/public/issue-form/issue-form';
+import { Scanner } from '../../components/UI/scanner/scanner';
 import { ApiService } from '../../services/api.service';
 import { FilterSharingService } from '../../services/filter-sharing.service';
 import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
@@ -19,7 +20,7 @@ import { SeoService } from '../../services/seo.service';
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm],
+  imports: [Chatbot, Footer, CommonModule, FormsModule, FilterPanelComponent, CardFurniture, Modal, Export, IssueForm, Scanner],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -278,6 +279,14 @@ export class Home implements OnInit {
 
   closeFilterModal() {
     setTimeout(() => { this.isFilterModalOpen = false; }, 350);
+  }
+
+  openQrScanner() {
+    this.isQrScannerOpen = true;
+  }
+
+  closeQrScanner() {
+    this.isQrScannerOpen = false;
   }
 
   onApplyFilters(filters: FilterOptions) {
