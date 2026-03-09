@@ -21,6 +21,7 @@ export class Node {
     // only if local transformations were made
     private needsUpdate: boolean = true;
     private name: string = '';
+    private visible: boolean = true;  // Add visibility flag
 
 
     // CHILDREN MANAGEMENT
@@ -67,6 +68,10 @@ export class Node {
     setName(name: string): void {
         this.name = name;
     }
+
+    setVisible(visible: boolean): void {
+        this.visible = visible;
+    }
     
     // GETTERS
 
@@ -98,6 +103,10 @@ export class Node {
         return this.name;
     }
 
+    isVisible(): boolean {
+        return this.visible;
+    }
+
     // LOCAL MATRIX (PRIVATE)
 
     private computeLocalMatrix(): mat4 {
@@ -115,7 +124,7 @@ export class Node {
     // duda de si 'parentUpdate' es la solucion limpia para actualizar la mtriz SI EL PADRE ha cambiado su matriz (antes no se contemplaba esto)
 
     traverse(parentMatrix: mat4, shader: ShaderResource, parentUpdated: boolean): void { 
-        
+    
         const mustUpdate = this.needsUpdate || parentUpdated;
         
         // create transform matrix
@@ -125,15 +134,17 @@ export class Node {
             this.needsUpdate = false;
         }
 
-        // draw entity 
-        if (this.entity) {
-            //console.log('Node: Dibujando entidad', this.entity.constructor.name);
-            this.entity.draw(this.transformMatrix, shader);
-        }
+        // Only draw if visible
+        if (this.visible) {
+            // draw entity 
+            if (this.entity) {
+                this.entity.draw(this.transformMatrix, shader);
+            }
 
-        // recursive
-        for (const child of this.children) {
-            child.traverse(this.transformMatrix, shader, mustUpdate);
+            // recursive - only traverse visible children
+            for (const child of this.children) {
+                child.traverse(this.transformMatrix, shader, mustUpdate);
+            }
         }
     }
 
@@ -156,7 +167,7 @@ export class Node {
         this.needsUpdate = true;
     }
 
-    // ⚠️ PRUEBA
+    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE)
 
     getObjectByName(name: string): Node | null {
         if (this.name === name) return this;

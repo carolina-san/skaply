@@ -49,8 +49,7 @@ class WebGlRenderableObject implements RenderableObject {
     }
 
     setVisible(visible: boolean): void {
-        //this.visible = visible;
-        //this.node.setVisible(visible);
+        this.node.setVisible(visible);
     }
 
     get name(): string {
@@ -453,7 +452,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas = canvas;
         this.gl = canvas.getContext('webgl2')!;
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO!
+        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
 
         // camera 
@@ -467,17 +466,6 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
         this.rootNode.addChild(this.lightNode);
-
-        // shaders  
-        // this.initShader().then(() => {
-        //     this.ready = true;
-        //     this.cameraController = new CameraController(
-        //         this.cameraNode,
-        //         this.cameraEntity,
-        //         canvas,
-        //         width < this.mobileThreshold
-        //     );
-        // });
 
         await this.initShader();
 
@@ -511,6 +499,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraController.setCameraProps(position, target);
     }
 
+    // ⚠️ NO SE LLEGA A USAR NUNCA!
     updateControls(): void {
         // this.cameraController.updateOrbit();     
     }
@@ -520,7 +509,10 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     checkControlsState(): boolean { 
-        console.log('Camera Controller: ' + this.cameraController);
+        if (!this.cameraController) {
+            console.warn('Camera controller not yet initialized');
+            return false;
+        }
         return this.cameraController.hasMovedFromDefault(); 
     }
 
@@ -585,8 +577,6 @@ export class WebGLEngineAdapter extends EngineFacade {
         const modelNode = new Node();
         const namedMeshes = meshResource.getNamedMeshes();
         
-        console.log('Meshes cargados:', namedMeshes.map(m => m.name));
-        
         // meshResource.getMeshes().forEach(mesh => {
         //     const meshNode = new Node();
         //     meshNode.setEntity(mesh);
@@ -601,22 +591,9 @@ export class WebGLEngineAdapter extends EngineFacade {
             modelNode.addChild(meshNode);
         });
 
-
+        console.log('[WEBGL] Modelo cargado desde URL:', url);
         return this.wrapNativeObject(modelNode);
     }
-
-    // ⚠️ puede que ni se use este método
-    // createGroup(): RenderableObject {
-    //     const node = new Node();
-    //     const group = new WebGlRenderableObject(node);
-    //     //this.wrappers.add(group); // ⚠️ VER SI HACE REALMENTE FALTA
-    //     return group;
-    // }
-
-    // // ⚠️ Método no utilizado. Devuelve un grupo vacío para cumplir la interfaz
-    // createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
-    //     return this.createGroup();
-    // }
 
     wrapNativeObject(native: any): RenderableObject {
         if (!(native instanceof Node)) {
