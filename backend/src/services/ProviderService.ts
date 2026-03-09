@@ -48,6 +48,8 @@ export class ProviderService {
     page?: number;
     limit?: number;
     search?: string;
+    orderBy?: string;
+    orderDir?: string;
   }) {
     try {
       const conditions: string[] = ['role = $1'];
@@ -94,7 +96,7 @@ export class ProviderService {
               created_at, updated_at, approved_at, disabled_at, enabled_at
         FROM public."User"
         WHERE ${whereClause}
-        ORDER BY company_name
+        ORDER BY ${filters?.orderBy || 'company_name'} ${filters?.orderDir || 'ASC'}
         LIMIT $${paramIndex++} OFFSET $${paramIndex++}
       `;
 

@@ -77,7 +77,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null, orderBy: string = 'company_name', orderDir: string = 'ASC'): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
@@ -90,6 +90,12 @@ export class ApiService {
     }
     if (registration_status) {
       url += `&registration_status=${registration_status}`;
+    }
+    if (orderBy) {
+      url += `&orderBy=${orderBy}`;
+    }
+    if (orderDir) {
+      url += `&orderDir=${orderDir}`;
     }
     return this.http.get(url);
   }

@@ -22,6 +22,8 @@ export class GestionProveedores implements OnInit, OnChanges {
   totalItems: number = 0;
   selectedVisibility: boolean | null = null;
   selectedEnabled: boolean | null = null;
+  orderBy: string = '';
+  orderDir: string = '';
 
   // Modal de confirmación
   isDeleteModalOpen: boolean = false;
@@ -69,6 +71,24 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.fetchProviders();
   }
 
+  onOrderByChange(column: string) {
+    if (this.orderBy === column) {
+      if (this.orderDir === 'ASC') {
+        this.orderDir = 'DESC';
+      } else if (this.orderDir === 'DESC') {
+        this.orderBy = '';
+        this.orderDir = '';
+      } else {
+        this.orderDir = 'ASC';
+      }
+    } else {
+      this.orderBy = column;
+      this.orderDir = 'ASC';
+    }
+    this.currentPage = 1;
+    this.fetchProviders();
+  }
+
   showError(message: string) {
     this.errorMessage = message;
     this.successMessage = null;
@@ -82,7 +102,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   fetchProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, this.selectedEnabled, 'approved').subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, this.selectedEnabled, 'approved', this.orderBy, this.orderDir).subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
