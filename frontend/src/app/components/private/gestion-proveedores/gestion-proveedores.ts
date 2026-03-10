@@ -177,7 +177,7 @@ export class GestionProveedores implements OnInit, OnChanges {
     if (updateData.password) {
       this.apiService.updateProviderPassword(this.selectedProvider.id, updateData.password).subscribe(
         (response) => {
-          this.successMessage = 'Contraseña actualizada correctamente';
+          this.successMessage = 'Proveedor actualizado correctamente';
           this.isSubmitting = false;
 
           setTimeout(() => {
@@ -192,7 +192,6 @@ export class GestionProveedores implements OnInit, OnChanges {
         }
       );
     }
-    //Falta añadir que si has cambiado solo la contraseña no salga el error de que no hay campos que actualizar
 
     this.apiService.updateProvider(this.selectedProvider.id, updateData).subscribe(
       (response) => {
@@ -205,9 +204,11 @@ export class GestionProveedores implements OnInit, OnChanges {
         }, 1500);
       },
       (error) => {
-        this.isSubmitting = false;
-        console.error('Error updating provider:', error);
-        this.errorMessage = error.error?.message || 'Error al actualizar el proveedor';
+        if (!updateData.password) {
+          this.isSubmitting = false;
+          console.error('Error updating provider:', error);
+          this.errorMessage = error.error?.message || 'Error al actualizar el proveedor';
+        }
       }
     );
   }

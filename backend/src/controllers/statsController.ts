@@ -22,3 +22,21 @@ export const getDashboardStats = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+
+export const getProviderStats = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let providerId = parseInt(req.params.id as string, 10);
+
+    if (isNaN(providerId) || !providerId) {
+      console.log("Invalid providerId received from req.params.id:", req.params.id);
+      res.status(400).json({ error: `Índice de proveedor inválido: ${req.params.id}` });
+      return;
+    }
+
+    const stats = await statsService.getProviderStats(providerId);
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error('Error in getProviderStats:', error);
+    next(error);
+  }
+};
