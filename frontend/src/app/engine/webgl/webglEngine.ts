@@ -257,7 +257,6 @@ export class CameraController {
         return vec3.fromValues(x, y, z);
     }
 
-    // ⚠️ SE HACE SET TRANSLATION, PERO ESO NO ACTUALIZA LA TRANSFORM MATRIX GLOBAL DEL NODO!
     private updateOrbit(): void {
         const eye = this.computeEye();
         this.cameraNode.setTranslation(eye[0], eye[1], eye[2]);
