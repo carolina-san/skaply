@@ -60,11 +60,6 @@ export class Node {
         this.needsUpdate = true;
     }
 
-    setTransformMatrix(matrix: mat4): void {
-        mat4.copy(this.transformMatrix, matrix);
-        this.needsUpdate = false;
-    }
-
     setName(name: string): void {
         this.name = name;
     }
@@ -96,6 +91,10 @@ export class Node {
     }
 
     getTransformMatrix(): mat4 {
+        if (this.needsUpdate) { 
+            this.updateTransforMatrix(); 
+            this.needsUpdate = false;
+        }
         return this.transformMatrix;
     }
 
@@ -119,31 +118,29 @@ export class Node {
         return matrix;
     }
 
+    private updateTransforMatrix(): void {
+        let parentGlobalMatrix = mat4.create();
+        if (this.parent) {
+            parentGlobalMatrix = this.parent.getTransformMatrix()
+        } 
+        const localMatrix = this.computeLocalMatrix();
+        mat4.multiply(this.transformMatrix, parentGlobalMatrix, localMatrix); 
+    }
+
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
-
-    // duda de si 'parentUpdate' es la solucion limpia para actualizar la mtriz SI EL PADRE ha cambiado su matriz (antes no se contemplaba esto)
-
-    traverse(parentMatrix: mat4, shader: ShaderResource, parentUpdated: boolean): void { 
+  
+    traverse(shader: ShaderResource): void { 
     
-        const mustUpdate = this.needsUpdate || parentUpdated;
-        
-        // create transform matrix
-        if (mustUpdate) {
-            const localMatrix = this.computeLocalMatrix();
-            mat4.multiply(this.transformMatrix, parentMatrix, localMatrix); 
-            this.needsUpdate = false;
-        }
-
-        // Only draw if visible
         if (this.visible) {
+            
             // draw entity 
             if (this.entity) {
-                this.entity.draw(this.transformMatrix, shader);
+                this.entity.draw(this.getTransformMatrix(), shader);
             }
 
             // recursive - only traverse visible children
             for (const child of this.children) {
-                child.traverse(this.transformMatrix, shader, mustUpdate);
+                child.traverse(shader);
             }
         }
     }

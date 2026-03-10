@@ -120,8 +120,7 @@ export class WebglSceneComponent implements AfterViewInit {
       // mat4.translate(cameraMatrix, identity, cameraPosition);
       // camera.lookAt(cameraMatrix, vec3.fromValues(0, 0, 0));
 
-      const identity = mat4.create();
-      root.traverse(identity, shader, false);
+      root.traverse(shader);
 
       requestAnimationFrame(render);
     };

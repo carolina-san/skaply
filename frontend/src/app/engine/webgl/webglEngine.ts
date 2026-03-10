@@ -257,6 +257,7 @@ export class CameraController {
         return vec3.fromValues(x, y, z);
     }
 
+    // ⚠️ SE HACE SET TRANSLATION, PERO ESO NO ACTUALIZA LA TRANSFORM MATRIX GLOBAL DEL NODO!
     private updateOrbit(): void {
         const eye = this.computeEye();
         this.cameraNode.setTranslation(eye[0], eye[1], eye[2]);
@@ -542,8 +543,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         //const camPos = this.cameraController.getCameraPosition();
         //this.shader.setVec3("uViewPosition", vec3.fromValues(camPos.x, camPos.y, camPos.z));
 
-        const identity = mat4.create();
-        this.rootNode.traverse(identity, this.shader, false);
+        this.rootNode.traverse(this.shader);
 
         this.updateControls();
     }
