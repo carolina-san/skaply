@@ -7,6 +7,7 @@ import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
 import { Light } from './engine-core/light';
+import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
 
 
@@ -593,11 +594,124 @@ export class WebGLEngineAdapter extends EngineFacade {
         return new WebGlRenderableObject(native);
     }
     
-    // ⚠️ FALTA POR HACER
     createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
-        const node = new Node();
-        const wrapper = new WebGlRenderableObject(node);
-        return wrapper;
+        
+        const arrowMesh = this.createArrowMesh(length); // ⚠️ CREAR SOLO 1 MALLA Y REUTILIZARLA
+        const arrowNode = new Node();
+        arrowNode.setEntity(arrowMesh);
+
+        // translation
+        arrowNode.setTranslation(origin.x, origin.y, origin.z);
+
+        // rotation
+        const direction = vec3.fromValues(dir.x, dir.y, dir.z);
+        vec3.normalize(direction, direction);
+        const up = vec3.fromValues(0, 1, 0);
+        const axis = vec3.create();
+        vec3.cross(axis, up, direction);
+        const angle = Math.acos(vec3.dot(up, direction));
+        arrowNode.setRotation(axis[0] * angle, axis[1] * angle, axis[2] * angle);
+
+        return new WebGlRenderableObject(arrowNode);
+    }
+
+    private createArrowMesh(arrowLenght: number): Mesh {
+
+        const segments       = 12;
+        const cilinderRadius = arrowLenght * 0.02;
+        const coneRadius     = arrowLenght * 0.05;
+
+        //    .                  -|
+        //   /_\   cone 25%       |
+        //    |                   |
+        //    |                   |  arrowLenght
+        //    |    cilinder 75%   |
+        //    |                  -|
+
+        const coneLength     = arrowLenght * 0.25;
+        const cilinderLength = arrowLenght - coneLength;
+
+        const verts: number[] = []; // [x,y,z, x,y,z, x,y,z ...]
+        const inds: number[] = [];
+
+        for (let i = 0; i < segments; i++) {
+            
+            // CILINDER VERTICES
+            const point = this.getCirclePoint(i, segments, cilinderRadius);
+            verts.push(point.x, 0, point.z); // bottom ring
+            verts.push(point.x, cilinderLength, point.z); // top ring
+
+            //        top ring
+            //       2──4──6──8               y = cilinderLength
+            //  (0)  │  │  │  │  (2phirad)                         
+            //       1──3──5──7               y = 0
+            //       bottom ring
+
+            // CILINDER INDEX
+            const next = (i + 1) % segments;
+            const botomIndex = i * 2;
+            const topIndex   = i * 2 + 1;
+            const botomNextIndex = next * 2;
+            const topNextIndex   = next * 2 + 1;
+            inds.push(botomIndex, topIndex, botomNextIndex);    // a
+            inds.push(topIndex, topNextIndex, botomNextIndex);  // b
+
+            //     topIndex  ●──●  topNextIndex
+            //               │\b│
+            //               │a\│ 
+            //  bottomIndex  ●──●  botomNextIndex
+        }
+
+        const coneStartIndex = verts.length / 3;
+        const tipIndex = verts.length / 3;
+        verts.push(0, arrowLenght, 0);
+
+        for (let i = 0; i < segments; i++) {
+
+            // CONE VERTICES
+            const point = this.getCirclePoint(i, segments, coneRadius);
+            verts.push(point.x, cilinderLength, point.z);
+
+            // CONE INDEX
+            const next = (i + 1) % segments;
+            inds.push(coneStartIndex + i, coneStartIndex + next, tipIndex);
+
+            //              tipIndex  ●
+            //                       / \
+            //                      /   \
+            //  coneStartIndex + i ●─────● coneStartIndex + next
+        }
+
+        const mesh = new Mesh({
+            vertices:   new Float32Array(verts),
+            normals:    new Float32Array(verts.length),
+            texCoords:  new Float32Array(0),
+            indices:    new Uint32Array(inds)
+        }, this.gl);
+
+        return mesh;
+
+    }
+
+    private getCirclePoint(iteration: number, totalSegments: number, radius: number) {
+        const progress = iteration / totalSegments;
+        const fullCircleRadians = Math.PI * 2;
+        const angle = progress * fullCircleRadians;
+
+        //                z
+        //                ●
+        //            ●       ●
+        //          ●           ●
+        //  x <-   ●      Y      ●  -> x
+        //          ●           ●
+        //            ●       ●
+        //                ●
+        //                z
+
+        return {
+            x: Math.cos(angle) * radius,
+            z: Math.sin(angle) * radius
+        };
     }
     
     addToScene(object: RenderableObject): void {

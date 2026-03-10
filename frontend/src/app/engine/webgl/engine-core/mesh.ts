@@ -19,8 +19,8 @@ export class Mesh extends Entity {
     
     constructor(
         private resource: MeshResource,         
-        private gl: WebGL2RenderingContext) 
-        {  
+        private gl: WebGL2RenderingContext
+    ) {  
         super();
     }
 
@@ -39,7 +39,9 @@ export class Mesh extends Entity {
         }
  
         gl.bindVertexArray(this.vao!);
+        //gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
+
         gl.bindVertexArray(null);
         
         // logs
