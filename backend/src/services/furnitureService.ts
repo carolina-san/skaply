@@ -439,7 +439,11 @@ export class FurnitureService {
             'color_id', p.color_id,
             'quantity', sp.quantity,
             'axis', fp.exploded_axis,
-            'distance', fp.exploded_distance
+            'distance', fp.exploded_distance,
+            'pos_x', fp.assembled_pos_x,
+            'pos_y', fp.assembled_pos_y,
+            'pos_z', fp.assembled_pos_z
+
           )
         ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
         COALESCE(json_agg(

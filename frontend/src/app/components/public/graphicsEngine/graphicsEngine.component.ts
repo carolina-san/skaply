@@ -177,7 +177,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     let ref = this.route.snapshot.params['ref'];
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
       this.furniture = f.data ? f.data : f;
-      console.log('Furniture loaded:', this.furniture);
+      //console.log('Furniture loaded:', this.furniture);
 
       if (this.useExternalModel && this.isViewInitialized) {
         // Wait for initEngine to complete before calling animate
@@ -190,7 +190,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     this.chatbotSub = this.chatbotInteractionService.stepChange$.subscribe(({ furnitureRef, stepNumber }) => {
-      console.log('Chatbot request received for step:', stepNumber, 'ref:', furnitureRef);
+      //console.log('Chatbot request received for step:', stepNumber, 'ref:', furnitureRef);
       // Optional: Verify furnitureRef matches this.furniture?.reference_number
       // But usually the viewer only shows one furniture at a time
       if (this.mode() !== 'manual') {
@@ -205,10 +205,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private createEngineInstance(): void {
     if (this.engineUse() === 'webGL') {
-      console.log('Using WebGL Custom Engine');
+     //console.log('Using WebGL Custom Engine');
       this.engine = new WebGLEngineAdapter();
     } else {
-      console.log('Using ThreeJS Adapter');
+      //console.log('Using ThreeJS Adapter');
       this.engine = new ThreeEngineAdapter();
     }
   }
@@ -502,7 +502,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // 0. Pre-load the base model if available (shared for both API assembly and single-model rollback)
     if (this.modelUrl) {
       try {
-        console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
+        //console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
         baseModel = await this.engine.loadGLTF(this.modelUrl);
         // Ensure it's in the scene to find parts, though we might toggle visibility later
         baseModel.setPosition(0, 0, 0);
@@ -510,7 +510,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         baseModel.receiveShadow = true;
         this.engine.addToScene(baseModel);
       } catch (error) {
-        console.error('Error pre-loading base model:', error);
+        //console.error('Error pre-loading base model:', error);
       }
     }
 
@@ -520,7 +520,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        console.log('Loading assembly from API for furniture ID:', furnitureId);
+        //console.log('Loading assembly from API for furniture ID:', furnitureId);
         // Pass the pre-loaded baseModel to find parts inside it
         const { parts, totalSteps, stepDescriptions } = await this.createPartsFromApi(assemblyData, baseModel);
 
@@ -547,7 +547,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     if (this.useExternalModel && baseModel) {
-      console.log('Using standard external model mode.');
+      //console.log('Using standard external model mode.');
       this.totalSteps.set(1);
       this.stepDescriptions.set(['Visualización del modelo']);
       this.setMode('final');
@@ -569,6 +569,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.stepsData.set(sortedSteps);
 
     for (const step of sortedSteps) {
+      // description
       const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
       stepDescriptions.push(description);
 
@@ -576,9 +577,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const appearStep = currentStepIndex * 2;
       const joinStep = appearStep + 1;
 
+      // iterate step parts
       for (const partRef of step.parts) {
         let mesh: RenderableObject | null = null;
-        let targetPos = { x: 0, y: 0, z: 0 };
+        
+        let targetPos = { x: 0, y: 0, z: 0 }; // ⚠️ !!
+
         let usingExistingMesh = false;
 
         if (partRef.file_uri) { // ⚠️ EN PRINCIPIO, NO
@@ -626,7 +630,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         }
 
         // Calculate start position based on axis and distance
+        //const startPos = { ...targetPos };
+
         const startPos = { ...targetPos };
+
         const dist = partRef.distance; // default distance
 
         if      (partRef.axis === 'x') startPos.x += dist;
@@ -654,23 +661,78 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           description: `Part: ${partRef.reference_number}`
         };
 
+        const startArrowPos = {
+          x: partRef.pos_x,
+          y: partRef.pos_y,
+          z: partRef.pos_z
+        };
+
+        const targetArrowPos = {
+          x: partRef.pos_x,
+          y: partRef.pos_y,
+          z: partRef.pos_z
+        };
+
+        
+        
+        if      (partRef.axis === 'x') startArrowPos.x += dist;
+        else if (partRef.axis === 'y') startArrowPos.y += dist;
+        else if (partRef.axis === 'z') startArrowPos.z += dist;
+        else    startArrowPos.y += dist; // Default
+        
+        console.log(partRef.reference_number + ' start pos  x:' + startArrowPos.x);
+        console.log(partRef.reference_number + ' start pos  y:' + startArrowPos.y);
+        console.log(partRef.reference_number + ' start pos  z:' + startArrowPos.z);
+
+        console.log(partRef.reference_number + ' final pos  x:' + targetArrowPos.x);
+        console.log(partRef.reference_number + ' final pos  y:' + targetArrowPos.y);
+        console.log(partRef.reference_number + ' final pos  z:' + targetArrowPos.z);
+        
         // Arrow helper logic (simplified)
         if (dist > 0.01) {
+
           const dir = { 
-            x: targetPos.x - startPos.x, 
-            y: targetPos.y - startPos.y, 
-            z: targetPos.z - startPos.z 
+            x: targetArrowPos.x - startArrowPos.x, 
+            y: targetArrowPos.y - startArrowPos.y, 
+            z: targetArrowPos.z - startArrowPos.z 
           };
-          const len = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-          if (len > 0) {
-            const arrowDir = { x: dir.x / len, y: dir.y / len, z: dir.z / len };
-            const arrowLength = 0.6;
-            const originOffset = {
-              x: -arrowDir.x * arrowLength,
-              y: -arrowDir.y * arrowLength + 0.3,
-              z: -arrowDir.z * arrowLength
+
+          const length = Math.sqrt(
+            dir.x * dir.x + 
+            dir.y * dir.y + 
+            dir.z * dir.z
+          );
+
+          if (length > 0) {
+
+            const arrowDir = { 
+              x: dir.x / length, 
+              y: dir.y / length, 
+              z: dir.z / length 
             };
-            assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
+
+            const origin = {
+              x: startArrowPos.x,
+              y: startArrowPos.y,
+              z: startArrowPos.z
+            };
+
+            assemblyPart.arrow = this.engine.createArrowHelper(
+              arrowDir,
+              origin,
+              length,
+              0x00ffff
+            );
+            
+            // const arrowLength = 0.6;
+            // const originOffset = {
+            //   x: -arrowDir.x * arrowLength,
+            //   y: -arrowDir.y * arrowLength + 0.3,
+            //   z: -arrowDir.z * arrowLength
+            // };
+
+            //assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
+            
             assemblyPart.object.add(assemblyPart.arrow);
           }
         }
@@ -840,9 +902,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const hitObject = this.engine.raycast(x, y);
 
     if (hitObject) {
-      console.log('Hit object:', hitObject);
+      //console.log('Hit object:', hitObject);
       const part = this.findPartForObject(hitObject);
-      console.log('Found part:', part?.name);
+      //console.log('Found part:', part?.name);
 
       if (part && this.currentStep() >= part.appearStep) {
         this.isolatePart(part);

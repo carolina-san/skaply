@@ -156,7 +156,10 @@ CREATE TABLE Furniture_Part (
     quantity INTEGER CHECK (quantity >= 0),
     exploded_axis CHAR(1) CHECK (exploded_axis IN ('x','y','z')),
     exploded_distance FLOAT,
-    PRIMARY KEY (furniture_id, part_id)
+    PRIMARY KEY (furniture_id, part_id),
+    assembled_pos_x FLOAT NOT NULL DEFAULT 0,
+    assembled_pos_y FLOAT NOT NULL DEFAULT 0,
+    assembled_pos_z FLOAT NOT NULL DEFAULT 0
 );
 
 -- ============================
