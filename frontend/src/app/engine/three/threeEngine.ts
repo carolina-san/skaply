@@ -44,10 +44,12 @@ class ThreeRenderableObject implements RenderableObject {
         this.threeObject.rotation.set(x, y, z);
     }
 
+    setScale(x: number, y: number, z: number): void {
+        this.threeObject.scale.set(x, y, z);
+    }
+
     setVisible(visible: boolean): void {
-        this.threeObject.traverse((child: any) => { //Changed to get all node of the 3d object not just the father
-            child.visible = visible;
-        });
+        this.threeObject.visible = visible;
     }
 
     add(child: RenderableObject): void {
@@ -98,6 +100,8 @@ export class ThreeEngineAdapter extends EngineFacade {
     private outlinePass!: OutlinePass;
     private raycaster = new THREE.Raycaster();
     private gltfLoader = new GLTFLoader(); //3D model 
+
+    private gltfCache: Map<string, THREE.Object3D> = new Map();
 
     // Smooth transition state
     private targetPosition = new THREE.Vector3();
@@ -188,14 +192,32 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
 
-    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
-        const arrow = new THREE.ArrowHelper(
-            new THREE.Vector3(dir.x, dir.y, dir.z),
-            new THREE.Vector3(origin.x, origin.y, origin.z),
-            length,
-            new THREE.Color(color)
-        );
-        return new ThreeRenderableObject(arrow);
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
+        // const arrow = new THREE.ArrowHelper(
+        //     new THREE.Vector3(dir.x, dir.y, dir.z),
+        //     new THREE.Vector3(origin.x, origin.y, origin.z),
+        //     length,
+        //     new THREE.Color(color)
+        // );
+        // return new ThreeRenderableObject(arrow);
+
+        const arrow = await this.loadGLTF('storage/flecha.glb');
+
+        arrow.setPosition(origin.x, origin.y, origin.z);
+        arrow.setScale(length, length, length);
+
+        this.setArrowRotationFromDir(arrow, dir);
+
+        return arrow;
+    }
+
+    private setArrowRotationFromDir(arrow: RenderableObject, dir: {x:number,y:number,z:number}) {
+        arrow.setRotation(0,0,0);
+        if      (dir.x === 1)   {arrow.setRotation(0,0,-Math.PI / 2);}
+        else if (dir.x === -1)  {arrow.setRotation(0,0, Math.PI / 2);}
+        else if (dir.y === -1)  {arrow.setRotation(Math.PI,0,0);}
+        else if (dir.z === 1)   {arrow.setRotation(Math.PI / 2,0,0);}
+        else if (dir.z === -1)  {arrow.setRotation(-Math.PI / 2,0,0);}
     }
 
     addToScene(object: RenderableObject): void {
@@ -373,12 +395,32 @@ export class ThreeEngineAdapter extends EngineFacade {
 
     // Load the file GLT
     async loadGLTF(url: string): Promise<RenderableObject> {
+        // const gltf = await new Promise<any>((resolve, reject) => {
+        //     this.gltfLoader.load(url, resolve, undefined, reject);
+        // });
+
+        // const root = gltf.scene as THREE.Object3D;
+        // return new ThreeRenderableObject(root);
+
+
+
+        if (this.gltfCache.has(url)) {
+            const cached = this.gltfCache.get(url)!;
+            const clone = cached.clone(true); // deep clone
+            return new ThreeRenderableObject(clone);
+        }
+
         const gltf = await new Promise<any>((resolve, reject) => {
             this.gltfLoader.load(url, resolve, undefined, reject);
         });
 
         const root = gltf.scene as THREE.Object3D;
-        return new ThreeRenderableObject(root);
+
+        this.gltfCache.set(url, root);
+
+        const clone = root.clone(true);
+
+        return new ThreeRenderableObject(clone);
     }
 
     wrapNativeObject(native: any): RenderableObject {

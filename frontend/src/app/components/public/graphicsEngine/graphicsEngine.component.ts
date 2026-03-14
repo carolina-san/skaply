@@ -570,7 +570,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     for (const step of sortedSteps) {
       // description
-      const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
+      const description = 
+        step.description 
+        || `Paso ${step.step_number}: Ensamblaje de partes.`;
       stepDescriptions.push(description);
 
       // Calculate appear and join steps
@@ -627,26 +629,21 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         if (!usingExistingMesh) {
             this.engine.addToScene(mesh);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
         }
 
         // Calculate start position based on axis and distance
-        //const startPos = { ...targetPos };
+        const offsetDistance = partRef.distance;
+        const offsetAxis = partRef.axis;
+        const position = { ...targetPos };
 
-        const startPos = { ...targetPos };
-
-        const dist = partRef.distance; // default distance
-
-        if      (partRef.axis === 'x') startPos.x += dist;
-        else if (partRef.axis === 'y') startPos.y += dist;
-        else if (partRef.axis === 'z') startPos.z += dist;
-        else    startPos.y += dist; // Default
+        const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
+    
 
         // Set initial state to START position
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
-        if (!usingExistingMesh) {
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
+
 
         // Ensure visibility is managed by animation loop, but initially...
         // The animation loop sets visibility based on steps.
@@ -661,80 +658,52 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           description: `Part: ${partRef.reference_number}`
         };
 
-        const startArrowPos = {
-          x: partRef.pos_x,
-          y: partRef.pos_y,
-          z: partRef.pos_z
-        };
-
+        // FLECHAS
+        
         const targetArrowPos = {
           x: partRef.pos_x,
           y: partRef.pos_y,
           z: partRef.pos_z
         };
 
-        
-        
-        if      (partRef.axis === 'x') startArrowPos.x += dist;
-        else if (partRef.axis === 'y') startArrowPos.y += dist;
-        else if (partRef.axis === 'z') startArrowPos.z += dist;
-        else    startArrowPos.y += dist; // Default
-        
-        console.log(partRef.reference_number + ' start pos  x:' + startArrowPos.x);
-        console.log(partRef.reference_number + ' start pos  y:' + startArrowPos.y);
-        console.log(partRef.reference_number + ' start pos  z:' + startArrowPos.z);
+        const arrowPosition = { ...targetArrowPos };
+        const startArrowPos = this.calculateOffsetPosition(arrowPosition, offsetDistance, offsetAxis); // ⚠️COMO EL NODO ARROW ES HIJO DEL NODO DE LA PIEZA, YA TIENE APLICADO EL OFFSET INICIAL!
 
-        console.log(partRef.reference_number + ' final pos  x:' + targetArrowPos.x);
-        console.log(partRef.reference_number + ' final pos  y:' + targetArrowPos.y);
-        console.log(partRef.reference_number + ' final pos  z:' + targetArrowPos.z);
         
         // Arrow helper logic (simplified)
-        if (dist > 0.01) {
 
-          const dir = { 
-            x: targetArrowPos.x - startArrowPos.x, 
-            y: targetArrowPos.y - startArrowPos.y, 
-            z: targetArrowPos.z - startArrowPos.z 
-          };
+        const length = Math.abs(offsetDistance)
 
-          const length = Math.sqrt(
-            dir.x * dir.x + 
-            dir.y * dir.y + 
-            dir.z * dir.z
+        if (length > 0.01) {
+
+          console.log('PINTANDO FLECHA ' + currentStepIndex);
+
+          let dir = {x:0,y:0,z:0};
+          if (offsetAxis === 'x') dir.x = 1;
+          if (offsetAxis === 'y') dir.y = 1;
+          if (offsetAxis === 'z') dir.z = 1;
+
+          const sign = -(Math.sign(offsetDistance));
+          dir.x *= sign;
+          dir.y *= sign;
+          dir.z *= sign;
+
+
+          console.log('direction x arrow ' + partRef.reference_number + ' :' + dir.x);
+          console.log('direction y arrow ' + partRef.reference_number + ' :' + dir.y);
+          console.log('direction z arrow ' + partRef.reference_number + ' :' + dir.z);
+
+          assemblyPart.arrow = await this.engine.createArrowHelper(
+            //arrowDir,
+            dir,
+            targetArrowPos,
+            length,
+            0x00ffff
           );
+          
+          assemblyPart.object.add(assemblyPart.arrow);
+          //this.engine.addToScene(assemblyPart.arrow); // ⚠️ arbol erroneo
 
-          if (length > 0) {
-
-            const arrowDir = { 
-              x: dir.x / length, 
-              y: dir.y / length, 
-              z: dir.z / length 
-            };
-
-            const origin = {
-              x: startArrowPos.x,
-              y: startArrowPos.y,
-              z: startArrowPos.z
-            };
-
-            assemblyPart.arrow = this.engine.createArrowHelper(
-              arrowDir,
-              origin,
-              length,
-              0x00ffff
-            );
-            
-            // const arrowLength = 0.6;
-            // const originOffset = {
-            //   x: -arrowDir.x * arrowLength,
-            //   y: -arrowDir.y * arrowLength + 0.3,
-            //   z: -arrowDir.z * arrowLength
-            // };
-
-            //assemblyPart.arrow = this.engine.createArrowHelper(arrowDir, originOffset, arrowLength, 0x00ffff);
-            
-            assemblyPart.object.add(assemblyPart.arrow);
-          }
         }
 
         parts.push(assemblyPart);
@@ -744,6 +713,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     const totalSteps = currentStepIndex * 2;
     return { parts, totalSteps, stepDescriptions };
+  }
+
+  private calculateOffsetPosition(position: {x :number, y :number, z :number}, offsetDistance: number, offsetAxistance: string) {
+        if      (offsetAxistance === 'x') position.x += offsetDistance;
+        else if (offsetAxistance === 'y') position.y += offsetDistance;
+        else if (offsetAxistance === 'z') position.z += offsetDistance;
+        else    position.y += offsetDistance; // Default
+        return position;
   }
 
   private runSimulation(): void {
@@ -773,104 +750,105 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  private animate(): void {
-    this.animationFrameId = requestAnimationFrame(() => this.animate());
+  // ANIMATE CAMBIADO
 
-    // Check for camera movement
+  private updateCameraState(): void {
     const isMoved = this.engine.checkControlsState();
     if (this.isCameraMoved() !== isMoved) {
       this.isCameraMoved.set(isMoved);
     }
+  }
 
-    if (this.isSimulating()) {
-      this.runSimulation();
+  private handleIsolatedMode(isolated: any): void {
+    this.parts.forEach(part => {
+      const isTarget = part === isolated;
+      part.object.setVisible(isTarget);
+      if (part.arrow) { part.arrow.setVisible(false); }
+    });
+    this.engine.setHighlight([isolated.object]);
+  }
+
+  private handleNormalMode(step: number): void {
+    const partsToHighlight: RenderableObject[] = [];
+    for (const part of this.parts) {
+      if (this.needsHighlight(part, step)) {
+        partsToHighlight.push(part.object);
+      }
+      this.updateArrowVisibility(part, step);
+      this.updatePartMovement(part, step);
+      this.updatePartVisibility(part, step);
     }
+    this.engine.setHighlight(partsToHighlight);
+  }
 
-    const step = this.currentStep();
+  private needsHighlight(part: any, step: number): boolean {
+    if (part.appearStep === step) {
+      return true;
+    }
+    return this.isMovingToTarget(part);
+  }
+
+  private isMovingToTarget(part : any) : boolean {
+    const currentPos = part.object.getPosition();
+    const distToTarget = this.getDistance(currentPos, part.targetPosition);
+    return (distToTarget > 0.01);
+  }
+
+  private getDistance(a: any, b: any): number {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    const dz = a.z - b.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  private updateArrowVisibility(part: any, step: number): void {
+    if (!part.arrow) return;
+    if (step === part.appearStep) {
+      part.arrow.setVisible(true);
+      return;
+    }
+    if (step === part.joinStep) {
+      const isMoving = this.isMovingToTarget(part);
+      part.arrow.setVisible(isMoving);
+      return;
+    }
+    part.arrow.setVisible(false);
+  }
+
+  private updatePartMovement(part: any, step: number): void {
+    if (this.mode() === 'final') return;
+    const target =
+      step >= part.joinStep
+        ? part.targetPosition
+        : part.startPosition;
+    const current = part.object.getPosition();
+    const alpha = 0.02;
+    part.object.setPosition(
+      current.x + (target.x - current.x) * alpha,
+      current.y + (target.y - current.y) * alpha,
+      current.z + (target.z - current.z) * alpha
+    );
+  }
+
+  private updatePartVisibility(part: any, step: number): void {
+    const hasAppeared = step >= part.appearStep;
+    return part.object.setVisible(hasAppeared);
+  }
+
+  private animate(): void {
+    this.animationFrameId = requestAnimationFrame(() => this.animate());
+    this.updateCameraState();
+    if (this.isSimulating()) { 
+      this.runSimulation(); 
+    }
     const isolated = this.isolatedPart();
-
     if (isolated) {
-      this.parts.forEach(part => {
-        part.object.setVisible(part === isolated);
-        if (part.arrow) {
-          part.arrow.setVisible(false);
-        }
-      });
-      // Facade way to highlight - pass the RenderableObject
-      this.engine.setHighlight([isolated.object]);
+      this.handleIsolatedMode(isolated);
     } else {
-      const partsToHighlight: RenderableObject[] = [];
-      this.parts
-        .filter(part => {
-          const currentPos = part.object.getPosition();
-          // simple distance check
-          const dx = currentPos.x - part.targetPosition.x;
-          const dy = currentPos.y - part.targetPosition.y;
-          const dz = currentPos.z - part.targetPosition.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-          const isMovingToTarget = dist > 0.01;
-          return part.appearStep === step || (part.joinStep === step && isMovingToTarget);
-        })
-        .forEach(part => {
-          partsToHighlight.push(part.object);
-        });
-
-      this.engine.setHighlight(partsToHighlight);
-
-      this.parts.forEach(part => {
-        // Debug: Check if part should be animating
-        if (step >= part.appearStep && step < part.joinStep + 1) {
-          const currentPos = part.object.getPosition();
-          const dx = currentPos.x - part.targetPosition.x;
-          const dy = currentPos.y - part.targetPosition.y;
-          const dz = currentPos.z - part.targetPosition.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        }
-        
-        if (part.arrow) {
-          if (step === part.appearStep) {
-            part.arrow.setVisible(true);
-          } else if (step === part.joinStep) {
-            const currentPos = part.object.getPosition();
-            const dx = currentPos.x - part.targetPosition.x;
-            const dy = currentPos.y - part.targetPosition.y;
-            const dz = currentPos.z - part.targetPosition.z;
-            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            part.arrow.setVisible(dist > 0.01);
-          } else {
-            part.arrow.setVisible(false);
-          }
-        }
-
-        const target = step >= part.joinStep ? part.targetPosition : part.startPosition;
-        if (this.mode() !== 'final') {
-          // Lerp implementation
-          const currentPos = part.object.getPosition();
-          const alpha = 0.08;
-          const newX = currentPos.x + (target.x - currentPos.x) * alpha;
-          const newY = currentPos.y + (target.y - currentPos.y) * alpha;
-          const newZ = currentPos.z + (target.z - currentPos.z) * alpha;
-          part.object.setPosition(newX, newY, newZ);
-        }
-
-        const hasAppeared = step >= part.appearStep;
-
-        const currentPos = part.object.getPosition();
-        const start = part.startPosition;
-        const distStart = Math.sqrt(
-          Math.pow(currentPos.x - start.x, 2) +
-          Math.pow(currentPos.y - start.y, 2) +
-          Math.pow(currentPos.z - start.z, 2)
-        );
-        
-        const shouldBeVisible = hasAppeared || distStart > 0.01;
-
-        part.object.setVisible(shouldBeVisible);
-      });
-
-      this.engine.render();
+      const step = this.currentStep();
+      this.handleNormalMode(step);
     }
+    this.engine.render();
   }
 
   private onWindowResize(): void {

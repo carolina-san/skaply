@@ -9,6 +9,7 @@ export interface RenderableObject {
     uuid: string;
     setPosition(x: number, y: number, z: number): void;
     setRotation(x: number, y: number, z: number): void;
+    setScale(x: number, y: number, z: number): void;
     setVisible(visible: boolean): void;
     add(child: RenderableObject): void;
     remove(child: RenderableObject): void;
@@ -54,7 +55,7 @@ export abstract class EngineFacade {
     // Object Creation
     // abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
     // abstract createGroup(): RenderableObject;
-    abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject;
+    abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject>;
 
     // Scene Management
     abstract addToScene(object: RenderableObject): void;

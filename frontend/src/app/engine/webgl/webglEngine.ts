@@ -48,6 +48,11 @@ class WebGlRenderableObject implements RenderableObject {
         this.node.setRotation(x, y, z);
     }
 
+    setScale(x: number, y: number, z: number): void {
+        //this.rotation = { x, y, z };
+        this.node.setScale(x, y, z);
+    }
+
     setVisible(visible: boolean): void {
         this.node.setVisible(visible);
     }
@@ -593,26 +598,22 @@ export class WebGLEngineAdapter extends EngineFacade {
         }
         return new WebGlRenderableObject(native);
     }
+
+    private setArrowRotationFromDir(arrow: RenderableObject, dir: {x:number,y:number,z:number}) {
+        arrow.setRotation(0,0,0);
+        if      (dir.x === 1)   {arrow.setRotation(0,0,-Math.PI / 2);}
+        else if (dir.x === -1)  {arrow.setRotation(0,0, Math.PI / 2);}
+        else if (dir.y === -1)  {arrow.setRotation(Math.PI,0,0);}
+        else if (dir.z === 1)   {arrow.setRotation(Math.PI / 2,0,0);}
+        else if (dir.z === -1)  {arrow.setRotation(-Math.PI / 2,0,0);}
+    }
     
-    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
-        
-        const arrowMesh = this.createArrowMesh(length); // ⚠️ CREAR SOLO 1 MALLA Y REUTILIZARLA
-        const arrowNode = new Node();
-        arrowNode.setEntity(arrowMesh);
-
-        // translation
-        arrowNode.setTranslation(origin.x, origin.y, origin.z);
-
-        // rotation
-        const direction = vec3.fromValues(dir.x, dir.y, dir.z);
-        vec3.normalize(direction, direction);
-        const up = vec3.fromValues(0, 1, 0);
-        const axis = vec3.create();
-        vec3.cross(axis, up, direction);
-        const angle = Math.acos(vec3.dot(up, direction));
-        arrowNode.setRotation(axis[0] * angle, axis[1] * angle, axis[2] * angle);
-
-        return new WebGlRenderableObject(arrowNode);
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
+        const arrow = await this.loadGLTF('storage/flecha.glb');
+        arrow.setPosition(origin.x, origin.y, origin.z);
+        arrow.setScale(length, length, length);
+        this.setArrowRotationFromDir(arrow, dir);
+        return arrow;
     }
 
     private createArrowMesh(arrowLenght: number): Mesh {

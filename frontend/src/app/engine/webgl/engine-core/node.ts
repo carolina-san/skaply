@@ -41,6 +41,13 @@ export class Node {
 
     // SETTERS
 
+    private setChildenUpdate() :void {
+        for (const child of this.children) {
+            child.needsUpdate = true;
+            child.setChildenUpdate();
+        }
+    }
+
     setEntity(entity: Entity): void {
         this.entity = entity;
     }
@@ -48,16 +55,19 @@ export class Node {
     setTranslation(x: number, y: number, z: number): void {
         vec3.set(this.translation, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
     setRotation(x: number, y: number, z: number): void {
         vec3.set(this.rotation, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
     setScale(x: number, y: number, z: number): void {
         vec3.set(this.scale, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
     setName(name: string): void {
