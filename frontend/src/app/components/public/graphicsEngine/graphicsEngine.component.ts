@@ -135,7 +135,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       setTimeout(() => this.centerActiveStep(), 100);
 
       // Camera rotation logic
-      if (steps.length > 0 && steps[stepIndex]) {
+      if (this.mode() === 'final') {
+        if (this.lastRotationConfig.angle !== null || this.lastRotationConfig.axis !== null) {
+          this.engine.resetControls();
+          this.lastRotationConfig = { angle: null, axis: null };
+        }
+      } else if (steps.length > 0 && steps[stepIndex]) {
         const stepData = steps[stepIndex];
         const hasNewRotation =
           stepData.scene_camera_angle !== null
@@ -343,10 +348,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-
-    const shouldRotate = newMode === 'simulation' || newMode === 'final';
-    this.engine.toggleControls(true, shouldRotate);
-
+    
     this.exitIsolation();
 
     if (newMode === 'simulation') {
@@ -360,10 +362,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
     }
+
+    const shouldRotate = newMode === 'simulation' && !this.isSimulationPaused();
+    this.engine.toggleControls(true, shouldRotate);
   }
 
   togglePause(): void {
     this.isSimulationPaused.update(p => !p);
+    this.engine.toggleControls(true, !this.isSimulationPaused());
   }
 
   setSimulationSpeed(speed: number): void {
@@ -474,7 +480,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.videoRef?.nativeElement) {
       this.videoRef.nativeElement.srcObject = null;
     }
-    const shouldRotate = this.mode() === 'final' || this.isSimulating();
+    const shouldRotate = this.mode() === 'simulation' && !this.isSimulationPaused();
     this.engine.toggleControls(true, shouldRotate);
   }
 
