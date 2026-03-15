@@ -18,7 +18,7 @@ export class Mesh extends Entity {
     private initialized = false;
     
     constructor(
-        private resource: MeshResource,         
+        public resource: MeshResource,         
         private gl: WebGL2RenderingContext
     ) {  
         super();

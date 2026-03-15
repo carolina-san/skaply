@@ -744,8 +744,76 @@ export class WebGLEngineAdapter extends EngineFacade {
     
     // INTERACTION
 
-    // ⚠️ FALTA POR HACER
-    raycast(_x: number, _y: number): RenderableObject | null {
+    raycast(x: number, y: number): RenderableObject | null {
+        // Calculate ray from camera to world
+        const invViewProj = mat4.create();
+        const viewProj = mat4.create();
+        mat4.multiply(viewProj, this.cameraController.getProjectionMatrix() as any, this.cameraController.getViewMatrix() as any);
+        mat4.invert(invViewProj, viewProj);
+    
+        const oriRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, -1), invViewProj);
+        const tgtRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, 1), invViewProj);
+        
+        const dir = vec3.create();
+        vec3.sub(dir, tgtRaw, oriRaw);
+        vec3.normalize(dir, dir);
+        
+        // Möller-Trumbore Ray-Triangle Intersection
+        const intersectTriangle = (orig: vec3, rdir: vec3, v0: vec3, v1: vec3, v2: vec3): number | null => {
+            const edge1 = vec3.create(); vec3.sub(edge1, v1, v0);
+            const edge2 = vec3.create(); vec3.sub(edge2, v2, v0);
+            const h = vec3.create(); vec3.cross(h, rdir, edge2);
+            const a = vec3.dot(edge1, h);
+            if (a > -0.00001 && a < 0.00001) return null;
+            const f = 1.0 / a;
+            const s = vec3.create(); vec3.sub(s, orig, v0);
+            const u = f * vec3.dot(s, h);
+            if (u < 0.0 || u > 1.0) return null;
+            const q = vec3.create(); vec3.cross(q, s, edge1);
+            const v = f * vec3.dot(rdir, q);
+            if (v < 0.0 || u + v > 1.0) return null;
+            const t = f * vec3.dot(edge2, q);
+            if (t > 0.00001) return t;
+            return null;
+        };
+
+        let closestHitNode: Node | null = null;
+        let minDist = Infinity;
+
+        const checkNode = (n: Node) => {
+            if (!n.isVisible()) return;
+            const ent = n.getEntity();
+            if (ent instanceof Mesh) {
+                const res = (ent as any).resource;
+                if (res && res.vertices && res.indices) {
+                    const worldMat = n.getTransformMatrix();
+                    const v0 = vec3.create(), v1 = vec3.create(), v2 = vec3.create();
+                    for (let i = 0; i < res.indices.length; i += 3) {
+                        const i0 = res.indices[i] * 3;
+                        const i1 = res.indices[i+1] * 3;
+                        const i2 = res.indices[i+2] * 3;
+
+                        vec3.transformMat4(v0, vec3.fromValues(res.vertices[i0], res.vertices[i0+1], res.vertices[i0+2]), worldMat);
+                        vec3.transformMat4(v1, vec3.fromValues(res.vertices[i1], res.vertices[i1+1], res.vertices[i1+2]), worldMat);
+                        vec3.transformMat4(v2, vec3.fromValues(res.vertices[i2], res.vertices[i2+1], res.vertices[i2+2]), worldMat);
+
+                        const t = intersectTriangle(oriRaw, dir, v0, v1, v2);
+                        if (t !== null && t < minDist) {
+                            minDist = t;
+                            closestHitNode = n;
+                        }
+                    }
+                }
+            }
+            const children = (n as any).children as Node[];
+            if (children) children.forEach(checkNode);
+        };
+
+        checkNode(this.rootNode);
+
+        if (closestHitNode) {
+            return this.wrapNativeObject(closestHitNode);
+        }
         return null;
     }
 

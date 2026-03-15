@@ -81,6 +81,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private videoStream: MediaStream | null = null;
   private chatbotSub?: Subscription;
   private isViewInitialized = false;
+  private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
 
   // PRIVATE CONSTANTS
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
@@ -250,8 +251,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
-      canvas.removeEventListener('mousemove', this.onPointerMove);
-      canvas.removeEventListener('dblclick', this.onDoubleClick);
+      canvas.removeEventListener('pointermove', this.onPointerMove);
+      canvas.removeEventListener('pointerdown', this.onPointerDown);
+      canvas.removeEventListener('pointerup', this.onPointerUp);
+      canvas.removeEventListener('pointerleave', this.onPointerUp);
     }
 
     if (this.chatbotSub) {
@@ -310,7 +313,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
-    this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+    if (this.preIsolationCameraState) {
+      this.engine.setCameraProps(
+        this.preIsolationCameraState.position,
+        this.preIsolationCameraState.target
+      );
+      this.preIsolationCameraState = null;
+    } else {
+      this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+    }
   }
 
   resetCameraPosition(): void {
@@ -477,19 +488,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.engine.setControlsAutoRotateSpeed(1.0);
   }
 
+  // Variables para la lógica de aislar una pieza
+  private pressTimer: any;
+  private isPointerDown = false;
+  private pointerDownPos = { x: 0, y: 0 };
+  private readonly LONG_PRESS_DURATION = 500; // ms
+
   private setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
 
     // Use property reassignment for binding to match existing method structure
-    // but ensure they are stable references
     const originalMove = this.onPointerMove;
-    const originalClick = this.onDoubleClick;
+    const originalDown = this.onPointerDown;
+    const originalUp = this.onPointerUp;
 
     this.onPointerMove = originalMove.bind(this);
-    this.onDoubleClick = originalClick.bind(this);
+    this.onPointerDown = originalDown.bind(this);
+    this.onPointerUp = originalUp.bind(this);
 
-    canvas.addEventListener('mousemove', this.onPointerMove);
-    canvas.addEventListener('dblclick', this.onDoubleClick);
+    canvas.addEventListener('pointermove', this.onPointerMove);
+    canvas.addEventListener('pointerdown', this.onPointerDown);
+    canvas.addEventListener('pointerup', this.onPointerUp);
+    canvas.addEventListener('pointerleave', this.onPointerUp);
     window.addEventListener('resize', this.boundWindowResize);
   }
 
@@ -859,15 +879,42 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private isolatePart(part: AssemblyPart): void {
+    if (!this.isolatedPart()) {
+      const cam = this.engine.getCamera();
+      this.preIsolationCameraState = {
+        position: { ...cam.position },
+        target: { ...cam.target }
+      };
+    }
     this.isolatedPart.set(part);
-    // Move controls target to object position
+    // Move controls target to object position and get closer
     const pos = part.object.getPosition();
-    this.engine.setCameraProps(this.engine.getCamera().position, { x: pos.x, y: pos.y, z: pos.z });
+    const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
+    this.engine.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
 
-  private onDoubleClick(event: MouseEvent): void {
+  private onPointerDown(event: PointerEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
 
+    this.isPointerDown = true;
+    this.pointerDownPos = { x: event.clientX, y: event.clientY };
+
+    this.pressTimer = setTimeout(() => {
+      if (this.isPointerDown) {
+        this.handleLongPress(event);
+      }
+    }, this.LONG_PRESS_DURATION);
+  }
+
+  private onPointerUp(event: PointerEvent): void {
+    this.isPointerDown = false;
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = null;
+    }
+  }
+
+  private handleLongPress(event: PointerEvent): void {
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -876,10 +923,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const hitObject = this.engine.raycast(x, y);
 
     if (hitObject) {
-      //console.log('Hit object:', hitObject);
       const part = this.findPartForObject(hitObject);
-      //console.log('Found part:', part?.name);
-
       if (part && this.currentStep() >= part.appearStep) {
         this.isolatePart(part);
       }
@@ -890,13 +934,26 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // Prevent default browser behavior if needed, or trigger specific app logic
   }
 
-  private onPointerMove(event: MouseEvent): void {
+  private onPointerMove(event: PointerEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
+
+    if (this.isPointerDown) {
+      // If the user moves the pointer significantly, cancel the long press
+      const dx = Math.abs(event.clientX - this.pointerDownPos.x);
+      const dy = Math.abs(event.clientY - this.pointerDownPos.y);
+      if (dx > 15 || dy > 15) { // Increased threshold for touch devices
+        this.isPointerDown = false;
+        if (this.pressTimer) {
+          clearTimeout(this.pressTimer);
+          this.pressTimer = null;
+        }
+      }
+    }
 
     const canvas = this.canvasRef.nativeElement;
 
     if (this.isolatedPart()) {
-      canvas.style.cursor = 'grab';
+      canvas.style.setProperty('cursor', 'grab', 'important');
       return;
     }
 
@@ -909,12 +966,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (hitObject) {
       const part = this.findPartForObject(hitObject);
       if (part && this.currentStep() >= part.appearStep) {
-        canvas.style.cursor = 'pointer';
+        canvas.style.setProperty('cursor', 'pointer', 'important');
       } else {
-        canvas.style.cursor = 'grab';
+        canvas.style.setProperty('cursor', 'grab', 'important');
       }
     } else {
-      canvas.style.cursor = 'grab';
+      canvas.style.setProperty('cursor', 'grab', 'important');
     }
   }
 
