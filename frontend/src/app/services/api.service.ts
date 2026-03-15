@@ -224,4 +224,8 @@ export class ApiService {
   getDashboardStats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/private/stats/dashboard`);
   }
+
+  getProviderStats(providerId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/provider/${providerId}`);
+  }
 }

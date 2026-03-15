@@ -11,24 +11,17 @@ export class Node {
     private parent: Node | null = null;
 
     // local transformations
-    private translation: vec3 = vec3.create(); // local position
-    private rotation: vec3 = vec3.create(); // local rotation (radians: pitch, yaw, roll)
+    private translation: vec3 = vec3.create();      // local position
+    private rotation: vec3 = vec3.create();         // local rotation
     private scale: vec3 = vec3.fromValues(1, 1, 1); // local scale
 
     // final transformation (parent x node)
-    private transformMatrix: mat4 = mat4.create();
+    private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
-
-    // visibility
-    private visible: boolean = true;
-
-    // materials / effects
-    public isHighlighted: boolean = false;
-    public highlightColor: vec3 = vec3.fromValues(0, 1, 1);
-    public isUnlit: boolean = false;
-    public unlitColor: vec3 = vec3.fromValues(0, 1, 1);
+    private name: string = '';
+    private visible: boolean = true;  // Add visibility flag
 
 
     // CHILDREN MANAGEMENT
@@ -48,6 +41,13 @@ export class Node {
 
     // SETTERS
 
+    private setChildenUpdate() :void {
+        for (const child of this.children) {
+            child.needsUpdate = true;
+            child.setChildenUpdate();
+        }
+    }
+
     setEntity(entity: Entity): void {
         this.entity = entity;
     }
@@ -55,28 +55,29 @@ export class Node {
     setTranslation(x: number, y: number, z: number): void {
         vec3.set(this.translation, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
     setRotation(x: number, y: number, z: number): void {
         vec3.set(this.rotation, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
     setScale(x: number, y: number, z: number): void {
         vec3.set(this.scale, x, y, z);
         this.needsUpdate = true;
+        this.setChildenUpdate();
     }
 
-    setTransformMatrix(matrix: mat4): void {
-        mat4.copy(this.transformMatrix, matrix);
-        this.needsUpdate = false;
+    setName(name: string): void {
+        this.name = name;
     }
 
-    // Visibility
-    setVisible(v: boolean): void {
-        this.visible = v;
+    setVisible(visible: boolean): void {
+        this.visible = visible;
     }
-
+    
     // GETTERS
 
     getEntity(): Entity | null {
@@ -100,10 +101,17 @@ export class Node {
     }
 
     getTransformMatrix(): mat4 {
+        if (this.needsUpdate) { 
+            this.updateTransforMatrix(); 
+            this.needsUpdate = false;
+        }
         return this.transformMatrix;
     }
 
-    // VISIBILITY
+    getName(): string {
+        return this.name;
+    }
+
     isVisible(): boolean {
         return this.visible;
     }
@@ -120,34 +128,30 @@ export class Node {
         return matrix;
     }
 
-    // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
-
-    traverse(parentMatrix: mat4, shader: ShaderResource): void {
-
-        if (!this.visible) return;
-
-        // always update transform matrix based on parent
-        // (localMatrix can be cached if !needsUpdate, but composition must happen)
+    private updateTransforMatrix(): void {
+        let parentGlobalMatrix = mat4.create();
+        if (this.parent) {
+            parentGlobalMatrix = this.parent.getTransformMatrix()
+        } 
         const localMatrix = this.computeLocalMatrix();
-        mat4.multiply(this.transformMatrix, parentMatrix, localMatrix);
+        mat4.multiply(this.transformMatrix, parentGlobalMatrix, localMatrix); 
+    }
 
-        // needsUpdate flag is only for local property changes, 
-        // but since we computeLocalMatrix every time (or we could cache it),
-        // let's just mark it clean.
-        this.needsUpdate = false;
+    // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
+  
+    traverse(shader: ShaderResource): void { 
+    
+        if (this.visible) {
+            
+            // draw entity 
+            if (this.entity) {
+                this.entity.draw(this.getTransformMatrix(), shader);
+            }
 
-        // draw entity 
-        if (this.entity) {
-            shader.setFloat('uHighlight', this.isHighlighted ? 1.0 : 0.0);
-            shader.setVec3('uHighlightColor', this.highlightColor);
-            shader.setFloat('uIsUnlit', this.isUnlit ? 1.0 : 0.0);
-            shader.setVec3('uUnlitColor', this.unlitColor);
-            this.entity.draw(this.transformMatrix, shader);
-        }
-
-        // recursive
-        for (const child of this.children) {
-            child.traverse(this.transformMatrix, shader);
+            // recursive - only traverse visible children
+            for (const child of this.children) {
+                child.traverse(shader);
+            }
         }
     }
 
@@ -170,4 +174,14 @@ export class Node {
         this.needsUpdate = true;
     }
 
+    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE)
+
+    getObjectByName(name: string): Node | null {
+        if (this.name === name) return this;
+        for (const child of this.children) {
+            const found = child.getObjectByName(name);
+            if (found) return found;
+        }
+        return null;
+    }
 }

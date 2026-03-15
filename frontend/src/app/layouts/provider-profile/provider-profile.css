@@ -1,0 +1,9 @@
+@import "../../../styles.css";
+
+.selected-tab {
+    @apply opacity-100 !border-b-2 !border-marron-oscuro;
+}
+
+.nav-tab {
+    @apply hover:opacity-100 transition flex items-center gap-1 border-b-2 border-transparent;
+}

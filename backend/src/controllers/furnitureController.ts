@@ -146,7 +146,7 @@ export class FurnitureController {
   //PRIVATE ROUTES
   filterAllFurniture = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit } = req.body;
+      const { difficulties, provider_ids, category_ids, color_ids, visible, search, page, limit, order_by, order_dir } = req.body;
 
       const result = await this.furnitureService.getFilteredFurniture({
         difficulties,
@@ -156,7 +156,9 @@ export class FurnitureController {
         visible,
         search,
         page,
-        limit
+        limit,
+        order_by,
+        order_dir
       });
 
       if ((page && limit) && !Array.isArray(result) && 'rows' in result) {

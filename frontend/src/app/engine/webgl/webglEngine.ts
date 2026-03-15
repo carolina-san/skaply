@@ -1,197 +1,479 @@
-import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { Injectable } from '@angular/core';
+import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { ResourceManager } from '../../engine/webgl/resource/resource-manager';
+import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
+import { Node } from '../../engine/webgl/engine-core/node';
+import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
-
-import { Node } from './engine-core/node';
-import { Mesh } from './engine-core/mesh';
 import { Camera } from './engine-core/camera';
 import { Light } from './engine-core/light';
+import { Mesh } from './engine-core/mesh';
+import { Entity } from './engine-core/entity';
 
-import { ResourceManager } from './resource/resource-manager';
-import { MeshResource, NamedMesh } from './resource/mesh-resource';
-import { ShaderResource } from './resource/shader-resource';
 
-// --------- “NativeObject” compatible con el componente (Object3D-lite) ----------
-class NativeLikeObject {
-    name: string;
-    parent: NativeLikeObject | null = null;
-    children: NativeLikeObject[] = [];
-    // guardamos el wrapper aquí para wrapNativeObject
-    userData: any = {};
-
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    add(child: NativeLikeObject) {
-        child.parent = this;
-        this.children.push(child);
-    }
-
-    traverse(cb: (o: NativeLikeObject) => void) {
-        cb(this);
-        for (const c of this.children) c.traverse(cb);
-    }
-
-    getObjectByName(name: string): NativeLikeObject | null {
-        let found: NativeLikeObject | null = null;
-        this.traverse(o => {
-            if (!found && o.name === name) found = o;
-        });
-        return found;
-    }
-
-    getObjectNames(): string[] {
-        const names: string[] = [];
-        this.traverse(o => names.push(o.name));
-        return names;
-    }
-}
-
-// --------- Wrapper RenderableObject para Node ----------
 class WebGlRenderableObject implements RenderableObject {
-    uuid: string = crypto.randomUUID();
+
+    uuid = crypto.randomUUID();
     userData: any = {};
-    castShadow: boolean = false;
-    receiveShadow: boolean = false;
+    castShadow = false;
+    receiveShadow = false;
 
-    private visible = true;
+    constructor(public node: Node) {}
 
-    // “nativeObject” compatible con lo que espera GraphicsEngineComponent
-    readonly nativeObject: NativeLikeObject;
+    get nativeObject(): Node {
+        return this.node;
+    }
 
-    constructor(
-        public readonly node: Node,
-        native: NativeLikeObject
-    ) {
-        this.nativeObject = native;
-        // referencia bidireccional
-        this.nativeObject.userData.wrapper = this;
+    get name(): string {
+        return this.node.getName();
+    }
+
+    set name(value: string) {
+        this.node.setName(value);
+    }
+
+
+    getPosition(): Vector3 {
+        const t = this.node.getTranslation();
+        return { x: t[0], y: t[1], z: t[2] };
     }
 
     setPosition(x: number, y: number, z: number): void {
+        //this.position = { x, y, z };
         this.node.setTranslation(x, y, z);
     }
 
     setRotation(x: number, y: number, z: number): void {
+        //this.rotation = { x, y, z };
         this.node.setRotation(x, y, z);
     }
 
-    getPosition(): Vector3 {
-        const t = this.node.getTranslation(); // vec3
-        return { x: t[0], y: t[1], z: t[2] };
+    setScale(x: number, y: number, z: number): void {
+        //this.rotation = { x, y, z };
+        this.node.setScale(x, y, z);
     }
 
-    setVisible(v: boolean): void {
-        this.visible = v;
-        // requiere el mini-parche de Node.ts (setVisible)
-        // @ts-ignore
-        if (typeof (this.node as any).setVisible === 'function') {
-            // @ts-ignore
-            (this.node as any).setVisible(v);
-        }
-        // también afecta al “native”
-        this.nativeObject.traverse(o => (o.userData.__visible = v));
+    setVisible(visible: boolean): void {
+        this.node.setVisible(visible);
     }
 
     add(child: RenderableObject): void {
-        const c = child as WebGlRenderableObject;
-        this.node.addChild(c.node);
-        this.nativeObject.add(c.nativeObject);
+        const webglChild = child as WebGlRenderableObject;
+        this.node.addChild(webglChild.node);
     }
 
     remove(child: RenderableObject): void {
-        const c = child as WebGlRenderableObject;
-        this.node.removeChild(c.node);
-        // quitar de native tree
-        this.nativeObject.children = this.nativeObject.children.filter(x => x !== c.nativeObject);
-        c.nativeObject.parent = null;
+        const webglChild = child as WebGlRenderableObject;
+        this.node.removeChild(webglChild.node);
     }
 
-    lookAt(_target: Vector3): void {
-        // No implementado a nivel de Node para el flujo actual
+
+    lookAt(target: Vector3): void {
+        //this.node.lookAt?.(target);
+        // solo existe lokkAt en camara 
     }
 }
 
-// --------- WebGL Engine ----------
-export class WebGLEngine extends EngineFacade {
+export class CameraController {
 
-    private canvas!: HTMLCanvasElement;
+    // orbit state
+    private radius: number;
+    private theta: number;
+    private phi: number;
+    private target: vec3;
+    
+    // default state (for reset and checkState)
+    private readonly defaultRadius: number;
+    private readonly defaultTheta: number;
+    private readonly defaultPhi: number;
+    private readonly defaultTarget: vec3;
+    
+    // limits
+    private readonly minRadius = 1;
+    private readonly maxRadius = 10;
+
+    // epsilon to avoid gimbal lock at poles
+    private static readonly PHI_EPSILON = 0.01;
+
+    constructor(
+        private cameraNode: Node,
+        private cameraEntity: Camera,
+        private canvas: HTMLCanvasElement,
+        isMobile: boolean
+    ) {
+        // initial orbit state (spherical coordinates)
+        this.radius = isMobile ? 3.84 : 3.5355;
+        this.theta  = isMobile ? 0.785 : 0.896;
+        this.phi    = isMobile ? 1.17  : 1.132;
+        this.target = vec3.fromValues(0, 1, 0);
+
+        // save default state for reset and checkState
+        this.defaultRadius = this.radius;
+        this.defaultTheta  = this.theta;
+        this.defaultPhi    = this.phi;
+        this.defaultTarget = vec3.clone(this.target);
+
+        this.updateOrbit();
+        this.initListeners();
+    }
+
+    // GETTERS
+
+    getCameraPosition(): Vector3 {
+        const pos = vec3.create();
+        vec3.transformMat4(pos, vec3.fromValues(0, 0, 0), this.cameraNode.getTransformMatrix());
+        return { x: pos[0], y: pos[1], z: pos[2] };
+    }
+
+    getViewMatrix(): Float32Array {
+        return new Float32Array(this.cameraEntity.getViewMatrix());
+    }
+
+    getProjectionMatrix(): Float32Array {
+        return new Float32Array(this.cameraEntity.getProjectionMatrix());
+    }
+
+    getOrbitState() {
+        return {
+            radius: this.radius,
+            theta: this.theta,
+            phi: this.phi
+        };
+    }
+
+    getTarget(): Vector3 {
+        return {
+            x: this.target[0],
+            y: this.target[1],
+            z: this.target[2]
+        };
+    }
+
+    // ORBIT, ZOOM, PAN
+
+    orbit(deltaTheta: number, deltaPhi: number): void {
+
+        // update angles
+        this.theta += deltaTheta;
+        this.phi   += deltaPhi;
+
+        // clamp phi to avoid gimbal lock 
+        this.phi = this.normalizePhi(this.phi);
+
+        this.updateOrbit();
+    }
+
+    zoom(delta: number): void {
+        const zoomSpeed = 0.0015; 
+        this.radius *= 1 + delta * zoomSpeed;
+        this.radius = Math.max(this.minRadius, Math.min(this.maxRadius, this.radius));
+        this.updateOrbit();
+    }
+
+    pan(deltaX: number, deltaY: number): void {
+
+        // compute camera basis vectors
+        const eye = this.computeEye();
+        const { right, up } = this.computeCameraBasis(eye);
+
+        // pan speed adjusted based on radius
+        const panSpeed = 0.002 * this.radius;
+
+        // move target in camera's right and up directions
+        const moveX = vec3.create();
+        const moveY = vec3.create();
+        vec3.scale(moveX, right, -deltaX * panSpeed);
+        vec3.scale(moveY, up, deltaY * panSpeed);
+        vec3.add(this.target, this.target, moveX);
+        vec3.add(this.target, this.target, moveY);
+
+        this.updateOrbit();
+    }
+
+    // RESET & CHECK STATE
+
+    reset(): void {
+        this.radius = this.defaultRadius;
+        this.theta  = this.defaultTheta;
+        this.phi    = this.defaultPhi;
+        vec3.copy(this.target, this.defaultTarget);
+        this.updateOrbit();
+    }
+
+    hasMovedFromDefault(): boolean {
+
+        // compare current eye and target to default values
+        const eye        = this.computeEye();
+        const defaultEye = this.computeEyeFrom(this.defaultRadius, this.defaultTheta, this.defaultPhi, this.defaultTarget);
+
+        // check if current eye or target differ significantly from default
+        return vec3.dist(eye, defaultEye) > 0.1
+            || vec3.dist(this.target, this.defaultTarget) > 0.1;
+    }
+
+    // SET CAMERA PROPS 
+
+    setCameraProps(position: Vector3, target: Vector3): void {
+       
+        // save target
+        const targetVec = vec3.fromValues(target.x, target.y, target.z);
+        vec3.copy(this.target, targetVec);
+
+        // compute radius, theta, phi from position
+        const dx = position.x - target.x;
+        const dy = position.y - target.y;
+        const dz = position.z - target.z;
+        const computedRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        this.radius = Math.min(this.maxRadius,Math.max(this.minRadius, computedRadius));
+        const safeRadius = Math.max(this.radius, 0.00001); // avoid division by zero
+        this.radius = Math.max(0.001, Math.sqrt(dx*dx + dy*dy + dz*dz));
+        this.theta  = Math.atan2(dx, dz);
+        this.phi    = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
+        this.phi    = this.normalizePhi(this.phi); // avoid gimbal lock
+
+        this.updateOrbit();
+    }
+
+    // DISPOSE
+
+    dispose(): void {
+        this.removeListeners();
+    }
+
+    // PRIVATE METHODS
+
+    private normalizePhi(phi: number): number {
+        const eps = CameraController.PHI_EPSILON;
+        return Math.max(eps, Math.min(Math.PI - eps, phi));
+    }
+
+    private computeEye(): vec3 {
+        return this.computeEyeFrom(this.radius, this.theta, this.phi, this.target);
+    }
+
+    private computeEyeFrom(radius: number, theta: number, phi: number, target: vec3): vec3 {
+        const offset = this.sphericalToCartesian(radius, theta, phi);
+        return vec3.add(vec3.create(), target, offset);
+    }
+
+    private sphericalToCartesian(radius: number, theta: number, phi: number): vec3 {
+        const x = radius * Math.sin(phi) * Math.sin(theta);
+        const y = radius * Math.cos(phi);
+        const z = radius * Math.sin(phi) * Math.cos(theta);
+        return vec3.fromValues(x, y, z);
+    }
+
+    private updateOrbit(): void {
+        const eye = this.computeEye();
+        this.cameraNode.setTranslation(eye[0], eye[1], eye[2]);
+        this.cameraEntity.lookAt(this.cameraNode.getTransformMatrix(), this.target);
+    }
+
+    private computeCameraBasis(eye: vec3): { forward: vec3; right: vec3; up: vec3 } {
+        const forward = vec3.create();
+        const right = vec3.create();
+        const up = vec3.create();
+
+        // forward = target - eye
+        vec3.sub(forward, this.target, eye);
+        vec3.normalize(forward, forward);
+
+        // right = forward x worldUp
+        vec3.cross(right, forward, [0, 1, 0]);
+        vec3.normalize(right, right);
+
+        // up = right x forward
+        vec3.cross(up, right, forward);
+        vec3.normalize(up, up);
+
+        return { forward, right, up };
+    }
+
+    // INTERACTION
+
+    private isDragging   = false;   // for mouse and touch
+    private lastMouseX   = 0;       // for mouse orbit/pan
+    private lastMouseY   = 0;       // for mouse orbit/pan
+    private lastTouchX   = 0;       // for touch orbit/pan
+    private lastTouchY   = 0;       // for touch orbit/pan
+    private lastTouchDist = 0;      // for touch zoom
+
+    // bind event handlers to preserve 'this' context
+    private _onMouseDown    = (e: MouseEvent)  => this.onMouseDown(e);
+    private _onMouseMove    = (e: MouseEvent)  => this.onMouseMove(e);
+    private _onMouseUp      = (_: MouseEvent)  => { this.isDragging = false; };
+    private _onWheel        = (e: WheelEvent)  => { e.preventDefault(); this.zoom(e.deltaY); };
+    private _onContextMenu  = (e: Event)       => { e.preventDefault(); e.stopPropagation(); };
+    private _onTouchStart   = (e: TouchEvent)  => this.onTouchStart(e);
+    private _onTouchMove    = (e: TouchEvent)  => this.onTouchMove(e);
+    private _onTouchEnd     = (e: TouchEvent)  => { if (e.touches.length === 0) this.isDragging = false; };
+
+    // add event listeners to canvas and window
+    initListeners(): void {
+        this.canvas.addEventListener('mousedown',    this._onMouseDown);
+        this.canvas.addEventListener('wheel',        this._onWheel, { passive: false });
+        this.canvas.addEventListener('contextmenu',  this._onContextMenu);
+        this.canvas.addEventListener('touchstart',   this._onTouchStart, { passive: false });
+        this.canvas.addEventListener('touchmove',    this._onTouchMove,  { passive: false });
+        this.canvas.addEventListener('touchend',     this._onTouchEnd);
+        window.addEventListener('mousemove', this._onMouseMove);
+        window.addEventListener('mouseup',   this._onMouseUp);
+    }
+
+    // remove event listeners (cleanup)
+    private removeListeners(): void {
+        this.canvas.removeEventListener('mousedown',   this._onMouseDown);
+        this.canvas.removeEventListener('wheel',       this._onWheel);
+        this.canvas.removeEventListener('contextmenu', this._onContextMenu);
+        this.canvas.removeEventListener('touchstart',  this._onTouchStart);
+        this.canvas.removeEventListener('touchmove',   this._onTouchMove);
+        this.canvas.removeEventListener('touchend',    this._onTouchEnd);
+        window.removeEventListener('mousemove', this._onMouseMove);
+        window.removeEventListener('mouseup',   this._onMouseUp);
+    }
+
+    // handle mouse button press
+    private onMouseDown(e: MouseEvent): void {
+        if (e.button === 0 || e.button === 2) {     // left or right click
+            if (e.button === 2) e.preventDefault(); // prevent context menu for right click
+            this.isDragging = true;
+            this.lastMouseX = e.clientX;  // store current mouse position
+            this.lastMouseY = e.clientY;
+        }
+    }
+
+    // handle mouse movement while dragging
+    private onMouseMove(e: MouseEvent): void {
+        if (!this.isDragging) return;   // do nothing if not dragging
+        const dx = e.clientX - this.lastMouseX;
+        const dy = e.clientY - this.lastMouseY;
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+
+        if (e.buttons & 1) this.orbit(-dx * 0.005, -dy * 0.005); // left click  -> orbit 
+        if (e.buttons & 2) this.pan(dx, dy);                     // right click -> pan 
+    }
+
+    // handle touch start
+    private onTouchStart(e: TouchEvent): void {
+        e.preventDefault(); // prevent default scrolling
+
+        if (e.touches.length === 1) {  // single finger -> orbit
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+            this.isDragging = true;
+
+        } else if (e.touches.length === 2) { // two fingers -> pan + pinch zoom
+            
+            // store center point between fingers for panning
+            this.lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            this.lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+            // calculate distance between fingers for pinch zoom
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            this.lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+
+            this.isDragging = true;
+        }
+    }
+
+    // handle touch movement
+    private onTouchMove(e: TouchEvent): void {
+        e.preventDefault();
+        if (!this.isDragging) return;
+
+        if (e.touches.length === 1) { // single finger -> orbit
+            const dx = e.touches[0].clientX - this.lastTouchX;
+            const dy = e.touches[0].clientY - this.lastTouchY;
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+            this.orbit(-dx * 0.005, -dy * 0.005);
+
+        } else if (e.touches.length === 2) { // two fingers -> pan + zoom
+            
+            // compute center movement for panning
+            const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            this.pan(cx - this.lastTouchX, cy - this.lastTouchY);
+            this.lastTouchX = cx;
+            this.lastTouchY = cy;
+
+            // compute distance change for pinch zoom
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            this.zoom((this.lastTouchDist - dist) * 10); // scale for touch zoom
+            this.lastTouchDist = dist;
+        }
+    }
+}
+
+@Injectable()
+export class WebGLEngineAdapter extends EngineFacade {
+
+    
+    private readonly mobileThreshold = 768; // px
+
     private gl!: WebGL2RenderingContext;
-
+    private canvas!: HTMLCanvasElement;
+    private clear = { r: 0, g: 0, b: 0, a: 0 };
+    
     private resourceManager = new ResourceManager();
     private shader!: ShaderResource;
-    private postShader!: ShaderResource;
 
-    // FBO variables for Outline pass
-    private maskFBO: WebGLFramebuffer | null = null;
-    private maskTex: WebGLTexture | null = null;
-    private maskDepth: WebGLRenderbuffer | null = null;
-    private postQuadVAO: WebGLVertexArrayObject | null = null;
-
-    // Scene graph root
     private rootNode = new Node();
-    private rootNative = new NativeLikeObject('root');
 
-    // Camera + Light
     private cameraEntity = new Camera();
     private cameraNode = new Node();
-    private cameraNative = new NativeLikeObject('camera');
+    private cameraController!: CameraController;
 
     private lightEntity = new Light();
     private lightNode = new Node();
-    private lightNative = new NativeLikeObject('light');
-
-    // background
-    private clear = { r: 0, g: 0, b: 0, a: 0 };
-
-    // wrappers registry
-    private wrappers = new Set<WebGlRenderableObject>();
-
+    
+    private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
+    
+    // ⚠️ DE MOMENTO NO HACEN FALTA
+    private highlightedObjects: WebGlRenderableObject[] = [];
+    private controlsEnabled = false;
+    private controlsAutoRotate = false;
+    private controlsAutoRotateSpeed = 2;
+    
     private ready = false;
 
-    init(canvas: HTMLCanvasElement, width: number, height: number): void {
-        this.canvas = canvas;
-        this.gl = canvas.getContext('webgl2', { alpha: true, antialias: true })!;
-        this.gl.enable(this.gl.DEPTH_TEST);
+    // INIT
+    
+    async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void>  {
 
+        // gl 
+        this.canvas = canvas;
+        this.gl = canvas.getContext('webgl2')!;
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
 
-        // montar cámara y luz como hijos del root (para que seteen uniforms antes)
+        // camera 
+        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
         this.cameraNode.setEntity(this.cameraEntity);
-        this.lightNode.setEntity(this.lightEntity);
-
+        this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
-        this.rootNode.addChild(this.lightNode);
 
-        this.rootNative.add(this.cameraNative);
-        this.rootNative.add(this.lightNative);
-
-        // cámara por defecto: sincronizada con las coordenadas esféricas iniciales
-        const aspect = width / height;
-        this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
-
-        const isMobile = width < 768;
-        if (isMobile) {
-            this.camRadius = 3.84;
-            this.camTheta = 0.785;
-            this.camPhi = 1.17;
-        } else {
-            this.camRadius = 3.5355;
-            this.camTheta = 0.896;
-            this.camPhi = 1.132;
-        }
-        vec3.set(this.camTarget, 0, 1, 0);
-        this.updateCameraOrbit(); // Esto setea lookAt(pos, target) basado en Radius/Theta/Phi iniciales
-
-        // luz por defecto
+        // light 
         this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
+        this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
+        this.rootNode.addChild(this.lightNode);
+        
+        this.cameraController = new CameraController(
+            this.cameraNode,
+            this.cameraEntity,
+            canvas,
+            width < this.mobileThreshold
+        );
 
-        // init async shader
-        this.initShader().then(() => {
-            this.ready = true;
-            this.initControls();
-        });
+        await this.initShader();
+
+        this.ready = true;
     }
 
     private async initShader(): Promise<void> {
@@ -199,29 +481,6 @@ export class WebGLEngine extends EngineFacade {
         await this.shader.loadFile('assets/shaders/basic.vert', 'vertex');
         await this.shader.loadFile('assets/shaders/basic.frag', 'fragment');
         this.shader.buildProgram();
-
-        this.postShader = new ShaderResource(this.gl, 'post');
-        await this.postShader.loadFile('assets/shaders/post.vert', 'vertex');
-        await this.postShader.loadFile('assets/shaders/post.frag', 'fragment');
-        this.postShader.buildProgram();
-
-        this.initPostQuad();
-    }
-
-    private initPostQuad() {
-        const gl = this.gl;
-        this.postQuadVAO = gl.createVertexArray();
-        gl.bindVertexArray(this.postQuadVAO);
-
-        const vertices = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
-
-        const vbo = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-        gl.bindVertexArray(null);
     }
 
     resize(width: number, height: number): void {
@@ -229,169 +488,241 @@ export class WebGLEngine extends EngineFacade {
         this.canvas.width = width;
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
-
-        // update camera aspect
-        const aspect = width / height;
-        this.cameraEntity.setPerspective((45 * Math.PI) / 180, aspect, 0.1, 100);
-
-        // Resize Outline Mask FBO
-        const gl = this.gl;
-        if (this.maskFBO) gl.deleteFramebuffer(this.maskFBO);
-        if (this.maskTex) gl.deleteTexture(this.maskTex);
-        if (this.maskDepth) gl.deleteRenderbuffer(this.maskDepth);
-
-        this.maskFBO = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.maskFBO);
-
-        this.maskTex = gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, this.maskTex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.maskTex, 0);
-
-        this.maskDepth = gl.createRenderbuffer()!;
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.maskDepth);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.maskDepth);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
     }
+
+    // CAMERA
+
+    setCameraProps(position: Vector3, target: Vector3): void {
+        this.cameraController.setCameraProps(position, target);
+    }
+
+    // ⚠️ NO SE LLEGA A USAR NUNCA!
+    updateControls(): void {
+        // this.cameraController.updateOrbit();     
+    }
+
+    resetControls(): void { 
+        this.cameraController.reset(); 
+    }
+
+    checkControlsState(): boolean { 
+        if (!this.cameraController) {
+            console.warn('Camera controller not yet initialized');
+            return false;
+        }
+        return this.cameraController.hasMovedFromDefault(); 
+    }
+
+    toggleControls(enable: boolean): void {
+        enable  ?  this.cameraController.initListeners()   // o exponer enable/disable
+                :  this.cameraController.dispose();
+    }
+
+    setControlsAutoRotateSpeed(speed: number): void {
+
+    }
+
+    getCamera(): CameraState {
+        return {
+            position: this.cameraController.getCameraPosition(),
+            target: this.cameraController.getTarget(),
+            viewMatrix: this.cameraController.getViewMatrix(),
+            projectionMatrix: this.cameraController.getProjectionMatrix(),
+            mode: 'orbit',
+            orbit: this.cameraController.getOrbitState()
+        };
+    }
+    
+    // RENDER 
 
     render(): void {
         if (!this.ready) return;
-
-        const gl = this.gl;
-
-        // Fase 1: Renderizado original sin deformaciones al Canvas
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         this.shader.use();
-        this.shader.setVec3('uViewPosition', this.cameraEntity.position);
 
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
-        this.shader.setFloat('uOutlinePass', 0.0);
-        this.rootNode.traverse(mat4.create(), this.shader);
+        // ⚠️NO SE SI HACE FALTA HACER ESTO AQUI! 
+        // Sincronizar la posición de la cámara en el shader para el cálculo especular
+        //const camPos = this.cameraController.getCameraPosition();
+        //this.shader.setVec3("uViewPosition", vec3.fromValues(camPos.x, camPos.y, camPos.z));
 
-        // Fase 2: Silueta al Mask FBO (Off-screen)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.maskFBO);
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.rootNode.traverse(this.shader);
 
-        this.shader.setFloat('uOutlinePass', 1.0);
-        this.rootNode.traverse(mat4.create(), this.shader);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-        // Fase 3: Post Processing Tubería Redondeada
-        gl.disable(gl.DEPTH_TEST);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-        this.postShader.use();
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.maskTex);
-        this.postShader.setInt('uMaskTex', 0);
-        this.postShader.setVec2('uResolution', [this.canvas.width, this.canvas.height]);
-        this.postShader.setVec3('uHighlightColor', [0.0, 1.0, 1.0]); // Color Cian constante
-
-        gl.bindVertexArray(this.postQuadVAO);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        gl.bindVertexArray(null);
-
-        // Restaurar estado global para el próximo frame
-        gl.disable(gl.BLEND);
-        gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
+        this.updateControls();
     }
 
-    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
+    // DISPOSE
 
+    dispose(): void {
+        if (this.cameraController) {this.cameraController.dispose();} 
+        this.wrappers.clear();
+        this.ready = false;
+        // ...resto cleanup...
+    }
 
-        const gl = this.gl;
-        const vao = gl.createVertexArray()!;
-        gl.bindVertexArray(vao);
+    // OBJECT MANAGEMENT
 
-        const tipX = origin.x + dir.x * length;
-        const tipY = origin.y + dir.y * length;
-        const tipZ = origin.z + dir.z * length;
+    async loadGLTF(url: string): Promise<RenderableObject> {
+    
+        const meshResource = await this.resourceManager.getResource(
+            url, 
+            () => new MeshResource(url, this.gl)
+        );
 
-        const vertices = new Float32Array([
-            origin.x, origin.y, origin.z,
-            tipX, tipY, tipZ
-        ]);
-        const indices = new Uint32Array([0, 1]);
+        const modelNode = new Node();
+        const namedMeshes = meshResource.getNamedMeshes();
+        
+        // meshResource.getMeshes().forEach(mesh => {
+        //     const meshNode = new Node();
+        //     meshNode.setEntity(mesh);
+        //     modelNode.addChild(meshNode);
+        // });
 
-        const vbo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+        // using namedMeshes instead (does it work??)
+        namedMeshes.forEach(namedMesh => {
+            const meshNode = new Node();
+            meshNode.setEntity(namedMesh.mesh);
+            meshNode.setName(namedMesh.name);
+            modelNode.addChild(meshNode);
+        });
 
-        const ebo = gl.createBuffer()!;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+        console.log('[WEBGL] Modelo cargado desde URL:', url);
+        return this.wrapNativeObject(modelNode);
+    }
 
-        gl.bindVertexArray(null);
+    wrapNativeObject(native: any): RenderableObject {
+        if (!(native instanceof Node)) {
+            throw new Error("Object is not a WebGl valid Node.");
+        }
+        return new WebGlRenderableObject(native);
+    }
 
-        const arrowMesh = new Mesh({
-            vao,
-            indexCount: 2,
-            indexType: gl.UNSIGNED_INT,
-            drawMode: gl.LINES
-        } as any, gl);
+    private setArrowRotationFromDir(arrow: RenderableObject, dir: {x:number,y:number,z:number}) {
+        arrow.setRotation(0,0,0);
+        if      (dir.x === 1)   {arrow.setRotation(0,0,-Math.PI / 2);}
+        else if (dir.x === -1)  {arrow.setRotation(0,0, Math.PI / 2);}
+        else if (dir.y === -1)  {arrow.setRotation(Math.PI,0,0);}
+        else if (dir.z === 1)   {arrow.setRotation(Math.PI / 2,0,0);}
+        else if (dir.z === -1)  {arrow.setRotation(-Math.PI / 2,0,0);}
+    }
+    
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
+        const arrow = await this.loadGLTF('storage/flecha.glb');
+        arrow.setPosition(origin.x, origin.y, origin.z);
+        arrow.setScale(length, length, length);
+        this.setArrowRotationFromDir(arrow, dir);
+        return arrow;
+    }
 
-        const node = new Node();
-        node.setEntity(arrowMesh);
+    private createArrowMesh(arrowLenght: number): Mesh {
 
-        let numColor: number;
-        if (typeof color === 'string') {
-            numColor = parseInt(color.replace('#', ''), 16);
-        } else {
-            numColor = color;
+        const segments       = 12;
+        const cilinderRadius = arrowLenght * 0.02;
+        const coneRadius     = arrowLenght * 0.05;
+
+        //    .                  -|
+        //   /_\   cone 25%       |
+        //    |                   |
+        //    |                   |  arrowLenght
+        //    |    cilinder 75%   |
+        //    |                  -|
+
+        const coneLength     = arrowLenght * 0.25;
+        const cilinderLength = arrowLenght - coneLength;
+
+        const verts: number[] = []; // [x,y,z, x,y,z, x,y,z ...]
+        const inds: number[] = [];
+
+        for (let i = 0; i < segments; i++) {
+            
+            // CILINDER VERTICES
+            const point = this.getCirclePoint(i, segments, cilinderRadius);
+            verts.push(point.x, 0, point.z); // bottom ring
+            verts.push(point.x, cilinderLength, point.z); // top ring
+
+            //        top ring
+            //       2──4──6──8               y = cilinderLength
+            //  (0)  │  │  │  │  (2phirad)                         
+            //       1──3──5──7               y = 0
+            //       bottom ring
+
+            // CILINDER INDEX
+            const next = (i + 1) % segments;
+            const botomIndex = i * 2;
+            const topIndex   = i * 2 + 1;
+            const botomNextIndex = next * 2;
+            const topNextIndex   = next * 2 + 1;
+            inds.push(botomIndex, topIndex, botomNextIndex);    // a
+            inds.push(topIndex, topNextIndex, botomNextIndex);  // b
+
+            //     topIndex  ●──●  topNextIndex
+            //               │\b│
+            //               │a\│ 
+            //  bottomIndex  ●──●  botomNextIndex
         }
 
-        const r = ((numColor >> 16) & 255) / 255;
-        const g = ((numColor >> 8) & 255) / 255;
-        const b = (numColor & 255) / 255;
+        const coneStartIndex = verts.length / 3;
+        const tipIndex = verts.length / 3;
+        verts.push(0, arrowLenght, 0);
 
-        node.isUnlit = true;
-        node.unlitColor = vec3.fromValues(r, g, b);
+        for (let i = 0; i < segments; i++) {
 
-        const native = new NativeLikeObject(`arrow_${crypto.randomUUID()}`);
-        const w = new WebGlRenderableObject(node, native);
-        this.wrappers.add(w);
-        return w;
+            // CONE VERTICES
+            const point = this.getCirclePoint(i, segments, coneRadius);
+            verts.push(point.x, cilinderLength, point.z);
+
+            // CONE INDEX
+            const next = (i + 1) % segments;
+            inds.push(coneStartIndex + i, coneStartIndex + next, tipIndex);
+
+            //              tipIndex  ●
+            //                       / \
+            //                      /   \
+            //  coneStartIndex + i ●─────● coneStartIndex + next
+        }
+
+        const mesh = new Mesh({
+            vertices:   new Float32Array(verts),
+            normals:    new Float32Array(verts.length),
+            texCoords:  new Float32Array(0),
+            indices:    new Uint32Array(inds)
+        }, this.gl);
+
+        return mesh;
+
     }
 
-    /*createMesh(_geometry: GeometryConfig, _material: MaterialConfig): RenderableObject {
-        // Método no utilizado actualmente. Retornamos un grupo vacío para cumplir la interfaz.
-        return this.createGroup();
-    }*/
+    private getCirclePoint(iteration: number, totalSegments: number, radius: number) {
+        const progress = iteration / totalSegments;
+        const fullCircleRadians = Math.PI * 2;
+        const angle = progress * fullCircleRadians;
 
+        //                z
+        //                ●
+        //            ●       ●
+        //          ●           ●
+        //  x <-   ●      Y      ●  -> x
+        //          ●           ●
+        //            ●       ●
+        //                ●
+        //                z
 
-
-    // ------------------ Scene management ------------------
-
+        return {
+            x: Math.cos(angle) * radius,
+            z: Math.sin(angle) * radius
+        };
+    }
+    
     addToScene(object: RenderableObject): void {
-        const o = object as WebGlRenderableObject;
-        this.rootNode.addChild(o.node);
-        this.rootNative.add(o.nativeObject);
-        this.wrappers.add(o);
+        const obj = object as WebGlRenderableObject;
+        this.rootNode.addChild(obj.node);
     }
 
     removeFromScene(object: RenderableObject): void {
-        const o = object as WebGlRenderableObject;
-        this.rootNode.removeChild(o.node);
-        this.rootNative.children = this.rootNative.children.filter(c => c !== o.nativeObject);
-        o.nativeObject.parent = null;
-        this.wrappers.delete(o);
+        const obj = object as WebGlRenderableObject;
+        this.rootNode.removeChild(obj.node);
     }
 
     setBackground(color: number | string | null): void {
@@ -409,469 +740,118 @@ export class WebGLEngine extends EngineFacade {
         }
         // string => fallback
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
-    }
+    }   
+    
+    // INTERACTION
 
-    // ------------------ Camera & controls ------------------
+    raycast(x: number, y: number): RenderableObject | null {
+        // Calculate ray from camera to world
+        const invViewProj = mat4.create();
+        const viewProj = mat4.create();
+        mat4.multiply(viewProj, this.cameraController.getProjectionMatrix() as any, this.cameraController.getViewMatrix() as any);
+        mat4.invert(invViewProj, viewProj);
+    
+        const oriRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, -1), invViewProj);
+        const tgtRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, 1), invViewProj);
+        
+        const dir = vec3.create();
+        vec3.sub(dir, tgtRaw, oriRaw);
+        vec3.normalize(dir, dir);
+        
+        // Möller-Trumbore Ray-Triangle Intersection
+        const intersectTriangle = (orig: vec3, rdir: vec3, v0: vec3, v1: vec3, v2: vec3): number | null => {
+            const edge1 = vec3.create(); vec3.sub(edge1, v1, v0);
+            const edge2 = vec3.create(); vec3.sub(edge2, v2, v0);
+            const h = vec3.create(); vec3.cross(h, rdir, edge2);
+            const a = vec3.dot(edge1, h);
+            if (a > -0.00001 && a < 0.00001) return null;
+            const f = 1.0 / a;
+            const s = vec3.create(); vec3.sub(s, orig, v0);
+            const u = f * vec3.dot(s, h);
+            if (u < 0.0 || u > 1.0) return null;
+            const q = vec3.create(); vec3.cross(q, s, edge1);
+            const v = f * vec3.dot(rdir, q);
+            if (v < 0.0 || u + v > 1.0) return null;
+            const t = f * vec3.dot(edge2, q);
+            if (t > 0.00001) return t;
+            return null;
+        };
 
-    // Mouse handlers state
-    private isDragging = false;
-    private lastMouseX = 0;
-    private lastMouseY = 0;
+        let closestHitNode: Node | null = null;
+        let minDist = Infinity;
 
-    // Polar coordinates for Orbit
-    // Init state: Radius ~3.84, Theta ~45deg, Phi ~67deg -> Position approx (2.5, 2.5, 2.5)
-    private camRadius = 3.84;
-    private camTheta = 0.785;
-    private camPhi = 1.17;
-    private camTarget = vec3.fromValues(0, 1, 0);
+        const checkNode = (n: Node) => {
+            if (!n.isVisible()) return;
+            const ent = n.getEntity();
+            if (ent instanceof Mesh) {
+                const res = (ent as any).resource;
+                if (res && res.vertices && res.indices) {
+                    const worldMat = n.getTransformMatrix();
+                    const v0 = vec3.create(), v1 = vec3.create(), v2 = vec3.create();
+                    for (let i = 0; i < res.indices.length; i += 3) {
+                        const i0 = res.indices[i] * 3;
+                        const i1 = res.indices[i+1] * 3;
+                        const i2 = res.indices[i+2] * 3;
 
-    // Default state for reset check (updated via updateCameraOrbit on init)
-    // Default state for reset check (updated via updateCameraOrbit on init)
-    private readonly defaultCamPos = vec3.create();
-    private readonly defaultCamTarget = vec3.fromValues(0, 1, 0);
-    private defaultCamRadius = 3.84;
-    private defaultCamTheta = 0.785;
-    private defaultCamPhi = 1.17;
+                        vec3.transformMat4(v0, vec3.fromValues(res.vertices[i0], res.vertices[i0+1], res.vertices[i0+2]), worldMat);
+                        vec3.transformMat4(v1, vec3.fromValues(res.vertices[i1], res.vertices[i1+1], res.vertices[i1+2]), worldMat);
+                        vec3.transformMat4(v2, vec3.fromValues(res.vertices[i2], res.vertices[i2+1], res.vertices[i2+2]), worldMat);
 
-    private _onMouseDown = this.onMouseDown.bind(this);
-    private _onMouseMove = this.onMouseMove.bind(this);
-    private _onMouseUp = this.onMouseUp.bind(this);
-    private _onWheel = this.onWheel.bind(this);
-    private _onContextMenu = (e: Event) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };
-    // Touch handlers
-    private _onTouchStart = this.onTouchStart.bind(this);
-    private _onTouchMove = this.onTouchMove.bind(this);
-    private _onTouchEnd = this.onTouchEnd.bind(this);
-
-    rotateCamera(_axis: 'x' | 'y' | 'z', _angleDegrees: number): void {
-        // No implementado en WebGL por ahora (funcionalidad específica de ThreeJS)
-    }
-
-    // Touch state
-    private lastTouchX = 0;
-    private lastTouchY = 0;
-    private lastTouchDist = 0;
-
-    setCameraProps(position: Vector3, target: Vector3): void {
-        // Actualizamos la cámara interna
-        this.cameraEntity.lookAt(
-            vec3.fromValues(position.x, position.y, position.z),
-            vec3.fromValues(target.x, target.y, target.z)
-        );
-
-        // Sincronizamos las variables de control (reverse engineering spherical coords)
-        vec3.set(this.camTarget, target.x, target.y, target.z);
-
-        const dx = position.x - target.x;
-        const dy = position.y - target.y;
-        const dz = position.z - target.z;
-
-        this.camRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        // Evitar division por 0 o radio negativo
-        if (this.camRadius < 0.001) this.camRadius = 0.001;
-
-        // Phi: ángulo respecto Y (0=arriba, PI=abajo)
-        this.camPhi = Math.acos(Math.max(-1, Math.min(1, dy / this.camRadius)));
-        // Theta: ángulo en XZ
-        this.camTheta = Math.atan2(dx, dz);
-    }
-
-    private initControls() {
-        if (!this.canvas) return;
-        this.canvas.addEventListener('mousedown', this._onMouseDown);
-        this.canvas.addEventListener('wheel', this._onWheel, { passive: false });
-        this.canvas.addEventListener('contextmenu', this._onContextMenu);
-        window.addEventListener('mousemove', this._onMouseMove);
-        window.addEventListener('mouseup', this._onMouseUp);
-
-        // Touch listeners (passive: false to prevent scrolling)
-        this.canvas.addEventListener('touchstart', this._onTouchStart, { passive: false });
-        this.canvas.addEventListener('touchmove', this._onTouchMove, { passive: false });
-        this.canvas.addEventListener('touchend', this._onTouchEnd);
-
-        // Guardar la posición inicial calculada como "default" para el botón reset
-        vec3.copy(this.defaultCamPos, this.cameraEntity.position);
-        this.defaultCamRadius = this.camRadius;
-        this.defaultCamTheta = this.camTheta;
-        this.defaultCamPhi = this.camPhi;
-
-        // FIX: Eliminamos el recálculo reverso de coordenadas esféricas aquí.
-        // Como init() ya llamó a updateCameraOrbit() usando las variables camRadius/Theta/Phi,
-        // estas variables YA SON la "source of truth" y están perfectamente sincronizadas.
-    }
-
-    private removeControls() {
-        if (this.canvas) {
-            this.canvas.removeEventListener('mousedown', this._onMouseDown);
-            this.canvas.removeEventListener('wheel', this._onWheel);
-            this.canvas.removeEventListener('contextmenu', this._onContextMenu);
-            this.canvas.removeEventListener('touchstart', this._onTouchStart);
-            this.canvas.removeEventListener('touchmove', this._onTouchMove);
-            this.canvas.removeEventListener('touchend', this._onTouchEnd);
-        }
-        window.removeEventListener('mousemove', this._onMouseMove);
-        window.removeEventListener('mouseup', this._onMouseUp);
-    }
-
-    private onMouseDown(e: MouseEvent) {
-        if (e.button === 0 || e.button === 2) { // Left or Right click
-            // Prevent default behavior to avoid browser gestures (especially in Opera)
-            if (e.button === 2) {
-                e.preventDefault();
+                        const t = intersectTriangle(oriRaw, dir, v0, v1, v2);
+                        if (t !== null && t < minDist) {
+                            minDist = t;
+                            closestHitNode = n;
+                        }
+                    }
+                }
             }
-            this.isDragging = true;
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
+            const children = (n as any).children as Node[];
+            if (children) children.forEach(checkNode);
+        };
+
+        checkNode(this.rootNode);
+
+        if (closestHitNode) {
+            return this.wrapNativeObject(closestHitNode);
         }
-    }
-
-    private onMouseMove(e: MouseEvent) {
-        if (!this.isDragging) return;
-
-        const deltaX = e.clientX - this.lastMouseX;
-        const deltaY = e.clientY - this.lastMouseY;
-        this.lastMouseX = e.clientX;
-        this.lastMouseY = e.clientY;
-
-        // Velocidades
-        const rotateSpeed = 0.005;
-        const panSpeed = 0.002 * this.camRadius; // Scale pan speed with zoom
-
-        if (e.buttons & 1) { // Left click: Orbit
-            this.camTheta -= deltaX * rotateSpeed;
-            this.camPhi -= deltaY * rotateSpeed;
-
-            // Clamp Phi para no dar la vuelta completa (evitar gimbal lock visual y confusion)
-            const epsilon = 0.01;
-            this.camPhi = Math.max(epsilon, Math.min(Math.PI - epsilon, this.camPhi));
-
-            this.updateCameraOrbit();
-        } else if (e.buttons & 2) { // Right click: Pan
-            this.performPan(deltaX, deltaY, panSpeed);
-            this.updateCameraOrbit();
-        }
-    }
-
-    // Helper for Panning (Shared by Mouse & Touch)
-    private performPan(deltaX: number, deltaY: number, speed: number) {
-        const forward = vec3.create();
-        vec3.sub(forward, this.camTarget, this.cameraEntity.position);
-        vec3.normalize(forward, forward);
-
-        const right = vec3.create();
-        vec3.cross(right, forward, [0, 1, 0]);
-        vec3.normalize(right, right);
-
-        const up = vec3.create();
-        vec3.cross(up, right, forward);
-        vec3.normalize(up, up);
-
-        const panX = vec3.create();
-        const panY = vec3.create();
-
-        vec3.scale(panX, right, -deltaX * speed);
-        vec3.scale(panY, up, deltaY * speed);
-
-        vec3.add(this.camTarget, this.camTarget, panX);
-        vec3.add(this.camTarget, this.camTarget, panY);
-    }
-
-    private onTouchStart(e: TouchEvent) {
-        // 1 finger: Rotate. 2 fingers: Pan + Zoom
-        if (e.touches.length === 1) {
-            e.preventDefault();
-            this.lastTouchX = e.touches[0].clientX;
-            this.lastTouchY = e.touches[0].clientY;
-            this.isDragging = true;
-        } else if (e.touches.length === 2) {
-            e.preventDefault();
-            const t1 = e.touches[0];
-            const t2 = e.touches[1];
-            // Midpoint for Pan
-            this.lastTouchX = (t1.clientX + t2.clientX) / 2;
-            this.lastTouchY = (t1.clientY + t2.clientY) / 2;
-
-            // Distance for Zoom
-            const dx = t1.clientX - t2.clientX;
-            const dy = t1.clientY - t2.clientY;
-            this.lastTouchDist = Math.sqrt(dx * dx + dy * dy);
-            this.isDragging = true;
-        }
-    }
-
-    private onTouchMove(e: TouchEvent) {
-        e.preventDefault(); // Prevent scroll
-        if (!this.isDragging) return;
-
-        if (e.touches.length === 1) {
-            // Rotate
-            const x = e.touches[0].clientX;
-            const y = e.touches[0].clientY;
-            const deltaX = x - this.lastTouchX;
-            const deltaY = y - this.lastTouchY;
-            this.lastTouchX = x;
-            this.lastTouchY = y;
-
-            const rotateSpeed = 0.005;
-            this.camTheta -= deltaX * rotateSpeed;
-            this.camPhi -= deltaY * rotateSpeed;
-
-            const epsilon = 0.01;
-            this.camPhi = Math.max(epsilon, Math.min(Math.PI - epsilon, this.camPhi));
-            this.updateCameraOrbit();
-
-        } else if (e.touches.length === 2) {
-            // Pan + Zoom
-            const t1 = e.touches[0];
-            const t2 = e.touches[1];
-
-            // 1. Pan
-            const curX = (t1.clientX + t2.clientX) / 2;
-            const curY = (t1.clientY + t2.clientY) / 2;
-            const deltaX = curX - this.lastTouchX;
-            const deltaY = curY - this.lastTouchY;
-            this.lastTouchX = curX;
-            this.lastTouchY = curY;
-
-            const panSpeed = 0.002 * this.camRadius;
-            this.performPan(deltaX, deltaY, panSpeed);
-
-            // 2. Zoom
-            const dx = t1.clientX - t2.clientX;
-            const dy = t1.clientY - t2.clientY;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // Difference in distance
-            // pinch out (dist increases) -> zoom in (radius decreases)
-            const zoomDelta = this.lastTouchDist - dist;
-            this.lastTouchDist = dist;
-
-            const zoomSpeed = 0.01 * this.camRadius;
-            this.camRadius += zoomDelta * zoomSpeed;
-            if (this.camRadius < 0.1) this.camRadius = 0.1;
-
-            this.updateCameraOrbit();
-        }
-    }
-
-    private onTouchEnd(e: TouchEvent) {
-        if (e.touches.length === 0) {
-            this.isDragging = false;
-        } else if (e.touches.length === 1) {
-            // Transition smoothly to single finger rotation
-            this.lastTouchX = e.touches[0].clientX;
-            this.lastTouchY = e.touches[0].clientY;
-        }
-    }
-
-    private onMouseUp(_e: MouseEvent) {
-        this.isDragging = false;
-    }
-
-    private onWheel(e: WheelEvent) {
-        e.preventDefault();
-        const zoomSpeed = 0.001 * this.camRadius;
-        this.camRadius += e.deltaY * zoomSpeed;
-        if (this.camRadius < 0.1) this.camRadius = 0.1;
-        this.updateCameraOrbit();
-    }
-
-    private updateCameraOrbit() {
-        const x = this.camRadius * Math.sin(this.camPhi) * Math.sin(this.camTheta);
-        const y = this.camRadius * Math.cos(this.camPhi);
-        const z = this.camRadius * Math.sin(this.camPhi) * Math.cos(this.camTheta);
-
-        const eye = vec3.fromValues(
-            this.camTarget[0] + x,
-            this.camTarget[1] + y,
-            this.camTarget[2] + z
-        );
-
-        this.cameraEntity.lookAt(eye, this.camTarget);
-    }
-
-    updateControls(): void {
-        // Optional: inertia/damping could go here
-    }
-
-    toggleControls(enable: boolean, _autoRotate: boolean): void {
-        if (enable) {
-            this.initControls();
-        } else {
-            this.removeControls();
-        }
-    }
-    setControlsAutoRotateSpeed(_speed: number): void { /* no-op */ }
-
-    resetControls(): void {
-        this.camRadius = this.defaultCamRadius;
-        this.camTheta = this.defaultCamTheta;
-        this.camPhi = this.defaultCamPhi;
-        vec3.copy(this.camTarget, this.defaultCamTarget);
-        this.updateCameraOrbit();
-    }
-
-    checkControlsState(): boolean {
-        // Return true if camera is significantly different from default
-        const pos = this.cameraEntity.position;
-        const distPos = vec3.dist(pos, this.defaultCamPos);
-        const distTarget = vec3.dist(this.camTarget, this.defaultCamTarget);
-
-        return distPos > 0.1 || distTarget > 0.1;
-    }
-
-    getCamera(): any {
-        // devolvemos algo compatible con el componente (usa .position)
-        return { position: { x: this.cameraEntity.position[0], y: this.cameraEntity.position[1], z: this.cameraEntity.position[2] } };
-    }
-
-    // ------------------ Interaction (pendiente) ------------------
-
-    raycast(_x: number, _y: number): RenderableObject | null {
-        // En WebGL puro esto requiere picking (color buffer o ray/triangles).
-        // Para que el flujo no rompa, devolvemos null.
         return null;
     }
 
+    // ⚠️ FALTA POR HACER (metodo de alvaro) 
+    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor??
     setHighlight(objects: RenderableObject[]): void {
-        const cyan = vec3.fromValues(0, 1, 1);
+        // const cyan = vec3.fromValues(0, 1, 1);
 
-        this.wrappers.forEach(w => w.node.isHighlighted = false);
+        // this.wrappers.forEach(w => w.node.isHighlighted = false);
 
-        objects.forEach(o => {
-            if (!o) return;
-            const w = o as WebGlRenderableObject;
+        // objects.forEach(o => {
+        //     if (!o) return;
+        //     const w = o as WebGlRenderableObject;
 
-            const highlightSubtree = (n: Node | null) => {
-                if (!n) return;
-                n.isHighlighted = true;
-                n.highlightColor = cyan;
-                const children: Node[] = (n as any).children || [];
-                children.forEach(highlightSubtree);
-            };
+        //     const highlightSubtree = (n: Node | null) => {
+        //         if (!n) return;
+        //         n.isHighlighted = true;
+        //         n.highlightColor = cyan;
+        //         const children: Node[] = (n as any).children || [];
+        //         children.forEach(highlightSubtree);
+        //     };
 
-            highlightSubtree(w.node);
-        });
+        //     highlightSubtree(w.node);
+        // });
     }
 
-    // ------------------ Load model (@loaders.gl/gltf) ------------------
+    rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
 
-    async loadGLTF(url: string): Promise<RenderableObject> {
-        if (!this.gl) throw new Error('Engine not initialized');
-
-        const res = await this.resourceManager.getResource(
-            url,
-            () => new MeshResource(url, this.gl)
-        );
-
-        const groupNode = new Node();
-        const groupNative = new NativeLikeObject(`model_${crypto.randomUUID()}`);
-        const groupWrapper = new WebGlRenderableObject(groupNode, groupNative);
-
-        const namedMeshes = (res as any).getNamedMeshes
-            ? (res as any).getNamedMeshes() as NamedMesh[]
-            : (res as any).getMeshes().map((m: Mesh, i: number) => ({ name: `mesh_${i}`, mesh: m })) as NamedMesh[];
-
-        // --- helper: normaliza nombres
-        // "estante_1"    -> "estante_1"    (porque _1 es parte del nombre base implícito o no colisiona)
-        // "estante_1_2"  -> "estante_1" 
-        // "estante_2"    -> "estante_2"
-        // "estante_2_2"  -> "estante_2"
-        // "tablon_x"     -> "tablon_x"
-        // "tablon_x_2"   -> "tablon_x"
-        // 1. Create a Set of all raw names to check existence
-        const allNames = new Set(namedMeshes.map(n => n.name));
-
-        // --- helper: normaliza nombres usando heurística de existencia
-        const normalizePieceName = (raw: string): string => {
-            const name = String(raw ?? '').trim();
-            // Regex: busca "_N" al final solo si N >= 2
-            // O busca "_1" si es una copia (pero queremos respetar estante_1 como base, y estante_1_2 como copia).
-            // Todo lo que termina en _2, _3, _4... es copia. Lo que termina en _1 a veces es base.
-            // PERO: Si tengo estante_1 y estante_2, son bases distintas.
-            // Si tengo estante_1_2, es copia de estante_1.
-
-            // Simplemente quitamos "_\d+" AL FINAL, siempre que el número sea >= 2.
-            // Así repetimos: estante_1 -> estante_1. estante_1_2 -> estante_1.
-            // Regex que captura "nombre_base" + "_numero" (cualquier numero)
-            const match = name.match(/^(.*)_(\d+)$/);
-            if (match) {
-                const potentialBase = match[1];
-
-                // CASO 1: El padre existe (ej: estante_1_2 -> estante_1 existe)
-                // Entonces _2 es una copa de estante_1
-                if (allNames.has(potentialBase)) {
-                    return potentialBase;
-                }
-
-                // CASO 2: El padre NO existe (ej: estante_1 -> estante NO existe)
-                // Entonces _1 es parte del nombre base unico.
-                // CASO 3: estante_2 -> estante NO existe.
-                return name;
-            }
-
-            // Si no tiene sufijo numérico, es base (ej: patas)
-            return name;
-        };
-
-        // Mapa: nombre base (BD) -> wrapper grupo
-        const pieceGroups = new Map<string, WebGlRenderableObject>();
-
-        for (const { name, mesh } of namedMeshes) {
-            const baseName = normalizePieceName(name);
-
-            // si no existe el grupo de esa pieza, lo creamos
-            let pieceGroup = pieceGroups.get(baseName);
-            if (!pieceGroup) {
-                const pieceGroupNode = new Node();
-                const pieceGroupNative = new NativeLikeObject(baseName); // nombre grupo limpio
-                pieceGroup = new WebGlRenderableObject(pieceGroupNode, pieceGroupNative);
-
-                // cada pieza grupo cuelga del modelo raíz
-                groupWrapper.add(pieceGroup);
-                this.wrappers.add(pieceGroup);
-                pieceGroups.set(baseName, pieceGroup);
-            }
-
-            // este mesh concreto será un hijo interno del grupo (submesh)
-            const subNode = new Node();
-            subNode.setEntity(mesh);
-
-            // Añadir sufijo '_mesh' para evitar duplicados en getObjectNames si el grupo se llama igual
-            // Así getObjectByName buscara el grupo por defecto si usamos el nombre base.
-            const subNative = new NativeLikeObject(name + '_mesh');
-            const subWrapper = new WebGlRenderableObject(subNode, subNative);
-
-            pieceGroup.add(subWrapper);
-            this.wrappers.add(subWrapper);
-        }
-
-        // Debug opcional
-        // console.log('[WebGL loadGLTF] groups:', [...pieceGroups.keys()]);
-
-        return groupWrapper;
     }
 
+    // ------------------------------------------
 
-    wrapNativeObject(native: any): RenderableObject {
-        // si ya tiene wrapper, devolvemos el mismo
-        if (native?.userData?.wrapper) return native.userData.wrapper as RenderableObject;
+    // metodo que no sé si hará falta o no.
+    // private applyAutoRotation(): void {
+    //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
+    //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
+    //     this.cameraNode.rotate(0, rotationDelta, 0);
+    // }
 
-        // si alguien nos pasa un native suelto, intentamos crear wrapper “fake”
-        // pero lo normal es que venga de getObjectByName() y ya tenga wrapper.
-        const node = new Node();
-        const n = native as NativeLikeObject;
-        const w = new WebGlRenderableObject(node, n);
-        this.wrappers.add(w);
-        return w;
-    }
 
-    dispose(): void {
-        this.removeControls();
-        this.wrappers.clear();
-        this.ready = false;
-    }
 }

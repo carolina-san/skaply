@@ -9,6 +9,8 @@ export interface FilterOptions {
   search?: string;
   page?: number;
   limit?: number;
+  order_by?: string;
+  order_dir?: string;
 }
 
 export type FilterProvider = ProviderBasic;

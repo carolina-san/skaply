@@ -85,6 +85,32 @@ export class StatsService {
             providers: parseInt(providersResult.rows[0].count, 10) || 0
         };
     }
+
+    async getProviderStats(providerId: number): Promise<{ furniture: number, pendingIssues: number, resolvedIssues: number }> {
+        const furnitureQuery = pool.query(`SELECT COUNT(*) FROM furniture WHERE provider_id = $1`, [providerId]);
+        const pendingIssuesQuery = pool.query(`
+            SELECT COUNT(*) FROM issue i
+            JOIN furniture f ON i.furniture_id = f.id
+            WHERE f.provider_id = $1 AND i.status = 'pending'
+        `, [providerId]);
+        const resolvedIssuesQuery = pool.query(`
+            SELECT COUNT(*) FROM issue i
+            JOIN furniture f ON i.furniture_id = f.id
+            WHERE f.provider_id = $1 AND i.status = 'resolved'
+        `, [providerId]);
+
+        const [furnitureResult, pendingIssuesResult, resolvedIssuesResult] = await Promise.all([
+            furnitureQuery,
+            pendingIssuesQuery,
+            resolvedIssuesQuery
+        ]);
+
+        return {
+            furniture: parseInt(furnitureResult.rows[0].count, 10) || 0,
+            pendingIssues: parseInt(pendingIssuesResult.rows[0].count, 10) || 0,
+            resolvedIssues: parseInt(resolvedIssuesResult.rows[0].count, 10) || 0
+        };
+    }
 }
 
 export const statsService = new StatsService();

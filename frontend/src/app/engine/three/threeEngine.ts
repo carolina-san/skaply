@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import { EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class ThreeRenderableObject implements RenderableObject {
@@ -44,22 +44,29 @@ class ThreeRenderableObject implements RenderableObject {
         this.threeObject.rotation.set(x, y, z);
     }
 
+    setScale(x: number, y: number, z: number): void {
+        this.threeObject.scale.set(x, y, z);
+    }
+
     setVisible(visible: boolean): void {
-        this.threeObject.traverse((child: any) => { //Changed to get all node of the 3d object not just the father
-            child.visible = visible;
-        });
+        this.threeObject.visible = visible;
     }
 
     add(child: RenderableObject): void {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.add(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
+
+        // const threeChild = child as ThreeRenderableObject;
+        // this.threeObject.add(threeChild.nativeObject);
     }
 
     remove(child: RenderableObject): void {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.remove(child.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     getPosition(): Vector3 {
@@ -93,6 +100,8 @@ export class ThreeEngineAdapter extends EngineFacade {
     private outlinePass!: OutlinePass;
     private raycaster = new THREE.Raycaster();
     private gltfLoader = new GLTFLoader(); //3D model 
+
+    private gltfCache: Map<string, THREE.Object3D> = new Map();
 
     // Smooth transition state
     private targetPosition = new THREE.Vector3();
@@ -183,26 +192,46 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
 
-    createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): RenderableObject {
-        const arrow = new THREE.ArrowHelper(
-            new THREE.Vector3(dir.x, dir.y, dir.z),
-            new THREE.Vector3(origin.x, origin.y, origin.z),
-            length,
-            new THREE.Color(color)
-        );
-        return new ThreeRenderableObject(arrow);
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
+        // const arrow = new THREE.ArrowHelper(
+        //     new THREE.Vector3(dir.x, dir.y, dir.z),
+        //     new THREE.Vector3(origin.x, origin.y, origin.z),
+        //     length,
+        //     new THREE.Color(color)
+        // );
+        // return new ThreeRenderableObject(arrow);
+
+        const arrow = await this.loadGLTF('storage/flecha.glb');
+
+        arrow.setPosition(origin.x, origin.y, origin.z);
+        arrow.setScale(length, length, length);
+
+        this.setArrowRotationFromDir(arrow, dir);
+
+        return arrow;
+    }
+
+    private setArrowRotationFromDir(arrow: RenderableObject, dir: {x:number,y:number,z:number}) {
+        arrow.setRotation(0,0,0);
+        if      (dir.x === 1)   {arrow.setRotation(0,0,-Math.PI / 2);}
+        else if (dir.x === -1)  {arrow.setRotation(0,0, Math.PI / 2);}
+        else if (dir.y === -1)  {arrow.setRotation(Math.PI,0,0);}
+        else if (dir.z === 1)   {arrow.setRotation(Math.PI / 2,0,0);}
+        else if (dir.z === -1)  {arrow.setRotation(-Math.PI / 2,0,0);}
     }
 
     addToScene(object: RenderableObject): void {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.add(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     removeFromScene(object: RenderableObject): void {
         if (object.nativeObject instanceof THREE.Object3D) {
             this.scene.remove(object.nativeObject);
         }
+        // deberia de ser cast explícito en lugar de insatanceof
     }
 
     setBackground(color: number | string | null): void {
@@ -337,18 +366,61 @@ export class ThreeEngineAdapter extends EngineFacade {
         return false;
     }
 
-    getCamera(): any {
-        return this.camera;
+    // getCamera(): any {
+    //     return this.camera;
+    // }
+
+    getCamera(): CameraState {
+        return {
+            position: {
+                x: this.camera.position.x,
+                y: this.camera.position.y,
+                z: this.camera.position.z
+            },
+            target: {
+                x: this.controls.target.x,
+                y: this.controls.target.y,
+                z: this.controls.target.z
+            },
+            viewMatrix: new Float32Array(this.camera.matrixWorldInverse.elements),
+            projectionMatrix: new Float32Array(this.camera.projectionMatrix.elements),
+            mode: 'orbit',
+            orbit: {
+                radius: this.controls.getDistance(),
+                theta: this.controls.getAzimuthalAngle(),
+                phi: this.controls.getPolarAngle()
+            }
+        };
     }
 
     // Load the file GLT
     async loadGLTF(url: string): Promise<RenderableObject> {
+        // const gltf = await new Promise<any>((resolve, reject) => {
+        //     this.gltfLoader.load(url, resolve, undefined, reject);
+        // });
+
+        // const root = gltf.scene as THREE.Object3D;
+        // return new ThreeRenderableObject(root);
+
+
+
+        if (this.gltfCache.has(url)) {
+            const cached = this.gltfCache.get(url)!;
+            const clone = cached.clone(true); // deep clone
+            return new ThreeRenderableObject(clone);
+        }
+
         const gltf = await new Promise<any>((resolve, reject) => {
             this.gltfLoader.load(url, resolve, undefined, reject);
         });
 
         const root = gltf.scene as THREE.Object3D;
-        return new ThreeRenderableObject(root);
+
+        this.gltfCache.set(url, root);
+
+        const clone = root.clone(true);
+
+        return new ThreeRenderableObject(clone);
     }
 
     wrapNativeObject(native: any): RenderableObject {

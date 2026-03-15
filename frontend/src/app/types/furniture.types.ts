@@ -28,6 +28,9 @@ export interface AssemblyPartRef {
     quantity: number;
     reference_number: string;
     name?: string; // Optional if not in API, but useful
+    pos_x: number;
+    pos_y: number;
+    pos_z: number;
 }
 
 export interface AssemblyStep {
