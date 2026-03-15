@@ -12,6 +12,9 @@ import { ResourceManager } from '../../engine/webgl/resource/resource-manager';
 import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
 import { Node } from '../../engine/webgl/engine-core/node';
 import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
+import { Camera } from '../../engine/webgl/engine-core/camera';
+import { Light } from '../../engine/webgl/engine-core/light';
+import { flattenJSON } from 'three/src/animation/AnimationUtils.js';
 
 @Component({
   selector: 'app-webgl-demo-1',
@@ -39,45 +42,67 @@ export class WebglSceneComponent implements AfterViewInit {
     }
 
     gl.enable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE); // AJUSTAR NORMALES DE LOS MODELOS PARA ACTIVAR!!
+    //gl.enable(gl.CULL_FACE);
+    //gl.frontFace(gl.CW);
 
-    // ---------- SHADER ----------
+    // shader
     const shader = new ShaderResource(gl, "basic");
     await shader.loadFile('assets/shaders/basic.vert', 'vertex');
     await shader.loadFile('assets/shaders/basic.frag', 'fragment');
     shader.buildProgram();
 
-    // ---------- RESOURCE MANAGER ----------
+    // resource manager
     const resourceManager = new ResourceManager();
     const meshResource = await resourceManager.getResource(
-      '../../../storage/vital_pro.glb',
+      '../../../../../storage/vital_pro.glb',
       () => new MeshResource('vital_pro', gl)
     );
 
     const meshes = meshResource.getMeshes();
 
-    // ---------- SCENE GRAPH ----------
+    // secene graph
     const root = new Node();
+    
+    // camera 
+    const camera = new Camera();
+    const cameraNode = new Node();
+    cameraNode.setTranslation(0, 2, 5);
+    camera.setPerspective(Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
+    cameraNode.setEntity(camera);
+    root.addChild(cameraNode);
+
+    // light 
+    const light = new Light();
+    light.setIntensity(vec3.fromValues(1.0, 1.0, 1.0));
+    const lightNode = new Node();
+    lightNode.setEntity(light);
+    lightNode.setTranslation(3, 5, 3);
+    root.addChild(lightNode);
+
+    // meshes
     const meshNode = new Node();
+    root.addChild(meshNode);
+
+    //let num = 1;
+
     for (let mesh of meshes) {
       const node = new Node();
       node.setEntity(mesh);
-      root.addChild(node);
+      //root.addChild(node);
+      meshNode.addChild(node);
+      //console.log("Mesh added to scene:" + num + " - " + mesh);
+      //num++;
     }
 
+
+
     // centrar un poco
-    meshNode.setTranslation(0, -1, -5);
 
-    root.addChild(meshNode);
+    //meshNode.setTranslation(0, -1, -5);
+    //root.addChild(meshNode);
 
-
-    // ---------- CAMERA ----------
-    const view = mat4.create();
-    const projection = mat4.create();
-
-    mat4.lookAt(view, vec3.fromValues(0, 2, 5), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-    mat4.perspective(projection, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
-
-    // ---------- RENDER LOOP ----------
+    // render loop
     const render = () => {
 
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -86,14 +111,16 @@ export class WebglSceneComponent implements AfterViewInit {
 
       shader.use();
 
-      shader.setMat4("uViewMatrix", view);
-      shader.setMat4("uProjectionMatrix", projection);
-      shader.setVec3("uLightPosition", vec3.fromValues(3, 5, 3));
-      shader.setVec3("uLightColor", vec3.fromValues(1.0, 1.0, 1.0));
-      shader.setVec3("uViewPosition", vec3.fromValues(0, 2, 5));
+      // Actualizar la cámara para que mire al origen desde su posición
+      // hacer lookAt en draw del render?? <- por hacer
 
-      const identity = mat4.create();
-      root.traverse(identity, shader);
+      // const cameraPosition = vec3.fromValues(0, 2, 5);
+      // const identity = mat4.create();
+      // const cameraMatrix = mat4.create();
+      // mat4.translate(cameraMatrix, identity, cameraPosition);
+      // camera.lookAt(cameraMatrix, vec3.fromValues(0, 0, 0));
+
+      root.traverse(shader);
 
       requestAnimationFrame(render);
     };

@@ -1,10 +1,12 @@
 export abstract class Resource {
 
-    protected name: string;
+    protected name: string; // eliminar en version segura
 
     constructor(name: string) {
         this.name = name;
     }
+
+    // constructor(protected readonly name: string) {} // version segura
 
     // GETTERS
 
@@ -14,7 +16,7 @@ export abstract class Resource {
 
     // SETTERS
 
-    setName(name: string) {
+    setName(name: string) { // eliminar en version segura
         this.name = name;
     }
 
