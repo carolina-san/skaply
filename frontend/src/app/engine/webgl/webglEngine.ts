@@ -9,6 +9,7 @@ import { Camera } from './engine-core/camera';
 import { Light } from './engine-core/light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
+import { OutlinePass } from './outline-pass';
 
 
 class WebGlRenderableObject implements RenderableObject {
@@ -18,7 +19,7 @@ class WebGlRenderableObject implements RenderableObject {
     castShadow = false;
     receiveShadow = false;
 
-    constructor(public node: Node) {}
+    constructor(public node: Node) { }
 
     get nativeObject(): Node {
         return this.node;
@@ -81,13 +82,13 @@ export class CameraController {
     private theta: number;
     private phi: number;
     private target: vec3;
-    
+
     // default state (for reset and checkState)
     private readonly defaultRadius: number;
     private readonly defaultTheta: number;
     private readonly defaultPhi: number;
     private readonly defaultTarget: vec3;
-    
+
     // limits
     private readonly minRadius = 1;
     private readonly maxRadius = 10;
@@ -103,14 +104,14 @@ export class CameraController {
     ) {
         // initial orbit state (spherical coordinates)
         this.radius = isMobile ? 3.84 : 3.5355;
-        this.theta  = isMobile ? 0.785 : 0.896;
-        this.phi    = isMobile ? 1.17  : 1.132;
+        this.theta = isMobile ? 0.785 : 0.896;
+        this.phi = isMobile ? 1.17 : 1.132;
         this.target = vec3.fromValues(0, 1, 0);
 
         // save default state for reset and checkState
         this.defaultRadius = this.radius;
-        this.defaultTheta  = this.theta;
-        this.defaultPhi    = this.phi;
+        this.defaultTheta = this.theta;
+        this.defaultPhi = this.phi;
         this.defaultTarget = vec3.clone(this.target);
 
         this.updateOrbit();
@@ -155,7 +156,7 @@ export class CameraController {
 
         // update angles
         this.theta += deltaTheta;
-        this.phi   += deltaPhi;
+        this.phi += deltaPhi;
 
         // clamp phi to avoid gimbal lock 
         this.phi = this.normalizePhi(this.phi);
@@ -164,7 +165,7 @@ export class CameraController {
     }
 
     zoom(delta: number): void {
-        const zoomSpeed = 0.0015; 
+        const zoomSpeed = 0.0015;
         this.radius *= 1 + delta * zoomSpeed;
         this.radius = Math.max(this.minRadius, Math.min(this.maxRadius, this.radius));
         this.updateOrbit();
@@ -194,8 +195,8 @@ export class CameraController {
 
     reset(): void {
         this.radius = this.defaultRadius;
-        this.theta  = this.defaultTheta;
-        this.phi    = this.defaultPhi;
+        this.theta = this.defaultTheta;
+        this.phi = this.defaultPhi;
         vec3.copy(this.target, this.defaultTarget);
         this.updateOrbit();
     }
@@ -203,7 +204,7 @@ export class CameraController {
     hasMovedFromDefault(): boolean {
 
         // compare current eye and target to default values
-        const eye        = this.computeEye();
+        const eye = this.computeEye();
         const defaultEye = this.computeEyeFrom(this.defaultRadius, this.defaultTheta, this.defaultPhi, this.defaultTarget);
 
         // check if current eye or target differ significantly from default
@@ -214,7 +215,7 @@ export class CameraController {
     // SET CAMERA PROPS 
 
     setCameraProps(position: Vector3, target: Vector3): void {
-       
+
         // save target
         const targetVec = vec3.fromValues(target.x, target.y, target.z);
         vec3.copy(this.target, targetVec);
@@ -224,12 +225,12 @@ export class CameraController {
         const dy = position.y - target.y;
         const dz = position.z - target.z;
         const computedRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        this.radius = Math.min(this.maxRadius,Math.max(this.minRadius, computedRadius));
+        this.radius = Math.min(this.maxRadius, Math.max(this.minRadius, computedRadius));
         const safeRadius = Math.max(this.radius, 0.00001); // avoid division by zero
-        this.radius = Math.max(0.001, Math.sqrt(dx*dx + dy*dy + dz*dz));
-        this.theta  = Math.atan2(dx, dz);
-        this.phi    = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
-        this.phi    = this.normalizePhi(this.phi); // avoid gimbal lock
+        this.radius = Math.max(0.001, Math.sqrt(dx * dx + dy * dy + dz * dz));
+        this.theta = Math.atan2(dx, dz);
+        this.phi = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
+        this.phi = this.normalizePhi(this.phi); // avoid gimbal lock
 
         this.updateOrbit();
     }
@@ -291,45 +292,45 @@ export class CameraController {
 
     // INTERACTION
 
-    private isDragging   = false;   // for mouse and touch
-    private lastMouseX   = 0;       // for mouse orbit/pan
-    private lastMouseY   = 0;       // for mouse orbit/pan
-    private lastTouchX   = 0;       // for touch orbit/pan
-    private lastTouchY   = 0;       // for touch orbit/pan
+    private isDragging = false;   // for mouse and touch
+    private lastMouseX = 0;       // for mouse orbit/pan
+    private lastMouseY = 0;       // for mouse orbit/pan
+    private lastTouchX = 0;       // for touch orbit/pan
+    private lastTouchY = 0;       // for touch orbit/pan
     private lastTouchDist = 0;      // for touch zoom
 
     // bind event handlers to preserve 'this' context
-    private _onMouseDown    = (e: MouseEvent)  => this.onMouseDown(e);
-    private _onMouseMove    = (e: MouseEvent)  => this.onMouseMove(e);
-    private _onMouseUp      = (_: MouseEvent)  => { this.isDragging = false; };
-    private _onWheel        = (e: WheelEvent)  => { e.preventDefault(); this.zoom(e.deltaY); };
-    private _onContextMenu  = (e: Event)       => { e.preventDefault(); e.stopPropagation(); };
-    private _onTouchStart   = (e: TouchEvent)  => this.onTouchStart(e);
-    private _onTouchMove    = (e: TouchEvent)  => this.onTouchMove(e);
-    private _onTouchEnd     = (e: TouchEvent)  => { if (e.touches.length === 0) this.isDragging = false; };
+    private _onMouseDown = (e: MouseEvent) => this.onMouseDown(e);
+    private _onMouseMove = (e: MouseEvent) => this.onMouseMove(e);
+    private _onMouseUp = (_: MouseEvent) => { this.isDragging = false; };
+    private _onWheel = (e: WheelEvent) => { e.preventDefault(); this.zoom(e.deltaY); };
+    private _onContextMenu = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
+    private _onTouchStart = (e: TouchEvent) => this.onTouchStart(e);
+    private _onTouchMove = (e: TouchEvent) => this.onTouchMove(e);
+    private _onTouchEnd = (e: TouchEvent) => { if (e.touches.length === 0) this.isDragging = false; };
 
     // add event listeners to canvas and window
     initListeners(): void {
-        this.canvas.addEventListener('mousedown',    this._onMouseDown);
-        this.canvas.addEventListener('wheel',        this._onWheel, { passive: false });
-        this.canvas.addEventListener('contextmenu',  this._onContextMenu);
-        this.canvas.addEventListener('touchstart',   this._onTouchStart, { passive: false });
-        this.canvas.addEventListener('touchmove',    this._onTouchMove,  { passive: false });
-        this.canvas.addEventListener('touchend',     this._onTouchEnd);
+        this.canvas.addEventListener('mousedown', this._onMouseDown);
+        this.canvas.addEventListener('wheel', this._onWheel, { passive: false });
+        this.canvas.addEventListener('contextmenu', this._onContextMenu);
+        this.canvas.addEventListener('touchstart', this._onTouchStart, { passive: false });
+        this.canvas.addEventListener('touchmove', this._onTouchMove, { passive: false });
+        this.canvas.addEventListener('touchend', this._onTouchEnd);
         window.addEventListener('mousemove', this._onMouseMove);
-        window.addEventListener('mouseup',   this._onMouseUp);
+        window.addEventListener('mouseup', this._onMouseUp);
     }
 
     // remove event listeners (cleanup)
     private removeListeners(): void {
-        this.canvas.removeEventListener('mousedown',   this._onMouseDown);
-        this.canvas.removeEventListener('wheel',       this._onWheel);
+        this.canvas.removeEventListener('mousedown', this._onMouseDown);
+        this.canvas.removeEventListener('wheel', this._onWheel);
         this.canvas.removeEventListener('contextmenu', this._onContextMenu);
-        this.canvas.removeEventListener('touchstart',  this._onTouchStart);
-        this.canvas.removeEventListener('touchmove',   this._onTouchMove);
-        this.canvas.removeEventListener('touchend',    this._onTouchEnd);
+        this.canvas.removeEventListener('touchstart', this._onTouchStart);
+        this.canvas.removeEventListener('touchmove', this._onTouchMove);
+        this.canvas.removeEventListener('touchend', this._onTouchEnd);
         window.removeEventListener('mousemove', this._onMouseMove);
-        window.removeEventListener('mouseup',   this._onMouseUp);
+        window.removeEventListener('mouseup', this._onMouseUp);
     }
 
     // handle mouse button press
@@ -364,7 +365,7 @@ export class CameraController {
             this.isDragging = true;
 
         } else if (e.touches.length === 2) { // two fingers -> pan + pinch zoom
-            
+
             // store center point between fingers for panning
             this.lastTouchX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             this.lastTouchY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
@@ -372,7 +373,7 @@ export class CameraController {
             // calculate distance between fingers for pinch zoom
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
-            this.lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+            this.lastTouchDist = Math.sqrt(dx * dx + dy * dy);
 
             this.isDragging = true;
         }
@@ -391,7 +392,7 @@ export class CameraController {
             this.orbit(-dx * 0.005, -dy * 0.005);
 
         } else if (e.touches.length === 2) { // two fingers -> pan + zoom
-            
+
             // compute center movement for panning
             const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
@@ -402,7 +403,7 @@ export class CameraController {
             // compute distance change for pinch zoom
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dist = Math.sqrt(dx * dx + dy * dy);
             this.zoom((this.lastTouchDist - dist) * 10); // scale for touch zoom
             this.lastTouchDist = dist;
         }
@@ -412,15 +413,17 @@ export class CameraController {
 @Injectable()
 export class WebGLEngineAdapter extends EngineFacade {
 
-    
+
     private readonly mobileThreshold = 768; // px
 
     private gl!: WebGL2RenderingContext;
     private canvas!: HTMLCanvasElement;
     private clear = { r: 0, g: 0, b: 0, a: 0 };
-    
+
     private resourceManager = new ResourceManager();
     private shader!: ShaderResource;
+    private outlineShader!: ShaderResource;
+    private outlinePass!: OutlinePass;
 
     private rootNode = new Node();
 
@@ -430,27 +433,31 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private lightEntity = new Light();
     private lightNode = new Node();
-    
+
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
-    
+
+    private highlightedMeshes: Set<Mesh> = new Set();
+
     // ⚠️ DE MOMENTO NO HACEN FALTA
-    private highlightedObjects: WebGlRenderableObject[] = [];
     private controlsEnabled = false;
     private controlsAutoRotate = false;
     private controlsAutoRotateSpeed = 2;
-    
+
     private ready = false;
 
     // INIT
-    
-    async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void>  {
+
+    async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void> {
 
         // gl 
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl2')!;
+        this.gl = canvas.getContext('webgl2', { stencil: true })!;
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
+
+        this.outlinePass = new OutlinePass(this.gl);
+        await this.outlinePass.init(width, height);
 
         // camera 
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
@@ -463,7 +470,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
         this.rootNode.addChild(this.lightNode);
-        
+
         this.cameraController = new CameraController(
             this.cameraNode,
             this.cameraEntity,
@@ -489,6 +496,8 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+
+        this.outlinePass?.resize(width, height);
     }
 
     // CAMERA
@@ -502,21 +511,21 @@ export class WebGLEngineAdapter extends EngineFacade {
         // this.cameraController.updateOrbit();     
     }
 
-    resetControls(): void { 
-        this.cameraController.reset(); 
+    resetControls(): void {
+        this.cameraController.reset();
     }
 
-    checkControlsState(): boolean { 
+    checkControlsState(): boolean {
         if (!this.cameraController) {
             console.warn('Camera controller not yet initialized');
             return false;
         }
-        return this.cameraController.hasMovedFromDefault(); 
+        return this.cameraController.hasMovedFromDefault();
     }
 
     toggleControls(enable: boolean): void {
-        enable  ?  this.cameraController.initListeners()   // o exponer enable/disable
-                :  this.cameraController.dispose();
+        enable ? this.cameraController.initListeners()   // o exponer enable/disable
+            : this.cameraController.dispose();
     }
 
     setControlsAutoRotateSpeed(speed: number): void {
@@ -533,22 +542,51 @@ export class WebGLEngineAdapter extends EngineFacade {
             orbit: this.cameraController.getOrbitState()
         };
     }
-    
+
     // RENDER 
 
     render(): void {
         if (!this.ready) return;
-        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        const gl = this.gl;
 
+        // Asegurar que estamos en el canvas principal
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
+
+        // shader normal
         this.shader.use();
-
-        // ⚠️NO SE SI HACE FALTA HACER ESTO AQUI! 
-        // Sincronizar la posición de la cámara en el shader para el cálculo especular
-        //const camPos = this.cameraController.getCameraPosition();
-        //this.shader.setVec3("uViewPosition", vec3.fromValues(camPos.x, camPos.y, camPos.z));
-
         this.rootNode.traverse(this.shader);
+
+        // outline
+        if (this.highlightedMeshes.size > 0) {
+            const cam = this.getCamera();
+
+            const meshesWithMatrix = Array.from(this.highlightedMeshes)
+                .filter(m => m.lastModelMatrix)
+                .map(m => ({ mesh: m, modelMatrix: m.lastModelMatrix! }));
+
+            if (meshesWithMatrix.length > 0) {
+
+                this.outlinePass.renderMask(
+                    meshesWithMatrix,
+                    cam.viewMatrix,
+                    cam.projectionMatrix
+                );
+
+
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                this.outlinePass.drawEdges([0, 1, 1], 2.0);
+
+                gl.enable(gl.DEPTH_TEST);
+                gl.disable(gl.BLEND);
+            }
+        }
 
         this.updateControls();
     }
@@ -556,7 +594,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     // DISPOSE
 
     dispose(): void {
-        if (this.cameraController) {this.cameraController.dispose();} 
+        if (this.cameraController) { this.cameraController.dispose(); }
         this.wrappers.clear();
         this.ready = false;
         // ...resto cleanup...
@@ -565,22 +603,16 @@ export class WebGLEngineAdapter extends EngineFacade {
     // OBJECT MANAGEMENT
 
     async loadGLTF(url: string): Promise<RenderableObject> {
-    
+
         const meshResource = await this.resourceManager.getResource(
-            url, 
+            url,
             () => new MeshResource(url, this.gl)
         );
 
         const modelNode = new Node();
         const namedMeshes = meshResource.getNamedMeshes();
-        
-        // meshResource.getMeshes().forEach(mesh => {
-        //     const meshNode = new Node();
-        //     meshNode.setEntity(mesh);
-        //     modelNode.addChild(meshNode);
-        // });
 
-        // using namedMeshes instead (does it work??)
+        // using namedMeshes instead
         namedMeshes.forEach(namedMesh => {
             const meshNode = new Node();
             meshNode.setEntity(namedMesh.mesh);
@@ -599,15 +631,15 @@ export class WebGLEngineAdapter extends EngineFacade {
         return new WebGlRenderableObject(native);
     }
 
-    private setArrowRotationFromDir(arrow: RenderableObject, dir: {x:number,y:number,z:number}) {
-        arrow.setRotation(0,0,0);
-        if      (dir.x === 1)   {arrow.setRotation(0,0,-Math.PI / 2);}
-        else if (dir.x === -1)  {arrow.setRotation(0,0, Math.PI / 2);}
-        else if (dir.y === -1)  {arrow.setRotation(Math.PI,0,0);}
-        else if (dir.z === 1)   {arrow.setRotation(Math.PI / 2,0,0);}
-        else if (dir.z === -1)  {arrow.setRotation(-Math.PI / 2,0,0);}
+    private setArrowRotationFromDir(arrow: RenderableObject, dir: { x: number, y: number, z: number }) {
+        arrow.setRotation(0, 0, 0);
+        if (dir.x === 1) { arrow.setRotation(0, 0, -Math.PI / 2); }
+        else if (dir.x === -1) { arrow.setRotation(0, 0, Math.PI / 2); }
+        else if (dir.y === -1) { arrow.setRotation(Math.PI, 0, 0); }
+        else if (dir.z === 1) { arrow.setRotation(Math.PI / 2, 0, 0); }
+        else if (dir.z === -1) { arrow.setRotation(-Math.PI / 2, 0, 0); }
     }
-    
+
     async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
         const arrow = await this.loadGLTF('storage/flecha.glb');
         arrow.setPosition(origin.x, origin.y, origin.z);
@@ -618,9 +650,9 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private createArrowMesh(arrowLenght: number): Mesh {
 
-        const segments       = 12;
+        const segments = 12;
         const cilinderRadius = arrowLenght * 0.02;
-        const coneRadius     = arrowLenght * 0.05;
+        const coneRadius = arrowLenght * 0.05;
 
         //    .                  -|
         //   /_\   cone 25%       |
@@ -629,14 +661,14 @@ export class WebGLEngineAdapter extends EngineFacade {
         //    |    cilinder 75%   |
         //    |                  -|
 
-        const coneLength     = arrowLenght * 0.25;
+        const coneLength = arrowLenght * 0.25;
         const cilinderLength = arrowLenght - coneLength;
 
         const verts: number[] = []; // [x,y,z, x,y,z, x,y,z ...]
         const inds: number[] = [];
 
         for (let i = 0; i < segments; i++) {
-            
+
             // CILINDER VERTICES
             const point = this.getCirclePoint(i, segments, cilinderRadius);
             verts.push(point.x, 0, point.z); // bottom ring
@@ -651,9 +683,9 @@ export class WebGLEngineAdapter extends EngineFacade {
             // CILINDER INDEX
             const next = (i + 1) % segments;
             const botomIndex = i * 2;
-            const topIndex   = i * 2 + 1;
+            const topIndex = i * 2 + 1;
             const botomNextIndex = next * 2;
-            const topNextIndex   = next * 2 + 1;
+            const topNextIndex = next * 2 + 1;
             inds.push(botomIndex, topIndex, botomNextIndex);    // a
             inds.push(topIndex, topNextIndex, botomNextIndex);  // b
 
@@ -684,10 +716,10 @@ export class WebGLEngineAdapter extends EngineFacade {
         }
 
         const mesh = new Mesh({
-            vertices:   new Float32Array(verts),
-            normals:    new Float32Array(verts.length),
-            texCoords:  new Float32Array(0),
-            indices:    new Uint32Array(inds)
+            vertices: new Float32Array(verts),
+            normals: new Float32Array(verts.length),
+            texCoords: new Float32Array(0),
+            indices: new Uint32Array(inds)
         }, this.gl);
 
         return mesh;
@@ -714,7 +746,7 @@ export class WebGLEngineAdapter extends EngineFacade {
             z: Math.sin(angle) * radius
         };
     }
-    
+
     addToScene(object: RenderableObject): void {
         const obj = object as WebGlRenderableObject;
         this.rootNode.addChild(obj.node);
@@ -740,104 +772,95 @@ export class WebGLEngineAdapter extends EngineFacade {
         }
         // string => fallback
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
-    }   
-    
-    // INTERACTION
+    }
 
     raycast(x: number, y: number): RenderableObject | null {
-        // Calculate ray from camera to world
-        const invViewProj = mat4.create();
-        const viewProj = mat4.create();
-        mat4.multiply(viewProj, this.cameraController.getProjectionMatrix() as any, this.cameraController.getViewMatrix() as any);
-        mat4.invert(invViewProj, viewProj);
-    
-        const oriRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, -1), invViewProj);
-        const tgtRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, 1), invViewProj);
-        
-        const dir = vec3.create();
-        vec3.sub(dir, tgtRaw, oriRaw);
-        vec3.normalize(dir, dir);
-        
-        // Möller-Trumbore Ray-Triangle Intersection
-        const intersectTriangle = (orig: vec3, rdir: vec3, v0: vec3, v1: vec3, v2: vec3): number | null => {
-            const edge1 = vec3.create(); vec3.sub(edge1, v1, v0);
-            const edge2 = vec3.create(); vec3.sub(edge2, v2, v0);
-            const h = vec3.create(); vec3.cross(h, rdir, edge2);
-            const a = vec3.dot(edge1, h);
-            if (a > -0.00001 && a < 0.00001) return null;
-            const f = 1.0 / a;
-            const s = vec3.create(); vec3.sub(s, orig, v0);
-            const u = f * vec3.dot(s, h);
-            if (u < 0.0 || u > 1.0) return null;
-            const q = vec3.create(); vec3.cross(q, s, edge1);
-            const v = f * vec3.dot(rdir, q);
-            if (v < 0.0 || u + v > 1.0) return null;
-            const t = f * vec3.dot(edge2, q);
-            if (t > 0.00001) return t;
-            return null;
-        };
+        // // Calculate ray from camera to world
+        // const invViewProj = mat4.create();
+        // const viewProj = mat4.create();
+        // mat4.multiply(viewProj, this.cameraController.getProjectionMatrix() as any, this.cameraController.getViewMatrix() as any);
+        // mat4.invert(invViewProj, viewProj);
 
-        let closestHitNode: Node | null = null;
-        let minDist = Infinity;
+        // const oriRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, -1), invViewProj);
+        // const tgtRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, 1), invViewProj);
 
-        const checkNode = (n: Node) => {
-            if (!n.isVisible()) return;
-            const ent = n.getEntity();
-            if (ent instanceof Mesh) {
-                const res = (ent as any).resource;
-                if (res && res.vertices && res.indices) {
-                    const worldMat = n.getTransformMatrix();
-                    const v0 = vec3.create(), v1 = vec3.create(), v2 = vec3.create();
-                    for (let i = 0; i < res.indices.length; i += 3) {
-                        const i0 = res.indices[i] * 3;
-                        const i1 = res.indices[i+1] * 3;
-                        const i2 = res.indices[i+2] * 3;
+        // const dir = vec3.create();
+        // vec3.sub(dir, tgtRaw, oriRaw);
+        // vec3.normalize(dir, dir);
 
-                        vec3.transformMat4(v0, vec3.fromValues(res.vertices[i0], res.vertices[i0+1], res.vertices[i0+2]), worldMat);
-                        vec3.transformMat4(v1, vec3.fromValues(res.vertices[i1], res.vertices[i1+1], res.vertices[i1+2]), worldMat);
-                        vec3.transformMat4(v2, vec3.fromValues(res.vertices[i2], res.vertices[i2+1], res.vertices[i2+2]), worldMat);
+        // // Möller-Trumbore Ray-Triangle Intersection
+        // const intersectTriangle = (orig: vec3, rdir: vec3, v0: vec3, v1: vec3, v2: vec3): number | null => {
+        //     const edge1 = vec3.create(); vec3.sub(edge1, v1, v0);
+        //     const edge2 = vec3.create(); vec3.sub(edge2, v2, v0);
+        //     const h = vec3.create(); vec3.cross(h, rdir, edge2);
+        //     const a = vec3.dot(edge1, h);
+        //     if (a > -0.00001 && a < 0.00001) return null;
+        //     const f = 1.0 / a;
+        //     const s = vec3.create(); vec3.sub(s, orig, v0);
+        //     const u = f * vec3.dot(s, h);
+        //     if (u < 0.0 || u > 1.0) return null;
+        //     const q = vec3.create(); vec3.cross(q, s, edge1);
+        //     const v = f * vec3.dot(rdir, q);
+        //     if (v < 0.0 || u + v > 1.0) return null;
+        //     const t = f * vec3.dot(edge2, q);
+        //     if (t > 0.00001) return t;
+        //     return null;
+        // };
 
-                        const t = intersectTriangle(oriRaw, dir, v0, v1, v2);
-                        if (t !== null && t < minDist) {
-                            minDist = t;
-                            closestHitNode = n;
-                        }
-                    }
-                }
-            }
-            const children = (n as any).children as Node[];
-            if (children) children.forEach(checkNode);
-        };
+        // let closestHitNode: Node | null = null;
+        // let minDist = Infinity;
 
-        checkNode(this.rootNode);
+        // const checkNode = (n: Node) => {
+        //     if (!n.isVisible()) return;
+        //     const ent = n.getEntity();
+        //     if (ent instanceof Mesh) {
+        //         const res = (ent as any).resource;
+        //         if (res && res.vertices && res.indices) {
+        //             const worldMat = n.getTransformMatrix();
+        //             const v0 = vec3.create(), v1 = vec3.create(), v2 = vec3.create();
+        //             for (let i = 0; i < res.indices.length; i += 3) {
+        //                 const i0 = res.indices[i] * 3;
+        //                 const i1 = res.indices[i+1] * 3;
+        //                 const i2 = res.indices[i+2] * 3;
 
-        if (closestHitNode) {
-            return this.wrapNativeObject(closestHitNode);
-        }
+        //                 vec3.transformMat4(v0, vec3.fromValues(res.vertices[i0], res.vertices[i0+1], res.vertices[i0+2]), worldMat);
+        //                 vec3.transformMat4(v1, vec3.fromValues(res.vertices[i1], res.vertices[i1+1], res.vertices[i1+2]), worldMat);
+        //                 vec3.transformMat4(v2, vec3.fromValues(res.vertices[i2], res.vertices[i2+1], res.vertices[i2+2]), worldMat);
+
+        //                 const t = intersectTriangle(oriRaw, dir, v0, v1, v2);
+        //                 if (t !== null && t < minDist) {
+        //                     minDist = t;
+        //                     closestHitNode = n;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     const children = (n as any).children as Node[];
+        //     if (children) children.forEach(checkNode);
+        // };
+
+        // checkNode(this.rootNode);
+
+        // if (closestHitNode) {
+        //     return this.wrapNativeObject(closestHitNode);
+        // }
         return null;
     }
 
-    // ⚠️ FALTA POR HACER (metodo de alvaro) 
-    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor??
     setHighlight(objects: RenderableObject[]): void {
-        // const cyan = vec3.fromValues(0, 1, 1);
+        for (const mesh of this.highlightedMeshes) {
+            mesh.setIsHighlighted(false);
+        }
+        this.highlightedMeshes.clear();
 
-        // this.wrappers.forEach(w => w.node.isHighlighted = false);
+        for (const obj of objects) {
+            const webglObject = obj as WebGlRenderableObject;
+            const node = webglObject.nativeObject as Node;
 
-        // objects.forEach(o => {
-        //     if (!o) return;
-        //     const w = o as WebGlRenderableObject;
-
-        //     const highlightSubtree = (n: Node | null) => {
-        //         if (!n) return;
-        //         n.isHighlighted = true;
-        //         n.highlightColor = cyan;
-        //         const children: Node[] = (n as any).children || [];
-        //         children.forEach(highlightSubtree);
-        //     };
-
-        //     highlightSubtree(w.node);
-        // });
+            const mesh = node.getEntity() as Mesh;
+            mesh.setIsHighlighted(true);
+            this.highlightedMeshes.add(mesh);
+        }
     }
 
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {

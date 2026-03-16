@@ -195,13 +195,22 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('','pata01', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','pata02', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','travesaño', 1),
-('','M8_flat_head_20mm_1', 1),
-('','M8_flat_head_20mm_2_izquierda', 1),
-('','M8_flat_head_20mm_2_derecha', 1), -- Nuevo antes de uniones
+('','M8_flat_head_20mm_1_derecha', 1),
+('','M8_flat_head_20mm_1_izquierda', 1),
+('','M8_flat_head_20mm_2_izquierda_1', 1),
+('','M8_flat_head_20mm_2_izquierda_2', 1),
+('','M8_flat_head_20mm_2_derecha_1', 1), -- Nuevo antes de uniones
+('','M8_flat_head_20mm_2_derecha_2', 1),
 ('','uniones_tornillos', 1),
-('','M8_flat_head_20mm_3', 1), -- Nuevo antes del tablero
+('','M8_flat_head_20mm_3_1', 1), -- Nuevo antes del tablero
+('','M8_flat_head_20mm_3_2', 1),
+('','M8_flat_head_20mm_3_3', 1),
+('','M8_flat_head_20mm_3_4', 1),
 ('','tablero', 1),
-('','M8_flat_head_20mm_4', 1), -- Nuevo después del tablero
+('','M8_flat_head_20mm_4_1', 1), -- Nuevo después del tablero
+('','M8_flat_head_20mm_4_2', 1),
+('','M8_flat_head_20mm_4_3', 1),
+('','M8_flat_head_20mm_4_4', 1),
 -- PARTES MUEBLE ACTIU ARMRIO MODULAR
 ('','patas', 1),   --pata01 y pata02 deberían de ser la misma pieza
 ('','tablon_inferior', 1),   --pata01 y pata02 deberían de ser la misma pieza
@@ -395,24 +404,33 @@ INSERT INTO Furniture_Part (furniture_id, part_id, quantity, exploded_axis, expl
 (6,7,1,'y',0.0, -0.87, 0.423, 0.0),    --pata
 (6,8,1,'y',0.0, 0.87, 0.423, 0.0),    --pata
 (6,9,1,'y',0.3, 0.0, 0.69, 0.0),    --travesaño
-(6,10,1,'y',0.25, 0.0, 0.704, 0.0),  --M8_1
-(6,11,1,'x',0.25, -0.85, 0.675, 0.0),  --M8_2_izquierda
-(6,12,1,'x',-0.25, 0.85, 0.675, 0.0), --M8_2_derecha
-(6,13,1,'y',0.25, 0.0, 0.7, 0.0),  --uniones_tornillos
-(6,14,1,'y',0.25, 0.0, 0.705, 0.0),  --M8_3 (antes tablero)
-(6,15,1,'y',0.3, 0.0, 0.729, 0.0),   --tablero
-(6,16,1,'y',-0.35, 0.0, 0.714, 0.0), --M8_4 (después tablero)
+(6,10,1,'y',0.25, 0.86, 0.704, 0.0007),  --M8_1_derecha
+(6,11,1,'y',0.25, -0.86, 0.704, 0.0007),  --M8_1_izquierda
+(6,12,1,'x',0.25, -0.85, 0.675, 0.04),  --M8_2_izquierda_1
+(6,13,1,'x',0.25, -0.85, 0.675, -0.04),  --M8_2_izquierda_2
+(6,14,1,'x',-0.25, 0.85, 0.675, 0.04), --M8_2_derecha_1
+(6,15,1,'x',-0.25, 0.85, 0.675, -0.04), --M8_2_derecha_2
+(6,16,1,'y',0.25, 0.0, 0.715, 0.0),  --uniones_tornillos
+(6,17,1,'y',0.25, 0.86, 0.705, 0.26),  --M8_3_1 (antes tablero)
+(6,18,1,'y',0.25, 0.86, 0.705, -0.26),  --M8_3_2 (antes tablero)
+(6,19,1,'y',0.25, -0.86, 0.705, 0.26),  --M8_3_3 (antes tablero)
+(6,20,1,'y',0.25, -0.86, 0.705, -0.26),  --M8_3_4 (antes tablero)
+(6,21,1,'y',0.3, 0.0, 0.729, 0.0),   --tablero
+(6,22,1,'y',-0.35, 0.83, 0.714, 0.26), --M8_4_1 (después tablero)
+(6,23,1,'y',-0.35, 0.83, 0.714, -0.26), --M8_4_2 (después tablero)
+(6,24,1,'y',-0.35, -0.83, 0.714, 0.26), --M8_4_3 (después tablero)
+(6,25,1,'y',-0.35, -0.83, 0.714, -0.26), --M8_4_4 (después tablero)
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(7,17,1,'y',0.0, 0.0, 0.0, 0.0),    --patas
-(7,18,1,'y',0.3, 0.0, 0.0, 0.0),    --tablon
-(7,19,1,'y',0.5, 0.0, 0.0, 0.0),    --travesaño
-(7,20,1,'y',0.5, 0.0, 0.0, 0.0),
-(7,21,1,'z',-0.4, 0.0, 0.0, 0.0),
-(7,22,1,'y',0.5, 0.0, 0.0, 0.0),
-(7,23,1,'z',0.4, 0.0, 0.0, 0.0),
-(7,24,1,'z',0.4, 0.0, 0.0, 0.0),
-(7,25,1,'z',0.4, 0.0, 0.0, 0.0),              
-(7,26,1,'z',0.4, 0.0, 0.0, 0.0);   --tablero     
+(7,26,1,'y',0.0, 0.0, 0.0, 0.0),    --patas
+(7,27,1,'y',0.3, 0.0, 0.0, 0.0),    --tablon
+(7,28,1,'y',0.5, 0.0, 0.0, 0.0),    --travesaño
+(7,29,1,'y',0.5, 0.0, 0.0, 0.0),
+(7,30,1,'z',-0.4, 0.0, 0.0, 0.0),
+(7,31,1,'y',0.5, 0.0, 0.0, 0.0),
+(7,32,1,'z',0.4, 0.0, 0.0, 0.0),
+(7,33,1,'z',0.4, 0.0, 0.0, 0.0),
+(7,34,1,'z',0.4, 0.0, 0.0, 0.0),              
+(7,35,1,'z',0.4, 0.0, 0.0, 0.0);   --tablero     
 
 -- ============================
 -- STEPS
@@ -455,22 +473,22 @@ INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
 (8,4,1),(8,5,1),(9,6,1),            -- silla azul
 -- MUEBLE ACTIU VITAL PRO
 (10,7,1),(10,8,1),(10,9,1),  --paso 1 Vital Pro
-(11,10,1),                 --paso 2 (M8 1)
-(12,11,1),                 --paso 3 (M8 2)
-(13,12,1),                 --paso 4 (soporte lateral)
-(14,13,1),                 --paso 5 (uniones tornillos)
-(15,14,1),                 --paso 6 (M8 3 previo)
-(16,15,1),                 --paso 7 (tablero)
-(17,16,1),                 --paso 8 (M8 4 posterior)
+(11,10,1),(11,11,1),         --paso 2 (M8_1 x2)
+(12,12,1),(12,13,1),         --paso 3 (M8_2_izquierda x2)
+(13,14,1),(13,15,1),         --paso 4 (M8_2_derecha x2)
+(14,16,1), --paso 5 (uniones_tornillos)
+(15,17,1),(15,18,1),(15,19,1),(15,20,1), --paso 6 (M8_3 x4)
+(16,21,1),                 --paso 7 (tablero)
+(17,22,1),(17,23,1),(17,24,1),(17,25,1), --paso 8 (M8_4 x4)
 
 -- MUEBLE ACTIU ARMARIO MODULAR
-(18,17,1),(18,18,1),   -- paso 1
-(19,19,1),(19,20,1),   -- paso 2
-(20,21,1),             -- paso 3
-(21,22,1),             -- paso 4
-(22,23,1),(22,24,1),   -- paso 5
-(23,25,1),             -- paso 6
-(24,26,1)              -- paso 7
+(18,26,1),(18,27,1),   -- paso 1
+(19,28,1),(19,29,1),   -- paso 2
+(20,30,1),             -- paso 3
+(21,31,1),             -- paso 4
+(22,32,1),(22,33,1),   -- paso 5
+(23,34,1),             -- paso 6
+(24,35,1)              -- paso 7
 ;            
 -- ============================
 -- STEP_TOOL (asocia herramientas a los pasos)

@@ -137,7 +137,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       setTimeout(() => this.centerActiveStep(), 100);
 
       // Camera rotation logic
-      if (steps.length > 0 && steps[stepIndex]) {
+      if (this.mode() === 'final') {
+        if (this.lastRotationConfig.angle !== null || this.lastRotationConfig.axis !== null) {
+          this.engine.resetControls();
+          this.lastRotationConfig = { angle: null, axis: null };
+        }
+      } else if (steps.length > 0 && steps[stepIndex]) {
         const stepData = steps[stepIndex];
         const hasNewRotation =
           stepData.scene_camera_angle !== null
@@ -291,6 +296,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     if (this.isViewInitialized) {
       this.engine?.dispose();
+      this.parts = [];
       this.createEngineInstance();
       this.initEngine().then(() => {
         if (this.furniture) {
@@ -360,10 +366,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-
-    const shouldRotate = newMode === 'simulation' || newMode === 'final';
-    this.engine.toggleControls(true, shouldRotate);
-
+    
     this.exitIsolation();
 
     if (newMode === 'simulation') {
@@ -377,10 +380,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
     }
+
+    const shouldRotate = newMode === 'simulation' && !this.isSimulationPaused();
+    this.engine.toggleControls(true, shouldRotate);
   }
 
   togglePause(): void {
     this.isSimulationPaused.update(p => !p);
+    this.engine.toggleControls(true, !this.isSimulationPaused());
   }
 
   setSimulationSpeed(speed: number): void {
@@ -491,7 +498,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.videoRef?.nativeElement) {
       this.videoRef.nativeElement.srcObject = null;
     }
-    const shouldRotate = this.mode() === 'final' || this.isSimulating();
+    const shouldRotate = this.mode() === 'simulation' && !this.isSimulationPaused();
     this.engine.toggleControls(true, shouldRotate);
   }
 
@@ -675,13 +682,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
 
-
         // Set initial state to START position
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
-
-
-        // Ensure visibility is managed by animation loop, but initially...
-        // The animation loop sets visibility based on steps.
 
         const assemblyPart: AssemblyPart = {
           object: mesh,
@@ -702,14 +704,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         };
 
         const arrowPosition = { ...targetArrowPos };
-
-        // Arrow helper logic (simplified)
-
         const length = Math.abs(offsetDistance)
 
         if (length > 0.01) {
-
-          console.log('PINTANDO FLECHA ' + currentStepIndex);
 
           let dir = { x: 0, y: 0, z: 0 };
           if (offsetAxis === 'x') dir.x = 1;
@@ -721,11 +718,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           dir.y *= sign;
           dir.z *= sign;
 
-
-          console.log('direction x arrow ' + partRef.reference_number + ' :' + dir.x);
-          console.log('direction y arrow ' + partRef.reference_number + ' :' + dir.y);
-          console.log('direction z arrow ' + partRef.reference_number + ' :' + dir.z);
-
           assemblyPart.arrow = await this.engine.createArrowHelper(
             //arrowDir,
             dir,
@@ -735,8 +727,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           );
 
           assemblyPart.object.add(assemblyPart.arrow);
-          //this.engine.addToScene(assemblyPart.arrow); // ⚠️ arbol erroneo
-
         }
 
         parts.push(assemblyPart);
@@ -783,7 +773,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  // ANIMATE CAMBIADO
+  // START OF ANIMATE FUNCTIONS
 
   private updateCameraState(): void {
     const isMoved = this.engine.checkControlsState();
@@ -815,10 +805,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private needsHighlight(part: any, step: number): boolean {
-    if (part.appearStep === step) {
-      return true;
-    }
-    return this.isMovingToTarget(part);
+    // if (part.appearStep === step) {
+    //   return true;
+    // }
+    // return this.isMovingToTarget(part);
+      if (part.appearStep === step) return true;
+      if (step > part.appearStep && step <= part.joinStep) {
+        return this.isMovingToTarget(part);
+      }
+      return false;
   }
 
   private isMovingToTarget(part: any): boolean {
@@ -883,6 +878,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.engine.render();
   }
+
+  // END OF ANIMATE FUNCTIONS
 
   private onWindowResize(): void {
     const canvas = this.canvasRef.nativeElement;

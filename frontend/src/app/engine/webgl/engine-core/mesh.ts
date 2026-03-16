@@ -16,6 +16,18 @@ export class Mesh extends Entity {
     private vao?: WebGLVertexArrayObject;
     private indexCount: number = 0;
     private initialized = false;
+
+    private isHighlighted = false;
+
+    public lastModelMatrix: mat4 = mat4.create();
+
+    setIsHighlighted (value: boolean) {
+        this.isHighlighted = value;
+    }
+
+    getIsHighlighted () : boolean{
+        return this.isHighlighted;
+    }
     
     constructor(
         public resource: MeshResource,         
@@ -25,12 +37,15 @@ export class Mesh extends Entity {
     }
 
     draw (modelMatrix: mat4, shader: ShaderResource): void {
+        this.lastModelMatrix = modelMatrix;
+
         //console.log('mesh model matrix:' ,modelMatrix);
         const gl = this.gl;
-
+        
         if (!this.initialized) { this.initializeBuffers(); }
         
         shader.setMat4("uModelMatrix", modelMatrix);
+        shader.setFloat("uHighlight", this.isHighlighted ? 1 : 0);
         
         // Bind texture if available
         if (this.resource.texture) {
@@ -39,10 +54,9 @@ export class Mesh extends Entity {
         }
  
         gl.bindVertexArray(this.vao!);
-        //gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
-
         gl.bindVertexArray(null);
+
         
         // logs
         //console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
@@ -96,6 +110,14 @@ export class Mesh extends Entity {
         this.indexCount = this.resource.indices.length;
         this.initialized = true;
 
+    }
+
+    drawRaw(shader: ShaderResource): void {
+        const gl = this.gl;
+        if (!this.initialized) { this.initializeBuffers(); }
+        gl.bindVertexArray(this.vao!);
+        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
+        gl.bindVertexArray(null);
     }
 
 }

@@ -332,16 +332,7 @@ export class ThreeEngineAdapter extends EngineFacade {
 
     setHighlight(objects: RenderableObject[]): void {
         const threeObjects = objects.map(o => o.nativeObject);
-        // OutlinePass expects Meshes usually
-        const meshes: THREE.Object3D[] = [];
-        threeObjects.forEach(o => {
-            o.traverse((child: any) => {
-                if (child.isMesh) {
-                    meshes.push(child);
-                }
-            });
-        });
-        this.outlinePass.selectedObjects = meshes;
+        this.outlinePass.selectedObjects = threeObjects;
     }
 
     checkControlsState(): boolean {
