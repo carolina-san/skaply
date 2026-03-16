@@ -97,7 +97,8 @@
         <!-- Fecha (Solicitud / Aprobación / Rechazo) -->
         <div class="text-center text-gray-600 text-xs">
           <ng-container *ngIf="activeFilter === 'pending'">{{ provider.created_at | date:'dd/MM/yyyy' }}</ng-container>
-          <ng-container *ngIf="activeFilter !== 'pending'">{{ provider.updated_at | date:'dd/MM/yyyy' }}</ng-container>
+          <ng-container *ngIf="activeFilter === 'approved'">{{ provider.approved_at | date:'dd/MM/yyyy' }}</ng-container>
+          <ng-container *ngIf="activeFilter === 'rejected'">{{ provider.updated_at | date:'dd/MM/yyyy' }}</ng-container>
         </div>
 
         <!-- Acciones / Estado -->

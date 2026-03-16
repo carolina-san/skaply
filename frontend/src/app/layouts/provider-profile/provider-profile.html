@@ -22,10 +22,15 @@
           class="hover:opacity-100 transition">
           Estadísticas
         </button>
+                <button (click)="setActiveTab('subir-mueble')"
+          [ngClass]="[activeTab === 'subir-mueble' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Subir mueble
+        </button>
       </div>
 
       <!-- barra de búsqueda -->
-      <div [class.invisible]="activeTab === 'estadisticas'"
+      <div [class.invisible]="activeTab === 'estadisticas' || activeTab === 'subir-mueble'"
         class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
@@ -45,6 +50,7 @@
         class="h-full block"></app-gestion-incidencias>
       <app-provider-stats *ngIf="activeTab === 'estadisticas' && currentUser?.id" [providerId]="currentUser.id"
         class=""></app-provider-stats>
+      <app-upload-form *ngIf="activeTab === 'subir-mueble'" class="h-full block" (furnitureCreated)="setActiveTab('muebles')"></app-upload-form>
     </div>
   </div>
 </main>
