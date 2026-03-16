@@ -80,11 +80,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private lastStepTime = 0;
   private videoStream: MediaStream | null = null;
   private chatbotSub?: Subscription;
+  private partIsolationSub?: Subscription;
   private isViewInitialized = false;
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
 
   // PRIVATE CONSTANTS
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
+
 
   get modelUrl(): string {
     return this.furniture?.file_uri || '';
@@ -189,16 +191,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     this.chatbotSub = this.chatbotInteractionService.stepChange$.subscribe(({ furnitureRef, stepNumber }) => {
-      //console.log('Chatbot request received for step:', stepNumber, 'ref:', furnitureRef);
-      // Optional: Verify furnitureRef matches this.furniture?.reference_number
-      // But usually the viewer only shows one furniture at a time
+      if (this.mode() !== 'manual') {
+        this.setMode('manual');
+      }
+      const targetLogicalIndex = Math.max(0, stepNumber - 1);
+      this.goToStep(targetLogicalIndex);
+    });
+
+    this.partIsolationSub = this.chatbotInteractionService.partIsolation$.subscribe(({ furnitureRef, partName }) => {
       if (this.mode() !== 'manual') {
         this.setMode('manual');
       }
 
-      // goToStep uses 0-based logical index, so we subtract 1 if stepNumber is 1-based
-      const targetLogicalIndex = Math.max(0, stepNumber - 1);
-      this.goToStep(targetLogicalIndex);
+      const partToIsolate = this.parts.find(p => p.name === partName);
+      if (partToIsolate) {
+        if (this.currentStep() < partToIsolate.appearStep) {
+          const targetLogicalIndex = Math.floor(partToIsolate.appearStep / this.stepsRatio());
+          this.goToStep(targetLogicalIndex);
+        }
+        setTimeout(() => this.isolatePart(partToIsolate), 50);
+      } else {
+        console.warn(`Part ${partName} not found in model parts list.`);
+      }
     });
   }
 
@@ -259,6 +273,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     if (this.chatbotSub) {
       this.chatbotSub.unsubscribe();
+    }
+    if (this.partIsolationSub) {
+      this.partIsolationSub.unsubscribe();
     }
 
     this.engine?.dispose();
@@ -887,6 +904,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       };
     }
     this.isolatedPart.set(part);
+
     // Move controls target to object position and get closer
     const pos = part.object.getPosition();
     const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
@@ -926,6 +944,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const part = this.findPartForObject(hitObject);
       if (part && this.currentStep() >= part.appearStep) {
         this.isolatePart(part);
+        this.chatbotInteractionService.requestAutoSendPiece("pieza: " + part.name);
       }
     }
   }

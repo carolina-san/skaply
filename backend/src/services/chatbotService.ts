@@ -1010,7 +1010,6 @@ export class ChatbotService {
   }
 
   async goToStep(furnitureRef: string, stepNumber: number, session?: string): Promise<any> {
-    console.log("Entra en goToStep service");
     try {
       return {
         fulfillmentMessages: [
@@ -1040,6 +1039,44 @@ export class ChatbotService {
       console.error("Error in goToStep:", error);
       return {
         fulfillmentText: "Hubo un error al intentar ir a ese paso."
+      };
+    }
+  }
+
+  async isolatePart(furnitureRef: string, partName: string, session?: string): Promise<any> {
+    try {
+      const furnitureId = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+      const partExists = await this.furnitureService.partInFurniture(furnitureId, partName);
+      if (!partExists) {
+        return {
+          fulfillmentText: `La pieza ${partName} no existe en este mueble.`
+        };
+      }
+      return {
+        fulfillmentMessages: [
+          {
+            payload: {
+              action: "isolate.part",
+              furniture_ref: furnitureRef,
+              part_name: partName,
+              richContent: [
+                [
+                  {
+                    type: "description",
+                    text: [
+                      `Aislando la pieza ${partName}...`
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in isolatePart:", error);
+      return {
+        fulfillmentText: "Hubo un error al intentar aislar la pieza."
       };
     }
   }

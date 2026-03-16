@@ -73,7 +73,15 @@ export class FurnitureService {
     );
     return result.rows.length > 0;
   }
-
+  async partInFurniture(furnitureId: number, partName: string): Promise<boolean> {
+    const result = await pool.query(
+      `SELECT 1 FROM part p join furniture_part fp on p.id = fp.part_id
+      WHERE fp.furniture_id = $1 AND p.reference_number = $2
+      LIMIT 1`,
+      [furnitureId, partName]
+    );
+    return result.rows.length > 0;
+  }
   async getAllFurniture(page?: number, limit?: number) {
     try {
       let query = `

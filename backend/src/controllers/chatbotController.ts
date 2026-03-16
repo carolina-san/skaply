@@ -220,6 +220,15 @@ export class ChatbotController {
                     res.status(200).json(await this.chatbotService.goToStep(ref || '', step || 1, session));
                     return;
                 }
+                case 'isolate.part': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/montaje_context')
+                    );
+                    const ref = ctx?.parameters?.furniture_ref;
+                    const part = parameters?.furniture_part;
+                    res.status(200).json(await this.chatbotService.isolatePart(ref || '', part || '', session));
+                    return;
+                }
                 default:
                     res.status(200).json({
                         fulfillmentText: 'No he podido obtener esa información de la base de datos. Prueba con otras palabras.'
