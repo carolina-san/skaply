@@ -23,47 +23,45 @@ import { ChatbotInteractionService } from '../../../services/chatbot-interaction
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('canvas')          private canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('video')           private videoRef!: ElementRef<HTMLVideoElement>;
-  @ViewChild('stepsContainer')  private stepsContainer!: ElementRef<HTMLElement>;
+  @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
   @Output() engineChanged = new EventEmitter<string>();
 
   // INPUTS
-  furnitureId         = input<number | string>();
-  furnitureName       = input<string>('');
+  furnitureId = input<number | string>();
+  furnitureName = input<string>('');
   //controlsMode        = input<'interactive' | 'display-only' | 'hidden'>('interactive');
   autoStartSimulation = input<boolean>(false);
 
   // OUTPUTS
-  arStateChange       = output<boolean>();
-  finished            = output<void>();
+  arStateChange = output<boolean>();
+  finished = output<void>();
 
   // SIGNALS
-  engineUse           = signal<'threeJS' | 'webGL'>('threeJS');
-  totalSteps          = signal(0);
-  manualStep          = signal(0);
-  simulationStep      = signal(0);
-  isolatedPart        = signal<AssemblyPart | null>(null);
-  mode                = signal<'manual' | 'simulation' | 'final'>('manual');
-  isARActive          = signal(false);
-  arFlowState         = signal<'idle' | 'requesting' | 'denied'>('idle');
-  isSmallScreen       = signal(false);
-  backgroundColor     = signal<'dark' | 'light'>('dark');
-  isCameraMoved       = signal(false);
-  stepDescriptions    = signal<string[]>([]);
-  showFooterControls  = signal(true);
+  engineUse = signal<'threeJS' | 'webGL'>('webGL');
+  totalSteps = signal(0);
+  manualStep = signal(0);
+  simulationStep = signal(0);
+  isolatedPart = signal<AssemblyPart | null>(null);
+  mode = signal<'manual' | 'simulation' | 'final'>('manual');
+  isARActive = signal(false);
+  arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
+  isSmallScreen = signal(false);
+  backgroundColor = signal<'dark' | 'light'>('dark');
+  isCameraMoved = signal(false);
+  stepDescriptions = signal<string[]>([]);
+  showFooterControls = signal(true);
   areControlsDisabled = signal(false);
-  isSimulationPaused  = signal(false);
-  simulationSpeed     = signal(1);
+  isSimulationPaused = signal(false);
+  simulationSpeed = signal(1);
 
   // COMPUTED
-  isSimulating        = computed(() => this.mode() === 'simulation');
-  isManualFirstStep   = computed(() => this.manualStep() === 0);
-  isManualComplete    = computed(() => this.manualStep() === this.totalSteps() - 1);
+  isSimulating = computed(() => this.mode() === 'simulation');
+  isManualFirstStep = computed(() => this.manualStep() === 0);
+  isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
-  // STATE VARIABLES
-  selectedEngine = 'threejs';
   useExternalModel = true;
   furniture?: Furniture;
 
@@ -83,6 +81,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private videoStream: MediaStream | null = null;
   private chatbotSub?: Subscription;
   private isViewInitialized = false;
+  private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
 
   // PRIVATE CONSTANTS
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
@@ -97,15 +96,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   currentStep = computed(() => {
     switch (this.mode()) {
-      case 'manual':      return this.manualStep();
-      case 'simulation':  return this.simulationStep();
-      case 'final':       return this.totalSteps() - 1;
-      default:            return 0;
+      case 'manual': return this.manualStep();
+      case 'simulation': return this.simulationStep();
+      case 'final': return this.totalSteps() - 1;
+      default: return 0;
     }
   });
 
   stepsRatio = computed(() => {
-    const total   = this.totalSteps();
+    const total = this.totalSteps();
     const logical = this.furniture?.total_steps || this.stepDescriptions().length;
     return (total > 0 && logical > 0) ? total / logical : 1;
   });
@@ -126,7 +125,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   ) {
     effect(() => {
       const stepIndex = this.currentLogicalStep();
-      const steps     = this.stepsData();
+      const steps = this.stepsData();
 
       // Guard to only run when the logical step actually changes or data arrives
       if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
@@ -136,12 +135,17 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       setTimeout(() => this.centerActiveStep(), 100);
 
       // Camera rotation logic
-      if (steps.length > 0 && steps[stepIndex]) {
-        const stepData  = steps[stepIndex];
-        const hasNewRotation = 
-          stepData.scene_camera_angle !== null 
+      if (this.mode() === 'final') {
+        if (this.lastRotationConfig.angle !== null || this.lastRotationConfig.axis !== null) {
+          this.engine.resetControls();
+          this.lastRotationConfig = { angle: null, axis: null };
+        }
+      } else if (steps.length > 0 && steps[stepIndex]) {
+        const stepData = steps[stepIndex];
+        const hasNewRotation =
+          stepData.scene_camera_angle !== null
           && stepData.scene_camera_rotation_axis !== null;
-        const rotationChanged = 
+        const rotationChanged =
           stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
           stepData.scene_camera_rotation_axis !== this.lastRotationConfig.axis;
 
@@ -159,15 +163,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
           // Update last known rotation configuration
           this.lastRotationConfig = {
-            angle:  stepData.scene_camera_angle,
-            axis:   stepData.scene_camera_rotation_axis
+            angle: stepData.scene_camera_angle,
+            axis: stepData.scene_camera_rotation_axis
           };
         }
       }
     });
   }
 
-  
+
   private boundWindowResize = this.onWindowResize.bind(this);
   private boundScreenResize = () => this.checkScreenSize();
 
@@ -205,7 +209,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private createEngineInstance(): void {
     if (this.engineUse() === 'webGL') {
-     //console.log('Using WebGL Custom Engine');
+      //console.log('Using WebGL Custom Engine');
       this.engine = new WebGLEngineAdapter();
     } else {
       //console.log('Using ThreeJS Adapter');
@@ -252,8 +256,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
-      canvas.removeEventListener('mousemove', this.onPointerMove);
-      canvas.removeEventListener('dblclick', this.onDoubleClick);
+      canvas.removeEventListener('pointermove', this.onPointerMove);
+      canvas.removeEventListener('pointerdown', this.onPointerDown);
+      canvas.removeEventListener('pointerup', this.onPointerUp);
+      canvas.removeEventListener('pointerleave', this.onPointerUp);
     }
 
     if (this.chatbotSub) {
@@ -264,11 +270,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public async onEngineChange(newEngine: string): Promise<void> {
-    if (this.selectedEngine === newEngine) return;
+    const newEngineType = newEngine === 'threejs' ? 'threeJS' : 'webGL';
+    if (this.engineUse() === newEngineType) return;
 
     console.log('Switching engine to:', newEngine);
-    this.selectedEngine = newEngine;
-    this.engineUse.set(newEngine === 'threejs' ? 'threeJS' : 'webGL');
+    this.engineUse.set(newEngineType);
     this.engineChanged.emit(newEngine);
 
     if (this.isViewInitialized) {
@@ -276,7 +282,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.parts = [];
       this.createEngineInstance();
       this.initEngine().then(() => {
-        if (this.furniture) { 
+        if (this.furniture) {
           this.createFurniture().then(() => {
             if (!this.animationFrameId) this.animate();
           });
@@ -313,7 +319,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
-    this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+    if (this.preIsolationCameraState) {
+      this.engine.setCameraProps(
+        this.preIsolationCameraState.position,
+        this.preIsolationCameraState.target
+      );
+      this.preIsolationCameraState = null;
+    } else {
+      this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+    }
   }
 
   resetCameraPosition(): void {
@@ -335,10 +349,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-
-    const shouldRotate = newMode === 'simulation' || newMode === 'final';
-    this.engine.toggleControls(true, shouldRotate);
-
+    
     this.exitIsolation();
 
     if (newMode === 'simulation') {
@@ -352,10 +363,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
     }
+
+    const shouldRotate = newMode === 'simulation' && !this.isSimulationPaused();
+    this.engine.toggleControls(true, shouldRotate);
   }
 
   togglePause(): void {
     this.isSimulationPaused.update(p => !p);
+    this.engine.toggleControls(true, !this.isSimulationPaused());
   }
 
   setSimulationSpeed(speed: number): void {
@@ -408,8 +423,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (buttons[activeIndex]) {
       buttons[activeIndex].scrollIntoView({
         behavior: 'smooth',
-        block:    'nearest',
-        inline:   'center'
+        block: 'nearest',
+        inline: 'center'
       });
     }
   }
@@ -466,7 +481,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.videoRef?.nativeElement) {
       this.videoRef.nativeElement.srcObject = null;
     }
-    const shouldRotate = this.mode() === 'final' || this.isSimulating();
+    const shouldRotate = this.mode() === 'simulation' && !this.isSimulationPaused();
     this.engine.toggleControls(true, shouldRotate);
   }
 
@@ -480,19 +495,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.engine.setControlsAutoRotateSpeed(1.0);
   }
 
+  // Variables para la lógica de aislar una pieza
+  private pressTimer: any;
+  private isPointerDown = false;
+  private pointerDownPos = { x: 0, y: 0 };
+  private readonly LONG_PRESS_DURATION = 500; // ms
+
   private setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
 
     // Use property reassignment for binding to match existing method structure
-    // but ensure they are stable references
     const originalMove = this.onPointerMove;
-    const originalClick = this.onDoubleClick;
+    const originalDown = this.onPointerDown;
+    const originalUp = this.onPointerUp;
 
     this.onPointerMove = originalMove.bind(this);
-    this.onDoubleClick = originalClick.bind(this);
+    this.onPointerDown = originalDown.bind(this);
+    this.onPointerUp = originalUp.bind(this);
 
-    canvas.addEventListener('mousemove', this.onPointerMove);
-    canvas.addEventListener('dblclick', this.onDoubleClick);
+    canvas.addEventListener('pointermove', this.onPointerMove);
+    canvas.addEventListener('pointerdown', this.onPointerDown);
+    canvas.addEventListener('pointerup', this.onPointerUp);
+    canvas.addEventListener('pointerleave', this.onPointerUp);
     window.addEventListener('resize', this.boundWindowResize);
   }
 
@@ -557,7 +581,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
-    
+
     const parts: AssemblyPart[] = [];
     const stepDescriptions: string[] = [];
     let currentStepIndex = 0;
@@ -571,8 +595,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     for (const step of sortedSteps) {
       // description
-      const description = 
-        step.description 
+      const description =
+        step.description
         || `Paso ${step.step_number}: Ensamblaje de partes.`;
       stepDescriptions.push(description);
 
@@ -583,7 +607,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       // iterate step parts
       for (const partRef of step.parts) {
         let mesh: RenderableObject | null = null;
-        
+
         let targetPos = { x: 0, y: 0, z: 0 }; // ⚠️ !!
 
         let usingExistingMesh = false;
@@ -622,16 +646,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
           continue;
         }
-        
+
         // If we created a new mesh (Case A or C), we need to add it to scene.
         // If we found an existing mesh (Case B), it's already in the scene (as child of baseModel).
         // However, for animation, if we want to move it freely, we might need to detach it or just move it relative to parent.
         // The animation logic uses mesh.setPosition(). 
 
         if (!usingExistingMesh) {
-            this.engine.addToScene(mesh);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+          this.engine.addToScene(mesh);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
         }
 
         // Calculate start position based on axis and distance
@@ -640,7 +664,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         const position = { ...targetPos };
 
         const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
-    
+
 
         // Set initial state to START position
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
@@ -660,7 +684,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         };
 
         // FLECHAS
-        
+
         const targetArrowPos = {
           x: partRef.pos_x,
           y: partRef.pos_y,
@@ -668,9 +692,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         };
 
         const arrowPosition = { ...targetArrowPos };
-        const startArrowPos = this.calculateOffsetPosition(arrowPosition, offsetDistance, offsetAxis); // ⚠️COMO EL NODO ARROW ES HIJO DEL NODO DE LA PIEZA, YA TIENE APLICADO EL OFFSET INICIAL!
 
-        
         // Arrow helper logic (simplified)
 
         const length = Math.abs(offsetDistance)
@@ -679,7 +701,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
           console.log('PINTANDO FLECHA ' + currentStepIndex);
 
-          let dir = {x:0,y:0,z:0};
+          let dir = { x: 0, y: 0, z: 0 };
           if (offsetAxis === 'x') dir.x = 1;
           if (offsetAxis === 'y') dir.y = 1;
           if (offsetAxis === 'z') dir.z = 1;
@@ -701,7 +723,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             length,
             0x00ffff
           );
-          
+
           assemblyPart.object.add(assemblyPart.arrow);
           //this.engine.addToScene(assemblyPart.arrow); // ⚠️ arbol erroneo
 
@@ -716,12 +738,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     return { parts, totalSteps, stepDescriptions };
   }
 
-  private calculateOffsetPosition(position: {x :number, y :number, z :number}, offsetDistance: number, offsetAxistance: string) {
-        if      (offsetAxistance === 'x') position.x += offsetDistance;
-        else if (offsetAxistance === 'y') position.y += offsetDistance;
-        else if (offsetAxistance === 'z') position.z += offsetDistance;
-        else    position.y += offsetDistance; // Default
-        return position;
+  private calculateOffsetPosition(position: { x: number, y: number, z: number }, offsetDistance: number, offsetAxistance: string) {
+    if (offsetAxistance === 'x') position.x += offsetDistance;
+    else if (offsetAxistance === 'y') position.y += offsetDistance;
+    else if (offsetAxistance === 'z') position.z += offsetDistance;
+    else position.y += offsetDistance; // Default
+    return position;
   }
 
   private runSimulation(): void {
@@ -794,7 +816,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       return false;
   }
 
-  private isMovingToTarget(part : any) : boolean {
+  private isMovingToTarget(part: any): boolean {
     const currentPos = part.object.getPosition();
     const distToTarget = this.getDistance(currentPos, part.targetPosition);
     return (distToTarget > 0.01);
@@ -828,7 +850,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         ? part.targetPosition
         : part.startPosition;
     const current = part.object.getPosition();
-    const alpha = 0.03;
+    const alpha = 0.08;
     part.object.setPosition(
       current.x + (target.x - current.x) * alpha,
       current.y + (target.y - current.y) * alpha,
@@ -844,8 +866,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
     this.updateCameraState();
-    if (this.isSimulating()) { 
-      this.runSimulation(); 
+    if (this.isSimulating()) {
+      this.runSimulation();
     }
     const isolated = this.isolatedPart();
     if (isolated) {
@@ -871,15 +893,42 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private isolatePart(part: AssemblyPart): void {
+    if (!this.isolatedPart()) {
+      const cam = this.engine.getCamera();
+      this.preIsolationCameraState = {
+        position: { ...cam.position },
+        target: { ...cam.target }
+      };
+    }
     this.isolatedPart.set(part);
-    // Move controls target to object position
+    // Move controls target to object position and get closer
     const pos = part.object.getPosition();
-    this.engine.setCameraProps(this.engine.getCamera().position, { x: pos.x, y: pos.y, z: pos.z });
+    const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
+    this.engine.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
 
-  private onDoubleClick(event: MouseEvent): void {
+  private onPointerDown(event: PointerEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
 
+    this.isPointerDown = true;
+    this.pointerDownPos = { x: event.clientX, y: event.clientY };
+
+    this.pressTimer = setTimeout(() => {
+      if (this.isPointerDown) {
+        this.handleLongPress(event);
+      }
+    }, this.LONG_PRESS_DURATION);
+  }
+
+  private onPointerUp(event: PointerEvent): void {
+    this.isPointerDown = false;
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = null;
+    }
+  }
+
+  private handleLongPress(event: PointerEvent): void {
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -888,10 +937,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const hitObject = this.engine.raycast(x, y);
 
     if (hitObject) {
-      //console.log('Hit object:', hitObject);
       const part = this.findPartForObject(hitObject);
-      //console.log('Found part:', part?.name);
-
       if (part && this.currentStep() >= part.appearStep) {
         this.isolatePart(part);
       }
@@ -902,13 +948,26 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     // Prevent default browser behavior if needed, or trigger specific app logic
   }
 
-  private onPointerMove(event: MouseEvent): void {
+  private onPointerMove(event: PointerEvent): void {
     if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
+
+    if (this.isPointerDown) {
+      // If the user moves the pointer significantly, cancel the long press
+      const dx = Math.abs(event.clientX - this.pointerDownPos.x);
+      const dy = Math.abs(event.clientY - this.pointerDownPos.y);
+      if (dx > 15 || dy > 15) { // Increased threshold for touch devices
+        this.isPointerDown = false;
+        if (this.pressTimer) {
+          clearTimeout(this.pressTimer);
+          this.pressTimer = null;
+        }
+      }
+    }
 
     const canvas = this.canvasRef.nativeElement;
 
     if (this.isolatedPart()) {
-      canvas.style.cursor = 'grab';
+      canvas.style.setProperty('cursor', 'grab', 'important');
       return;
     }
 
@@ -921,12 +980,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (hitObject) {
       const part = this.findPartForObject(hitObject);
       if (part && this.currentStep() >= part.appearStep) {
-        canvas.style.cursor = 'pointer';
+        canvas.style.setProperty('cursor', 'pointer', 'important');
       } else {
-        canvas.style.cursor = 'grab';
+        canvas.style.setProperty('cursor', 'grab', 'important');
       }
     } else {
-      canvas.style.cursor = 'grab';
+      canvas.style.setProperty('cursor', 'grab', 'important');
     }
   }
 
