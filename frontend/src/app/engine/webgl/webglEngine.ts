@@ -9,6 +9,7 @@ import { Camera } from './engine-core/camera';
 import { Light } from './engine-core/light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
+import { OutlinePass} from './outline-pass';
 
 
 class WebGlRenderableObject implements RenderableObject {
@@ -421,6 +422,8 @@ export class WebGLEngineAdapter extends EngineFacade {
     
     private resourceManager = new ResourceManager();
     private shader!: ShaderResource;
+    private outlineShader!: ShaderResource;
+    private outlinePass!: OutlinePass;
 
     private rootNode = new Node();
 
@@ -433,8 +436,9 @@ export class WebGLEngineAdapter extends EngineFacade {
     
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
     
+    private highlightedMeshes: Set<Mesh> = new Set();
+    
     // ⚠️ DE MOMENTO NO HACEN FALTA
-    private highlightedObjects: WebGlRenderableObject[] = [];
     private controlsEnabled = false;
     private controlsAutoRotate = false;
     private controlsAutoRotateSpeed = 2;
@@ -444,13 +448,16 @@ export class WebGLEngineAdapter extends EngineFacade {
     // INIT
     
     async init(canvas: HTMLCanvasElement, width: number, height: number): Promise<void>  {
-
+   
         // gl 
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl2')!;
+        this.gl = canvas.getContext('webgl2', { stencil: true })!;
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
+
+        this.outlinePass = new OutlinePass(this.gl);
+        await this.outlinePass.init(width, height);
 
         // camera 
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
@@ -489,6 +496,8 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+
+        this.outlinePass?.resize(width, height);
     }
 
     // CAMERA
@@ -537,18 +546,47 @@ export class WebGLEngineAdapter extends EngineFacade {
     // RENDER 
 
     render(): void {
-        if (!this.ready) return;
-        this.gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    if (!this.ready) return;
+        const gl = this.gl;
 
+        // Asegurar que estamos en el canvas principal
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
+
+        // shader normal
         this.shader.use();
-
-        // ⚠️NO SE SI HACE FALTA HACER ESTO AQUI! 
-        // Sincronizar la posición de la cámara en el shader para el cálculo especular
-        //const camPos = this.cameraController.getCameraPosition();
-        //this.shader.setVec3("uViewPosition", vec3.fromValues(camPos.x, camPos.y, camPos.z));
-
         this.rootNode.traverse(this.shader);
+
+        // outline
+        if (this.highlightedMeshes.size > 0) {
+            const cam = this.getCamera();
+
+            const meshesWithMatrix = Array.from(this.highlightedMeshes)
+            .filter(m => m.lastModelMatrix)
+            .map(m => ({ mesh: m, modelMatrix: m.lastModelMatrix! }));
+
+            if (meshesWithMatrix.length > 0) {
+            
+            this.outlinePass.renderMask(
+                meshesWithMatrix,
+                cam.viewMatrix,
+                cam.projectionMatrix
+            );
+
+            
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            this.outlinePass.drawEdges([0, 1, 1], 2.0);
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.BLEND);
+            }
+        }
 
         this.updateControls();
     }
@@ -573,14 +611,8 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         const modelNode = new Node();
         const namedMeshes = meshResource.getNamedMeshes();
-        
-        // meshResource.getMeshes().forEach(mesh => {
-        //     const meshNode = new Node();
-        //     meshNode.setEntity(mesh);
-        //     modelNode.addChild(meshNode);
-        // });
 
-        // using namedMeshes instead (does it work??)
+        // using namedMeshes instead
         namedMeshes.forEach(namedMesh => {
             const meshNode = new Node();
             meshNode.setEntity(namedMesh.mesh);
@@ -741,35 +773,26 @@ export class WebGLEngineAdapter extends EngineFacade {
         // string => fallback
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
     }   
-    
-    // INTERACTION
 
     // ⚠️ FALTA POR HACER
     raycast(_x: number, _y: number): RenderableObject | null {
         return null;
     }
 
-    // ⚠️ FALTA POR HACER (metodo de alvaro) 
-    // ⚠️ CAMBIAR! -> debería ser Mesh quien guarde isHighlighted y highlightColor??
     setHighlight(objects: RenderableObject[]): void {
-        // const cyan = vec3.fromValues(0, 1, 1);
+        for (const mesh of this.highlightedMeshes) {
+            mesh.setIsHighlighted(false);
+        }
+        this.highlightedMeshes.clear();
 
-        // this.wrappers.forEach(w => w.node.isHighlighted = false);
+        for (const obj of objects) {
+            const webglObject = obj as WebGlRenderableObject;
+            const node = webglObject.nativeObject as Node;
 
-        // objects.forEach(o => {
-        //     if (!o) return;
-        //     const w = o as WebGlRenderableObject;
-
-        //     const highlightSubtree = (n: Node | null) => {
-        //         if (!n) return;
-        //         n.isHighlighted = true;
-        //         n.highlightColor = cyan;
-        //         const children: Node[] = (n as any).children || [];
-        //         children.forEach(highlightSubtree);
-        //     };
-
-        //     highlightSubtree(w.node);
-        // });
+            const mesh = node.getEntity() as Mesh;
+            mesh.setIsHighlighted(true);
+            this.highlightedMeshes.add(mesh);
+        }
     }
 
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {

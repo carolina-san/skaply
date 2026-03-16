@@ -273,6 +273,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     if (this.isViewInitialized) {
       this.engine?.dispose();
+      this.parts = [];
       this.createEngineInstance();
       this.initEngine().then(() => {
         if (this.furniture) { 
@@ -750,7 +751,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  // ANIMATE CAMBIADO
+  // START OF ANIMATE FUNCTIONS
 
   private updateCameraState(): void {
     const isMoved = this.engine.checkControlsState();
@@ -782,10 +783,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private needsHighlight(part: any, step: number): boolean {
-    if (part.appearStep === step) {
-      return true;
-    }
-    return this.isMovingToTarget(part);
+    // if (part.appearStep === step) {
+    //   return true;
+    // }
+    // return this.isMovingToTarget(part);
+      if (part.appearStep === step) return true;
+      if (step > part.appearStep && step <= part.joinStep) {
+        return this.isMovingToTarget(part);
+      }
+      return false;
   }
 
   private isMovingToTarget(part : any) : boolean {
@@ -822,7 +828,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         ? part.targetPosition
         : part.startPosition;
     const current = part.object.getPosition();
-    const alpha = 0.02;
+    const alpha = 0.03;
     part.object.setPosition(
       current.x + (target.x - current.x) * alpha,
       current.y + (target.y - current.y) * alpha,
@@ -850,6 +856,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.engine.render();
   }
+
+  // END OF ANIMATE FUNCTIONS
 
   private onWindowResize(): void {
     const canvas = this.canvasRef.nativeElement;
