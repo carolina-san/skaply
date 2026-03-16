@@ -184,6 +184,11 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
   }
 
+  changeStep(furniture_ref: string, step_number: number): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot/step`, { furniture_ref, step_number, sessionId });
+  }
+
   resetAssembly(): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });

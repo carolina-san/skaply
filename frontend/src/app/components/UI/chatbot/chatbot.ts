@@ -314,11 +314,8 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                         }
                     }
                     else if (payload?.fields?.action?.stringValue === "isolate.part") {
-                        console.log("Entra en isolate.part", payload.fields);
                         const furnitureRef = payload.fields.furniture_ref?.stringValue;
-
                         const partName = payload.fields.part_name?.stringValue;
-                        console.log("Entra en isolate.part", furnitureRef, partName);
                         if (furnitureRef && partName) {
                             this.chatbotInteractionService.requestPartIsolation(furnitureRef, partName);
                             handled = true;
@@ -491,8 +488,13 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
         });
     }
 
-    openLink(url: string) {
-        window.open(url, '_blank');
+    openLink(link: string | undefined) {
+        if (!link) return;
+        if (link.startsWith('http://') || link.startsWith('https://')) {
+            window.open(link, '_blank');
+        } else {
+            this.router.navigateByUrl(link);
+        }
     }
 
     /**

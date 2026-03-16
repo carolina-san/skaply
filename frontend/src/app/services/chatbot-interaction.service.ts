@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { ApiService } from './api.service';
 
 @Injectable({
     providedIn: 'root'
@@ -23,8 +24,6 @@ export class ChatbotInteractionService {
     partIsolation$ = this.partIsolationSource.asObservable();
 
     requestPartIsolation(furnitureRef: string, partName: string) {
-
-        console.log("Entra en requestPartIsolation service", furnitureRef, partName);
         this.partIsolationSource.next({ furnitureRef, partName });
     }
 }

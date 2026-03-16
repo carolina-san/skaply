@@ -110,7 +110,7 @@
                             <div *ngIf="item.type === 'chips'" class="flex gap-2 ">
                                 <button *ngFor="let opt of item.options"
                                     class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
-                                    (click)="handleChipClick(opt.text)">
+                                    (click)="opt.link ? openLink(opt.link) : handleChipClick(opt.text)">
                                     {{ opt.text }}
                                 </button>
                             </div>
@@ -131,7 +131,7 @@
                     <div *ngIf="msg.rich.type === 'chips' && !msg.rich.items" class="flex flex-wrap gap-2">
                         <button *ngFor="let opt of msg.rich.options"
                             class="bg-white border border-gray-300 px-3 py-1 rounded-full text-sm hover:bg-gray-100 transition"
-                            (click)="handleChipClick(opt.text)">
+                            (click)="opt.link ? openLink(opt.link) : handleChipClick(opt.text)">
                             {{ opt.text }}
                         </button>
                     </div>

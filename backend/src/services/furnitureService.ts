@@ -82,6 +82,22 @@ export class FurnitureService {
     );
     return result.rows.length > 0;
   }
+
+  async getParts(furnitureId: number, stepNumber: number) {
+    try {
+      const result = await pool.query(
+        `SELECT p.reference_number FROM part p
+        join furniture_part fp on p.id = fp.part_id 
+        join step_part sp on p.id = sp.part_id
+        join step s on sp.stepId = s.id
+        WHERE fp.furniture_id = $1 AND s.step_number = $2`,
+        [furnitureId, stepNumber]
+      );
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
   async getAllFurniture(page?: number, limit?: number) {
     try {
       let query = `
