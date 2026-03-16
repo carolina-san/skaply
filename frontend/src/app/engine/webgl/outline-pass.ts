@@ -1,3 +1,5 @@
+// ⚠️ ESTE ARCHIVO NECESITA REVISIÓN
+
 import { ShaderResource } from './resource/shader-resource';
 
 export class OutlinePass {
@@ -98,58 +100,58 @@ export class OutlinePass {
     viewMatrix: any,
     projectionMatrix: any
   ): void {
-  const gl = this.gl;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-  gl.viewport(0, 0, this.width, this.height);
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  gl.enable(gl.DEPTH_TEST);
+    const gl = this.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    gl.viewport(0, 0, this.width, this.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
 
-  this.maskShader.use();
-  this.maskShader.setMat4('uViewMatrix', viewMatrix);
-  this.maskShader.setMat4('uProjectionMatrix', projectionMatrix);
+    this.maskShader.use();
+    this.maskShader.setMat4('uViewMatrix', viewMatrix);
+    this.maskShader.setMat4('uProjectionMatrix', projectionMatrix);
 
-  for (const { mesh, modelMatrix } of meshes) {
-    this.maskShader.setMat4('uModelMatrix', modelMatrix);
-    mesh.drawRaw(this.maskShader);
+    for (const { mesh, modelMatrix } of meshes) {
+      this.maskShader.setMat4('uModelMatrix', modelMatrix);
+      mesh.drawRaw(this.maskShader);
+    }
+
+    // Desvincular FBO — el caller restaurará el viewport
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
-  // Desvincular FBO — el caller restaurará el viewport
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-}
-
   // Dibuja los bordes detectados encima de la escena
-drawEdges(outlineColor: [number, number, number], thickness: number): void {
-  const gl = this.gl;
-  console.log('drawEdges - texture:', this.texture, 'quadVao:', this.quadVao);
-  console.log('canvas size:', this.width, this.height);
+  drawEdges(outlineColor: [number, number, number], thickness: number): void {
+    const gl = this.gl;
+    // console.log('drawEdges - texture:', this.texture, 'quadVao:', this.quadVao);
+    // console.log('canvas size:', this.width, this.height);
 
-  gl.disable(gl.DEPTH_TEST);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  this.edgeShader.use();
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, this.texture);
-  this.edgeShader.setInt('uMaskTexture', 0);
-  this.edgeShader.setVec3('uOutlineColor', outlineColor);
-  this.edgeShader.setFloat('uThickness', thickness);
-  this.edgeShader.setFloat('uTexelWidth', 1.0 / this.width);
-  this.edgeShader.setFloat('uTexelHeight', 1.0 / this.height);
+    this.edgeShader.use();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    this.edgeShader.setInt('uMaskTexture', 0);
+    this.edgeShader.setVec3('uOutlineColor', outlineColor);
+    this.edgeShader.setFloat('uThickness', thickness);
+    this.edgeShader.setFloat('uTexelWidth', 1.0 / this.width);
+    this.edgeShader.setFloat('uTexelHeight', 1.0 / this.height);
 
-  gl.bindVertexArray(this.quadVao);
-  
-  // Verificar errores GL antes del draw
-  const errBefore = gl.getError();
-  console.log('GL error before draw:', errBefore);
-  
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // ← OJO: el orden era (mode, first, count) — antes tenías (gl.TRIANGLE_STRIP, 4, 0) que está MAL
-  
-  const errAfter = gl.getError();
-  console.log('GL error after draw:', errAfter);
-  
-  gl.bindVertexArray(null);
-  gl.enable(gl.DEPTH_TEST);
-  gl.disable(gl.BLEND);
-}
+    gl.bindVertexArray(this.quadVao);
+    
+    // Verificar errores GL antes del draw
+    const errBefore = gl.getError();
+    // console.log('GL error before draw:', errBefore);
+    
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // ← OJO: el orden era (mode, first, count) — antes tenías (gl.TRIANGLE_STRIP, 4, 0) que está MAL
+    
+    const errAfter = gl.getError();
+    // console.log('GL error after draw:', errAfter);
+    
+    gl.bindVertexArray(null);
+    gl.enable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+  }
 }

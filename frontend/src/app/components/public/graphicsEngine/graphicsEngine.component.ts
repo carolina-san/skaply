@@ -665,13 +665,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
         const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
 
-
         // Set initial state to START position
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
-
-
-        // Ensure visibility is managed by animation loop, but initially...
-        // The animation loop sets visibility based on steps.
 
         const assemblyPart: AssemblyPart = {
           object: mesh,
@@ -692,14 +687,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         };
 
         const arrowPosition = { ...targetArrowPos };
-
-        // Arrow helper logic (simplified)
-
         const length = Math.abs(offsetDistance)
 
         if (length > 0.01) {
-
-          console.log('PINTANDO FLECHA ' + currentStepIndex);
 
           let dir = { x: 0, y: 0, z: 0 };
           if (offsetAxis === 'x') dir.x = 1;
@@ -711,11 +701,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           dir.y *= sign;
           dir.z *= sign;
 
-
-          console.log('direction x arrow ' + partRef.reference_number + ' :' + dir.x);
-          console.log('direction y arrow ' + partRef.reference_number + ' :' + dir.y);
-          console.log('direction z arrow ' + partRef.reference_number + ' :' + dir.z);
-
           assemblyPart.arrow = await this.engine.createArrowHelper(
             //arrowDir,
             dir,
@@ -725,8 +710,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           );
 
           assemblyPart.object.add(assemblyPart.arrow);
-          //this.engine.addToScene(assemblyPart.arrow); // ⚠️ arbol erroneo
-
         }
 
         parts.push(assemblyPart);
