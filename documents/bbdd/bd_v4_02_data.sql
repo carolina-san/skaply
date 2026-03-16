@@ -72,7 +72,7 @@ VALUES
 (
     'lucia@gmail.com',
     'Lucia',
-    NULL,
+    'CIF8372',
     NULL,
     '123456780',
     '456 User St',

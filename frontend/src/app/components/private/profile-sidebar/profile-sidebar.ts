@@ -56,23 +56,27 @@ export class ProfileSidebar implements OnInit {
           }
         });
       }
-      else if (this.currentUser && this.currentUser.role === 'provider') {
-        this.apiService.getAllFilteredFurniture({ provider_ids: [this.currentUser.id], page: 1, limit: 1 }).subscribe({
-          next: (res) => {
-            if (res.meta && res.meta.total !== undefined) {
-              this.totalFurniture = res.meta.total;
-            } else {
-              this.totalFurniture = res.data.length;
-            }
-          },
-          error: (err) => {
-            console.error('Error fetching furniture count:', err);
-          }
-        });
-
-      }
 
     });
+  }
+
+  get registrationStatusLabel(): string {
+    const status = this.currentUser?.registration_status;
+
+    if (status === 'approved') return 'Aprobado';
+    if (status === 'rejected') return 'Rechazado';
+    if (status === 'pending') return 'Pendiente';
+    return 'No disponible';
+  }
+
+  get accountStatusLabel(): string {
+    if (this.currentUser?.enabled === undefined) return 'No disponible';
+    return this.currentUser.enabled ? 'Activa' : 'Inactiva';
+  }
+
+  get visibilityStatusLabel(): string {
+    if (this.currentUser?.visible === undefined) return 'No disponible';
+    return this.currentUser.visible ? 'Visible' : 'Oculta';
   }
 
   openEditModal() {
