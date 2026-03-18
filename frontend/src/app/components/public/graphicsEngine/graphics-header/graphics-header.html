@@ -1,0 +1,45 @@
+<header class="flex flex-col lg:flex-row justify-center items-center p-2 relative top-15 z-50  w-full">
+  <app-engine-switch [selectedEngine]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
+    (engineChanged)="engineChanged.emit($event)" class="lg:order-2"></app-engine-switch>
+  <div class="pointer-events-auto  mt-2 flex flex-col justify-center items-center w-full lg:items-start">
+    <!-- Nombre del mueble -->
+    @if (furnitureName() && mode() !== 'manual') {
+    <p class="font-semibold text-base sm:text-xl transition-colors text-azul-claro mb-2">
+      {{ furnitureName() }}
+    </p>
+    }
+
+    @if (mode() === 'manual') {
+    <div #stepsContainer
+      class="flex items-center space-x-2 mb-2 overflow-x-auto max-w-[11rem] lg:max-w-[100%] px-4 lg:px-1 py-1  scrollbar-hide mask-fade lg:!mask-none ">
+      @for (stepIndex of visibleSteps(); track stepIndex) {
+      <button (click)="goToStepAction.emit(stepIndex)"
+        class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
+        [ngClass]="{
+          'bg-azul-claro': stepIndex <= currentLogicalStep(),
+          'bg-white/30 text-beige': stepIndex > currentLogicalStep(),
+          'scale-115': stepIndex === currentLogicalStep(),
+          'font-bold': stepIndex === currentLogicalStep()
+        }">
+        {{ stepIndex + 1 }}
+      </button>
+      }
+    </div>
+    }
+
+    <div class="flex items-center justify-center space-x-2 text-sm"></div>
+    @if (hasIsolatedPart()) {
+    <p class="font-semibold mt-1 text-beige">Inspeccionando pieza</p>
+    } @else if (isSimulating()) {
+    <p class="font-semibold mt-1 text-beige">Demostración automática</p>
+    } @else if (mode() === 'final') {
+    <p class="font-semibold mt-1 text-beige">Resultado Final</p>
+    } @else if (isManualComplete()) {
+    <p class="font-semibold mt-1 text-beige">¡Listo! Estructura completada.</p>
+    } @else {
+    <p class="font-semibold mt-1 text-sm sm:text-base transition-colors text-beige">
+      {{ stepDescriptions()[currentLogicalStep()] || 'Cargando paso...' }}
+    </p>
+    }
+  </div>
+</header>
