@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Vector3 } from '../../../engine/interfaces';
 import { ApiService } from '../../../services/api.service';
 import { Furniture } from '../../../types';
-import { EngineSwitch } from '../engine-switch/engine-switch';
+import { EngineSwitch } from './engine-switch/engine-switch';
+import { ArOverlay } from './ar-overlay/ar-overlay';
+import { FooterControls } from './footer-controls/footer-controls';
 import { ActivatedRoute } from '@angular/router'
 import { AssemblyStep, AssemblyPart } from '../../../types/furniture.types';
 import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
@@ -17,7 +19,7 @@ import { FurnitureService } from '../../../services/graphicsEngine/furniture.ser
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule, EngineSwitch],
+  imports: [CommonModule, FormsModule, EngineSwitch, ArOverlay, FooterControls],
   providers: [EngineService, ARService, SimulationService, FurnitureService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
@@ -25,7 +27,6 @@ import { FurnitureService } from '../../../services/graphicsEngine/furniture.ser
 })
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('video') private videoRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
   @Output() engineChanged = new EventEmitter<string>();
@@ -47,19 +48,34 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   isCameraMoved = signal(false);
   stepDescriptions = signal<string[]>([]);
   showFooterControls = signal(true);
+  currentLogicalStep = signal(0);
 
   // COMPUTED
   isSimulating = computed(() => {
     return this.mode() === 'simulation';
   });
-  isManualFirstStep = computed(() => this.manualStep() === 0);
   isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
+  currentStep = computed(() => {
+    switch (this.mode()) {
+      case 'manual': return this.manualStep();
+      case 'simulation': return this.simulationService.simulationStep();
+      case 'final': return this.totalSteps() - 1;
+      default: return 0;
+    }
+  });
+  stepsRatio = computed(() => {
+    const total = this.totalSteps();
+    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
+    return (total > 0 && logical > 0) ? total / logical : 1;
+  });
+  visibleSteps = computed(() => {
+    const count = this.furniture?.total_steps || this.stepDescriptions().length;
+    return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
+  });
+
 
   useExternalModel = true;
   furniture?: Furniture;
-
-  // CONSTANTS
-  readonly simulationSpeeds = [0.5, 1, 1.5, 2];
 
   // PRIVATE STATE
   private parts: AssemblyPart[] = [];
@@ -81,29 +97,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
   }
 
-  currentStep = computed(() => {
-    switch (this.mode()) {
-      case 'manual': return this.manualStep();
-      case 'simulation': return this.simulationService.simulationStep();
-      case 'final': return this.totalSteps() - 1;
-      default: return 0;
-    }
-  });
-
-  stepsRatio = computed(() => {
-    const total = this.totalSteps();
-    const logical = this.furniture?.total_steps || this.stepDescriptions().length;
-    return (total > 0 && logical > 0) ? total / logical : 1;
-  });
-
-  currentLogicalStep = computed(() => {
-    return Math.floor(this.currentStep() / this.stepsRatio());
-  });
-
-  visibleSteps = computed(() => {
-    const count = this.furniture?.total_steps || this.stepDescriptions().length;
-    return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
-  });
 
   constructor(
     private apiService: ApiService,
@@ -114,6 +107,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     public simulationService: SimulationService,
     public furnitureService: FurnitureService
   ) {
+    effect(() => {
+      const step = this.currentStep();
+      const ratio = this.stepsRatio();
+
+      const logicalStep = Math.floor(step / ratio);
+
+      if (this.currentLogicalStep() !== logicalStep) {
+        this.currentLogicalStep.set(logicalStep);
+      }
+    });
     effect(() => {
       const stepIndex = this.currentLogicalStep();
       const steps = this.stepsData();
@@ -246,7 +249,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   public get engineUse() { return this.engineService.engineUse; }
   public get isSimulationPaused() { return this.simulationService.isSimulationPaused; }
-  public get arFlowState() { return this.arService.arFlowState; }
   public get isARActive() { return this.arService.isARActive; }
   public get simulationSpeed() { return this.simulationService.simulationSpeed; }
 
@@ -357,42 +359,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.simulationService.simulationSpeed.set(speed);
   }
 
-  public toggleAR(): void {
-    if (this.arService.isARActive()) {
-      this.stopAR();
-      this.arService.arFlowState.set('idle');
-    } else {
-      this.arService.arFlowState.set('requesting');
+  onArStateChange(isActive: boolean): void {
+    this.arStateChange.emit(isActive);
+    if (!isActive) {
+      const shouldRotate = this.mode() === 'simulation' && !this.simulationService.isSimulationPaused();
+      const engineFacade = this.engineService.getEngine();
+      if (engineFacade) {
+        engineFacade.toggleControls(true, shouldRotate);
+      }
     }
-  }
-
-  async proceedWithARPermission(): Promise<void> {
-    try {
-      const stream = await this.arService.startAR();
-      this.arStateChange.emit(true);
-      this.arService.arFlowState.set('idle');
-
-      setTimeout(() => {
-        if (this.videoRef?.nativeElement) {
-          this.videoRef.nativeElement.srcObject = stream;
-          this.videoRef.nativeElement.play();
-        }
-      }, 0);
-    } catch (error) {
-      this.arService.arFlowState.set('denied');
-    }
-  }
-
-  cancelARPermissionRequest(): void {
-    this.arService.arFlowState.set('idle');
-  }
-
-  retryARPermission(): void {
-    this.arService.arFlowState.set('requesting');
-  }
-
-  closeARDeniedMessage(): void {
-    this.arService.arFlowState.set('idle');
   }
 
   // PRIVATE METHODS
@@ -413,9 +388,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private stopAR(): void {
-    if (this.videoRef?.nativeElement) {
-      this.videoRef.nativeElement.srcObject = null;
-    }
     this.arService.stopAR();
     this.arStateChange.emit(false);
 
