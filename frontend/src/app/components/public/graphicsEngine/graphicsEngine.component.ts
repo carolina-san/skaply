@@ -349,7 +349,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-    
+
     this.exitIsolation();
 
     if (newMode === 'simulation') {
@@ -686,17 +686,30 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           z: partRef.pos_z
         };
 
+
+        const length = Math.abs(offsetDistance * 0.8)
+        let offsetCons = 0.035;
         const arrowPosition = { ...targetArrowPos };
-        const length = Math.abs(offsetDistance)
 
         if (length > 0.01) {
+          const sign = -(Math.sign(offsetDistance));
+          offsetCons *= sign;
 
           let dir = { x: 0, y: 0, z: 0 };
-          if (offsetAxis === 'x') dir.x = 1;
-          if (offsetAxis === 'y') dir.y = 1;
-          if (offsetAxis === 'z') dir.z = 1;
 
-          const sign = -(Math.sign(offsetDistance));
+          if (offsetAxis === 'x') {
+            dir.x = 1;
+            arrowPosition.x += offsetCons;
+          }
+          if (offsetAxis === 'y') {
+            dir.y = 1;
+            arrowPosition.y += offsetCons;
+          }
+          if (offsetAxis === 'z') {
+            dir.z = 1;
+            arrowPosition.z += offsetCons;
+          }
+
           dir.x *= sign;
           dir.y *= sign;
           dir.z *= sign;
@@ -704,7 +717,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           assemblyPart.arrow = await this.engine.createArrowHelper(
             //arrowDir,
             dir,
-            targetArrowPos,
+            arrowPosition,
             length,
             0x00ffff
           );
@@ -792,11 +805,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     //   return true;
     // }
     // return this.isMovingToTarget(part);
-      if (part.appearStep === step) return true;
-      if (step > part.appearStep && step <= part.joinStep) {
-        return this.isMovingToTarget(part);
-      }
-      return false;
+    if (part.appearStep === step) return true;
+    if (step > part.appearStep && step <= part.joinStep) {
+      return this.isMovingToTarget(part);
+    }
+    return false;
   }
 
   private isMovingToTarget(part: any): boolean {
