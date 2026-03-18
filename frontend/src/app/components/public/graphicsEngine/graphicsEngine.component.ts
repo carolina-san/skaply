@@ -1,23 +1,24 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EngineFacade, RenderableObject, Vector3, GeometryConfig, MaterialConfig } from '../../../engine/interfaces';
+import { Vector3 } from '../../../engine/interfaces';
 import { ApiService } from '../../../services/api.service';
 import { Furniture } from '../../../types';
 import { EngineSwitch } from '../engine-switch/engine-switch';
 import { ActivatedRoute } from '@angular/router'
-import { Modal } from '../../UI/modal/modal';
-import { ThreeEngineAdapter } from '../../../engine/three/threeEngine';
-import { WebGLEngineAdapter } from '../../../engine/webgl/webglEngine';
-import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../../types/furniture.types';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { AssemblyStep, AssemblyPart } from '../../../types/furniture.types';
+import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
 import { ChatbotInteractionService } from '../../../services/chatbot-interaction.service';
+import { EngineService } from '../../../services/graphicsEngine/engine.service';
+import { ARService } from '../../../services/graphicsEngine/ar.service';
+import { SimulationService } from '../../../services/graphicsEngine/simulation.service';
+import { FurnitureService } from '../../../services/graphicsEngine/furniture.service';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
   imports: [CommonModule, FormsModule, EngineSwitch],
-  providers: [{ provide: EngineFacade, useClass: ThreeEngineAdapter }], // ⚠️
+  providers: [EngineService, ARService, SimulationService, FurnitureService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,33 +33,25 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   // INPUTS
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
-  //controlsMode        = input<'interactive' | 'display-only' | 'hidden'>('interactive');
-  autoStartSimulation = input<boolean>(false);
 
   // OUTPUTS
   arStateChange = output<boolean>();
   finished = output<void>();
 
   // SIGNALS
-  engineUse = signal<'threeJS' | 'webGL'>('webGL');
   totalSteps = signal(0);
   manualStep = signal(0);
-  simulationStep = signal(0);
   isolatedPart = signal<AssemblyPart | null>(null);
   mode = signal<'manual' | 'simulation' | 'final'>('manual');
-  isARActive = signal(false);
-  arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
   isSmallScreen = signal(false);
-  backgroundColor = signal<'dark' | 'light'>('dark');
   isCameraMoved = signal(false);
   stepDescriptions = signal<string[]>([]);
   showFooterControls = signal(true);
-  areControlsDisabled = signal(false);
-  isSimulationPaused = signal(false);
-  simulationSpeed = signal(1);
 
   // COMPUTED
-  isSimulating = computed(() => this.mode() === 'simulation');
+  isSimulating = computed(() => {
+    return this.mode() === 'simulation';
+  });
   isManualFirstStep = computed(() => this.manualStep() === 0);
   isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
 
@@ -69,22 +62,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   readonly simulationSpeeds = [0.5, 1, 1.5, 2];
 
   // PRIVATE STATE
-  private engine!: EngineFacade;
   private parts: AssemblyPart[] = [];
   private stepsData = signal<AssemblyStep[]>([]);
   private lastProcessedStep = -1;
   private lastRotationConfig = { angle: null as number | null, axis: null as string | null };
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
-  private simulationDirection = signal<'forward' | 'backward'>('forward');
-  private lastStepTime = 0;
-  private videoStream: MediaStream | null = null;
   private chatbotSub?: Subscription;
   private isViewInitialized = false;
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
-
-  // PRIVATE CONSTANTS
-  private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
+  private destroy$ = new Subject<void>();
 
   get modelUrl(): string {
     return this.furniture?.file_uri || '';
@@ -97,7 +84,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   currentStep = computed(() => {
     switch (this.mode()) {
       case 'manual': return this.manualStep();
-      case 'simulation': return this.simulationStep();
+      case 'simulation': return this.simulationService.simulationStep();
       case 'final': return this.totalSteps() - 1;
       default: return 0;
     }
@@ -121,75 +108,83 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   constructor(
     private apiService: ApiService,
     private route: ActivatedRoute,
-    private chatbotInteractionService: ChatbotInteractionService
+    private chatbotInteractionService: ChatbotInteractionService,
+    public engineService: EngineService,
+    public arService: ARService,
+    public simulationService: SimulationService,
+    public furnitureService: FurnitureService
   ) {
     effect(() => {
       const stepIndex = this.currentLogicalStep();
       const steps = this.stepsData();
 
-      // Guard to only run when the logical step actually changes or data arrives
       if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
       this.lastProcessedStep = stepIndex;
 
-      // Scrolling logic
       setTimeout(() => this.centerActiveStep(), 100);
 
-      // Camera rotation logic
+      const engineFacade = this.engineService.getEngine();
+      if (!engineFacade) return;
+
       if (this.mode() === 'final') {
         if (this.lastRotationConfig.angle !== null || this.lastRotationConfig.axis !== null) {
-          this.engine.resetControls();
+          engineFacade.resetControls();
           this.lastRotationConfig = { angle: null, axis: null };
         }
       } else if (steps.length > 0 && steps[stepIndex]) {
         const stepData = steps[stepIndex];
-        const hasNewRotation =
-          stepData.scene_camera_angle !== null
-          && stepData.scene_camera_rotation_axis !== null;
-        const rotationChanged =
-          stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
+        const hasNewRotation = stepData.scene_camera_angle !== null && stepData.scene_camera_rotation_axis !== null;
+        const rotationChanged = stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
           stepData.scene_camera_rotation_axis !== this.lastRotationConfig.axis;
 
         if (rotationChanged) {
           if (hasNewRotation) {
-            // Apply new rotation smoothly
-            this.engine.rotateCamera(
+            engineFacade.rotateCamera(
               stepData.scene_camera_rotation_axis as 'x' | 'y' | 'z',
               Number(stepData.scene_camera_angle)
             );
           } else {
-            // No rotation for this step, but previously there was one -> Reset
-            this.engine.resetControls();
+            engineFacade.resetControls();
           }
 
-          // Update last known rotation configuration
           this.lastRotationConfig = {
             angle: stepData.scene_camera_angle,
             axis: stepData.scene_camera_rotation_axis
           };
         }
       }
+
     });
   }
-
 
   private boundWindowResize = this.onWindowResize.bind(this);
   private boundScreenResize = () => this.checkScreenSize();
 
   ngOnInit(): void {
-    this.createEngineInstance();
+    this.engineService.createEngineInstance();
 
-    let ref = this.route.snapshot.params['ref'];
-    this.apiService.getFurnitureById(ref).subscribe((f: any) => {
-      this.furniture = f.data ? f.data : f;
+    const ref = this.route.snapshot.params['ref'];
 
-      if (this.useExternalModel && this.isViewInitialized) {
-        this.initEngine().then(() => {
-          this.createFurniture().then(() => {
-            if (!this.animationFrameId) this.animate();
-          });
-        });
-      }
-    });
+    this.apiService.getFurnitureById(ref)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async (f: any) => {
+
+        this.furniture = f.data ? f.data : f;
+
+        if (this.useExternalModel && this.isViewInitialized) {
+
+          await this.initEngine();
+
+          const furnitureData = await this.furnitureService.loadFurniture(String(ref));
+
+          this.parts = furnitureData.parts;
+          this.totalSteps.set(furnitureData.totalSteps);
+          this.stepDescriptions.set(furnitureData.stepDescriptions);
+          this.stepsData.set(furnitureData.sortedSteps);
+
+          if (!this.animationFrameId) this.animate();
+        }
+      });
 
     this.chatbotSub = this.chatbotInteractionService.stepChange$.subscribe(({ furnitureRef, stepNumber }) => {
       if (this.mode() !== 'manual') {
@@ -198,14 +193,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const targetLogicalIndex = Math.max(0, stepNumber - 1);
       this.goToStep(targetLogicalIndex);
     });
-  }
-
-  private createEngineInstance(): void {
-    if (this.engineUse() === 'webGL') {
-      this.engine = new WebGLEngineAdapter();
-    } else {
-      this.engine = new ThreeEngineAdapter();
-    }
   }
 
   ngAfterViewInit(): void {
@@ -223,10 +210,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             if (this.furniture) {
               this.createFurniture().then(() => this.animate());
             }
-          }
-
-          if (this.autoStartSimulation()) {
-            this.setMode('simulation');
           }
 
           this.resizeObserver.disconnect();
@@ -256,25 +239,32 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.chatbotSub) {
       this.chatbotSub.unsubscribe();
     }
-
-    this.engine?.dispose();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.engineService.dispose();
   }
+
+  public get engineUse() { return this.engineService.engineUse; }
+  public get isSimulationPaused() { return this.simulationService.isSimulationPaused; }
+  public get arFlowState() { return this.arService.arFlowState; }
+  public get isARActive() { return this.arService.isARActive; }
+  public get simulationSpeed() { return this.simulationService.simulationSpeed; }
 
   public async onEngineChange(newEngine: string): Promise<void> {
     const newEngineType = newEngine === 'threejs' ? 'threeJS' : 'webGL';
-    if (this.engineUse() === newEngineType) return;
 
-    this.engineUse.set(newEngineType);
+    const changed = this.engineService.setEngineType(newEngineType);
+    if (!changed) return;
+
     this.engineChanged.emit(newEngine);
 
     if (this.isViewInitialized) {
-      this.engine?.dispose();
+      this.engineService.dispose();
       this.parts = [];
-      this.createEngineInstance();
+      this.engineService.createEngineInstance();
       this.initEngine().then(() => {
         if (this.furniture) {
           this.createFurniture().then(() => {
-            // Soluciona el bug de que no se muestre la pieza en su posición final al cambiar de motor
             if (this.mode() === 'final') {
               this.parts.forEach(part => {
                 part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
@@ -313,19 +303,20 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
+    const engineFacade = this.engineService.getEngine();
     if (this.preIsolationCameraState) {
-      this.engine.setCameraProps(
+      engineFacade.setCameraProps(
         this.preIsolationCameraState.position,
         this.preIsolationCameraState.target
       );
       this.preIsolationCameraState = null;
     } else {
-      this.engine.setCameraProps(this.engine.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+      engineFacade.setCameraProps(engineFacade.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
     }
   }
 
   resetCameraPosition(): void {
-    this.engine.resetControls();
+    this.engineService.getEngine().resetControls();
   }
 
   public toggleSimulation(): void {
@@ -343,82 +334,77 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.mode() === newMode) return;
 
     this.mode.set(newMode);
-
     this.exitIsolation();
 
     if (newMode === 'simulation') {
-      this.simulationStep.set(0);
-      this.isSimulationPaused.set(false);
-      this.simulationDirection.set('forward');
-      this.lastStepTime = Date.now();
+      this.simulationService.resetSimulation();
     } else if (newMode === 'final') {
       this.parts.forEach(part => {
         part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
     }
 
-    const shouldRotate = newMode === 'simulation' && !this.isSimulationPaused();
-    this.engine.toggleControls(true, shouldRotate);
+    const shouldRotate = newMode === 'simulation' && !this.simulationService.isSimulationPaused();
+    this.engineService.getEngine().toggleControls(true, shouldRotate);
   }
 
   togglePause(): void {
-    this.isSimulationPaused.update(p => !p);
-    this.engine.toggleControls(true, !this.isSimulationPaused());
+    this.simulationService.isSimulationPaused.update(p => !p);
+    this.engineService.getEngine().toggleControls(true, !this.simulationService.isSimulationPaused());
   }
 
   setSimulationSpeed(speed: number): void {
-    this.simulationSpeed.set(speed);
-  }
-
-  toggleBackgroundColor(): void {
-    this.backgroundColor.update(c => c === 'dark' ? 'light' : 'dark');
+    this.simulationService.simulationSpeed.set(speed);
   }
 
   public toggleAR(): void {
-    if (this.isARActive()) {
+    if (this.arService.isARActive()) {
       this.stopAR();
-      this.arFlowState.set('idle');
+      this.arService.arFlowState.set('idle');
     } else {
-      this.arFlowState.set('requesting');
+      this.arService.arFlowState.set('requesting');
     }
   }
 
   async proceedWithARPermission(): Promise<void> {
     try {
-      await this.startAR();
-      this.arFlowState.set('idle');
+      const stream = await this.arService.startAR();
+      this.arStateChange.emit(true);
+      this.arService.arFlowState.set('idle');
+
+      setTimeout(() => {
+        if (this.videoRef?.nativeElement) {
+          this.videoRef.nativeElement.srcObject = stream;
+          this.videoRef.nativeElement.play();
+        }
+      }, 0);
     } catch (error) {
-      this.arFlowState.set('denied');
+      this.arService.arFlowState.set('denied');
     }
   }
 
   cancelARPermissionRequest(): void {
-    this.arFlowState.set('idle');
+    this.arService.arFlowState.set('idle');
   }
 
   retryARPermission(): void {
-    this.arFlowState.set('requesting');
+    this.arService.arFlowState.set('requesting');
   }
 
   closeARDeniedMessage(): void {
-    this.arFlowState.set('idle');
+    this.arService.arFlowState.set('idle');
   }
 
   // PRIVATE METHODS
 
   private centerActiveStep(): void {
     if (!this.stepsContainer?.nativeElement) return;
-
     const container = this.stepsContainer.nativeElement;
     const activeIndex = this.currentLogicalStep();
     const buttons = container.querySelectorAll('button');
 
     if (buttons[activeIndex]) {
-      buttons[activeIndex].scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      });
+      buttons[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }
 
@@ -426,58 +412,25 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.isSmallScreen.set(window.innerWidth < 768);
   }
 
-  private async startAR(): Promise<void> {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('getUserMedia not supported on this browser!');
-      throw new Error('getUserMedia not supported');
-    }
-
-    try {
-      this.setMode('manual');
-
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      this.videoStream = stream;
-
-      this.isARActive.set(true);
-      this.arStateChange.emit(true);
-      this.engine.toggleControls(true, false);
-      this.engine.setBackground(null);
-      setTimeout(() => {
-        if (this.videoRef?.nativeElement) {
-          this.videoRef.nativeElement.srcObject = this.videoStream;
-          this.videoRef.nativeElement.play();
-        }
-      }, 0);
-
-    } catch (error) {
-      console.error('Error accessing camera for AR:', error);
-      this.stopAR();
-      throw error;
-    }
-  }
-
   private stopAR(): void {
-    this.isARActive.set(false);
-    this.arStateChange.emit(false);
-    if (this.videoStream) {
-      this.videoStream.getTracks().forEach(track => track.stop());
-      this.videoStream = null;
-    }
     if (this.videoRef?.nativeElement) {
       this.videoRef.nativeElement.srcObject = null;
     }
-    const shouldRotate = this.mode() === 'simulation' && !this.isSimulationPaused();
-    this.engine.toggleControls(true, shouldRotate);
+    this.arService.stopAR();
+    this.arStateChange.emit(false);
+
+    const shouldRotate = this.mode() === 'simulation' && !this.simulationService.isSimulationPaused();
+    const engineFacade = this.engineService.getEngine();
+    if (engineFacade) {
+      engineFacade.toggleControls(true, shouldRotate);
+    }
   }
 
   private async initEngine(): Promise<void> {
     const canvas = this.canvasRef.nativeElement;
     const container = canvas.parentElement!;
     const { width, height } = container.getBoundingClientRect();
-
-    // this.engine.init(canvas, width, height);
-    await this.engine.init(canvas, width, height);
-    this.engine.setControlsAutoRotateSpeed(1.0);
+    await this.engineService.initEngine(canvas, width, height);
   }
 
   // Variables para la lógica de aislar una pieza
@@ -488,8 +441,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
-
-    // Use property reassignment for binding to match existing method structure
     const originalMove = this.onPointerMove;
     const originalDown = this.onPointerDown;
     const originalUp = this.onPointerUp;
@@ -506,49 +457,31 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private async createFurniture(): Promise<void> {
+    let baseModel: any;
 
-    let baseModel: RenderableObject | undefined;
-
-    // 0. Pre-load the base model if available (shared for both API assembly and single-model rollback)
     if (this.modelUrl) {
       try {
-        //console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
-        baseModel = await this.engine.loadGLTF(this.modelUrl);
-        // Ensure it's in the scene to find parts, though we might toggle visibility later
+        const engineFacade = this.engineService.getEngine();
+        baseModel = await engineFacade.loadGLTF(this.modelUrl);
         baseModel.setPosition(0, 0, 0);
         baseModel.castShadow = true;
         baseModel.receiveShadow = true;
-        this.engine.addToScene(baseModel);
-      } catch (error) {
-        //console.error('Error pre-loading base model:', error);
-      }
+        engineFacade.addToScene(baseModel);
+      } catch (error) { }
     }
 
-    // 1. Attempt to load from API Assembly Steps
     try {
       const furnitureId = Number(this.furniture?.id) || 6;
       const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        //console.log('Loading assembly from API for furniture ID:', furnitureId);
-        // Pass the pre-loaded baseModel to find parts inside it
-        const { parts, totalSteps, stepDescriptions } = await this.createPartsFromApi(assemblyData, baseModel);
-
-        // If we found parts, we use them.
-        // If the baseModel was loaded but NO parts were matched/found inside it (and no external files),
-        // createPartsFromApi might return placeholders. 
-        // We assume valid configuration if parts.length > 0.
+        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData, baseModel);
 
         if (parts.length > 0) {
           this.parts = parts;
           this.totalSteps.set(totalSteps);
           this.stepDescriptions.set(stepDescriptions);
-
-          // If we successfully set up the assembly from the API, we keep the baseModel in the scene?
-          // If the parts are children of baseModel, they are already in the scene.
-          // If we use specific parts, we might want to hide the "rest" of the baseModel if it contains duplicates?
-          // Usually, if we extracting parts, we are manipulating them.
-          // If the baseModel is just a container, it's fine.
+          this.stepsData.set(sortedSteps);
           return;
         }
       }
@@ -557,7 +490,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     if (this.useExternalModel && baseModel) {
-      //console.log('Using standard external model mode.');
       this.totalSteps.set(1);
       this.stepDescriptions.set(['Visualización del modelo']);
       this.setMode('final');
@@ -565,297 +497,30 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
-
-    const parts: AssemblyPart[] = [];
-    const stepDescriptions: string[] = [];
-    let currentStepIndex = 0;
-
-    // Generic material configuration
-    const defaultMaterial: MaterialConfig = { type: 'standard', color: 0xCCCCCC, roughness: 0.8, metalness: 0.1 };
-
-    // Sort steps by step_number just in case
-    const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
-    this.stepsData.set(sortedSteps);
-
-    for (const step of sortedSteps) {
-      // description
-      const description =
-        step.description
-        || `Paso ${step.step_number}: Ensamblaje de partes.`;
-      stepDescriptions.push(description);
-
-      // Calculate appear and join steps
-      const appearStep = currentStepIndex * 2;
-      const joinStep = appearStep + 1;
-
-      // iterate step parts
-      for (const partRef of step.parts) {
-        let mesh: RenderableObject | null = null;
-
-        let targetPos = { x: 0, y: 0, z: 0 }; // ⚠️ !!
-
-        let usingExistingMesh = false;
-
-        if (partRef.file_uri) { // ⚠️ EN PRINCIPIO, NO
-          // Case A: Part has its own file
-          try {
-            mesh = await this.engine.loadGLTF(partRef.file_uri);
-          } catch (e) {
-            console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
-            console.error('file_uri que falla:', partRef.file_uri);
-          }
-        }
-
-        if (!mesh && baseModel && partRef.reference_number) {
-          // Case B: Look for part in baseModel by reference number
-          // Access native object (THREE.Object3D) to traverse/find
-          // We assume reference_number matches the node name in GLTF
-          const nativeRoot = baseModel.nativeObject;
-          const foundNative = nativeRoot.getObjectByName(partRef.reference_number);
-
-          if (foundNative) {
-            mesh = this.engine.wrapNativeObject(foundNative);
-            usingExistingMesh = true;
-            // Capture its current assembled position (Target)
-            // Note: getPosition() returns world or local? 
-            // EngineFacade.getPosition() wraps native .position (local).
-            // If the hierarchy is flat or we just want local animation, this is fine.
-            targetPos = mesh.getPosition();
-          } else {
-            console.warn(`Part with reference '${partRef.reference_number}' not found in base model.`);
-          }
-        }
-
-        if (!mesh) {
-          console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
-          continue;
-        }
-
-        // If we created a new mesh (Case A or C), we need to add it to scene.
-        // If we found an existing mesh (Case B), it's already in the scene (as child of baseModel).
-        // However, for animation, if we want to move it freely, we might need to detach it or just move it relative to parent.
-        // The animation logic uses mesh.setPosition(). 
-
-        if (!usingExistingMesh) {
-          this.engine.addToScene(mesh);
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
-
-        // Calculate start position based on axis and distance
-        const offsetDistance = partRef.distance;
-        const offsetAxis = partRef.axis;
-        const position = { ...targetPos };
-
-        const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
-
-        // Set initial state to START position
-        mesh.setPosition(startPos.x, startPos.y, startPos.z);
-
-        const assemblyPart: AssemblyPart = {
-          object: mesh,
-          startPosition: startPos,
-          targetPosition: targetPos,
-          appearStep,
-          joinStep,
-          name: partRef.reference_number || `Part ${partRef.part_id}`,
-          description: `Part: ${partRef.reference_number}`
-        };
-
-        // FLECHAS
-        const targetArrowPos = {
-          x: partRef.pos_x,
-          y: partRef.pos_y,
-          z: partRef.pos_z
-        };
-
-        const length = Math.abs(offsetDistance * 0.9)
-        let offsetCons = 0.035;
-        const arrowPosition = { ...targetArrowPos };
-
-        if (length > 0.01) {
-          const sign = -(Math.sign(offsetDistance));
-          offsetCons *= sign;
-
-          let dir = { x: 0, y: 0, z: 0 };
-
-          if (offsetAxis === 'x') {
-            dir.x = 1;
-            arrowPosition.x += offsetCons;
-          }
-          if (offsetAxis === 'y') {
-            dir.y = 1;
-            arrowPosition.y += offsetCons;
-          }
-          if (offsetAxis === 'z') {
-            dir.z = 1;
-            arrowPosition.z += offsetCons;
-          }
-
-          dir.x *= sign;
-          dir.y *= sign;
-          dir.z *= sign;
-
-          assemblyPart.arrow = await this.engine.createArrowHelper(
-            //arrowDir,
-            dir,
-            arrowPosition,
-            length,
-            0x00ffff
-          );
-
-          assemblyPart.object.add(assemblyPart.arrow);
-        }
-
-        parts.push(assemblyPart);
-      }
-      currentStepIndex++;
-    }
-
-    const totalSteps = currentStepIndex * 2;
-    return { parts, totalSteps, stepDescriptions };
-  }
-
-  private calculateOffsetPosition(position: { x: number, y: number, z: number }, offsetDistance: number, offsetAxistance: string) {
-    if (offsetAxistance === 'x') position.x += offsetDistance;
-    else if (offsetAxistance === 'y') position.y += offsetDistance;
-    else if (offsetAxistance === 'z') position.z += offsetDistance;
-    else position.y += offsetDistance; // Default
-    return position;
-  }
-
-  private runSimulation(): void {
-    if (this.isSimulationPaused()) {
-      this.lastStepTime = Date.now();
-      return;
-    }
-
-    const now = Date.now();
-    const interval = this.SIMULATION_STEP_INTERVAL / this.simulationSpeed();
-
-    if (now - this.lastStepTime > interval) {
-      if (this.simulationDirection() === 'forward') {
-        if (this.simulationStep() >= this.totalSteps() - 1) {
-          this.simulationDirection.set('backward');
-        } else {
-          this.simulationStep.update(s => s + 1);
-        }
-      } else { // backward
-        if (this.simulationStep() <= 0) {
-          this.simulationDirection.set('forward');
-        } else {
-          this.simulationStep.update(s => s - 1);
-        }
-      }
-      this.lastStepTime = now;
-    }
-  }
-
   // START OF ANIMATE FUNCTIONS
 
   private updateCameraState(): void {
-    const isMoved = this.engine.checkControlsState();
+    const isMoved = this.engineService.getEngine().checkControlsState();
     if (this.isCameraMoved() !== isMoved) {
       this.isCameraMoved.set(isMoved);
     }
   }
 
-  private handleIsolatedMode(isolated: any): void {
-    this.parts.forEach(part => {
-      const isTarget = part === isolated;
-      part.object.setVisible(isTarget);
-      if (part.arrow) { part.arrow.setVisible(false); }
-    });
-    this.engine.setHighlight([isolated.object]);
-  }
-
-  private handleNormalMode(step: number): void {
-    const partsToHighlight: RenderableObject[] = [];
-    for (const part of this.parts) {
-      if (this.needsHighlight(part, step)) {
-
-        partsToHighlight.push(part.object);
-
-      }
-      this.updateArrowVisibility(part, step);
-      this.updatePartMovement(part, step);
-      this.updatePartVisibility(part, step);
-    }
-
-    this.engine.setHighlight(partsToHighlight);
-  }
-
-  private needsHighlight(part: any, step: number): boolean {
-    if (part.appearStep === step) return true;
-    if (step > part.appearStep && step <= part.joinStep) {
-
-      return this.isMovingToTarget(part);
-    }
-    return false;
-  }
-
-  private isMovingToTarget(part: any): boolean {
-    const currentPos = part.object.getPosition();
-    const distToTarget = this.getDistance(currentPos, part.targetPosition);
-    return (distToTarget > 0.01);
-  }
-
-  private getDistance(a: any, b: any): number {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    const dz = a.z - b.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-  }
-
-  private updateArrowVisibility(part: any, step: number): void {
-    if (!part.arrow) return;
-    if (step === part.appearStep) {
-      part.arrow.setVisible(true);
-      return;
-    }
-    if (step === part.joinStep) {
-      const isMoving = this.isMovingToTarget(part);
-      part.arrow.setVisible(isMoving);
-      return;
-    }
-    part.arrow.setVisible(false);
-  }
-
-  private updatePartMovement(part: any, step: number): void {
-    if (this.mode() === 'final') return;
-    const target =
-      step >= part.joinStep
-        ? part.targetPosition
-        : part.startPosition;
-    const current = part.object.getPosition();
-    const alpha = 0.08;
-    part.object.setPosition(
-      current.x + (target.x - current.x) * alpha,
-      current.y + (target.y - current.y) * alpha,
-      current.z + (target.z - current.z) * alpha
-    );
-  }
-
-  private updatePartVisibility(part: any, step: number): void {
-    const hasAppeared = step >= part.appearStep;
-    return part.object.setVisible(hasAppeared);
-  }
-
   private animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
+
     this.updateCameraState();
     if (this.isSimulating()) {
-      this.runSimulation();
+      this.simulationService.runSimulation(this.totalSteps());
     }
     const isolated = this.isolatedPart();
     if (isolated) {
-      this.handleIsolatedMode(isolated);
+      this.simulationService.handleIsolatedMode(isolated, this.parts);
     } else {
       const step = this.currentStep();
-      this.handleNormalMode(step);
+      this.simulationService.handleNormalMode(step, this.parts, this.mode());
     }
-    this.engine.render();
+    this.engineService.render();
   }
 
   // END OF ANIMATE FUNCTIONS
@@ -867,27 +532,27 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     const { width, height } = container.getBoundingClientRect();
     if (width > 0 && height > 0) {
-      this.engine.resize(width, height);
+      this.engineService.resize(width, height);
     }
   }
 
   private isolatePart(part: AssemblyPart): void {
+    const engineFacade = this.engineService.getEngine();
     if (!this.isolatedPart()) {
-      const cam = this.engine.getCamera();
+      const cam = engineFacade.getCamera();
       this.preIsolationCameraState = {
         position: { ...cam.position },
         target: { ...cam.target }
       };
     }
     this.isolatedPart.set(part);
-    // Move controls target to object position and get closer
     const pos = part.object.getPosition();
     const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
-    this.engine.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
+    engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
 
   private onPointerDown(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
+    if (this.isSimulating() || this.mode() === 'final' || this.arService.isARActive() || this.isolatedPart()) return;
 
     this.isPointerDown = true;
     this.pointerDownPos = { x: event.clientX, y: event.clientY };
@@ -913,7 +578,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    const hitObject = this.engine.raycast(x, y);
+    const hitObject = this.engineService.detectObjectUnderCursor({ x, y });
 
     if (hitObject) {
       const part = this.findPartForObject(hitObject);
@@ -923,18 +588,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  onCanvasInteraction(): void {
-    // Prevent default browser behavior if needed, or trigger specific app logic
-  }
+  onCanvasInteraction(): void { }
 
   private onPointerMove(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
+    if (this.isSimulating() || this.mode() === 'final' || this.arService.isARActive()) return;
 
     if (this.isPointerDown) {
-      // If the user moves the pointer significantly, cancel the long press
       const dx = Math.abs(event.clientX - this.pointerDownPos.x);
       const dy = Math.abs(event.clientY - this.pointerDownPos.y);
-      if (dx > 15 || dy > 15) { // Increased threshold for touch devices
+      if (dx > 15 || dy > 15) {
         this.isPointerDown = false;
         if (this.pressTimer) {
           clearTimeout(this.pressTimer);
@@ -954,7 +616,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-    const hitObject = this.engine.raycast(x, y);
+    const hitObject = this.engineService.detectObjectUnderCursor({ x, y });
 
     if (hitObject) {
       const part = this.findPartForObject(hitObject);
@@ -968,14 +630,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  // Helper to find which AssemblyPart owns a RenderableObject (walking up hierarchy if needed)
-  private findPartForObject(inputObj: RenderableObject): AssemblyPart | undefined {
+  private findPartForObject(inputObj: any): AssemblyPart | undefined {
     return this.parts.find(p => {
-      // 1. Check direct equality
       if (p.object === inputObj) return true;
-
-      // 2. Check native hierarchy (if inputObj is a child of p.object)
-      // We assume nativeObject has a .parent property (standard in basic 3D engines like Three.js)
       let current = inputObj.nativeObject;
       const target = p.object.nativeObject;
 
@@ -986,7 +643,4 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       return false;
     });
   }
-
-
-
 }

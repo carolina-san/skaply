@@ -47,8 +47,8 @@
   <!-- Header -->
   @if (!isARActive()) {
   <header class="flex flex-col lg:flex-row justify-center items-center p-2 relative top-15 z-50  w-full">
-    <app-engine-switch [selectedEngine]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'" (engineChanged)="onEngineChange($event)"
-      class="lg:order-2"></app-engine-switch>
+    <app-engine-switch [selectedEngine]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
+      (engineChanged)="onEngineChange($event)" class="lg:order-2"></app-engine-switch>
     <div class="pointer-events-auto  mt-2 flex flex-col justify-center items-center w-full lg:items-start">
       <!-- Nombre del mueble -->
       @if (furnitureName() && mode() !== 'manual') {
@@ -177,8 +177,7 @@
   @if(showFooterControls() && !isARActive()) {
   <footer
     class="flex flex-col md:flex-row items-center justify-center bg-transparent text-marron-oscuro w-full relative"
-    [class.pointer-events-none]="areControlsDisabled()"
-    [class.opacity-60]="areControlsDisabled() || isolatedPart() !== null">
+    [class.opacity-60]=" isolatedPart() !== null">
 
 
     <!--Primera fila de botones-->
