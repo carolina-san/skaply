@@ -85,6 +85,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   // PRIVATE CONSTANTS
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
+  private readonly ARROW_FADE_SPEED = 0.02;
 
   // get modelUrl(): string {
   //   return this.furniture?.file_uri || '';
@@ -826,15 +827,30 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private updateArrowVisibility(part: any, step: number): void {
     if (!part.arrow) return;
     if (step === part.appearStep) {
+      part.arrowOpacity = 1.0;
       part.arrow.setVisible(true);
+      part.arrow.setOpacity(1.0);
       return;
     }
     if (step === part.joinStep) {
       const isMoving = this.isMovingToTarget(part);
-      part.arrow.setVisible(isMoving);
-      return;
+        if (isMoving) {
+            part.arrowOpacity = 1.0;
+            part.arrow.setVisible(true);
+            part.arrow.setOpacity(1.0);
+        } else {
+            part.arrowOpacity = (part.arrowOpacity ?? 1.0) - this.ARROW_FADE_SPEED;
+            if (part.arrowOpacity <= 0) {
+                part.arrowOpacity = 0;
+                part.arrow.setVisible(false);
+            } else {
+                part.arrow.setOpacity(part.arrowOpacity);
+            }
+        }
+        return;
     }
     part.arrow.setVisible(false);
+    part.arrowOpacity = 0;
   }
 
   private updatePartMovement(part: any, step: number): void {

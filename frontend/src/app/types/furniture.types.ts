@@ -62,4 +62,5 @@ export interface ScenePart  {
     name: string;
     description: string;
     arrow?: RenderableObject;
+    arrowOpacity?: number;
 }

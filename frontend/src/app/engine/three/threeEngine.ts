@@ -52,6 +52,21 @@ class ThreeRenderableObject implements RenderableObject {
         this.threeObject.visible = visible;
     }
 
+    setOpacity(value: number): void {
+        this.threeObject.traverse((child: THREE.Object3D) => {
+            if (child instanceof THREE.Mesh) {
+                const materials = Array.isArray(child.material)
+                    ? child.material
+                    : [child.material];
+
+                materials.forEach(mat => {
+                    mat.transparent = value < 1.0;
+                    mat.opacity = value;
+                });
+            }
+        });
+    }
+
     add(child: RenderableObject): void {
         if (child.nativeObject instanceof THREE.Object3D) {
             this.threeObject.add(child.nativeObject);

@@ -17,6 +17,7 @@ export class Mesh extends Entity {
     private indexCount: number = 0;
     private initialized = false;
     private isHighlighted = false;
+    private opacity: number = 1.0;
 
     constructor(
         public resource: MeshResource,         
@@ -25,9 +26,17 @@ export class Mesh extends Entity {
         super();
     }
 
+    // SETTERS
+
     setIsHighlighted (value: boolean) {
         this.isHighlighted = value;
     }
+
+    setOpacity(value: number): void {
+        this.opacity = Math.max(0, Math.min(1, value));
+    }
+
+    // GETTERS
 
     getIsHighlighted () : boolean{
         return this.isHighlighted;
@@ -43,6 +52,7 @@ export class Mesh extends Entity {
         
         shader.setMat4("uModelMatrix", modelMatrix);
         shader.setFloat("uHighlight", this.isHighlighted ? 1 : 0);
+        shader.setFloat("uOpacity", this.opacity);
         
         // Bind texture if available
         if (this.resource.texture) {

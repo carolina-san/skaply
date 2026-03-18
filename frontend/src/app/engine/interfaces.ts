@@ -11,6 +11,7 @@ export interface RenderableObject {
     setRotation(x: number, y: number, z: number): void;
     setScale(x: number, y: number, z: number): void;
     setVisible(visible: boolean): void;
+    setOpacity(value: number): void;
     add(child: RenderableObject): void;
     remove(child: RenderableObject): void;
     getPosition(): Vector3;

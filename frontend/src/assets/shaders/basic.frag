@@ -10,8 +10,7 @@ uniform vec3 uLightColor;
 uniform vec3 uViewPosition;
 
 uniform sampler2D uDiffuseTexture;
-
-// uniform float uHighlight;
+uniform float uOpacity;
 
 out vec4 fragColor;
 
@@ -29,5 +28,5 @@ void main()
     vec3 result = (ambient + diff * uLightColor) * color;
 
     // outline shader hace el efecto de bordeado
-    fragColor = vec4(result, 1.0);
+    fragColor = vec4(result, uOpacity);
 }

@@ -58,6 +58,10 @@ class WebGlRenderableObject implements RenderableObject {
         this.node.setVisible(visible);
     }
 
+    setOpacity(value: number): void {
+        this.collectMeshesAndApply(this.node, mesh => mesh.setOpacity(value));
+    }
+
     add(child: RenderableObject): void {
         const webglChild = child as WebGlRenderableObject;
         this.node.addChild(webglChild.node);
@@ -72,6 +76,13 @@ class WebGlRenderableObject implements RenderableObject {
     lookAt(target: Vector3): void {
         //this.node.lookAt?.(target);
         // solo existe lokkAt en camara 
+    }
+
+    private collectMeshesAndApply(node: Node, fn: (mesh: Mesh) => void): void {
+        const entity = node.getEntity();
+        if (entity instanceof Mesh) fn(entity);
+        const children = (node as any).children as Node[];
+        if (children) children.forEach(child => this.collectMeshesAndApply(child, fn));
     }
 }
 
@@ -555,8 +566,10 @@ export class WebGLEngineAdapter extends EngineFacade {
         gl.clearColor(this.clear.r, this.clear.g, this.clear.b, this.clear.a);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);
-        gl.disable(gl.CULL_FACE);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.disable(gl.CULL_FACE); // ⚠️
 
         // shader normal
         this.shader.use();
