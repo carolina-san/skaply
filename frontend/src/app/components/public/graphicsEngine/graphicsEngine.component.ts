@@ -670,7 +670,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           z: partRef.pos_z
         };
 
-        const length = Math.abs(offsetDistance * 0.8)
+        const length = Math.abs(offsetDistance * 0.9)
         let offsetCons = 0.035;
         const arrowPosition = { ...targetArrowPos };
 
@@ -774,22 +774,22 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const partsToHighlight: RenderableObject[] = [];
     for (const part of this.parts) {
       if (this.needsHighlight(part, step)) {
+
         partsToHighlight.push(part.object);
+
       }
       this.updateArrowVisibility(part, step);
       this.updatePartMovement(part, step);
       this.updatePartVisibility(part, step);
     }
+
     this.engine.setHighlight(partsToHighlight);
   }
 
   private needsHighlight(part: any, step: number): boolean {
-    // if (part.appearStep === step) {
-    //   return true;
-    // }
-    // return this.isMovingToTarget(part);
     if (part.appearStep === step) return true;
     if (step > part.appearStep && step <= part.joinStep) {
+
       return this.isMovingToTarget(part);
     }
     return false;
