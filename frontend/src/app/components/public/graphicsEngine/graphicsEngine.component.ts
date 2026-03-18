@@ -181,10 +181,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     let ref = this.route.snapshot.params['ref'];
     this.apiService.getFurnitureById(ref).subscribe((f: any) => {
       this.furniture = f.data ? f.data : f;
-      //console.log('Furniture loaded:', this.furniture);
 
       if (this.useExternalModel && this.isViewInitialized) {
-        // Wait for initEngine to complete before calling animate
         this.initEngine().then(() => {
           this.createFurniture().then(() => {
             if (!this.animationFrameId) this.animate();
@@ -194,14 +192,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     this.chatbotSub = this.chatbotInteractionService.stepChange$.subscribe(({ furnitureRef, stepNumber }) => {
-      //console.log('Chatbot request received for step:', stepNumber, 'ref:', furnitureRef);
-      // Optional: Verify furnitureRef matches this.furniture?.reference_number
-      // But usually the viewer only shows one furniture at a time
       if (this.mode() !== 'manual') {
         this.setMode('manual');
       }
-
-      // goToStep uses 0-based logical index, so we subtract 1 if stepNumber is 1-based
       const targetLogicalIndex = Math.max(0, stepNumber - 1);
       this.goToStep(targetLogicalIndex);
     });
@@ -209,10 +202,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private createEngineInstance(): void {
     if (this.engineUse() === 'webGL') {
-      //console.log('Using WebGL Custom Engine');
       this.engine = new WebGLEngineAdapter();
     } else {
-      //console.log('Using ThreeJS Adapter');
       this.engine = new ThreeEngineAdapter();
     }
   }
@@ -273,7 +264,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const newEngineType = newEngine === 'threejs' ? 'threeJS' : 'webGL';
     if (this.engineUse() === newEngineType) return;
 
-    console.log('Switching engine to:', newEngine);
     this.engineUse.set(newEngineType);
     this.engineChanged.emit(newEngine);
 
@@ -284,6 +274,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.initEngine().then(() => {
         if (this.furniture) {
           this.createFurniture().then(() => {
+            // Soluciona el bug de que no se muestre la pieza en su posición final al cambiar de motor
+            if (this.mode() === 'final') {
+              this.parts.forEach(part => {
+                part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
+              });
+            }
             if (!this.animationFrameId) this.animate();
           });
         }
@@ -314,8 +310,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   openFinishModal(): void {
     this.finished.emit();
   }
-
-
 
   exitIsolation(): void {
     this.isolatedPart.set(null);
@@ -358,7 +352,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.simulationDirection.set('forward');
       this.lastStepTime = Date.now();
     } else if (newMode === 'final') {
-      // Instantly move all parts to their final position
       this.parts.forEach(part => {
         part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
       });
@@ -440,7 +433,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     try {
-      // Ensure the model is fully assembled by switching to 'final' mode.
       this.setMode('manual');
 
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -448,13 +440,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
       this.isARActive.set(true);
       this.arStateChange.emit(true);
-      // Disable auto-rotation for AR mode
       this.engine.toggleControls(true, false);
-
-      // Make background transparent
       this.engine.setBackground(null);
-
-      // Defer video setup to avoid race conditions with view rendering
       setTimeout(() => {
         if (this.videoRef?.nativeElement) {
           this.videoRef.nativeElement.srcObject = this.videoStream;
@@ -464,9 +451,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     } catch (error) {
       console.error('Error accessing camera for AR:', error);
-      // Clean up state if permission is denied or another error occurs
       this.stopAR();
-      // Propagate error to be handled by the permission flow
       throw error;
     }
   }
@@ -679,13 +664,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         };
 
         // FLECHAS
-
         const targetArrowPos = {
           x: partRef.pos_x,
           y: partRef.pos_y,
           z: partRef.pos_z
         };
-
 
         const length = Math.abs(offsetDistance * 0.8)
         let offsetCons = 0.035;
