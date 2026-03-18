@@ -83,7 +83,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private isViewInitialized = false;
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
 
-  // PRIVATE CONSTANTS
+  // PRIVATE CONSTANTS 
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
   private readonly ARROW_FADE_SPEED = 0.02;
 
