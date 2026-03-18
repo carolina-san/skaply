@@ -191,6 +191,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       }
       const targetLogicalIndex = Math.max(0, stepNumber - 1);
       this.goToStep(targetLogicalIndex);
+
     });
   }
 
@@ -272,19 +273,31 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const targetStep = logicalStepIndex * ratio;
     if (targetStep >= 0 && targetStep < this.totalSteps()) {
       this.manualStep.set(targetStep);
+      if (this.furniture?.reference_number) {
+        this.apiService.changeStep(this.furniture.reference_number, targetStep).subscribe();
+      }
     }
   }
 
   nextStep(): void {
     this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
+    if (this.furniture?.reference_number) {
+      this.apiService.changeStep(this.furniture.reference_number, this.currentLogicalStep()).subscribe();
+    }
   }
 
   prevStep(): void {
     this.manualStep.update(step => (step > 0 ? step - 1 : step));
+    if (this.furniture?.reference_number) {
+      this.apiService.changeStep(this.furniture.reference_number, this.currentLogicalStep()).subscribe();
+    }
   }
 
   reset(): void {
     this.manualStep.set(0);
+    if (this.furniture?.reference_number) {
+      this.apiService.changeStep(this.furniture.reference_number, 0).subscribe();
+    }
   }
 
   openFinishModal(): void {
@@ -484,4 +497,5 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const closePos = { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 };
     engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
+
 }

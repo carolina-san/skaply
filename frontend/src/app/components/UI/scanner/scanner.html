@@ -1,29 +1,48 @@
-<button (click)="toggleScanner()" class="btn-escaneo">
-  <span class="material-symbols-rounded text-3xl text-marron-oscuro transition-transform duration-300" [ngClass]="{
-      'rotate-45': isOpen,  
-      'rotate-0': !isOpen
-    }">
-    add
-  </span>
-</button>
+<div [ngClass]="{ 'hidden': !isOpen }" 
+     class="fixed inset-0 bg-black/90 z-[1000]"
+     (click)="closeScanner()"></div>
 
-<aside *ngIf="isOpen" class="fixed bottom-6 right-24 z-80" (click)="closeScanner()">
-
-  <article class="w-72 bg-white rounded-3xl shadow-2xl p-2 border border-gray-100 animate-pop"
-    (click)="$event.stopPropagation()">
-
-    <!-- Introducir clave -->
-    <button (click)="toggleManualInput()" class="w-full flex items-center justify-between px-5 py-4">
-      <input class="text-marron-oscuro" placeholder="Introducir num referencia" />
-      <span class="material-symbols-rounded text-marron-oscuro text-2xl">keyboard</span>
+<div [ngClass]="{ 'hidden': !isOpen }" 
+     class="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+  
+  <div class="bg-beige rounded-xl shadow-2xl w-full max-w-md relative animate-fade-in"
+       (click)="$event.stopPropagation()">
+    
+    <button (click)="closeScanner()" 
+            class="absolute top-3 right-3 w-8 h-8 z-10 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-beige-oscuro transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+        <path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z"/>
+      </svg>
     </button>
 
-    <!-- Escanear QR -->
-    <button (click)="startScanning()"
-      class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-100 rounded-xl transition mt-1">
-      <span class="text-marron-oscuro">Escanear un código QR</span>
-      <span class="material-symbols-rounded text-marron-oscuro text-2xl">photo_camera</span>
-    </button>
+    <div class="p-6 pb-0">
+      <h2 class="text-2xl font-bold text-marron-oscuro mb-2">Escanear código QR</h2>
+      <p class="text-sm text-marron-oscuro/70">Apunta la cámara hacia el código QR</p>
+    </div>
 
-  </article>
-</aside>
+    <div class="p-6">
+      <div class="relative bg-black rounded-lg overflow-hidden" style="min-height: 300px;">
+        <div id="qr-reader" class="w-full"></div>
+        
+        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div class="relative" style="width: 250px; height: 250px;">
+            <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-azul-claro"></div>
+            <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-azul-claro"></div>
+            <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-azul-claro"></div>
+            <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-azul-claro"></div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="scanError" class="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+        <p class="text-red-700 text-sm">{{ scanError }}</p>
+      </div>
+
+      <div class="mt-4 p-3 bg-azul-claro/10 rounded-lg">
+        <p class="text-sm text-marron-oscuro">
+          <strong>Consejo:</strong> Mantén el código QR dentro del marco y espera a que se escanee automáticamente.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

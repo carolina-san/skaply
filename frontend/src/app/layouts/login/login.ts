@@ -32,17 +32,22 @@ export class Login implements OnInit {
       this.authService.handleGoogleCallback();
     }
 
-    // Si ya está logueado, redirigir
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/catalogo']);
-    }
-
     this.seo.setSeo({
       title: `Inicia sesión - Skäply`,
       description: `Accede a tu cuenta de Skäply para gestionar tu catálogo de muebles y montajes.`,
       canonical: `https://skaply.ovh/login`,
       index: false
     });
+  }
+
+  private redirectByRole(role: string): void {
+    if (role === 'admin') {
+      this.router.navigate(['/admin']);
+    } else if (role === 'provider') {
+      this.router.navigate(['/provider']);
+    } else {
+      this.router.navigate(['/catalogo']);
+    }
   }
 
   onLogin(): void {
@@ -58,11 +63,16 @@ export class Login implements OnInit {
       next: (response) => {
         this.loading = false;
 
-        // Actualizar estado de autenticación (el token ya está en cookie)
-        this.authService.checkAuthStatus();
-
-        // Redirigir al catálogo
-        this.router.navigate(['/catalogo']);
+        // Actualizar estado de autenticación y esperar la respuesta
+        this.authService.checkAuthStatus().subscribe(user => {
+          if (user) {
+            console.log('Usuario logueado con rol:', user.role);
+            this.redirectByRole(user.role);
+          } else {
+            // Si no hay usuario, ir al catálogo por defecto
+            this.router.navigate(['/catalogo']);
+          }
+        });
       },
       error: (error) => {
         this.loading = false;

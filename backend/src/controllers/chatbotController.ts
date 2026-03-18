@@ -213,11 +213,28 @@ export class ChatbotController {
                     if (typeof step === 'string') {
                         step = Number(step);
                     }
-                    if (isNaN(step)) {
-                        step = 1; // Default
-                    }
+
                     console.log("Entra en goToStep controller", ref, step);
                     res.status(200).json(await this.chatbotService.goToStep(ref || '', step || 1, session));
+                    return;
+                }
+                case 'isolate.part': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/montaje_context')
+                    );
+                    const ref = ctx?.parameters?.furniture_ref;
+                    const part = parameters?.furniture_part;
+                    res.status(200).json(await this.chatbotService.isolatePart(ref || '', part || '', session));
+                    return;
+                }
+                case 'get.step.parts': {
+                    const ctx = req.body.queryResult.outputContexts?.find((c: any) =>
+                        c.name.endsWith('/contexts/montaje_context')
+                    );
+                    const ref = ctx?.parameters?.furniture_ref;
+                    const step = ctx?.parameters?.furniture_step + 1;
+                    console.log("Entra en getStepParts controller", ctx.parameters);
+                    res.status(200).json(await this.chatbotService.getStepParts(ref || '', step || '', session));
                     return;
                 }
                 default:
@@ -248,6 +265,24 @@ export class ChatbotController {
         } catch (error) {
             console.error('Error en el inicio de montaje:', error);
             next(new ApiError('INTERNAL_SERVER', 'Error al enviar evento a Dialogflow'));
+        }
+    };
+
+    changeStep = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { furniture_ref, step_number } = req.body;
+            if (!furniture_ref || step_number === undefined) {
+                next(new ApiError('BAD_REQUEST', 'Faltan parámetros de referencia o paso'));
+                return;
+            }
+
+            const sessionId = req.body.sessionId || 'default';
+            const result = await this.chatbotService.changeStepContext(furniture_ref, Number(step_number), sessionId);
+
+            res.json({ success: true, result });
+        } catch (error) {
+            console.error('Error al cambiar paso en contexto:', error);
+            next(new ApiError('INTERNAL_SERVER', 'Error al actualizar contexto en Dialogflow'));
         }
     };
 

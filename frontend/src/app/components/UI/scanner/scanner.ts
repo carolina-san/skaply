@@ -1,129 +1,89 @@
-import { Component, EventEmitter, Output, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './scanner.html'
+  imports: [CommonModule],
+  templateUrl: './scanner.html',
+  styleUrls: ['./scanner.css']
 })
-export class Scanner implements OnDestroy {
-  @Output() onScan = new EventEmitter<string>();
-
-  isOpen = false;             // Bottom sheet abierto
-  scanning = false;           // Modal de cámara activo
-  showManualInput = false;    // Campo manual desplegable
-
-  manualCode = '';
-  scanResult: string | null = null;
-  errorMessage: string | null = null;
+export class Scanner implements OnInit, OnDestroy, OnChanges {
+  @Input() isOpen = false;
+  @Output() isOpenChange = new EventEmitter<boolean>();
+  @Output() onScanSuccess = new EventEmitter<string>();
+  @Output() close = new EventEmitter<void>();
 
   private html5QrCode: Html5Qrcode | null = null;
+  private isScanning = false;
+  scanError = '';
+  scannedResult = '';
 
-  ngOnDestroy() {
-    this.stopScanning();
+  ngOnInit(): void {
+    // Initialization
   }
 
-  toggleScanner() {
-    this.isOpen = !this.isOpen;
-
-    if (!this.isOpen) {
-      this.showManualInput = false;
-      this.manualCode = '';
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] && changes['isOpen'].currentValue && !this.isScanning) {
+      setTimeout(() => this.startScanning(), 300);
+    } else if (changes['isOpen'] && !changes['isOpen'].currentValue && this.isScanning) {
       this.stopScanning();
     }
   }
 
-  openScanner() {
-    this.isOpen = true;
-  }
-
-  closeScanner() {
-    this.isOpen = false;
-    this.showManualInput = false;
-    this.manualCode = '';
-  }
-
-  toggleManualInput() {
-    this.showManualInput = !this.showManualInput;
-
-    // si se abre el manual, cerramos cualquier estado previo
-    this.scanning = false;
+  ngOnDestroy(): void {
     this.stopScanning();
   }
 
-  submitManualCode() {
-    if (this.manualCode.trim()) {
-      this.onScan.emit(this.manualCode.trim());
-      this.manualCode = '';
-      this.closeScanner();
-    }
-  }
-
-  /*Escaner QR*/
-  async startScanning() {
-    this.errorMessage = null;
-    this.scanResult = null;
-    this.showManualInput = false;
-
-    this.isOpen = false;
-
-    //Mostrar modal de cámara
-    this.scanning = true;
-
+  async startScanning(): Promise<void> {
     try {
-      //para que qr-reader exista en el DOM
-      await this.waitForElement("#qr-reader");
-
-      this.html5QrCode = new Html5Qrcode("qr-reader");
-
+      this.scanError = '';
+      this.html5QrCode = new Html5Qrcode('qr-reader');
+      
       await this.html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        decodedText => this.onScanSuccess(decodedText),
-        () => { }
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+          this.onScanSuccessHandler(decodedText);
+        },
+        (errorMessage) => {
+          // Ignorar errores de escaneo continuo
+        }
       );
-
-    } catch (err) {
-      this.errorMessage = "No se pudo acceder a la cámara.";
-      console.error("Error starting scanner:", err);
-      this.scanning = false;
+      
+      this.isScanning = true;
+    } catch (err: any) {
+      this.scanError = 'Error al acceder a la cámara. Por favor, permite el acceso a la cámara.';
+      console.error('Error starting QR scanner:', err);
     }
   }
 
-
-  private waitForElement(selector: string): Promise<HTMLElement> {
-    return new Promise(resolve => {
-      const element = document.querySelector(selector) as HTMLElement;
-      if (element) return resolve(element);
-
-      const observer = new MutationObserver(() => {
-        const el = document.querySelector(selector) as HTMLElement;
-        if (el) {
-          observer.disconnect();
-          resolve(el);
-        }
-      });
-
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-  }
-
-  async stopScanning() {
-    if (this.html5QrCode) {
+  async stopScanning(): Promise<void> {
+    if (this.html5QrCode && this.isScanning) {
       try {
         await this.html5QrCode.stop();
         this.html5QrCode.clear();
-      } catch { }
+        this.isScanning = false;
+      } catch (err) {
+        console.error('Error stopping QR scanner:', err);
+      }
     }
-    this.scanning = false;
   }
 
-  onScanSuccess(decodedText: string) {
-    this.scanResult = decodedText;
+  onScanSuccessHandler(decodedText: string): void {
+    this.scannedResult = decodedText;
+    this.onScanSuccess.emit(decodedText);
+    this.closeScanner();
+  }
+
+  closeScanner(): void {
     this.stopScanning();
-    this.onScan.emit(decodedText);
+    this.isOpen = false;
+    this.isOpenChange.emit(false);
+    this.close.emit();
   }
 }

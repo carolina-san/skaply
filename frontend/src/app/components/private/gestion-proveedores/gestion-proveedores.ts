@@ -5,11 +5,12 @@ import { ApiService } from '../../../services/api.service';
 import { Modal } from '../../UI/modal/modal';
 import { EditUserModal } from '../edit-user-modal/edit-user-modal';
 import { Pagination } from '../pagination/pagination';
+import { SortButton } from '../../UI/sort-button/sort-button';
 
 @Component({
   selector: 'app-gestion-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, EditUserModal, Pagination],
+  imports: [CommonModule, FormsModule, Modal, EditUserModal, Pagination, SortButton],
   templateUrl: './gestion-proveedores.html',
   styleUrl: './gestion-proveedores.css'
 })
@@ -22,6 +23,8 @@ export class GestionProveedores implements OnInit, OnChanges {
   totalItems: number = 0;
   selectedVisibility: boolean | null = null;
   selectedEnabled: boolean | null = null;
+  orderBy: string = '';
+  orderDir: string = '';
 
   // Modal de confirmación
   isDeleteModalOpen: boolean = false;
@@ -69,6 +72,24 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.fetchProviders();
   }
 
+  onOrderByChange(column: string) {
+    if (this.orderBy === column) {
+      if (this.orderDir === 'ASC') {
+        this.orderDir = 'DESC';
+      } else if (this.orderDir === 'DESC') {
+        this.orderBy = '';
+        this.orderDir = '';
+      } else {
+        this.orderDir = 'ASC';
+      }
+    } else {
+      this.orderBy = column;
+      this.orderDir = 'ASC';
+    }
+    this.currentPage = 1;
+    this.fetchProviders();
+  }
+
   showError(message: string) {
     this.errorMessage = message;
     this.successMessage = null;
@@ -82,7 +103,7 @@ export class GestionProveedores implements OnInit, OnChanges {
   }
 
   fetchProviders() {
-    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, this.selectedEnabled, 'approved').subscribe(
+    this.apiService.getProviders(this.currentPage, this.itemsPerPage, this.searchText, this.selectedVisibility, this.selectedEnabled, 'approved', this.orderBy, this.orderDir).subscribe(
       (response) => {
         console.log('Providers fetched successfully:', response);
         this.providers = response.data;
@@ -156,7 +177,7 @@ export class GestionProveedores implements OnInit, OnChanges {
     if (updateData.password) {
       this.apiService.updateProviderPassword(this.selectedProvider.id, updateData.password).subscribe(
         (response) => {
-          this.successMessage = 'Contraseña actualizada correctamente';
+          this.successMessage = 'Proveedor actualizado correctamente';
           this.isSubmitting = false;
 
           setTimeout(() => {
@@ -171,7 +192,6 @@ export class GestionProveedores implements OnInit, OnChanges {
         }
       );
     }
-    //Falta añadir que si has cambiado solo la contraseña no salga el error de que no hay campos que actualizar
 
     this.apiService.updateProvider(this.selectedProvider.id, updateData).subscribe(
       (response) => {
@@ -184,9 +204,11 @@ export class GestionProveedores implements OnInit, OnChanges {
         }, 1500);
       },
       (error) => {
-        this.isSubmitting = false;
-        console.error('Error updating provider:', error);
-        this.errorMessage = error.error?.message || 'Error al actualizar el proveedor';
+        if (!updateData.password) {
+          this.isSubmitting = false;
+          console.error('Error updating provider:', error);
+          this.errorMessage = error.error?.message || 'Error al actualizar el proveedor';
+        }
       }
     );
   }

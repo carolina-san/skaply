@@ -77,7 +77,6 @@ export class Register {
         this.loading = false;
         console.error('Registration error:', error);
 
-        // Manejar diferentes tipos de errores
         if (error.status === 409) {
           this.error = 'Ya existe una cuenta con este email o CIF';
         } else if (error.status === 400) {

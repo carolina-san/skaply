@@ -89,8 +89,10 @@ export class ProviderController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string;
+      const orderBy = req.query.orderBy as string;
+      const orderDir = req.query.orderDir as string;
 
-      const result = await this.providerService.getProviders({ ...filters, page, limit, search });
+      const result = await this.providerService.getProviders({ ...filters, page, limit, search, orderBy, orderDir });
 
       res.status(200).json({
         message: 'Providers fetched successfully',

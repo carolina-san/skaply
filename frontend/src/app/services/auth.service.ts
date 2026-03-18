@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
 export interface User {
@@ -10,7 +11,12 @@ export interface User {
   id: number;
   name?: string;
   telephone?: string;
+  tax_address?: string;
+  cif?: string;
   image_url?: string;
+  enabled?: boolean;
+  visible?: boolean;
+  registration_status?: 'pending' | 'approved' | 'rejected';
 }
 
 @Injectable({
@@ -25,21 +31,24 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     // Verificar si hay un usuario logueado al iniciar la aplicación
-    this.checkAuthStatus();
+    this.checkAuthStatus().subscribe();
   }
 
-  checkAuthStatus(): void {
-    this.http.get<User>('/api/auth/me').subscribe({
-      next: (user) => {
+  checkAuthStatus(): Observable<User | null> {
+    this.isAuthReadySubject.next(false);
+    return this.http.get<User>('/api/auth/me').pipe(
+      map((user) => {
         console.log(user);
         this.currentUserSubject.next(user);
         this.isAuthReadySubject.next(true);
-      },
-      error: () => {
+        return user;
+      }),
+      catchError(() => {
         this.currentUserSubject.next(null);
         this.isAuthReadySubject.next(true);
-      }
-    });
+        return of(null);
+      })
+    );
   }
 
   logout(): void {
@@ -68,7 +77,7 @@ export class AuthService {
     }
 
     // Verificar sesión con el backend
-    this.checkAuthStatus();
+    this.checkAuthStatus().subscribe();
 
     // Limpiar la URL de parámetros
     window.history.replaceState({}, document.title, window.location.pathname);

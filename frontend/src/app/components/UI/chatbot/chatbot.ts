@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
@@ -34,6 +35,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
     private welcomeEventSent: boolean = false;
     private scrollPosition: number = 0;
     isCatalogPage = false;
+    private autoSendPieceSub?: Subscription;
 
     isPlaying: boolean = false;
 
@@ -91,6 +93,11 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             window.visualViewport.addEventListener('resize', this.updateChatLayout);
             window.visualViewport.addEventListener('scroll', this.updateChatLayout);
         }
+
+        this.autoSendPieceSub = this.chatbotInteractionService.autoSendPiece$.subscribe(pieceName => {
+            this.newMessage = pieceName;
+            this.sendMessage();
+        });
     }
     ngAfterViewChecked() {
         if (this.shouldScroll) {
@@ -187,6 +194,9 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             window.visualViewport.removeEventListener('resize', this.updateChatLayout);
             window.visualViewport.removeEventListener('scroll', this.updateChatLayout);
         }
+        if (this.autoSendPieceSub) {
+            this.autoSendPieceSub.unsubscribe();
+        }
         if (this.chatVisible && (!this.inMontajeMode || !this.isDesktop)) {
             document.body.style.position = '';
             document.body.style.top = '';
@@ -238,9 +248,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                         handled = true;
                     }
                     const payload = m.payload;
-                    if (payload) {
-                        console.log("Received payload action:", payload?.fields?.action?.stringValue);
-                    }
+
 
                     if (payload?.fields?.redirect) {
                         setTimeout(() => {
@@ -302,6 +310,14 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                         }
                         if (furnitureRef && stepNumber !== undefined && !isNaN(stepNumber)) {
                             this.chatbotInteractionService.requestStepChange(furnitureRef, stepNumber);
+                            handled = true;
+                        }
+                    }
+                    else if (payload?.fields?.action?.stringValue === "isolate.part") {
+                        const furnitureRef = payload.fields.furniture_ref?.stringValue;
+                        const partName = payload.fields.part_name?.stringValue;
+                        if (furnitureRef && partName) {
+                            this.chatbotInteractionService.requestPartIsolation(furnitureRef, partName);
                             handled = true;
                         }
                     }
@@ -472,8 +488,13 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
         });
     }
 
-    openLink(url: string) {
-        window.open(url, '_blank');
+    openLink(link: string | undefined) {
+        if (!link) return;
+        if (link.startsWith('http://') || link.startsWith('https://')) {
+            window.open(link, '_blank');
+        } else {
+            this.router.navigateByUrl(link);
+        }
     }
 
     /**

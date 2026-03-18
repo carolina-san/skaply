@@ -12,8 +12,8 @@
           [ngClass]="[activeTab === 'incidencias' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
           class="hover:opacity-100 transition flex items-center gap-2">
           Incidencias
-          <span *ngIf="pendingIssuesCount > 0" 
-                class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 min-w-[20px] text-center">
+          <span *ngIf="pendingIssuesCount > 0"
+            class="bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
             {{ pendingIssuesCount }}
           </span>
         </button>
@@ -22,10 +22,16 @@
           class="hover:opacity-100 transition">
           Estadísticas
         </button>
+                <button (click)="setActiveTab('subir-mueble')"
+          [ngClass]="[activeTab === 'subir-mueble' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Subir mueble
+        </button>
       </div>
 
       <!-- barra de búsqueda -->
-      <div class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
+      <div [class.invisible]="activeTab === 'estadisticas' || activeTab === 'subir-mueble'"
+        class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
             d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
@@ -40,8 +46,11 @@
     <div class="flex-1 min-h-0">
       <app-gestion-muebles *ngIf="activeTab === 'muebles'" [searchText]="searchText"
         class="h-full block"></app-gestion-muebles>
-      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'"
+      <app-gestion-incidencias *ngIf="activeTab === 'incidencias'" [searchText]="searchText"
         class="h-full block"></app-gestion-incidencias>
+      <app-provider-stats *ngIf="activeTab === 'estadisticas' && currentUser?.id" [providerId]="currentUser.id"
+        class=""></app-provider-stats>
+      <app-upload-form *ngIf="activeTab === 'subir-mueble'" class="h-full block" (furnitureCreated)="setActiveTab('muebles')"></app-upload-form>
     </div>
   </div>
 </main>

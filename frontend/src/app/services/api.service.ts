@@ -41,6 +41,10 @@ export class ApiService {
   }
 
 
+  createFurniture(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/private/furniture`, data);
+  }
+
   updateFurniture(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
   }
@@ -77,7 +81,7 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/providers`);
   }
 
-  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
+  getProviders(page: number = 1, limit: number = 10, search: string = '', visible: boolean | null = null, enabled: boolean | null = null, registration_status: string | null = null, orderBy: string = 'company_name', orderDir: string = 'ASC'): Observable<any> { // Obteniendo todos los proveedores (ruta privada)
     let url = `${this.apiUrl}/private/providers?page=${page}&limit=${limit}`;
     if (search) {
       url += `&search=${search}`;
@@ -90,6 +94,12 @@ export class ApiService {
     }
     if (registration_status) {
       url += `&registration_status=${registration_status}`;
+    }
+    if (orderBy) {
+      url += `&orderBy=${orderBy}`;
+    }
+    if (orderDir) {
+      url += `&orderDir=${orderDir}`;
     }
     return this.http.get(url);
   }
@@ -141,18 +151,22 @@ export class ApiService {
     return this.http.post<Issue>(`${this.apiUrl}/furniture/${furnitureId}/issues`, issue);
   }
 
-  getAllIssues(status?: string, providerId?: number): Observable<any> {
+  getAllIssues(status?: string, providerId?: number, search?: string): Observable<any> {
     let url = `${this.apiUrl}/private/issues`;
     const params: string[] = [];
     if (status) params.push(`status=${status}`);
     if (providerId) params.push(`providerId=${providerId}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
     if (params.length > 0) url += `?${params.join('&')}`;
     return this.http.get(url);
   }
 
-  getProviderIssues(providerId: number, status?: string): Observable<any> {
+  getProviderIssues(providerId: number, status?: string, search?: string): Observable<any> {
     let url = `${this.apiUrl}/private/issues/provider/${providerId}`;
-    if (status) url += `?status=${status}`;
+    const params: string[] = [];
+    if (status) params.push(`status=${status}`);
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
     return this.http.get(url);
   }
 
@@ -172,6 +186,11 @@ export class ApiService {
   initAssembly(furniture_ref: string): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
+  }
+
+  changeStep(furniture_ref: string, step_number: number): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot/step`, { furniture_ref, step_number, sessionId });
   }
 
   resetAssembly(): Observable<any> {
@@ -213,5 +232,9 @@ export class ApiService {
 
   getDashboardStats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/private/stats/dashboard`);
+  }
+
+  getProviderStats(providerId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/private/stats/provider/${providerId}`);
   }
 }
