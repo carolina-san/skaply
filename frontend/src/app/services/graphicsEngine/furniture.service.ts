@@ -141,10 +141,20 @@ export class FurnitureService {
 
     const sign = -(Math.sign(offsetDistance));
     let dir: Vector3 = { x: 0, y: 0, z: 0 };
-
-    if (offsetAxis === 'x') dir.x = 1;
-    else if (offsetAxis === 'y') dir.y = 1;
-    else if (offsetAxis === 'z') dir.z = 1;
+    let offset = 0.035;
+    offset = offset * sign;
+    if (offsetAxis === 'x') {
+      dir.x = 1;
+      arrowPosition.x = offset;
+    }
+    else if (offsetAxis === 'y') {
+      dir.y = 1;
+      arrowPosition.y = offset;
+    }
+    else if (offsetAxis === 'z') {
+      dir.z = 1;
+      arrowPosition.z = offset;
+    }
 
     dir.x *= sign;
     dir.y *= sign;
