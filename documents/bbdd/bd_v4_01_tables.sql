@@ -2,7 +2,7 @@
 -- ============================
 -- DROP EXISTING TABLES
 -- ============================
-DROP TABLE IF EXISTS  Step_Tool,Assemblystep, Assemblystep_part,Assemblystep_tool,  Step_Part, Review, Issue, KPIs, Furniture_Part, Furniture, Category, Part, Tool,  Step, File, "User", Color CASCADE;
+DROP TABLE IF EXISTS Step_Tool, Review, Issue, KPIs, Furniture_Part, Step, Furniture, Category, Part, Tool, File, "User", Color CASCADE;
 DROP TYPE IF EXISTS user_role, diff, user_status, issue_status;
 
 -- ============================
@@ -148,21 +148,6 @@ CREATE TABLE Tool (
 );
 
 -- ============================
--- TABLE: Furniture_Part (many-to-many with quantity)
--- ============================
-CREATE TABLE Furniture_Part (
-    furniture_id INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
-    part_id INTEGER REFERENCES Part(id) ON DELETE CASCADE,
-    quantity INTEGER CHECK (quantity >= 0),
-    exploded_axis CHAR(1) CHECK (exploded_axis IN ('x','y','z')),
-    exploded_distance FLOAT,
-    PRIMARY KEY (furniture_id, part_id),
-    assembled_pos_x FLOAT NOT NULL DEFAULT 0,
-    assembled_pos_y FLOAT NOT NULL DEFAULT 0,
-    assembled_pos_z FLOAT NOT NULL DEFAULT 0
-);
-
--- ============================
 -- TABLE:  Step
 -- ============================
 -- scene_camera_angle -> por si se rota la camara (boca abajo) angulo 180
@@ -177,14 +162,29 @@ CREATE TABLE  Step (
 );
 
 -- ============================
+-- TABLE: Furniture_Part (many-to-many with quantity)
+-- ============================
+CREATE TABLE Furniture_Part (
+    id              SERIAL PRIMARY KEY,
+    furniture_id    INTEGER REFERENCES Furniture(id) ON DELETE CASCADE,
+    part_id         INTEGER REFERENCES Part(id) ON DELETE CASCADE,
+    step_id         INTEGER REFERENCES Step(id) ON DELETE SET NULL,
+    exploded_axis       CHAR(1) CHECK (exploded_axis IN ('x','y','z')),
+    exploded_distance   FLOAT,
+    assembled_pos_x     FLOAT NOT NULL DEFAULT 0,
+    assembled_pos_y     FLOAT NOT NULL DEFAULT 0,
+    assembled_pos_z     FLOAT NOT NULL DEFAULT 0
+);
+
+-- ============================
 -- Junction table for  Step <-> Part (many-to-many with quantity)
 -- ============================
-CREATE TABLE  Step_Part (
-      stepId INTEGER REFERENCES  Step(id) ON DELETE CASCADE,
-    part_id INTEGER REFERENCES Part(id) ON DELETE CASCADE,
-    quantity INTEGER CHECK (quantity >= 0),
-    PRIMARY KEY (  stepId, part_id)
-);
+-- CREATE TABLE  Step_Part (
+--       stepId INTEGER REFERENCES  Step(id) ON DELETE CASCADE,
+--     part_id INTEGER REFERENCES Part(id) ON DELETE CASCADE,
+--     quantity INTEGER CHECK (quantity >= 0),
+--     PRIMARY KEY (  stepId, part_id)
+-- );
 
 -- ============================
 -- Junction table for  Step <-> Tool (many-to-many)
@@ -233,17 +233,6 @@ CREATE TABLE Review (
 );
 
 -- ============================
--- TABLE: KPIs
--- ============================
-CREATE TABLE KPIs (
-    id SERIAL PRIMARY KEY,
-    n_issues INTEGER DEFAULT 0,
-    n_suppliers INTEGER DEFAULT 0,
-    n_reviews INTEGER DEFAULT 0,
-    provider_id INTEGER REFERENCES "User"(id) ON DELETE SET NULL
-);
-
--- ============================
 -- INDEXES for Google OAuth
 -- ============================
 -- Index for Google ID lookups (only where google_id is not null for performance)
@@ -266,6 +255,5 @@ TRUNCATE TABLE
     Step_Tool,
     Issue,
     File,
-    Review,
-    KPIs
+    Review
 RESTART IDENTITY CASCADE;

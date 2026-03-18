@@ -16,10 +16,14 @@ export class Mesh extends Entity {
     private vao?: WebGLVertexArrayObject;
     private indexCount: number = 0;
     private initialized = false;
-
     private isHighlighted = false;
 
-    public lastModelMatrix: mat4 = mat4.create();
+    constructor(
+        public resource: MeshResource,         
+        private gl: WebGL2RenderingContext
+    ) {  
+        super();
+    }
 
     setIsHighlighted (value: boolean) {
         this.isHighlighted = value;
@@ -29,15 +33,8 @@ export class Mesh extends Entity {
         return this.isHighlighted;
     }
     
-    constructor(
-        public resource: MeshResource,         
-        private gl: WebGL2RenderingContext
-    ) {  
-        super();
-    }
 
     draw (modelMatrix: mat4, shader: ShaderResource): void {
-        this.lastModelMatrix = modelMatrix;
 
         //console.log('mesh model matrix:' ,modelMatrix);
         const gl = this.gl;

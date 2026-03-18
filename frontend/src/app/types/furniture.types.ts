@@ -19,7 +19,7 @@ export interface Furniture {
 }
 
 // Interfaces para los pasos de montaje (Assembly Steps)
-export interface AssemblyPartRef {
+export interface AssemblyPart {
     axis: string; // 'x', 'y', 'z'
     part_id: number;
     color_id: number;
@@ -27,7 +27,7 @@ export interface AssemblyPartRef {
     file_uri: string;
     quantity: number;
     reference_number: string;
-    name?: string; // Optional if not in API, but useful
+    //name: string; // Optional if not in API, but useful
     pos_x: number;
     pos_y: number;
     pos_z: number;
@@ -41,7 +41,7 @@ export interface AssemblyStep {
     used_in_step_with_id: number | null;
     scene_camera_angle: number | null;
     scene_camera_rotation_axis: string | null;
-    parts: AssemblyPartRef[];
+    parts: AssemblyPart[];
     tools: any[]; // Define tool interface if needed
 }
 
@@ -53,7 +53,7 @@ export interface FurnitureAssembly {
 
 import { RenderableObject, Vector3 } from '../engine/interfaces';
 
-export interface AssemblyPart {
+export interface ScenePart  {
     object: RenderableObject;
     startPosition: Vector3;
     targetPosition: Vector3;

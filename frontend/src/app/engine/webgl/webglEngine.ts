@@ -436,7 +436,7 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
 
-    private highlightedMeshes: Set<Mesh> = new Set();
+    private highlightedNodes: Set<Node> = new Set();
 
     // ⚠️ DE MOMENTO NO HACEN FALTA
     private controlsEnabled = false;
@@ -563,26 +563,22 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.rootNode.traverse(this.shader);
 
         // outline
-        if (this.highlightedMeshes.size > 0) {
+        if (this.highlightedNodes.size > 0) {
             const cam = this.getCamera();
 
-            const meshesWithMatrix = Array.from(this.highlightedMeshes)
-                .filter(m => m.lastModelMatrix)
-                .map(m => ({ mesh: m, modelMatrix: m.lastModelMatrix! }));
+            const meshesWithMatrix = Array.from(this.highlightedNodes)
+                .map(node => {
+                    const mesh = node.getEntity() as Mesh;
+                    const modelMatrix = node.getLastModelMatrix(); // ← desde Node
+                    return mesh ? { mesh, modelMatrix } : null;
+                })
+                .filter(Boolean) as { mesh: Mesh, modelMatrix: mat4 }[];
 
             if (meshesWithMatrix.length > 0) {
-
-                this.outlinePass.renderMask(
-                    meshesWithMatrix,
-                    cam.viewMatrix,
-                    cam.projectionMatrix
-                );
-
-
+                this.outlinePass.renderMask(meshesWithMatrix, cam.viewMatrix, cam.projectionMatrix);
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 gl.viewport(0, 0, this.canvas.width, this.canvas.height);
                 this.outlinePass.drawEdges([0, 1, 1], 2.0);
-
                 gl.enable(gl.DEPTH_TEST);
                 gl.disable(gl.BLEND);
             }
@@ -848,18 +844,33 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     setHighlight(objects: RenderableObject[]): void {
-        for (const mesh of this.highlightedMeshes) {
-            mesh.setIsHighlighted(false);
+        
+        // clear prevous highlights
+        for (const node of this.highlightedNodes) {
+            const mesh = node.getEntity() as Mesh;
+            if (mesh) mesh.setIsHighlighted(false);
         }
-        this.highlightedMeshes.clear();
+        this.highlightedNodes.clear();
 
         for (const obj of objects) {
             const webglObject = obj as WebGlRenderableObject;
-            const node = webglObject.nativeObject as Node;
+            this.collectNodesFromNode(webglObject.nativeObject as Node);
+        }
 
+        // highlight nodes
+        for (const node of this.highlightedNodes) {
             const mesh = node.getEntity() as Mesh;
-            mesh.setIsHighlighted(true);
-            this.highlightedMeshes.add(mesh);
+            if (mesh) mesh.setIsHighlighted(true);
+        }
+    }
+
+    private collectNodesFromNode(node: Node): void {
+        if (node.getEntity() instanceof Mesh) {
+            this.highlightedNodes.add(node);
+        }
+        const children = (node as any).children as Node[];
+        if (children) {
+            children.forEach(child => this.collectNodesFromNode(child));
         }
     }
 

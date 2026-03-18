@@ -17,6 +17,7 @@ export class Node {
 
     // final transformation (parent x node)
     private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
+    private lastModelMatrix: mat4 = mat4.create();
 
     // only if local transformations were made
     private needsUpdate: boolean = true;
@@ -108,6 +109,10 @@ export class Node {
         return this.transformMatrix;
     }
 
+    getLastModelMatrix(): mat4 {
+        return this.lastModelMatrix;
+    }
+
     getName(): string {
         return this.name;
     }
@@ -145,6 +150,8 @@ export class Node {
             
             // draw entity 
             if (this.entity) {
+                const worldMatrix = this.getTransformMatrix();
+                this.lastModelMatrix = worldMatrix;
                 this.entity.draw(this.getTransformMatrix(), shader);
             }
 
@@ -174,7 +181,7 @@ export class Node {
         this.needsUpdate = true;
     }
 
-    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE)
+    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE
 
     getObjectByName(name: string): Node | null {
         if (this.name === name) return this;

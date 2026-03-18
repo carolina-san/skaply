@@ -9,7 +9,7 @@ import { ActivatedRoute } from '@angular/router'
 import { Modal } from '../../UI/modal/modal';
 import { ThreeEngineAdapter } from '../../../engine/three/threeEngine';
 import { WebGLEngineAdapter } from '../../../engine/webgl/webglEngine';
-import { FurnitureAssembly, AssemblyStep, AssemblyPartRef, AssemblyPart } from '../../../types/furniture.types';
+import { FurnitureAssembly, AssemblyStep, ScenePart , AssemblyPart } from '../../../types/furniture.types';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { ChatbotInteractionService } from '../../../services/chatbot-interaction.service';
 
@@ -44,7 +44,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   totalSteps = signal(0);
   manualStep = signal(0);
   simulationStep = signal(0);
-  isolatedPart = signal<AssemblyPart | null>(null);
+  isolatedPart = signal<ScenePart | null>(null);
   mode = signal<'manual' | 'simulation' | 'final'>('manual');
   isARActive = signal(false);
   arFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
@@ -70,7 +70,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   // PRIVATE STATE
   private engine!: EngineFacade;
-  private parts: AssemblyPart[] = [];
+  private parts: ScenePart[] = [];
   private stepsData = signal<AssemblyStep[]>([]);
   private lastProcessedStep = -1;
   private lastRotationConfig = { angle: null as number | null, axis: null as string | null };
@@ -86,12 +86,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   // PRIVATE CONSTANTS
   private readonly SIMULATION_STEP_INTERVAL = 1500; // ms
 
-  get modelUrl(): string {
-    return this.furniture?.file_uri || '';
-  }
+  // get modelUrl(): string {
+  //   return this.furniture?.file_uri || '';
+  // }
 
   get modelAssembly(): any {
-    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+    //return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id));
+
   }
 
   currentStep = computed(() => {
@@ -525,24 +527,27 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     let baseModel: RenderableObject | undefined;
 
     // 0. Pre-load the base model if available (shared for both API assembly and single-model rollback)
-    if (this.modelUrl) {
-      try {
-        //console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
-        baseModel = await this.engine.loadGLTF(this.modelUrl);
-        // Ensure it's in the scene to find parts, though we might toggle visibility later
-        baseModel.setPosition(0, 0, 0);
-        baseModel.castShadow = true;
-        baseModel.receiveShadow = true;
-        this.engine.addToScene(baseModel);
-      } catch (error) {
-        //console.error('Error pre-loading base model:', error);
-      }
-    }
+    // if (this.modelUrl) {
+    //   try {
+    //     //console.log('Pre-loading base GLTF model from URL:', this.modelUrl);
+    //     baseModel = await this.engine.loadGLTF(this.modelUrl);
+    //     // Ensure it's in the scene to find parts, though we might toggle visibility later
+    //     baseModel.setPosition(0, 0, 0);
+    //     baseModel.castShadow = true;
+    //     baseModel.receiveShadow = true;
+    //     this.engine.addToScene(baseModel);
+    //   } catch (error) {
+    //     //console.error('Error pre-loading base model:', error);
+    //   }
+    // }
 
     // 1. Attempt to load from API Assembly Steps
     try {
       const furnitureId = Number(this.furniture?.id) || 6;
       const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+
+      console.log('assemblyData: ' + assemblyData);
+
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
         //console.log('Loading assembly from API for furniture ID:', furnitureId);
@@ -571,7 +576,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
     }
 
-    if (this.useExternalModel && baseModel) {
+    if (this.useExternalModel && baseModel) { // ⚠️
       //console.log('Using standard external model mode.');
       this.totalSteps.set(1);
       this.stepDescriptions.set(['Visualización del modelo']);
@@ -580,9 +585,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[] }> {
+  private async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: ScenePart[], totalSteps: number, stepDescriptions: string[] }> {
 
-    const parts: AssemblyPart[] = [];
+    console.log(`CREATE PARTS FROM API`);
+
+
+    const parts: ScenePart[] = [];
     const stepDescriptions: string[] = [];
     let currentStepIndex = 0;
 
@@ -605,45 +613,42 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const joinStep = appearStep + 1;
 
       // iterate step parts
-      for (const partRef of step.parts) {
+      for (const part of step.parts) {
         let mesh: RenderableObject | null = null;
+        //let targetPos = { x: 0, y: 0, z: 0 }; // ⚠️ !!
+        //let usingExistingMesh = false;
 
-        let targetPos = { x: 0, y: 0, z: 0 }; // ⚠️ !!
-
-        let usingExistingMesh = false;
-
-        if (partRef.file_uri) { // ⚠️ EN PRINCIPIO, NO
-          // Case A: Part has its own file
+        if (part.file_uri) { 
           try {
-            mesh = await this.engine.loadGLTF(partRef.file_uri);
+            mesh = await this.engine.loadGLTF(part.file_uri);
           } catch (e) {
-            console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
-            console.error('file_uri que falla:', partRef.file_uri);
+            console.log(`Failed to load part GLTF: ${part.file_uri}`, e);
+            console.error(`Failed to load part GLTF: ${part.file_uri}`, e);
           }
         }
 
-        if (!mesh && baseModel && partRef.reference_number) {
-          // Case B: Look for part in baseModel by reference number
-          // Access native object (THREE.Object3D) to traverse/find
-          // We assume reference_number matches the node name in GLTF
-          const nativeRoot = baseModel.nativeObject;
-          const foundNative = nativeRoot.getObjectByName(partRef.reference_number);
+        // if (!mesh && baseModel && part.reference_number) {
+        //   // Case B: Look for part in baseModel by reference number
+        //   // Access native object (THREE.Object3D) to traverse/find
+        //   // We assume reference_number matches the node name in GLTF
+        //   const nativeRoot = baseModel.nativeObject;
+        //   const foundNative = nativeRoot.getObjectByName(part.reference_number);
 
-          if (foundNative) {
-            mesh = this.engine.wrapNativeObject(foundNative);
-            usingExistingMesh = true;
-            // Capture its current assembled position (Target)
-            // Note: getPosition() returns world or local? 
-            // EngineFacade.getPosition() wraps native .position (local).
-            // If the hierarchy is flat or we just want local animation, this is fine.
-            targetPos = mesh.getPosition();
-          } else {
-            console.warn(`Part with reference '${partRef.reference_number}' not found in base model.`);
-          }
-        }
+        //   if (foundNative) {
+        //     mesh = this.engine.wrapNativeObject(foundNative);
+        //     usingExistingMesh = true;
+        //     // Capture its current assembled position (Target)
+        //     // Note: getPosition() returns world or local? 
+        //     // EngineFacade.getPosition() wraps native .position (local).
+        //     // If the hierarchy is flat or we just want local animation, this is fine.
+        //     targetPos = mesh.getPosition();
+        //   } else {
+        //     console.warn(`Part with reference '${part.reference_number}' not found in base model.`);
+        //   }
+        // }
 
         if (!mesh) {
-          console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
+          console.warn(`[Assembly] Skipping missing part '${part.reference_number}'`);
           continue;
         }
 
@@ -652,41 +657,46 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         // However, for animation, if we want to move it freely, we might need to detach it or just move it relative to parent.
         // The animation logic uses mesh.setPosition(). 
 
-        if (!usingExistingMesh) {
-          this.engine.addToScene(mesh);
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-        }
+        // if (!usingExistingMesh) {
+        //   this.engine.addToScene(mesh);
+        //   mesh.castShadow = true;
+        //   mesh.receiveShadow = true;
+        // }
+
+        this.engine.addToScene(mesh);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.setVisible(false);
 
         // Calculate start position based on axis and distance
-        const offsetDistance = partRef.distance;
-        const offsetAxis = partRef.axis;
-        const position = { ...targetPos };
+        const offsetDistance = part.distance;
+        const offsetAxis = part.axis;
+        const position = { x: part.pos_x, y: part.pos_y, z: part.pos_z };
 
-        const startPos = this.calculateOffsetPosition(position, offsetDistance, offsetAxis);
+        const startPos = this.calculateOffsetPosition({ ...position }, offsetDistance, offsetAxis);
 
         // Set initial state to START position
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
 
-        const assemblyPart: AssemblyPart = {
+        const scenePart: ScenePart  = {
           object: mesh,
           startPosition: startPos,
-          targetPosition: targetPos,
+          targetPosition: position,
           appearStep,
           joinStep,
-          name: partRef.reference_number || `Part ${partRef.part_id}`,
-          description: `Part: ${partRef.reference_number}`
+          name: part.reference_number || `Part ${part.part_id}`,
+          description: `Part: ${part.reference_number}`
         };
 
         // FLECHAS
 
-        const targetArrowPos = {
-          x: partRef.pos_x,
-          y: partRef.pos_y,
-          z: partRef.pos_z
-        };
+        // const targetArrowPos = {
+        //   x: part.pos_x,
+        //   y: part.pos_y,
+        //   z: part.pos_z
+        // };
 
-        const arrowPosition = { ...targetArrowPos };
+        const arrowPosition = { x: 0, y: 0, z: 0 }; // ⚠️ AQUI IRÁ EL OFFSET
         const length = Math.abs(offsetDistance)
 
         if (length > 0.01) {
@@ -701,18 +711,19 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           dir.y *= sign;
           dir.z *= sign;
 
-          assemblyPart.arrow = await this.engine.createArrowHelper(
+          scenePart.arrow = await this.engine.createArrowHelper(
             //arrowDir,
             dir,
-            targetArrowPos,
+            arrowPosition,
             length,
             0x00ffff
           );
 
-          assemblyPart.object.add(assemblyPart.arrow);
+          scenePart.object.add(scenePart.arrow);
         }
 
-        parts.push(assemblyPart);
+        console.log(`Part: ${part.reference_number} | start: ${JSON.stringify(startPos)} | target: ${JSON.stringify(position)}`);
+        parts.push(scenePart);
       }
       currentStepIndex++;
     }
@@ -833,7 +844,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         ? part.targetPosition
         : part.startPosition;
     const current = part.object.getPosition();
-    const alpha = 0.08;
+    const alpha = 0.04;
     part.object.setPosition(
       current.x + (target.x - current.x) * alpha,
       current.y + (target.y - current.y) * alpha,
@@ -875,7 +886,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  private isolatePart(part: AssemblyPart): void {
+  private isolatePart(part: ScenePart): void {
     if (!this.isolatedPart()) {
       const cam = this.engine.getCamera();
       this.preIsolationCameraState = {
@@ -973,7 +984,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // Helper to find which AssemblyPart owns a RenderableObject (walking up hierarchy if needed)
-  private findPartForObject(inputObj: RenderableObject): AssemblyPart | undefined {
+  private findPartForObject(inputObj: RenderableObject): ScenePart | undefined {
     return this.parts.find(p => {
       // 1. Check direct equality
       if (p.object === inputObj) return true;

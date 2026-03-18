@@ -288,7 +288,7 @@ export class InteractiveAssemblyComponent implements AfterViewInit, OnDestroy {
       
       // Interpolate position
       const target = isPartForPastOrCurrentStep ? part.targetPosition : part.startPosition;
-      part.object.position.lerp(target, 0.08);
+      part.object.position.lerp(target, 0.04);
     });
 
     this.controls.update();
