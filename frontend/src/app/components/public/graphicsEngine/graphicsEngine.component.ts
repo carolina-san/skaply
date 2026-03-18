@@ -494,7 +494,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.isolatedPart.set(part);
     const pos = part.object.getPosition();
-    const closePos = { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 };
+    const closePos = { x: pos.x + 0.8, y: pos.y + 0.5, z: pos.z + 0.8 };
     engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
 
