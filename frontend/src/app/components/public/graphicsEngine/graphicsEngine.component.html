@@ -3,7 +3,7 @@
 
   <!-- Header -->
   <app-graphics-header *ngIf="!isARActive()"
-    [engineUse]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
+    [engineUse]="engineUse()"
     [furnitureName]="furnitureName()"
     [mode]="mode()"
     [visibleSteps]="visibleSteps()"
@@ -25,8 +25,7 @@
 
     <!-- Main Canvas -->
     <canvas #canvas class="absolute top-0 left-0 w-full h-full cursor-grab active:cursor-grabbing"
-      style="touch-action: none; overscroll-behavior: none; outline: none;" (mousedown)="onCanvasInteraction()"
-      (touchstart)="onCanvasInteraction()">
+      style="touch-action: none; overscroll-behavior: none; outline: none;">
     </canvas>
 
     @if (isolatedPart(); as part) {

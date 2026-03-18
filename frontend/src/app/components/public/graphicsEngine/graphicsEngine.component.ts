@@ -14,12 +14,13 @@ import { ChatbotInteractionService } from '../../../services/chatbot-interaction
 import { EngineService } from '../../../services/graphicsEngine/engine.service';
 import { SimulationService } from '../../../services/graphicsEngine/simulation.service';
 import { FurnitureService } from '../../../services/graphicsEngine/furniture.service';
+import { InteractionService } from '../../../services/graphicsEngine/interaction.service';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
   imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls],
-  providers: [EngineService, SimulationService, FurnitureService],
+  providers: [EngineService, SimulationService, FurnitureService, InteractionService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -103,7 +104,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     private chatbotInteractionService: ChatbotInteractionService,
     public engineService: EngineService,
     public simulationService: SimulationService,
-    public furnitureService: FurnitureService
+    public furnitureService: FurnitureService,
+    public interactionService: InteractionService
   ) {
     effect(() => {
       const step = this.currentStep();
@@ -226,13 +228,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     window.removeEventListener('resize', this.boundScreenResize);
     window.removeEventListener('resize', this.boundWindowResize);
 
-    const canvas = this.canvasRef?.nativeElement;
-    if (canvas) {
-      canvas.removeEventListener('pointermove', this.onPointerMove);
-      canvas.removeEventListener('pointerdown', this.onPointerDown);
-      canvas.removeEventListener('pointerup', this.onPointerUp);
-      canvas.removeEventListener('pointerleave', this.onPointerUp);
-    }
+    this.interactionService.dispose();
 
     if (this.chatbotSub) {
       this.chatbotSub.unsubscribe();
@@ -378,26 +374,19 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     await this.engineService.initEngine(canvas, width, height);
   }
 
-  // Variables para la lógica de aislar una pieza
-  private pressTimer: any;
-  private isPointerDown = false;
-  private pointerDownPos = { x: 0, y: 0 };
-  private readonly LONG_PRESS_DURATION = 500; // ms
-
   private setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
-    const originalMove = this.onPointerMove;
-    const originalDown = this.onPointerDown;
-    const originalUp = this.onPointerUp;
+    
+    this.interactionService.init(canvas, {
+      getIsSimulating: () => this.isSimulating(),
+      getMode: () => this.mode(),
+      getIsARActive: () => this.isARActive(),
+      getIsolatedPart: () => this.isolatedPart(),
+      getCurrentStep: () => this.currentStep(),
+      getParts: () => this.parts,
+      isolatePart: (part) => this.isolatePart(part)
+    });
 
-    this.onPointerMove = originalMove.bind(this);
-    this.onPointerDown = originalDown.bind(this);
-    this.onPointerUp = originalUp.bind(this);
-
-    canvas.addEventListener('pointermove', this.onPointerMove);
-    canvas.addEventListener('pointerdown', this.onPointerDown);
-    canvas.addEventListener('pointerup', this.onPointerUp);
-    canvas.addEventListener('pointerleave', this.onPointerUp);
     window.addEventListener('resize', this.boundWindowResize);
   }
 
@@ -494,98 +483,5 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const pos = part.object.getPosition();
     const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
     engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
-  }
-
-  private onPointerDown(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
-
-    this.isPointerDown = true;
-    this.pointerDownPos = { x: event.clientX, y: event.clientY };
-
-    this.pressTimer = setTimeout(() => {
-      if (this.isPointerDown) {
-        this.handleLongPress(event);
-      }
-    }, this.LONG_PRESS_DURATION);
-  }
-
-  private onPointerUp(event: PointerEvent): void {
-    this.isPointerDown = false;
-    if (this.pressTimer) {
-      clearTimeout(this.pressTimer);
-      this.pressTimer = null;
-    }
-  }
-
-  private handleLongPress(event: PointerEvent): void {
-    const canvas = this.canvasRef.nativeElement;
-    const rect = canvas.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    const hitObject = this.engineService.detectObjectUnderCursor({ x, y });
-
-    if (hitObject) {
-      const part = this.findPartForObject(hitObject);
-      if (part && this.currentStep() >= part.appearStep) {
-        this.isolatePart(part);
-      }
-    }
-  }
-
-  onCanvasInteraction(): void { }
-
-  private onPointerMove(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
-
-    if (this.isPointerDown) {
-      const dx = Math.abs(event.clientX - this.pointerDownPos.x);
-      const dy = Math.abs(event.clientY - this.pointerDownPos.y);
-      if (dx > 15 || dy > 15) {
-        this.isPointerDown = false;
-        if (this.pressTimer) {
-          clearTimeout(this.pressTimer);
-          this.pressTimer = null;
-        }
-      }
-    }
-
-    const canvas = this.canvasRef.nativeElement;
-
-    if (this.isolatedPart()) {
-      canvas.style.setProperty('cursor', 'grab', 'important');
-      return;
-    }
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    const hitObject = this.engineService.detectObjectUnderCursor({ x, y });
-
-    if (hitObject) {
-      const part = this.findPartForObject(hitObject);
-      if (part && this.currentStep() >= part.appearStep) {
-        canvas.style.setProperty('cursor', 'pointer', 'important');
-      } else {
-        canvas.style.setProperty('cursor', 'grab', 'important');
-      }
-    } else {
-      canvas.style.setProperty('cursor', 'grab', 'important');
-    }
-  }
-
-  private findPartForObject(inputObj: any): AssemblyPart | undefined {
-    return this.parts.find(p => {
-      if (p.object === inputObj) return true;
-      let current = inputObj.nativeObject;
-      const target = p.object.nativeObject;
-
-      while (current) {
-        if (current === target) return true;
-        current = current.parent;
-      }
-      return false;
-    });
   }
 }
