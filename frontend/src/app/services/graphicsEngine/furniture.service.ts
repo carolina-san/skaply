@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EngineService } from './engine.service';
 import { ApiService } from '../api.service';
-import { FurnitureAssembly, AssemblyPart, AssemblyPartRef } from '../../types/furniture.types';
+import { FurnitureAssembly, AssemblyPart, AssemblyPartRef, AssemblyStep } from '../../types/furniture.types';
 import { RenderableObject, Vector3 } from '../../engine/interfaces';
 
 @Injectable()
@@ -69,6 +69,7 @@ export class FurnitureService {
           this.engineService.getEngine().addToScene(mesh);
           mesh.castShadow = true;
           mesh.receiveShadow = true;
+          mesh.setVisible(false);
         }
 
         const offsetDistance = partRef.distance;
@@ -104,7 +105,7 @@ export class FurnitureService {
 
   private async loadMesh(partRef: AssemblyPartRef, baseModel?: RenderableObject): Promise<{ mesh: RenderableObject | null, usingExistingMesh: boolean, targetPos: Vector3 }> {
     let mesh: RenderableObject | null = null;
-    let targetPos: Vector3 = { x: 0, y: 0, z: 0 };
+    let targetPos: Vector3 = { x: partRef.pos_x, y: partRef.pos_y, z: partRef.pos_z };
     let usingExistingMesh = false;
     const engine = this.engineService.getEngine();
 
@@ -133,26 +134,17 @@ export class FurnitureService {
   }
 
   private async createArrow(partRef: AssemblyPartRef, offsetDistance: number, offsetAxis: string): Promise<RenderableObject | undefined> {
-    const length = Math.abs(offsetDistance * 0.9);
+    const length = Math.abs(offsetDistance);
     if (length <= 0.01) return undefined;
 
-    const arrowPosition: Vector3 = { x: partRef.pos_x, y: partRef.pos_y, z: partRef.pos_z };
-    let offsetCons = 0.035;
-    const sign = -(Math.sign(offsetDistance));
-    offsetCons *= sign;
+    const arrowPosition: Vector3 = { x: 0, y: 0, z: 0 };
 
+    const sign = -(Math.sign(offsetDistance));
     let dir: Vector3 = { x: 0, y: 0, z: 0 };
 
-    if (offsetAxis === 'x') {
-      dir.x = 1;
-      arrowPosition.x += offsetCons;
-    } else if (offsetAxis === 'y') {
-      dir.y = 1;
-      arrowPosition.y += offsetCons;
-    } else if (offsetAxis === 'z') {
-      dir.z = 1;
-      arrowPosition.z += offsetCons;
-    }
+    if (offsetAxis === 'x') dir.x = 1;
+    else if (offsetAxis === 'y') dir.y = 1;
+    else if (offsetAxis === 'z') dir.z = 1;
 
     dir.x *= sign;
     dir.y *= sign;
