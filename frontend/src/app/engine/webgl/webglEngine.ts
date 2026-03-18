@@ -868,8 +868,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         
         // clear prevous highlights
         for (const node of this.highlightedNodes) {
-            const mesh = node.getEntity() as Mesh;
-            if (mesh) mesh.setIsHighlighted(false);
+            node.setIsHighlighted(false);
         }
         this.highlightedNodes.clear();
 
@@ -880,8 +879,7 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         // highlight nodes
         for (const node of this.highlightedNodes) {
-            const mesh = node.getEntity() as Mesh;
-            if (mesh) mesh.setIsHighlighted(true);
+            node.setIsHighlighted(true);
         }
     }
 

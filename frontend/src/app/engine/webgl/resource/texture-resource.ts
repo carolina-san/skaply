@@ -63,6 +63,7 @@ export class TextureResource extends Resource {
     // LOAD FROM COLOR
     
     loadFromColor(r: number, g: number, b: number, a: number = 255): void {
+        console.log(`loadFromColor: r=${r} g=${g} b=${b} a=${a}`);
         const gl = this.gl;
         const data = new Uint8Array([r, g, b, a]);
         this.texture = gl.createTexture()!;

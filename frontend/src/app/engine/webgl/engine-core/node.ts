@@ -23,7 +23,7 @@ export class Node {
     private needsUpdate: boolean = true;
     private name: string = '';
     private visible: boolean = true;  // Add visibility flag
-
+    private isHighlighted: boolean = false;
 
     // CHILDREN MANAGEMENT
 
@@ -78,6 +78,10 @@ export class Node {
     setVisible(visible: boolean): void {
         this.visible = visible;
     }
+
+    setIsHighlighted(value: boolean): void {
+        this.isHighlighted = value;
+    }
     
     // GETTERS
 
@@ -117,6 +121,10 @@ export class Node {
         return this.name;
     }
 
+    getIsHighlighted(): boolean {
+        return this.isHighlighted;
+    }
+
     isVisible(): boolean {
         return this.visible;
     }
@@ -152,7 +160,8 @@ export class Node {
             if (this.entity) {
                 const worldMatrix = this.getTransformMatrix();
                 this.lastModelMatrix = worldMatrix;
-                this.entity.draw(this.getTransformMatrix(), shader);
+                //shader.setFloat("uHighlight", this.isHighlighted ? 1.0 : 0.0);
+                this.entity.draw(worldMatrix, shader);
             }
 
             // recursive - only traverse visible children

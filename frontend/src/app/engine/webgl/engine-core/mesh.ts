@@ -16,7 +16,6 @@ export class Mesh extends Entity {
     private vao?: WebGLVertexArrayObject;
     private indexCount: number = 0;
     private initialized = false;
-    private isHighlighted = false;
     private opacity: number = 1.0;
 
     constructor(
@@ -28,20 +27,10 @@ export class Mesh extends Entity {
 
     // SETTERS
 
-    setIsHighlighted (value: boolean) {
-        this.isHighlighted = value;
-    }
-
     setOpacity(value: number): void {
         this.opacity = Math.max(0, Math.min(1, value));
     }
 
-    // GETTERS
-
-    getIsHighlighted () : boolean{
-        return this.isHighlighted;
-    }
-    
 
     draw (modelMatrix: mat4, shader: ShaderResource): void {
 
@@ -51,8 +40,10 @@ export class Mesh extends Entity {
         if (!this.initialized) { this.initializeBuffers(); }
         
         shader.setMat4("uModelMatrix", modelMatrix);
-        shader.setFloat("uHighlight", this.isHighlighted ? 1 : 0);
         shader.setFloat("uOpacity", this.opacity);
+
+         console.log(`Mesh draw | texture: ${!!this.resource.texture} | color: ${this.resource.texture ? 'texture' : JSON.stringify(this.resource.texture)}`);
+    
         
         // Bind texture if available
         if (this.resource.texture) {
