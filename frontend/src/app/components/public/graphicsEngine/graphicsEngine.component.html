@@ -2,62 +2,25 @@
   class="w-full h-full rounded-3xl flex flex-col p-2 sm:px-4 border-0 shadow-none bg-transparent transition-colors duration-300">
 
   <!-- Header -->
-  @if (!isARActive()) {
-  <header class="flex flex-col lg:flex-row justify-center items-center p-2 relative top-15 z-50  w-full">
-    <app-engine-switch [selectedEngine]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
-      (engineChanged)="onEngineChange($event)" class="lg:order-2"></app-engine-switch>
-    <div class="pointer-events-auto  mt-2 flex flex-col justify-center items-center w-full lg:items-start">
-      <!-- Nombre del mueble -->
-      @if (furnitureName() && mode() !== 'manual') {
-      <p class="font-semibold text-base sm:text-xl transition-colors text-azul-claro mb-2">
-        {{ furnitureName() }}
-      </p>
-      }
+  <app-graphics-header *ngIf="!isARActive()"
+    [engineUse]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
+    [furnitureName]="furnitureName()"
+    [mode]="mode()"
+    [visibleSteps]="visibleSteps()"
+    [currentLogicalStep]="currentLogicalStep()"
+    [hasIsolatedPart]="isolatedPart() !== null"
+    [isSimulating]="isSimulating()"
+    [isManualComplete]="isManualComplete()"
+    [stepDescriptions]="stepDescriptions()"
+    (engineChanged)="onEngineChange($event)"
+    (goToStepAction)="goToStep($event)">
+  </app-graphics-header>
 
-      @if (mode() === 'manual') {
-      <div #stepsContainer
-        class="flex items-center space-x-2 mb-2 overflow-x-auto max-w-[11rem] lg:max-w-[100%] px-4 lg:px-1 py-1  scrollbar-hide mask-fade lg:!mask-none ">
-        @for (stepIndex of visibleSteps(); track stepIndex) {
-        <button (click)="goToStep(stepIndex)"
-          class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
-          [ngClass]="{
-            'bg-azul-claro': stepIndex <= currentLogicalStep(),
-            'bg-white/30 text-beige': stepIndex > currentLogicalStep(),
-            'scale-115': stepIndex === currentLogicalStep(),
-            'font-bold': stepIndex === currentLogicalStep()
-          }">
-          {{ stepIndex + 1 }}
-        </button>
-        }
-      </div>
-      }
 
-      <div class="flex items-center justify-center space-x-2 text-sm"></div>
-      @if (isolatedPart()) {
-      <p class="font-semibold mt-1 text-beige">Inspeccionando pieza</p>
-      } @else if (isSimulating()) {
-      <p class="font-semibold mt-1 text-beige">Demostración automática</p>
-      } @else if (mode() === 'final') {
-      <p class="font-semibold mt-1 text-beige">Resultado Final</p>
-      } @else if (isManualComplete()) {
-      <p class="font-semibold mt-1 text-beige">¡Listo! Estructura completada.</p>
-      } @else {
-      <p class="font-semibold mt-1 text-sm sm:text-base transition-colors text-beige">
-        {{ stepDescriptions()[currentLogicalStep()] || 'Cargando paso...' }}
-      </p>
-
-      }
-    </div>
-
-  </header>
-
-  }
 
   <!-- Canvas Container-->
   <div class=" relative h-full">
-    <app-ar-overlay
-      [isSmallScreen]="isSmallScreen()"
-      [mode]="mode()"
+    <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()"
       (arStateChange)="onArStateChange($event)"></app-ar-overlay>
 
     <!-- Main Canvas -->
@@ -66,9 +29,8 @@
       (touchstart)="onCanvasInteraction()">
     </canvas>
 
-    @if(!isARActive()) {
     @if (isolatedPart(); as part) {
-    <div class="absolute top-20 left-1/2 -translate-x-1/2 z-10">
+    <div *ngIf="!isARActive()" class="absolute top-20 left-1/2 -translate-x-1/2 z-10">
       <button (click)="exitIsolation()"
         class="px-4 py-2 bg-azul-claro text-marron-oscuro font-semibold rounded-full hover:bg-azul-claro-dim transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -81,11 +43,10 @@
       </button>
     </div>
 
-    <div class="absolute bottom-4 left-4 text-beige max-w-xs p-4 rounded-lg">
+    <div *ngIf="!isARActive()" class="absolute bottom-4 left-4 text-beige max-w-xs p-4 rounded-lg">
       <h3 class="font-bold text-lg text-beige">{{ part.name }}</h3>
       <p class="text-sm mt-1 text-marron-oscuro">{{ part.description }}</p>
     </div>
-    }
     }
 
     <!-- Reset Camera Button Overlay -->
@@ -103,19 +64,10 @@
 
   <!-- Footer Controls -->
   @if(showFooterControls() && !isARActive()) {
-  <app-footer-controls
-    [hasIsolatedPart]="isolatedPart() !== null"
-    [mode]="mode()"
-    [manualStep]="manualStep()"
-    [totalSteps]="totalSteps()"
-    [isSimulationPaused]="isSimulationPaused()"
-    [simulationSpeed]="simulationSpeed()"
-    (modeChange)="setMode($event)"
-    (goToStepAction)="goToStep($event)"
-    (prevStepAction)="prevStep()"
-    (nextStepAction)="nextStep()"
-    (togglePauseAction)="togglePause()"
-    (speedChange)="setSimulationSpeed($event)"
+  <app-footer-controls [hasIsolatedPart]="isolatedPart() !== null" [mode]="mode()" [manualStep]="manualStep()"
+    [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()" [simulationSpeed]="simulationSpeed()"
+    (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
+    (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
     (finishAction)="openFinishModal()">
   </app-footer-controls>
   }

@@ -1,0 +1,46 @@
+import { Component, input, output, effect, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { EngineSwitch } from '../engine-switch/engine-switch';
+
+@Component({
+  selector: 'app-graphics-header',
+  standalone: true,
+  imports: [CommonModule, EngineSwitch],
+  templateUrl: './graphics-header.html',
+  styleUrls: ['./graphics-header.css']
+})
+export class GraphicsHeader {
+  // Inputs
+  engineUse = input<string>('threeJS');
+  furnitureName = input<string>('');
+  mode = input<'manual' | 'simulation' | 'final'>('manual');
+  visibleSteps = input<number[]>([]);
+  currentLogicalStep = input<number>(0);
+  hasIsolatedPart = input<boolean>(false);
+  isSimulating = input<boolean>(false);
+  isManualComplete = input<boolean>(false);
+  stepDescriptions = input<string[]>([]);
+
+  // Outputs
+  engineChanged = output<string>();
+  goToStepAction = output<number>();
+
+  @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
+
+  constructor() {
+    effect(() => {
+      const stepIndex = this.currentLogicalStep();
+      setTimeout(() => this.centerActiveStep(stepIndex), 100);
+    });
+  }
+
+  private centerActiveStep(activeIndex: number): void {
+    if (!this.stepsContainer?.nativeElement) return;
+    const container = this.stepsContainer.nativeElement;
+    const buttons = container.querySelectorAll('button');
+
+    if (buttons[activeIndex]) {
+      buttons[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+}

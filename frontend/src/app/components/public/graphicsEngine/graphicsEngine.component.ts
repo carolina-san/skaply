@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Vector3 } from '../../../engine/interfaces';
 import { ApiService } from '../../../services/api.service';
 import { Furniture } from '../../../types';
-import { EngineSwitch } from './engine-switch/engine-switch';
+import { GraphicsHeader } from './graphics-header/graphics-header';
 import { ArOverlay } from './ar-overlay/ar-overlay';
 import { FooterControls } from './footer-controls/footer-controls';
 import { ActivatedRoute } from '@angular/router'
@@ -12,22 +12,20 @@ import { AssemblyStep, AssemblyPart } from '../../../types/furniture.types';
 import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
 import { ChatbotInteractionService } from '../../../services/chatbot-interaction.service';
 import { EngineService } from '../../../services/graphicsEngine/engine.service';
-import { ARService } from '../../../services/graphicsEngine/ar.service';
 import { SimulationService } from '../../../services/graphicsEngine/simulation.service';
 import { FurnitureService } from '../../../services/graphicsEngine/furniture.service';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule, EngineSwitch, ArOverlay, FooterControls],
-  providers: [EngineService, ARService, SimulationService, FurnitureService],
+  imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls],
+  providers: [EngineService, SimulationService, FurnitureService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 
   @Output() engineChanged = new EventEmitter<string>();
 
@@ -49,6 +47,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   stepDescriptions = signal<string[]>([]);
   showFooterControls = signal(true);
   currentLogicalStep = signal(0);
+  isARActive = signal(false);
 
   // COMPUTED
   isSimulating = computed(() => {
@@ -103,7 +102,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     private route: ActivatedRoute,
     private chatbotInteractionService: ChatbotInteractionService,
     public engineService: EngineService,
-    public arService: ARService,
     public simulationService: SimulationService,
     public furnitureService: FurnitureService
   ) {
@@ -123,8 +121,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
       if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
       this.lastProcessedStep = stepIndex;
-
-      setTimeout(() => this.centerActiveStep(), 100);
 
       const engineFacade = this.engineService.getEngine();
       if (!engineFacade) return;
@@ -226,7 +222,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    this.stopAR();
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.boundScreenResize);
     window.removeEventListener('resize', this.boundWindowResize);
@@ -249,7 +244,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   public get engineUse() { return this.engineService.engineUse; }
   public get isSimulationPaused() { return this.simulationService.isSimulationPaused; }
-  public get isARActive() { return this.arService.isARActive; }
   public get simulationSpeed() { return this.simulationService.simulationSpeed; }
 
   public async onEngineChange(newEngine: string): Promise<void> {
@@ -360,6 +354,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   onArStateChange(isActive: boolean): void {
+    this.isARActive.set(isActive);
     this.arStateChange.emit(isActive);
     if (!isActive) {
       const shouldRotate = this.mode() === 'simulation' && !this.simulationService.isSimulationPaused();
@@ -372,30 +367,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   // PRIVATE METHODS
 
-  private centerActiveStep(): void {
-    if (!this.stepsContainer?.nativeElement) return;
-    const container = this.stepsContainer.nativeElement;
-    const activeIndex = this.currentLogicalStep();
-    const buttons = container.querySelectorAll('button');
-
-    if (buttons[activeIndex]) {
-      buttons[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-  }
-
   private checkScreenSize(): void {
     this.isSmallScreen.set(window.innerWidth < 768);
-  }
-
-  private stopAR(): void {
-    this.arService.stopAR();
-    this.arStateChange.emit(false);
-
-    const shouldRotate = this.mode() === 'simulation' && !this.simulationService.isSimulationPaused();
-    const engineFacade = this.engineService.getEngine();
-    if (engineFacade) {
-      engineFacade.toggleControls(true, shouldRotate);
-    }
   }
 
   private async initEngine(): Promise<void> {
@@ -444,7 +417,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
     try {
       const furnitureId = Number(this.furniture?.id) || 6;
-      const assemblyData = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+      const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
         const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData, baseModel);
@@ -524,7 +497,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private onPointerDown(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.arService.isARActive() || this.isolatedPart()) return;
+    if (this.isSimulating() || this.mode() === 'final' || this.isARActive() || this.isolatedPart()) return;
 
     this.isPointerDown = true;
     this.pointerDownPos = { x: event.clientX, y: event.clientY };
@@ -563,7 +536,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   onCanvasInteraction(): void { }
 
   private onPointerMove(event: PointerEvent): void {
-    if (this.isSimulating() || this.mode() === 'final' || this.arService.isARActive()) return;
+    if (this.isSimulating() || this.mode() === 'final' || this.isARActive()) return;
 
     if (this.isPointerDown) {
       const dx = Math.abs(event.clientX - this.pointerDownPos.x);
