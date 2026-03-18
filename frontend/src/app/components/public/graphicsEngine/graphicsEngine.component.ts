@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, Output, EventEmitter, } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Vector3 } from '../../../engine/interfaces';
@@ -28,8 +28,6 @@ import { InteractionService } from '../../../services/graphicsEngine/interaction
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  @Output() engineChanged = new EventEmitter<string>();
-
   // INPUTS
   furnitureId = input<number | string>();
   furnitureName = input<string>('');
@@ -37,6 +35,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   // OUTPUTS
   arStateChange = output<boolean>();
   finished = output<void>();
+  engineChanged = output<string>();
 
   // SIGNALS
   totalSteps = signal(0);
@@ -51,9 +50,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   isARActive = signal(false);
 
   // COMPUTED
-  isSimulating = computed(() => {
-    return this.mode() === 'simulation';
-  });
+  isSimulating = computed(() => this.mode() === 'simulation');
   isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
   currentStep = computed(() => {
     switch (this.mode()) {
@@ -63,11 +60,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       default: return 0;
     }
   });
+
   stepsRatio = computed(() => {
     const total = this.totalSteps();
     const logical = this.furniture?.total_steps || this.stepDescriptions().length;
     return (total > 0 && logical > 0) ? total / logical : 1;
   });
+
   visibleSteps = computed(() => {
     const count = this.furniture?.total_steps || this.stepDescriptions().length;
     return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
@@ -376,7 +375,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private setupEventListeners(): void {
     const canvas = this.canvasRef.nativeElement;
-    
+
     this.interactionService.init(canvas, {
       getIsSimulating: () => this.isSimulating(),
       getMode: () => this.mode(),
@@ -481,7 +480,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.isolatedPart.set(part);
     const pos = part.object.getPosition();
-    const closePos = { x: pos.x + 1.5, y: pos.y + 1, z: pos.z + 1.5 };
+    const closePos = { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 };
     engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
 }
