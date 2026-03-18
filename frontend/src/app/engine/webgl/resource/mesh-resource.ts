@@ -75,12 +75,35 @@ export class MeshResource extends Resource {
         console.log('Cargando modelo con @loaders.gl/gltf:', url);
         const gltf = await this.fetchAndParseGLTF(url);
         await this.loadTextures(gltf);
-        const rawMeshObjs = this.extractRawMeshes(gltf);
-        this.createMeshesFromRaw(rawMeshObjs, gltf);
+        const meshGroups = this.extractRawMeshes(gltf);
+        this.buildNamedMeshes(meshGroups);
         console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
     }
 
-    // --------------------------------------
+    // ---------------------------------------------
+
+    // PRIVATE METHODS: BUILD MESHES
+
+    private buildNamedMeshes(meshGroups: { meshName: string, primitives: RawMesh[] }[]): void {
+        this.namedMeshes = [];
+        meshGroups.forEach(({ meshName, primitives }) => {
+            primitives.forEach((raw, i) => {
+                const mesh = new Mesh({
+                    vertices:  new Float32Array(raw.verts),
+                    normals:   new Float32Array(raw.norms),
+                    texCoords: new Float32Array(raw.uvs),
+                    indices:   new Uint32Array(raw.inds),
+                    texture:   raw.tex
+                }, this.gl);
+
+                this.namedMeshes.push({
+                    name: primitives.length === 1 ? meshName : `${meshName}_${i}`,
+                    mesh
+                });
+            });
+        });
+        this.meshes = this.namedMeshes.map(n => n.mesh);
+    }
 
     // PRIVATE METHODS: PARSE GLTF
 
@@ -89,24 +112,6 @@ export class MeshResource extends Resource {
         const buffer = await res.arrayBuffer();
         const rawGltf = await load(buffer, GLTFLoader);
         return postProcessGLTF(rawGltf);
-    }
-
-
-    // PRIVATE METHODS: CREATE MESHES
-
-    private createMeshesFromRaw(rawMeshObjs: RawMesh[], gltf: any): void {
-        this.meshes = rawMeshObjs.map(raw => new Mesh({
-            vertices:  new Float32Array(raw.verts),
-            normals:   new Float32Array(raw.norms),
-            texCoords: new Float32Array(raw.uvs),
-            indices:   new Uint32Array(raw.inds),
-            texture:   raw.tex
-        }, this.gl));
-
-        this.namedMeshes = this.meshes.map((mesh, i) => {
-            const nodeName = gltf.nodes[i]?.name || `mesh_${i}`;
-            return { name: nodeName, mesh };
-        });
     }
 
     // PRIVATE METHODS: LOAD TEXTURE
@@ -182,79 +187,28 @@ export class MeshResource extends Resource {
             : undefined;
     }
 
-    // PRIVATE METHODS: MERGE PRIMITIVES
-
-    private extractRawMeshes(gltf: any): RawMesh[] {
-        const meshes = gltf.meshes ?? [];
-        return meshes.map((mesh: any) => this.buildRawMeshFromGLTFMesh(mesh));
+    private extractRawMeshes(gltf: any): { meshName: string, primitives: RawMesh[] }[] {
+        return (gltf.meshes ?? []).map((mesh: any) => ({
+            meshName: mesh.name || 'mesh',
+            primitives: this.extractPrimitivesFromMesh(mesh)
+        }));
     }
 
-    private buildRawMeshFromGLTFMesh(mesh: any): RawMesh {
-        if (!mesh.primitives || mesh.primitives.length === 0) {
-            return { verts: [], norms: [], uvs: [], inds: [] };
-        }
-        const { merged, texture } = this.mergePrimitivesOfMesh(mesh.primitives);
-        return { ...merged, tex: texture };
-    }
+    private extractPrimitivesFromMesh(mesh: any): RawMesh[] {
+        if (!mesh.primitives || mesh.primitives.length === 0) return [];
+        return mesh.primitives.map((primitive: any) => {
+            const attributes = primitive.attributes;
+            if (!this.hasPosition(attributes)) return null;
 
-    private mergePrimitivesOfMesh(primitives: any[]): {
-        merged: { verts: number[]; norms: number[]; uvs: number[]; inds: number[] };
-        texture?: TextureResource;
-    } {
-        type Accumulator = {
-            verts: number[];
-            norms: number[];
-            uvs: number[];
-            inds: number[];
-        };
+            const verts = this.getVertices(attributes);
+            const norms = this.getNormals(attributes);
+            const uvs   = this.getUVs(attributes);
+            const vertexCount = verts.length / 3;
+            const inds  = this.getIndices(primitive, 0, vertexCount);
+            const tex   = this.getTexture(primitive);
 
-        let baseIndex = 0;
-        let texture: TextureResource | undefined;
-
-        const merged = primitives.reduce((acc: Accumulator, primitive: any) => {
-            
-            // extract primitive attributes
-            const { verts, norms, uvs, inds, text: primitiveTexture, vertexCount } =
-                this.mergePrimitive(primitive, baseIndex);
-
-            if (!texture && primitiveTexture) { texture = primitiveTexture; }
-           
-            // update the total vertex count of the mesh
-            baseIndex += vertexCount;
-
-            return {
-                // append current primitive data to the accumulated data
-                verts: [...acc.verts, ...verts],
-                norms: [...acc.norms, ...norms],
-                uvs:   [...acc.uvs, ...uvs],
-                inds:  [...acc.inds, ...inds]
-            };
-        }, { verts: [], norms: [], uvs: [], inds: [] } as Accumulator); // initial accumulator state
-
-        return { merged, texture };
-    }
-
-    private mergePrimitive(primitive: any, baseIndex: number): 
-    {   verts: number[]; 
-        norms: number[]; 
-        uvs:   number[]; 
-        inds:  number[]; 
-        text?: TextureResource; 
-        vertexCount: number } {
-        
-        const attributes = primitive.attributes;
-
-        if (!this.hasPosition(attributes)) { return this.emptyRawPrimitive(); }
-
-        // extract attributes
-        const verts = this.getVertices(attributes);
-        const norms = this.getNormals(attributes);
-        const uvs   = this.getUVs(attributes);
-        const vertexCount = verts.length / 3; // verts = [x0,y0,z0,  x1,y1,z1,  ...]
-        const inds = this.getIndices(primitive, baseIndex, vertexCount);
-        const text = this.getTexture(primitive);
-
-        return { verts, norms, uvs, inds, text, vertexCount };
+            return { verts, norms, uvs, inds, tex };
+        }).filter(Boolean);
     }
 
 }

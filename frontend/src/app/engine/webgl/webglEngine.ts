@@ -605,19 +605,27 @@ export class WebGLEngineAdapter extends EngineFacade {
             () => new MeshResource(url, this.gl)
         );
 
-        const modelNode = new Node();
         const namedMeshes = meshResource.getNamedMeshes();
 
-        // using namedMeshes instead
-        namedMeshes.forEach(namedMesh => {
+        // only one primitive (one texture)
+        if (namedMeshes.length === 1) {
             const meshNode = new Node();
-            meshNode.setEntity(namedMesh.mesh);
-            meshNode.setName(namedMesh.name);
-            modelNode.addChild(meshNode);
-        });
-
-        console.log('[WEBGL] Modelo cargado desde URL:', url);
-        return this.wrapNativeObject(modelNode);
+            meshNode.setEntity(namedMeshes[0].mesh);
+            meshNode.setName(namedMeshes[0].name);
+            return this.wrapNativeObject(meshNode);
+        }
+        
+        // multiple primitives (diferent textures) 
+        else {
+            const modelNode = new Node();
+            namedMeshes.forEach(namedMesh => {
+                const meshNode = new Node();
+                meshNode.setEntity(namedMesh.mesh);
+                meshNode.setName(namedMesh.name);
+                modelNode.addChild(meshNode);
+            });
+            return this.wrapNativeObject(modelNode);
+        }
     }
 
     wrapNativeObject(native: any): RenderableObject {
