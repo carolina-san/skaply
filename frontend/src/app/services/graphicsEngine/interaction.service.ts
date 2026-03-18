@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AssemblyPart } from '../../types/furniture.types';
 import { EngineService } from './engine.service';
+import { ChatbotInteractionService } from '../chatbot-interaction.service';
 
 export interface InteractionStateContext {
   getIsSimulating: () => boolean;
@@ -22,7 +23,10 @@ export class InteractionService {
   private pointerDownPos = { x: 0, y: 0 };
   private readonly LONG_PRESS_DURATION = 500; // ms
 
-  constructor(private engineService: EngineService) {}
+  constructor(
+    private engineService: EngineService,
+    private chatbotInteractionService: ChatbotInteractionService
+  ) {}
 
   public init(canvas: HTMLCanvasElement, ctx: InteractionStateContext): void {
     this.canvas = canvas;
@@ -83,6 +87,7 @@ export class InteractionService {
       const part = this.findPartForObject(hitObject);
       if (part && this.ctx.getCurrentStep() >= part.appearStep) {
         this.ctx.isolatePart(part);
+        this.chatbotInteractionService.requestAutoSendPiece('pieza: ' + part.name);
       }
     }
   }
