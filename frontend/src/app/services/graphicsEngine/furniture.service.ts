@@ -6,44 +6,33 @@ import { RenderableObject, Vector3 } from '../../engine/interfaces';
 
 @Injectable()
 export class FurnitureService {
+  
   constructor(
     private engineService: EngineService,
     private apiService: ApiService
   ) { }
-  public async loadFurniture(furnitureId: string): Promise<{
+
+  public async loadFurniture(furnitureId: string): 
+  Promise<{
     parts: AssemblyPart[],
     totalSteps: number,
     stepDescriptions: string[],
-    sortedSteps: any[],
-    baseModel?: RenderableObject
+    sortedSteps: any[]
   }> {
-
-    // 1. Obtener datos de API
     const data = await this.apiService.getFurnitureById(furnitureId).toPromise();
-
-    if (!data) {
-      throw new Error('Furniture not found');
-    }
-
-    let baseModel: RenderableObject | undefined;
-
-    if (data.base_model_uri) {
-      try {
-        baseModel = await this.engineService.loadGLTF(data.base_model_uri);
-        this.engineService.addToScene(baseModel);
-      } catch (e) {
-        console.warn('Error loading base model', e);
-      }
-    }
-
-    const result = await this.createPartsFromApi(data, baseModel);
-
-    return {
-      ...result,
-      baseModel
-    };
+    if (!data) { throw new Error('Furniture not found'); }
+    const result = await this.createPartsFromApi(data);
+    return {...result};
   }
-  public async createPartsFromApi(data: FurnitureAssembly, baseModel?: RenderableObject): Promise<{ parts: AssemblyPart[], totalSteps: number, stepDescriptions: string[], sortedSteps: any[] }> {
+
+  public async createPartsFromApi(data: FurnitureAssembly /*, baseModel?: RenderableObject*/): 
+  Promise<{ 
+    parts: AssemblyPart[], 
+    totalSteps: number, 
+    stepDescriptions: string[], 
+    sortedSteps: any[] }> 
+    {
+
     const parts: AssemblyPart[] = [];
     const stepDescriptions: string[] = [];
     let currentStepIndex = 0;
@@ -53,28 +42,26 @@ export class FurnitureService {
     for (const step of sortedSteps) {
       const description = step.description || `Paso ${step.step_number}: Ensamblaje de partes.`;
       stepDescriptions.push(description);
-
       const appearStep = currentStepIndex * 2;
       const joinStep = appearStep + 1;
 
       for (const partRef of step.parts) {
-        const { mesh, usingExistingMesh, targetPos } = await this.loadMesh(partRef, baseModel);
-
+        const { mesh, targetPos } = await this.loadMesh(partRef);
+        
         if (!mesh) {
           console.warn(`[Assembly] Skipping missing part '${partRef.reference_number}'`);
           continue;
         }
 
-        if (!usingExistingMesh) {
-          this.engineService.getEngine().addToScene(mesh);
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
-          mesh.setVisible(false);
-        }
+        this.engineService.getEngine().addToScene(mesh);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.setVisible(false);
 
         const offsetDistance = partRef.distance;
         const offsetAxis = partRef.axis;
         const startPos = this.calculateOffsetPosition({ ...targetPos }, offsetDistance, offsetAxis);
+        const rotation = { x: partRef.rot_x, y: partRef.rot_y, z: partRef.rot_z };
 
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
 
@@ -82,6 +69,7 @@ export class FurnitureService {
           object: mesh,
           startPosition: startPos,
           targetPosition: targetPos,
+          rotation: rotation,
           appearStep,
           joinStep,
           name: partRef.reference_number || `Part ${partRef.part_id}`,
@@ -103,58 +91,34 @@ export class FurnitureService {
     return { parts, totalSteps, stepDescriptions, sortedSteps };
   }
 
-  private async loadMesh(partRef: AssemblyPartRef, baseModel?: RenderableObject): Promise<{ mesh: RenderableObject | null, usingExistingMesh: boolean, targetPos: Vector3 }> {
+  private async loadMesh(partRef: AssemblyPartRef): 
+  Promise<{ mesh: RenderableObject | null, targetPos: Vector3 }>  {
     let mesh: RenderableObject | null = null;
     let targetPos: Vector3 = { x: partRef.pos_x, y: partRef.pos_y, z: partRef.pos_z };
-    let usingExistingMesh = false;
-    const engine = this.engineService.getEngine();
-
+    const engine = this.engineService.getEngine();   
     if (partRef.file_uri) {
-      try {
-        mesh = await engine.loadGLTF(partRef.file_uri);
-      } catch (e) {
-        console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e);
-      }
+      try { mesh = await engine.loadGLTF(partRef.file_uri);} 
+      catch (e) { console.error(`Failed to load part GLTF: ${partRef.file_uri}`, e); }
     }
-
-    if (!mesh && baseModel && partRef.reference_number) {
-      const nativeRoot = baseModel.nativeObject;
-      const foundNative = nativeRoot.getObjectByName(partRef.reference_number);
-
-      if (foundNative) {
-        mesh = engine.wrapNativeObject(foundNative);
-        usingExistingMesh = true;
-        targetPos = mesh.getPosition();
-      } else {
-        console.warn(`Part with reference '${partRef.reference_number}' not found in base model.`);
-      }
-    }
-
-    return { mesh, usingExistingMesh, targetPos };
+    return { mesh, targetPos };
   }
 
   private async createArrow(partRef: AssemblyPartRef, offsetDistance: number, offsetAxis: string): Promise<RenderableObject | undefined> {
-    const length = Math.abs(offsetDistance);
+    let length = Math.abs(offsetDistance);
     if (length <= 0.01) return undefined;
-
+    
     const arrowPosition: Vector3 = { x: 0, y: 0, z: 0 };
-
     const sign = -(Math.sign(offsetDistance));
     let dir: Vector3 = { x: 0, y: 0, z: 0 };
+    
     let offset = 0.035;
+    length = length - offset;
+    //length = length - 0.02;
     offset = offset * sign;
-    if (offsetAxis === 'x') {
-      dir.x = 1;
-      arrowPosition.x = offset;
-    }
-    else if (offsetAxis === 'y') {
-      dir.y = 1;
-      arrowPosition.y = offset;
-    }
-    else if (offsetAxis === 'z') {
-      dir.z = 1;
-      arrowPosition.z = offset;
-    }
+
+    if (offsetAxis === 'x')       {dir.x = 1; arrowPosition.x = offset; }
+    else if (offsetAxis === 'y')  {dir.y = 1; arrowPosition.y = offset;}
+    else if (offsetAxis === 'z')  {dir.z = 1; arrowPosition.z = offset;}
 
     dir.x *= sign;
     dir.y *= sign;
@@ -164,10 +128,10 @@ export class FurnitureService {
   }
 
   private calculateOffsetPosition(position: Vector3, offsetDistance: number, offsetAxistance: string): Vector3 {
-    if (offsetAxistance === 'x') position.x += offsetDistance;
+    if      (offsetAxistance === 'x') position.x += offsetDistance;
     else if (offsetAxistance === 'y') position.y += offsetDistance;
     else if (offsetAxistance === 'z') position.z += offsetDistance;
-    else position.y += offsetDistance; // Default
+    else                              position.y += offsetDistance; // Default
     return position;
   }
 }

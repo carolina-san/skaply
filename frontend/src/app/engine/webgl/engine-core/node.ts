@@ -5,6 +5,8 @@ import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
 
+    private name: string = '';
+
     // entity and nodes
     private entity: Entity | null = null;
     private children: Node[] = [];
@@ -19,10 +21,9 @@ export class Node {
     private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
     private lastModelMatrix: mat4 = mat4.create();
 
-    // only if local transformations were made
-    private needsUpdate: boolean = true;
-    private name: string = '';
-    private visible: boolean = true;  // Add visibility flag
+    private needsUpdate: boolean = true; // only if local transformations were made
+    
+    private visible: boolean = true;  
     private isHighlighted: boolean = false;
 
     // CHILDREN MANAGEMENT
