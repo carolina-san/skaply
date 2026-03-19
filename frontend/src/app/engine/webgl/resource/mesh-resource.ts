@@ -9,24 +9,7 @@ Definición de MESH y PRIMITIVAS
     Cada objeto en blender es un MESH.
     Si el MESH tiene zonas con distintos materiales, cada zona es una PRIMITIVA.
 
-
-Para dibujar las PRIMITIVAS como un solo MESH en GPU, se combinan sus atributos.
-
-    Primitiva 1:
-        Vértices:   [v0, v1, v2]
-        Índices:    [0,1,2]       <- empiezan en 0
-
-    Primitiva 2:
-        Vértices:   [v3, v4, v5]
-        Índices:    [0,1,2]       <- empiezan en 0 
-
-    Combinación de atributos:
-        Combinación de vértices: [v0,v1,v2,v3,v4,v5]
-        Combinación de índices:  [0,1,2, 3,4,5]        <- se ajustan para ser secuenciales
-
 --------------------------------------------------------------------
-
-El código de Álvaro solo coge la textura de la 1ª PRIMITIVA como textura generica de todo el MESH. Es correcto esto?
 
 */
 
@@ -40,16 +23,16 @@ import { mat4, vec3, quat, mat3 } from 'gl-matrix';
 // TYPES
 
 export type RawMesh = {
-    verts: number[];
-    norms: number[];
-    uvs: number[];
-    inds: number[];
-    tex?: TextureResource;
+    verts:  number[];
+    norms:  number[];
+    uvs:    number[];
+    inds:   number[];
+    tex?:   TextureResource;
 };
 
 export type NamedMesh = { 
-    name: string; 
-    mesh: Mesh 
+    name:   string; 
+    mesh:   Mesh 
 };
 
 // CLASS MESH RESOURCE 
@@ -77,33 +60,10 @@ export class MeshResource extends Resource {
         await this.loadTextures(gltf);
         const meshGroups = this.extractRawMeshes(gltf);
         this.buildNamedMeshes(meshGroups);
-        console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
+        //console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
     }
 
     // ---------------------------------------------
-
-    // PRIVATE METHODS: BUILD MESHES
-
-    private buildNamedMeshes(meshGroups: { meshName: string, primitives: RawMesh[] }[]): void {
-        this.namedMeshes = [];
-        meshGroups.forEach(({ meshName, primitives }) => {
-            primitives.forEach((raw, i) => {
-                const mesh = new Mesh({
-                    vertices:  new Float32Array(raw.verts),
-                    normals:   new Float32Array(raw.norms),
-                    texCoords: new Float32Array(raw.uvs),
-                    indices:   new Uint32Array(raw.inds),
-                    texture:   raw.tex
-                }, this.gl);
-
-                this.namedMeshes.push({
-                    name: primitives.length === 1 ? meshName : `${meshName}_${i}`,
-                    mesh
-                });
-            });
-        });
-        this.meshes = this.namedMeshes.map(n => n.mesh);
-    }
 
     // PRIVATE METHODS: PARSE GLTF
 
@@ -114,7 +74,7 @@ export class MeshResource extends Resource {
         return postProcessGLTF(rawGltf);
     }
 
-    // PRIVATE METHODS: LOAD TEXTURE
+    // PRIVATE METHODS: LOAD TEXTURES
 
     private async loadTextures(gltf: any): Promise<void> {
         if (!gltf.materials) return;
@@ -149,6 +109,55 @@ export class MeshResource extends Resource {
         }
 
         return texture;
+    }
+
+    // PRIVATE METHODS: EXTRACT RAW MESHES 
+
+    private extractRawMeshes(gltf: any): { meshName: string, primitives: RawMesh[] }[] {
+        return (gltf.meshes ?? []).map((mesh: any) => ({
+            meshName: mesh.name || 'mesh',
+            primitives: this.extractPrimitivesFromMesh(mesh),
+        }));
+    }
+
+    private extractPrimitivesFromMesh(mesh: any): RawMesh[] {
+        if (!mesh.primitives || mesh.primitives.length === 0) return [];
+        return mesh.primitives.map((primitive: any) => {
+            const attributes = primitive.attributes;
+            if (!this.hasPosition(attributes)) return null;
+
+            const verts = this.getVertices(attributes);
+            const norms = this.getNormals(attributes);
+            const uvs   = this.getUVs(attributes);
+            const vertexCount = verts.length / 3;
+            const inds  = this.getIndices(primitive, 0, vertexCount);
+            const tex   = this.getTexture(primitive);
+
+            return { verts, norms, uvs, inds, tex };
+        }).filter(Boolean);
+    }
+
+    // PRIVATE METHODS: BUILD MESHES
+
+    private buildNamedMeshes(meshGroups: { meshName: string, primitives: RawMesh[] }[]): void {
+        this.namedMeshes = [];
+        meshGroups.forEach(({ meshName, primitives }) => {
+            primitives.forEach((raw, i) => {
+                const mesh = new Mesh({
+                    vertices:  new Float32Array(raw.verts),
+                    normals:   new Float32Array(raw.norms),
+                    texCoords: new Float32Array(raw.uvs),
+                    indices:   new Uint32Array(raw.inds),
+                    texture:   raw.tex
+                }, this.gl);
+
+                this.namedMeshes.push({
+                    name: primitives.length === 1 ? meshName : `${meshName}_${i}`,
+                    mesh
+                });
+            });
+        });
+        this.meshes = this.namedMeshes.map(n => n.mesh);
     }
     
     // PRIVATE METHODS: UTILS AND GETTERS
@@ -185,30 +194,6 @@ export class MeshResource extends Resource {
         return primitive.material 
             ? this.textures.get(primitive.material) 
             : undefined;
-    }
-
-    private extractRawMeshes(gltf: any): { meshName: string, primitives: RawMesh[] }[] {
-        return (gltf.meshes ?? []).map((mesh: any) => ({
-            meshName: mesh.name || 'mesh',
-            primitives: this.extractPrimitivesFromMesh(mesh)
-        }));
-    }
-
-    private extractPrimitivesFromMesh(mesh: any): RawMesh[] {
-        if (!mesh.primitives || mesh.primitives.length === 0) return [];
-        return mesh.primitives.map((primitive: any) => {
-            const attributes = primitive.attributes;
-            if (!this.hasPosition(attributes)) return null;
-
-            const verts = this.getVertices(attributes);
-            const norms = this.getNormals(attributes);
-            const uvs   = this.getUVs(attributes);
-            const vertexCount = verts.length / 3;
-            const inds  = this.getIndices(primitive, 0, vertexCount);
-            const tex   = this.getTexture(primitive);
-
-            return { verts, norms, uvs, inds, tex };
-        }).filter(Boolean);
     }
 
 }

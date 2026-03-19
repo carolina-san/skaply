@@ -88,12 +88,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
   private destroy$ = new Subject<void>();
 
-  get modelUrl(): string {
-    return this.furniture?.file_uri || '';
-  }
-
   get modelAssembly(): any {
-    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id) || 6);
+    return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id));
   }
 
   constructor(
@@ -402,27 +398,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private async createFurniture(): Promise<void> {
-    let baseModel: any;
-
-    if (this.modelUrl) {
-      try {
-        const engineFacade = this.engineService.getEngine();
-        baseModel = await engineFacade.loadGLTF(this.modelUrl);
-        baseModel.setPosition(0, 0, 0);
-        baseModel.castShadow = true;
-        baseModel.receiveShadow = true;
-        engineFacade.addToScene(baseModel);
-      } catch (error) { }
-    }
-
     try {
-      const furnitureId = Number(this.furniture?.id) || 6;
+      const furnitureId = Number(this.furniture?.id);
       const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
-      console.log('assemblyData: ' + assemblyData);
-
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData, baseModel);
+        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData/*, baseModel*/);
 
         if (parts.length > 0) {
           this.parts = parts;
@@ -434,13 +415,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       }
     } catch (error) {
       console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
-    }
-
-    if (this.useExternalModel && baseModel) {
-      this.totalSteps.set(1);
-      this.stepDescriptions.set(['Visualización del modelo']);
-      this.setMode('final');
-      return;
     }
   }
 
@@ -497,5 +471,4 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     const closePos = { x: pos.x + 0.8, y: pos.y + 0.5, z: pos.z + 0.8 };
     engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
   }
-
 }

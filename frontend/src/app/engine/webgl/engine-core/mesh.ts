@@ -33,18 +33,14 @@ export class Mesh extends Entity {
 
 
     draw (modelMatrix: mat4, shader: ShaderResource): void {
-
-        //console.log('mesh model matrix:' ,modelMatrix);
+        
         const gl = this.gl;
         
         if (!this.initialized) { this.initializeBuffers(); }
         
         shader.setMat4("uModelMatrix", modelMatrix);
         shader.setFloat("uOpacity", this.opacity);
-
-         console.log(`Mesh draw | texture: ${!!this.resource.texture} | color: ${this.resource.texture ? 'texture' : JSON.stringify(this.resource.texture)}`);
-    
-        
+     
         // Bind texture if available
         if (this.resource.texture) {
             this.resource.texture.bind(0);
