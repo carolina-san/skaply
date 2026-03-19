@@ -425,7 +425,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData/*, baseModel*/);
+        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData);
 
         if (parts.length > 0) {
           this.parts = parts;

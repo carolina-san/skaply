@@ -25,7 +25,7 @@ export class FurnitureService {
     return {...result};
   }
 
-  public async createPartsFromApi(data: FurnitureAssembly /*, baseModel?: RenderableObject*/): 
+  public async createPartsFromApi(data: FurnitureAssembly): 
   Promise<{ 
     parts: AssemblyPart[], 
     totalSteps: number, 
@@ -64,6 +64,7 @@ export class FurnitureService {
         const rotation = { x: partRef.rot_x, y: partRef.rot_y, z: partRef.rot_z };
 
         mesh.setPosition(startPos.x, startPos.y, startPos.z);
+        mesh.setRotation(rotation.x, rotation.y, rotation.z);
 
         const assemblyPart: AssemblyPart = {
           object: mesh,
@@ -107,24 +108,72 @@ export class FurnitureService {
     let length = Math.abs(offsetDistance);
     if (length <= 0.01) return undefined;
     
-    const arrowPosition: Vector3 = { x: 0, y: 0, z: 0 };
+    let arrowPosition: Vector3 = { x: 0, y: 0, z: 0 };
     const sign = -(Math.sign(offsetDistance));
     let dir: Vector3 = { x: 0, y: 0, z: 0 };
     
     let offset = 0.035;
     length = length - offset;
-    //length = length - 0.02;
     offset = offset * sign;
 
-    if (offsetAxis === 'x')       {dir.x = 1; arrowPosition.x = offset; }
+    if      (offsetAxis === 'x')  {dir.x = 1; arrowPosition.x = offset; }
     else if (offsetAxis === 'y')  {dir.y = 1; arrowPosition.y = offset;}
     else if (offsetAxis === 'z')  {dir.z = 1; arrowPosition.z = offset;}
+
+    // transform arrowPosition based on part rotation
+    if (partRef.rot_x !== 0 || partRef.rot_y !== 0 || partRef.rot_z !== 0) {
+      arrowPosition = this.rotateVector(arrowPosition, partRef.rot_x, partRef.rot_y, partRef.rot_z);
+    }
 
     dir.x *= sign;
     dir.y *= sign;
     dir.z *= sign;
 
-    return await this.engineService.createArrowHelper(dir, arrowPosition, length, 0x00ffff);
+    const arrow = await this.engineService.createArrowHelper(dir, arrowPosition, length);
+    
+    // apply inverse rotation to arrow to counteract parent's rotation (part rotation)
+    if (partRef.rot_x != 0 || partRef.rot_y != 0 || partRef.rot_z != 0) {
+      const rotation = arrow.getRotation();
+      arrow.setRotation(rotation.x - partRef.rot_x, rotation.y - partRef.rot_y, rotation.z - partRef.rot_z); 
+    }
+ 
+    return arrow;
+  }
+
+  private rotateVector(vector: Vector3, rotX: number, rotY: number, rotZ: number): Vector3 {
+    let v = { ...vector };
+    
+    // rotation around X axis
+    if (rotX !== 0) {
+      const cosX = Math.cos(rotX);
+      const sinX = Math.sin(rotX);
+      const y = v.y * cosX - v.z * sinX;
+      const z = v.y * sinX + v.z * cosX;
+      v.y = y;
+      v.z = z;
+    }
+    
+    // rotation around Y axis
+    if (rotY !== 0) {
+      const cosY = Math.cos(rotY);
+      const sinY = Math.sin(rotY);
+      const x = v.x * cosY + v.z * sinY;
+      const z = -v.x * sinY + v.z * cosY;
+      v.x = x;
+      v.z = z;
+    }
+    
+    // rotation around Z axis
+    if (rotZ !== 0) {
+      const cosZ = Math.cos(rotZ);
+      const sinZ = Math.sin(rotZ);
+      const x = v.x * cosZ - v.y * sinZ;
+      const y = -v.x * sinZ + v.y * cosZ;
+      v.x = x;
+      v.y = y;
+    }
+    
+    return v;
   }
 
   private calculateOffsetPosition(position: Vector3, offsetDistance: number, offsetAxistance: string): Vector3 {

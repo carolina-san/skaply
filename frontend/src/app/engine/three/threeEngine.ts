@@ -92,6 +92,14 @@ class ThreeRenderableObject implements RenderableObject {
         };
     }
 
+    getRotation(): Vector3 {
+        return {
+            x: this.threeObject.rotation.x,
+            y: this.threeObject.rotation.y,
+            z: this.threeObject.rotation.z
+        };
+    }
+
     lookAt(target: Vector3): void {
         this.threeObject.lookAt(target.x, target.y, target.z);
     }
@@ -206,32 +214,24 @@ export class ThreeEngineAdapter extends EngineFacade {
     }
 
 
-    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
-        // const arrow = new THREE.ArrowHelper(
-        //     new THREE.Vector3(dir.x, dir.y, dir.z),
-        //     new THREE.Vector3(origin.x, origin.y, origin.z),
-        //     length,
-        //     new THREE.Color(color)
-        // );
-        // return new ThreeRenderableObject(arrow);
-
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject> {
         const arrow = await this.loadGLTF('storage/flecha.glb');
-
+        this.setArrowRotationFromDir(arrow, dir);
         arrow.setPosition(origin.x, origin.y, origin.z);
         arrow.setScale(length, length, length);
         arrow.userData = { isArrow: true };
-        this.setArrowRotationFromDir(arrow, dir);
-
         return arrow;
     }
 
     private setArrowRotationFromDir(arrow: RenderableObject, dir: { x: number, y: number, z: number }) {
         arrow.setRotation(0, 0, 0);
         if (dir.x === 1) { arrow.setRotation(0, 0, -Math.PI / 2); }
-        else if (dir.x === -1) { arrow.setRotation(0, 0, Math.PI / 2); }
+        else if (dir.x === -1) { arrow.setRotation(0, 0, Math.PI / 2) }
         else if (dir.y === -1) { arrow.setRotation(Math.PI, 0, 0); }
         else if (dir.z === 1) { arrow.setRotation(Math.PI / 2, 0, 0); }
         else if (dir.z === -1) { arrow.setRotation(-Math.PI / 2, 0, 0); }
+
+        //arrow.setRotation(arrow.get);
     }
 
     addToScene(object: RenderableObject): void {

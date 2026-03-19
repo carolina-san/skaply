@@ -566,7 +566,10 @@ export class FurnitureService {
             'distance',     fp.exploded_distance,
             'pos_x',        fp.assembled_pos_x,
             'pos_y',        fp.assembled_pos_y,
-            'pos_z',        fp.assembled_pos_z
+            'pos_z',        fp.assembled_pos_z,
+            'rot_x',        fp.assembled_rot_x,
+            'rot_y',        fp.assembled_rot_y,
+            'rot_z',        fp.assembled_rot_z
           )
         ) FILTER (WHERE fp.id IS NOT NULL), '[]') AS parts,
         COALESCE(json_agg(

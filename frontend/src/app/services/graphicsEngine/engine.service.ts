@@ -59,9 +59,8 @@ export class EngineService {
   public async createArrowHelper(
     dir: Vector3,
     position: Vector3,
-    length: number,
-    color: number
+    length: number
   ): Promise<RenderableObject> {
-    return this.engine.createArrowHelper(dir, position, length, color);
+    return this.engine.createArrowHelper(dir, position, length);
   }
 }

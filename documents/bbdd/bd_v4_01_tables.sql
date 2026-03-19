@@ -173,7 +173,11 @@ CREATE TABLE Furniture_Part (
     exploded_distance   FLOAT,
     assembled_pos_x     FLOAT NOT NULL DEFAULT 0,
     assembled_pos_y     FLOAT NOT NULL DEFAULT 0,
-    assembled_pos_z     FLOAT NOT NULL DEFAULT 0
+    assembled_pos_z     FLOAT NOT NULL DEFAULT 0,
+    assembled_rot_x     FLOAT NOT NULL DEFAULT 0,
+    assembled_rot_y     FLOAT NOT NULL DEFAULT 0,
+    assembled_rot_z     FLOAT NOT NULL DEFAULT 0
+    
 );
 
 -- ============================
