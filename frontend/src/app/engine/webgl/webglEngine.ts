@@ -39,6 +39,11 @@ class WebGlRenderableObject implements RenderableObject {
         return { x: t[0], y: t[1], z: t[2] };
     }
 
+    getRotation(): Vector3 {
+        const t = this.node.getRotation();
+        return { x: t[0], y: t[1], z: t[2] };
+    }
+
     setPosition(x: number, y: number, z: number): void {
         //this.position = { x, y, z };
         this.node.setTranslation(x, y, z);
@@ -657,7 +662,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         else if (dir.z === -1) { arrow.setRotation(-Math.PI / 2, 0, 0); }
     }
 
-    async createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject> {
+    async createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject> {
         const arrow = await this.loadGLTF('storage/flecha.glb');
         arrow.setPosition(origin.x, origin.y, origin.z);
         arrow.setScale(length, length, length);
