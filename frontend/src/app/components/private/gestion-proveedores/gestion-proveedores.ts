@@ -30,6 +30,9 @@ export class GestionProveedores implements OnInit, OnChanges {
   isDeleteModalOpen: boolean = false;
   isEditModalOpen: boolean = false;
   providerToDelete: any = null;
+  isInfoModalOpen: boolean = false;
+  infoTitle: string = '';
+  infoMessage: string = '';
 
   // Notificaciones
   errorMessage: string | null = null;
@@ -235,14 +238,17 @@ export class GestionProveedores implements OnInit, OnChanges {
   toggleVisibility(provider: any) {
     const newStatus = !provider.visible;
     this.apiService.updateProviderVisibility(provider.id, newStatus).subscribe(
-      (response) => {
-        this.showSuccess(newStatus ? 'Proveedor visible en el catálogo' : 'Proveedor oculto en el catálogo');
+      () => {
         provider.visible = newStatus;
+        this.infoTitle = 'Estado actualizado';
+        this.infoMessage = newStatus
+          ? `Se ha mostrado al proveedor "${provider.company_name}".`
+          : `Se ha ocultado al proveedor "${provider.company_name}".`;
+        this.isInfoModalOpen = true;
         this.fetchProviders();
       },
       (error) => {
         console.error('Error updating provider visibility:', error);
-
         this.showError('Error al actualizar la visibilidad del proveedor. Verifica si está habilitado.');
       }
     );
@@ -251,9 +257,13 @@ export class GestionProveedores implements OnInit, OnChanges {
   toggleEnabled(provider: any) {
     const newStatus = !provider.enabled;
     this.apiService.updateProviderEnabled(provider.id, newStatus).subscribe(
-      (response) => {
-        this.showSuccess(newStatus ? 'Proveedor habilitado correctamente' : 'Proveedor bloqueado correctamente');
+      () => {
         provider.enabled = newStatus;
+        this.infoTitle = 'Estado actualizado';
+        this.infoMessage = newStatus
+          ? `Se ha habilitado al proveedor "${provider.company_name}".`
+          : `Se ha bloqueado al proveedor "${provider.company_name}".`;
+        this.isInfoModalOpen = true;
         this.fetchProviders();
       },
       (error) => {
@@ -261,6 +271,12 @@ export class GestionProveedores implements OnInit, OnChanges {
         this.showError('Error al actualizar el estado del proveedor');
       }
     );
+  }
+
+  closeInfoModal() {
+    this.isInfoModalOpen = false;
+    this.infoTitle = '';
+    this.infoMessage = '';
   }
 
   // Calcular rango de items mostrados
