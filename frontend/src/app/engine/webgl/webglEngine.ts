@@ -10,6 +10,7 @@ import { Light } from './engine-core/light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
 import { OutlinePass } from './outline-pass';
+import { rotate } from 'three/src/nodes/TSL.js';
 
 
 class WebGlRenderableObject implements RenderableObject {
@@ -454,6 +455,14 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private highlightedNodes: Set<Node> = new Set();
 
+    // Variales para la rotación entre pasos para hacerlo smooth
+    private transitionTargetPosition: Vector3 | null = null;// A donde va la camara
+    private transitionTargetLookAt: Vector3 | null = null; // Hacia donde vamoh a mirar en la transición!
+    private isTransitioning = false;  // Si hay una rotación en curso
+    private transitionLerpFactor = 0.1; //Suavizado
+    private defaultCameraPosition: Vector3 | null = null;
+    private defaultCameraTarget: Vector3 | null = null;
+
     // ⚠️ DE MOMENTO NO HACEN FALTA
     private controlsEnabled = false;
     private controlsAutoRotate = false;
@@ -494,6 +503,11 @@ export class WebGLEngineAdapter extends EngineFacade {
             width < this.mobileThreshold
         );
 
+        // Variables para la rotacion de pasos de cámara
+        const initialCamera = this.getCamera();
+        this.defaultCameraPosition = { ...initialCamera.position };
+        this.defaultCameraTarget = { ...initialCamera.target };
+
         await this.initShader();
 
         this.ready = true;
@@ -522,13 +536,63 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraController.setCameraProps(position, target);
     }
 
-    // ⚠️ NO SE LLEGA A USAR NUNCA!
+    // ⚠️  Ya se usa con las variables de rotateCamera()
     updateControls(): void {
-        // this.cameraController.updateOrbit();     
+        if (                                // Hay una transación activa? Hay posicion destino? Hay target?
+        this.isTransitioning &&
+        this.transitionTargetPosition &&
+        this.transitionTargetLookAt
+        ) {
+            const cam = this.getCamera();  //Coge la camara y calcula la siguiente posición con el vector y la acerca un poco 
+
+            const nextPosition: Vector3 = {
+                x: cam.position.x + (this.transitionTargetPosition.x - cam.position.x) * this.transitionLerpFactor,
+                y: cam.position.y + (this.transitionTargetPosition.y - cam.position.y) * this.transitionLerpFactor,
+                z: cam.position.z + (this.transitionTargetPosition.z - cam.position.z) * this.transitionLerpFactor
+            };
+
+            const nextTarget: Vector3 = {
+                x: cam.target.x + (this.transitionTargetLookAt.x - cam.target.x) * this.transitionLerpFactor,
+                y: cam.target.y + (this.transitionTargetLookAt.y - cam.target.y) * this.transitionLerpFactor,
+                z: cam.target.z + (this.transitionTargetLookAt.z - cam.target.z) * this.transitionLerpFactor
+            };
+
+            this.cameraController.setCameraProps(nextPosition, nextTarget);
+
+            const dx = this.transitionTargetPosition.x - nextPosition.x;  // Aqui calcula cuanto le falta en cada eje para llegar a la posición de destino
+            const dy = this.transitionTargetPosition.y - nextPosition.y;
+            const dz = this.transitionTargetPosition.z - nextPosition.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);  // Calcula la distancia real (3D) entre actual y destino
+             if (distance < 0.001) {
+                this.cameraController.setCameraProps(   //Coloca la camara en el destino
+                    this.transitionTargetPosition,
+                    this.transitionTargetLookAt
+                );
+                this.isTransitioning = false;  //Marca que ha terminado y ya no entrará en el bloque
+            }
+
+            return;
+        }  
     }
 
     resetControls(): void {
+        //this.cameraController.reset();
+
+         if (!this.defaultCameraPosition || !this.defaultCameraTarget) {
         this.cameraController.reset();
+        return;
+        }
+
+        this.transitionTargetPosition = {
+            ...this.defaultCameraPosition
+        };
+
+        this.transitionTargetLookAt = {
+            ...this.defaultCameraTarget
+        };
+
+        this.isTransitioning = true;
+        
     }
 
     checkControlsState(): boolean {
@@ -539,7 +603,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         return this.cameraController.hasMovedFromDefault();
     }
 
-    toggleControls(enable: boolean): void {
+    toggleControls(enable: boolean, autoRotate: boolean): void { 
         enable ? this.cameraController.initListeners()   // o exponer enable/disable
             : this.cameraController.dispose();
     }
@@ -899,7 +963,51 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
+        const cam = this.getCamera();
 
+        const position = vec3.fromValues(  //Convertimos la posición actual a un vector de gl-matrix para que lo pueda interpretar la librería
+            cam.position.x,
+            cam.position.y,
+            cam.position.z
+        );
+
+        const target = vec3.fromValues(
+            cam.target.x,
+            cam.target.y,
+            cam.target.z
+        );
+
+        const rotatedPosition = vec3.create(); // Para guardar la posición final
+        const angleRadians = angleDegrees * (Math.PI/180); //La libreria solo trabaja en radianes, convertimos grados a radianes
+
+        if (axis === 'x') { //Elige el eje de giro
+            vec3.rotateX(rotatedPosition, position, target, angleRadians);
+        } else if (axis === 'y') {
+            vec3.rotateY(rotatedPosition, position, target, angleRadians);
+        } else if (axis === 'z') {
+            vec3.rotateZ(rotatedPosition, position, target, angleRadians);
+        }
+
+        // this.cameraController.setCameraProps( //Nueva posición de la camara:
+        //     {
+        //         x: rotatedPosition[0],
+        //         y: rotatedPosition[1],
+        //         z: rotatedPosition[2]
+        //     },
+        //     cam.target
+        // );
+
+        this.transitionTargetPosition = { // Ahora guarda la posición en lugar de moverlo directamente para luego pasar a updatecontorls.
+            x: rotatedPosition[0],
+            y: rotatedPosition[1],
+            z: rotatedPosition[2]
+        };
+
+        this.transitionTargetLookAt = {
+            ...cam.target // Esto es el operador spread de objetos y equivale a mandarle todas las posiciones de target (x, y, z)
+        };
+
+        this.isTransitioning = true;
     }
 
     // ------------------------------------------
