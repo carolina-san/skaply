@@ -578,13 +578,13 @@ export class WebGLEngineAdapter extends EngineFacade {
     resetControls(): void {
         //this.cameraController.reset();
 
-         if (!this.defaultCameraPosition || !this.defaultCameraTarget) {
+         if (!this.defaultCameraPosition || !this.defaultCameraTarget) { // Comprueba si está guardada la cámara por defecto
         this.cameraController.reset();
         return;
         }
 
         this.transitionTargetPosition = {
-            ...this.defaultCameraPosition
+            ...this.defaultCameraPosition // Se vuelve a usar el spread para optimizar el código
         };
 
         this.transitionTargetLookAt = {
@@ -592,7 +592,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         };
 
         this.isTransitioning = true;
-        
+
     }
 
     checkControlsState(): boolean {
