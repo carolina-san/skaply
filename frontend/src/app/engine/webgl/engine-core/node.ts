@@ -26,6 +26,9 @@ export class Node {
     private visible: boolean = true;  
     private isHighlighted: boolean = false;
 
+    //Bounding Boxes
+    private pickBounds: { min: vec3; max: vec3 } | null = null;
+
     // CHILDREN MANAGEMENT
 
     addChild(child: Node): void {
@@ -83,7 +86,14 @@ export class Node {
     setIsHighlighted(value: boolean): void {
         this.isHighlighted = value;
     }
-    
+
+    setPickBounds(min: vec3, max: vec3): void { //Coger los límites
+        this.pickBounds = {
+            min: vec3.clone(min),
+            max: vec3.clone(max)
+        };
+    }
+
     // GETTERS
 
     getEntity(): Entity | null {
@@ -122,6 +132,14 @@ export class Node {
         return this.name;
     }
 
+    getPickBounds(): { min: vec3; max: vec3 } | null {
+        return this.pickBounds;
+    }
+
+    getChildren(): readonly Node[] { // Necesario para saber a que hacerle la bound y el raycast
+        return this.children;
+    }
+
     getIsHighlighted(): boolean {
         return this.isHighlighted;
     }
@@ -129,6 +147,8 @@ export class Node {
     isVisible(): boolean {
         return this.visible;
     }
+
+    
 
     // LOCAL MATRIX (PRIVATE)
 

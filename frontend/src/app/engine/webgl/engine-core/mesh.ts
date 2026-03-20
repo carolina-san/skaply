@@ -9,6 +9,9 @@ export interface MeshResource {
     texCoords: Float32Array;
     indices: Uint32Array;
     texture?: TextureResource;
+    // Bounding boxes
+    boundsMin: Float32Array;
+    boundsMax: Float32Array;
 }
 
 export class Mesh extends Entity {

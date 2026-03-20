@@ -63,6 +63,39 @@ export class MeshResource extends Resource {
         //console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
     }
 
+    // BOUNDING BOXES
+    private computeBounds(verts: number[]): { min: Float32Array; max: Float32Array } {
+        if (verts.length < 3) {
+            return {
+                min: new Float32Array([0, 0, 0]),
+                max: new Float32Array([0, 0, 0])
+            };
+        }
+
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+        for (let i = 0; i < verts.length; i += 3) {
+            const x = verts[i];
+            const y = verts[i + 1];
+            const z = verts[i + 2];
+
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (z < minZ) minZ = z;
+
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            if (z > maxZ) maxZ = z;
+        }
+
+        return {
+            min: new Float32Array([minX, minY, minZ]),
+            max: new Float32Array([maxX, maxY, maxZ])
+        };
+    }
+
+
     // ---------------------------------------------
 
     // PRIVATE METHODS: PARSE GLTF
@@ -143,12 +176,18 @@ export class MeshResource extends Resource {
         this.namedMeshes = [];
         meshGroups.forEach(({ meshName, primitives }) => {
             primitives.forEach((raw, i) => {
+                // Para el bounding Boxes
+                const bounds = this.computeBounds(raw.verts);
+
                 const mesh = new Mesh({
                     vertices:  new Float32Array(raw.verts),
                     normals:   new Float32Array(raw.norms),
                     texCoords: new Float32Array(raw.uvs),
                     indices:   new Uint32Array(raw.inds),
-                    texture:   raw.tex
+                    texture:   raw.tex,
+                    // Para el bounding Boxes
+                    boundsMin: bounds.min,
+                    boundsMax: bounds.max
                 }, this.gl);
 
                 this.namedMeshes.push({

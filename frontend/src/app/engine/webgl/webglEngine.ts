@@ -87,7 +87,7 @@ class WebGlRenderableObject implements RenderableObject {
     private collectMeshesAndApply(node: Node, fn: (mesh: Mesh) => void): void {
         const entity = node.getEntity();
         if (entity instanceof Mesh) fn(entity);
-        const children = (node as any).children as Node[];
+        const children = node.getChildren();
         if (children) children.forEach(child => this.collectMeshesAndApply(child, fn));
     }
 }
@@ -678,6 +678,33 @@ export class WebGLEngineAdapter extends EngineFacade {
         // ...resto cleanup...
     }
 
+    // Helper para unir Bounds y crea una caja que las cubre todas
+
+    private computeCombinedBounds(meshes: Mesh[]): { min: vec3; max: vec3 } | null {
+        if (meshes.length === 0) return null;
+
+        const firstMin = meshes[0].resource.boundsMin;
+        const firstMax = meshes[0].resource.boundsMax;
+
+        const min = vec3.fromValues(firstMin[0], firstMin[1], firstMin[2]);
+        const max = vec3.fromValues(firstMax[0], firstMax[1], firstMax[2]);
+
+        for (let i = 1; i < meshes.length; i++) {
+            const meshMin = meshes[i].resource.boundsMin;
+            const meshMax = meshes[i].resource.boundsMax;
+
+            min[0] = Math.min(min[0], meshMin[0]);
+            min[1] = Math.min(min[1], meshMin[1]);
+            min[2] = Math.min(min[2], meshMin[2]);
+
+            max[0] = Math.max(max[0], meshMax[0]);
+            max[1] = Math.max(max[1], meshMax[1]);
+            max[2] = Math.max(max[2], meshMax[2]);
+        }
+
+        return { min, max };
+    }
+
     // OBJECT MANAGEMENT
 
     async loadGLTF(url: string): Promise<RenderableObject> {
@@ -694,6 +721,15 @@ export class WebGLEngineAdapter extends EngineFacade {
             const meshNode = new Node();
             meshNode.setEntity(namedMeshes[0].mesh);
             meshNode.setName(namedMeshes[0].name);
+
+            // Para las bounding boxes con una primitiva
+            const singleMin = namedMeshes[0].mesh.resource.boundsMin;
+            const singleMax = namedMeshes[0].mesh.resource.boundsMax;
+            meshNode.setPickBounds(
+                vec3.fromValues(singleMin[0], singleMin[1], singleMin[2]),
+                vec3.fromValues(singleMax[0], singleMax[1], singleMax[2])
+            );
+
             return this.wrapNativeObject(meshNode);
         }
         
@@ -706,6 +742,13 @@ export class WebGLEngineAdapter extends EngineFacade {
                 meshNode.setName(namedMesh.name);
                 modelNode.addChild(meshNode);
             });
+
+            // Caso de multiples primitivas bounding boxes
+            const bounds = this.computeCombinedBounds(namedMeshes.map(namedMesh => namedMesh.mesh));
+            if (bounds) {
+                modelNode.setPickBounds(bounds.min, bounds.max);
+            }
+
             return this.wrapNativeObject(modelNode);
         }
     }
@@ -805,7 +848,10 @@ export class WebGLEngineAdapter extends EngineFacade {
             vertices: new Float32Array(verts),
             normals: new Float32Array(verts.length),
             texCoords: new Float32Array(0),
-            indices: new Uint32Array(inds)
+            indices: new Uint32Array(inds),
+            // Bounding Boxes
+            boundsMin: new Float32Array([0, 0, 0]),
+            boundsMax: new Float32Array([0, 0, 0])
         }, this.gl);
 
         return mesh;
@@ -860,76 +906,154 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.clear = { r: 0.95, g: 0.95, b: 0.95, a: 1 };
     }
 
+    private buildWorldRayFromNdc(x: number, y: number): { origin: vec3; direction: vec3 } {
+        const view = this.cameraController.getViewMatrix() as mat4;
+        const projection = this.cameraController.getProjectionMatrix() as mat4;
+
+        const viewProjection = mat4.create();
+        mat4.multiply(viewProjection, projection, view);
+
+        const inverseViewProjection = mat4.create();
+        mat4.invert(inverseViewProjection, viewProjection);
+
+        const nearPoint = vec3.fromValues(x, y, -1);
+        const farPoint = vec3.fromValues(x, y, 1);
+
+        const nearWorld = vec3.transformMat4(vec3.create(), nearPoint, inverseViewProjection);
+        const farWorld = vec3.transformMat4(vec3.create(), farPoint, inverseViewProjection);
+
+        const direction = vec3.create();
+        vec3.sub(direction, farWorld, nearWorld);
+        vec3.normalize(direction, direction);
+
+        return {
+            origin: nearWorld,
+            direction
+        };
+    }
+
+    private intersectRayAabbLocal(
+        origin: vec3,
+        direction: vec3,
+        min: vec3,
+        max: vec3
+    ): number | null {
+        const EPSILON = 1e-8;
+
+        let tMin = -Infinity;
+        let tMax = Infinity;
+
+        for (let axis = 0; axis < 3; axis++) {
+            const o = origin[axis];
+            const d = direction[axis];
+            const minVal = min[axis];
+            const maxVal = max[axis];
+
+            if (Math.abs(d) < EPSILON) {
+                if (o < minVal || o > maxVal) {
+                    return null;
+                }
+                continue;
+            }
+
+            let t1 = (minVal - o) / d;
+            let t2 = (maxVal - o) / d;
+
+            if (t1 > t2) {
+                const temp = t1;
+                t1 = t2;
+                t2 = temp;
+            }
+
+            tMin = Math.max(tMin, t1);
+            tMax = Math.min(tMax, t2);
+
+            if (tMin > tMax) {
+                return null;
+            }
+        }
+
+        if (tMax < 0) {
+            return null;
+        }
+
+        return tMin >= 0 ? tMin : tMax;
+    }
+
+   private transformRayToLocalSpace(
+        origin: vec3,
+        direction: vec3,
+        worldMatrix: mat4
+    ): { origin: vec3; direction: vec3 } | null {
+        const inverseWorld = mat4.create();
+
+        if (!mat4.invert(inverseWorld, worldMatrix)) {
+            return null;
+        }
+
+        const localOrigin = vec3.transformMat4(vec3.create(), origin, inverseWorld);
+
+        const worldTarget = vec3.create();
+        vec3.add(worldTarget, origin, direction);
+
+        const localTarget = vec3.transformMat4(vec3.create(), worldTarget, inverseWorld);
+
+        const localDirection = vec3.create();
+        vec3.sub(localDirection, localTarget, localOrigin);
+        vec3.normalize(localDirection, localDirection);
+
+        return {
+            origin: localOrigin,
+            direction: localDirection
+        };
+    }
+
+    private getPickableRootNodes(): readonly Node[] {
+        return this.rootNode
+            .getChildren()
+            .filter(node => node.isVisible() && node.getPickBounds() !== null);
+    }
+
     raycast(x: number, y: number): RenderableObject | null {
-        // // Calculate ray from camera to world
-        // const invViewProj = mat4.create();
-        // const viewProj = mat4.create();
-        // mat4.multiply(viewProj, this.cameraController.getProjectionMatrix() as any, this.cameraController.getViewMatrix() as any);
-        // mat4.invert(invViewProj, viewProj);
 
-        // const oriRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, -1), invViewProj);
-        // const tgtRaw = vec3.transformMat4(vec3.create(), vec3.fromValues(x, y, 1), invViewProj);
+        if (!this.ready) return null;
+        
+        const ray = this.buildWorldRayFromNdc(x, y);
+        const pickableNodes = this.getPickableRootNodes();
 
-        // const dir = vec3.create();
-        // vec3.sub(dir, tgtRaw, oriRaw);
-        // vec3.normalize(dir, dir);
+        let bestNode: Node | null = null;
+        let bestHit = Infinity;
 
-        // // Möller-Trumbore Ray-Triangle Intersection
-        // const intersectTriangle = (orig: vec3, rdir: vec3, v0: vec3, v1: vec3, v2: vec3): number | null => {
-        //     const edge1 = vec3.create(); vec3.sub(edge1, v1, v0);
-        //     const edge2 = vec3.create(); vec3.sub(edge2, v2, v0);
-        //     const h = vec3.create(); vec3.cross(h, rdir, edge2);
-        //     const a = vec3.dot(edge1, h);
-        //     if (a > -0.00001 && a < 0.00001) return null;
-        //     const f = 1.0 / a;
-        //     const s = vec3.create(); vec3.sub(s, orig, v0);
-        //     const u = f * vec3.dot(s, h);
-        //     if (u < 0.0 || u > 1.0) return null;
-        //     const q = vec3.create(); vec3.cross(q, s, edge1);
-        //     const v = f * vec3.dot(rdir, q);
-        //     if (v < 0.0 || u + v > 1.0) return null;
-        //     const t = f * vec3.dot(edge2, q);
-        //     if (t > 0.00001) return t;
-        //     return null;
-        // };
+        for (const node of pickableNodes) {
+            const bounds = node.getPickBounds();
+            if (!bounds) continue;
 
-        // let closestHitNode: Node | null = null;
-        // let minDist = Infinity;
+            const localRay = this.transformRayToLocalSpace(
+                ray.origin,
+                ray.direction,
+                node.getTransformMatrix()
+            );
 
-        // const checkNode = (n: Node) => {
-        //     if (!n.isVisible()) return;
-        //     const ent = n.getEntity();
-        //     if (ent instanceof Mesh) {
-        //         const res = (ent as any).resource;
-        //         if (res && res.vertices && res.indices) {
-        //             const worldMat = n.getTransformMatrix();
-        //             const v0 = vec3.create(), v1 = vec3.create(), v2 = vec3.create();
-        //             for (let i = 0; i < res.indices.length; i += 3) {
-        //                 const i0 = res.indices[i] * 3;
-        //                 const i1 = res.indices[i+1] * 3;
-        //                 const i2 = res.indices[i+2] * 3;
+            if (!localRay) continue;
 
-        //                 vec3.transformMat4(v0, vec3.fromValues(res.vertices[i0], res.vertices[i0+1], res.vertices[i0+2]), worldMat);
-        //                 vec3.transformMat4(v1, vec3.fromValues(res.vertices[i1], res.vertices[i1+1], res.vertices[i1+2]), worldMat);
-        //                 vec3.transformMat4(v2, vec3.fromValues(res.vertices[i2], res.vertices[i2+1], res.vertices[i2+2]), worldMat);
+            const hit = this.intersectRayAabbLocal(
+                localRay.origin,
+                localRay.direction,
+                bounds.min,
+                bounds.max
+            );
 
-        //                 const t = intersectTriangle(oriRaw, dir, v0, v1, v2);
-        //                 if (t !== null && t < minDist) {
-        //                     minDist = t;
-        //                     closestHitNode = n;
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     const children = (n as any).children as Node[];
-        //     if (children) children.forEach(checkNode);
-        // };
+            if (hit !== null && hit < bestHit) {
+                bestHit = hit;
+                bestNode = node;
+            }
+        }
 
-        // checkNode(this.rootNode);
+        if (bestNode) {
+            //console.log('picked node', bestNode.getName(), bestHit);
+            return this.wrapNativeObject(bestNode);
+        }
 
-        // if (closestHitNode) {
-        //     return this.wrapNativeObject(closestHitNode);
-        // }
         return null;
     }
 
@@ -953,10 +1077,12 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     private collectNodesFromNode(node: Node): void {
+        if (!node.isVisible()) return;
+        
         if (node.getEntity() instanceof Mesh) {
             this.highlightedNodes.add(node);
         }
-        const children = (node as any).children as Node[];
+        const children = node.getChildren();
         if (children) {
             children.forEach(child => this.collectNodesFromNode(child));
         }
