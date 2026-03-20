@@ -184,25 +184,25 @@ INSERT INTO Color (name, hex) VALUES
 -- ============================
 INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 -- PARTES MUEBLE ACTIU VITAL RPO
-('/storage/actiu_pata_0.8x0.05m.glb','actiu_pata_0.8x0.05m', 1),                 --1 pata
-('/storage/actiu_travesanio_1.75x0.105m.glb','actiu_travesanio_1.75x0.105m', 1),   --2 travesaño
-('/storage/actiu_tablero_1.8x0.8x0.025m.glb','actiu_tablero_1.8x0.8x0.025m', 1), --3 tablero
-('/storage/M8_cabeza_plana_20mm.glb','M8_cabeza_plana_20mm', 1),                 --4 M8 20mm
-('/storage/M8_cabeza_plana_17mm.glb','M8_cabeza_plana_17mm', 1),                 --5 M8 17mm
-('/storage/M8_cabeza_plana_16mm.glb','M8_cabeza_plana_16mm', 1),                 --6 M8 16mm
-('/storage/arandela_M8.glb','arandela_M8', 1),                                   --7 arandela
+('/storage/actiu/mesa_vital_pro/pata_0.8x0.05m.glb','pata_0.8x0.05m', 1),                 --1 pata
+('/storage/actiu/mesa_vital_pro/travesanio_1.75x0.105m.glb','travesanio_1.75x0.105m', 1),   --2 travesaño
+('/storage/actiu/mesa_vital_pro/tablero_1.8x0.8x0.025m.glb','tablero_1.8x0.8x0.025m', 1), --3 tablero
+('/storage/tornillos/M8_cabeza_plana_20mm.glb','M8_cabeza_plana_20mm', 1),                 --4 M8 20mm
+('/storage/tornillos/M8_cabeza_plana_17mm.glb','M8_cabeza_plana_17mm', 1),                 --5 M8 17mm
+('/storage/tornillos/M8_cabeza_plana_16mm.glb','M8_cabeza_plana_16mm', 1),                 --6 M8 16mm
+('/storage/tornillos/arandela_M8.glb','arandela_M8', 1),                                   --7 arandela
 
 -- PARTES MUEBLE ACTIU ARMRIO MODULAR
-('','patas', 1),   --pata01 y pata02 deberían de ser la misma pieza
-('','tablon_inferior', 1),   --pata01 y pata02 deberían de ser la misma pieza
-('','tablon_izquierdo', 1),
-('','tablon_derecho', 1),
-('','tablon_trasero', 1),
-('','tablon_superior', 1),
-('','estante_1', 1),
-('','estante_2', 1),
-('','puerta_izquierda', 1),
-('','puerta_derecha', 1)
+('/storage/actiu/mueble_modular/tablon_inferior_0.76x0.38m.glb','tablon_inferior_0.76x0.38m', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('/storage/actiu/mueble_modular/tablon_izquierdo_1.09x0.4m.glb','tablon_izquierdo_1.09x0.4m', 1),
+('/storage/actiu/mueble_modular/tablon_derecho_1.09x0.4m.glb','tablon_derecho_1.09x0.4m', 1),
+('/storage/actiu/mueble_modular/tablon_trasero_0.76x1.09m.glb','tablon_trasero_0.76x1.09m', 1),
+('/storage/actiu/mueble_modular/tablon_superior_0.8x0.4m.glb','tablon_superior_0.8x0.4m', 1),
+('/storage/actiu/mueble_modular/balda_0.76x0.36m.glb','balda_0.76x0.36m', 1),
+('/storage/actiu/mueble_modular/puerta_izquierda_0.4x0.7m.glb','puerta_izquierda_0.4x0.7m', 1),
+('/storage/actiu/mueble_modular/puerta_derecha_0.4x0.7m.glb','puerta_derecha_0.4x0.7m', 1),
+('/storage/tornillos/perno_40mm.glb','perno_40mm', 1)
+
 ;
 
 
@@ -254,7 +254,7 @@ VALUES
 ),
     -- MUEBLE DE ACTIU ARMARIO MODULAR
 (
-    '/storage/armario_modular.glb', -- prueba
+    '', -- prueba
     'Armario modular',
     'VR123456',
     5,
@@ -283,20 +283,24 @@ INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id, 
 (1,7,'Ensamblar tablero',NULL, NULL, NULL),                 
 (1,8,'4 Tornillos M6 L= 16 mm',NULL, 120.00, 'x'),          
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(2,1,'Ensamblar tablon inferior y patas',NULL, NULL, NULL),     -- tablon inferior y patas
-(2,2,'Ensamblar laterales',NULL, NULL, NULL),     -- (tablon inferior y patas) + laterales
-(2,3,'Ensamblar tablon trasero',NULL, NULL, NULL),   -- (tablon inferior y patas + laterales) + tablon trasero
-(2,4,'Ensamblar tablon superior',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero) + tablon superior
-(2,5,'Ensamblar estantes',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior) + estantes
-(2,6,'Ensamblar puerta izquierda',NULL, NULL, NULL),     -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes) + puerta izquierda
-(2,7,'Ensamblar puerta derecha',NULL, NULL, NULL)    -- (tablon inferior y patas + laterales + tablon trasero + tablon superior + estantes + puerta izquierda) + puerta derecha
+(2,1,'Atornillar 6 pernos al panel lateral',NULL, NULL, NULL),     
+(2,2,'Ensamblar el tablero inferior y las dos baldas',NULL, NULL, NULL),    
+(2,3,'Atornillar 6 pernos al tablero y las baldas',NULL, NULL, NULL),   
+(2,4,'Ensamblar el panel lateral',NULL, NULL, NULL),     
+(2,5,'Ensamblar el tablero trasero',NULL, NULL, NULL),  
+(2,6,'Atornillar 6 pernos en la parte superior de los tableros',NULL, NULL, NULL),     
+(2,7,'Ensamblar el tablero superior',NULL, NULL, NULL),     
+(2,8,'Añadir la puerta derecha',NULL, NULL, NULL),
+(2,9,'Añadir la puerta izquierda',NULL, NULL, NULL)   
 ;    
 
 -- ============================
 -- FURNITURE_PART (asocia las partes con su mueble)
 -- ============================
 INSERT INTO Furniture_Part (furniture_id, part_id, step_id, exploded_axis, exploded_distance, assembled_pos_x, assembled_pos_y, assembled_pos_z, assembled_rot_x, assembled_rot_y, assembled_rot_z) VALUES
+
 -- MUEBLE DE ACTIU VITAL PRO
+
   (1, 1, 1, NULL, 0, 0.870359, 0.422885, 0, 0, 3.141593, 0),
   (1, 1, 1, NULL, 0, -0.870359, 0.422885, 0, 0, 0, 0),
   (1, 2, 1, 'y', 0.30000001192092896, 0, 0.685, 0, 0, 0, 0),
@@ -318,44 +322,38 @@ INSERT INTO Furniture_Part (furniture_id, part_id, step_id, exploded_axis, explo
   (1, 6, 8, 'y', -0.3499999940395355, 0.8385, 0.718, -0.25, 0, 0, 3.141593),
   (1, 6, 8, 'y', -0.3499999940395355, -0.8385, 0.718, -0.25, 0, 0, 3.141593),
   (1, 6, 8, 'y', -0.3499999940395355, -0.8385, 0.718, 0.25, 0, 0, 3.141593),
-  (1, 6, 8, 'y', -0.3499999940395355, 0.8385, 0.718, 0.25, 0, 0, 3.141593);
+  (1, 6, 8, 'y', -0.3499999940395355, 0.8385, 0.718, 0.25, 0, 0, 3.141593),
 
 -- MUEBLE DE ACTIU ARMARIO MODULAR
--- (2,1,1,'y',0.0, 0.0, 0.0, 0.0),    --patas
--- (2,1,1,'y',0.3, 0.0, 0.0, 0.0),    --tablon
--- (2,1,1,'y',0.5, 0.0, 0.0, 0.0),    --travesaño
--- (2,1,1,'y',0.5, 0.0, 0.0, 0.0),
--- (2,1,1,'z',-0.4, 0.0, 0.0, 0.0),
--- (2,1,1,'y',0.5, 0.0, 0.0, 0.0),
--- (2,1,1,'z',0.4, 0.0, 0.0, 0.0),
--- (2,1,1,'z',0.4, 0.0, 0.0, 0.0),
--- (2,1,1,'z',0.4, 0.0, 0.0, 0.0),              
--- (2,1,1,'z',0.4, 0.0, 0.0, 0.0);   --tablero     
 
--- ============================
--- SETP_PART (asocia las piezas a los pasos)
--- ============================
--- ⚠️DEJA DE USARSE
--- INSERT INTO Step_Part (stepId, part_id, quantity) VALUES
--- -- MUEBLE ACTIU VITAL PRO
--- (10,7,2),(10,8,1),                          --paso 1 patas + travesaño
--- (11,10,2),                                  --paso 2 (M8 18mm x2)
--- (12,11,2),                                  --paso 3 (M8 17mm x2)
--- (13,11,2),                                  --paso 4 (M8 17mm x2)
--- (14,13,4),                                  --paso 5 (arandelas x4)
--- (15,10,4),                                  --paso 6 (M8 20mm x4)
--- (16,9,1),                                   --paso 7 (tablero)
--- (17,12,4),                                  --paso 8 (M8 16mm x4)
-
--- -- MUEBLE ACTIU ARMARIO MODULAR
--- (18,26,1),(18,27,1),   -- paso 1
--- (19,28,1),(19,29,1),   -- paso 2
--- (20,30,1),             -- paso 3
--- (21,31,1),             -- paso 4
--- (22,32,1),(22,33,1),   -- paso 5
--- (23,34,1),             -- paso 6
--- (24,35,1)              -- paso 7
--- ;            
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.032736, -0.124559, 0, 0, 1.570796),
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.032736, 0.141442, 0, 0, 1.570796),
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.394736, -0.124559, 0, 0, 1.570796),
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.394736, 0.141442, 0, 0, 1.570796),
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.755236, 0.141442, 0, 0, 1.570796),
+  (2, 16, 9, 'x', -0.25, 0.366957, 0.755236, -0.124559, 0, 0, 1.570796),
+  (2, 10, 9, NULL, 0, 0.388602, 0.565288, 0.008967, 0, 0, 0),
+  (2, 13, 10, 'x', -0.3499999940395355, 0.001714, 0.394736, 0.004157, 0, 0, 0),
+  (2, 8, 10, 'x', -0.3499999940395355, 0.000421, 0.013171, 0.017713, 0, 0, 0),
+  (2, 13, 10, 'x', -0.3499999940395355, 0.001714, 0.755236, 0.004157, 0, 0, 0),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.755236, -0.124559, 0, 0, -1.570796),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.394767, -0.124559, 0, 0, -1.570796),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.032767, -0.124559, 0, 0, -1.570796),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.032767, 0.141471, 0, 0, -1.570796),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.394767, 0.141471, 0, 0, -1.570796),
+  (2, 16, 11, 'x', -0.25, -0.36692, 0.755267, 0.141471, 0, 0, -1.570796),
+  (2, 9, 12, 'x', -0.3499999940395355, -0.388602, 0.565288, 0.008967, 0, 0, 0),
+  (2, 11, 13, 'z', -0.3499999940395355, 0.002391, 0.571203, -0.183135, 0, 0, 0),
+  (2, 16, 14, 'y', 0.25, -0.297609, 1.096975, -0.183135, 0, 0, 3.141592),
+  (2, 16, 14, 'y', 0.25, 0.388257, 1.096975, 0.141442, 0, 0, 3.141593),
+  (2, 16, 14, 'y', 0.25, -0.388257, 1.096975, 0.142105, 0, 0, 3.141592),
+  (2, 16, 14, 'y', 0.25, -0.388257, 1.096975, -0.123895, 0, 0, 3.141593),
+  (2, 16, 14, 'y', 0.25, 0.388158, 1.096975, -0.123895, 0, 0, 3.141593),
+  (2, 16, 14, 'y', 0.25, 0.302391, 1.096975, -0.183135, 0, 0, 3.141592),
+  (2, 12, 15, 'y', 0.3499999940395355, 0, 1.122959, 0.017566, 0, 0, 0),
+  (2, 14, 16, 'z', 0.3499999940395355, -0.19816, 0.391562, 0.216814, 0, 0, 0),
+  (2, 15, 17, 'z', 0.3499999940395355, 0.197691, 0.392026, 0.216871, 0, 0, 0);
+          
 -- ============================
 -- STEP_TOOL (asocia herramientas a los pasos)
 -- ============================
