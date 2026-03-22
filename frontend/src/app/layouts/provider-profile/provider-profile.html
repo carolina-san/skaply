@@ -17,27 +17,32 @@
             {{ pendingIssuesCount }}
           </span>
         </button>
+        <button (click)="setActiveTab('reviews')"
+          [ngClass]="[activeTab === 'reviews' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Valoraciones
+        </button>
+        <button (click)="setActiveTab('subir-mueble')"
+          [ngClass]="[activeTab === 'subir-mueble' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
+          class="hover:opacity-100 transition">
+          Subir mueble
+        </button>
         <button (click)="setActiveTab('estadisticas')"
           [ngClass]="[activeTab === 'estadisticas' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
           class="hover:opacity-100 transition">
           Estadísticas
         </button>
-                <button (click)="setActiveTab('subir-mueble')"
-          [ngClass]="[activeTab === 'subir-mueble' ? 'opacity-100 border-b-2 border-marron-oscuro ' : 'opacity-40']"
-          class="hover:opacity-100 transition">
-          Subir mueble
-        </button>
       </div>
 
       <!-- barra de búsqueda -->
-      <div [class.invisible]="activeTab === 'estadisticas' || activeTab === 'subir-mueble'"
+      <div [class.invisible]="activeTab === 'estadisticas' || activeTab === 'subir-mueble' || activeTab === 'reviews'"
         class="flex items-center w-70 bg-white rounded-full flex items-center px-3 shadow gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
             d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
         </svg>
         <input type="text" [(ngModel)]="searchText"
-          [placeholder]="activeTab === 'muebles' ? 'Buscar muebles' : activeTab === 'incidencias' ? 'Buscar incidencias' : 'Buscar estadísticas'"
+          [placeholder]="activeTab === 'muebles' ? 'Buscar muebles' : activeTab === 'incidencias' ? 'Buscar incidencias' : activeTab === 'reviews' ? 'Buscar valoraciones' : 'Buscar estadísticas'"
           class="w-full py-1.5 text-sm outline-none text-marron-oscuro placeholder-marron-oscuro" />
       </div>
 
@@ -48,9 +53,12 @@
         class="h-full block"></app-gestion-muebles>
       <app-gestion-incidencias *ngIf="activeTab === 'incidencias'" [searchText]="searchText"
         class="h-full block"></app-gestion-incidencias>
+      <app-reviews *ngIf="activeTab === 'reviews'" [searchText]="searchText"
+        class="h-full block"></app-reviews>
+      <app-upload-form *ngIf="activeTab === 'subir-mueble'" class="h-full block"
+        (furnitureCreated)="setActiveTab('muebles')"></app-upload-form>
       <app-provider-stats *ngIf="activeTab === 'estadisticas' && currentUser?.id" [providerId]="currentUser.id"
         class=""></app-provider-stats>
-      <app-upload-form *ngIf="activeTab === 'subir-mueble'" class="h-full block" (furnitureCreated)="setActiveTab('muebles')"></app-upload-form>
     </div>
   </div>
 </main>

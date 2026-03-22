@@ -226,6 +226,10 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
   }
 
+  getFurnitureReviews(furnitureId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/${furnitureId}/reviews`);
+  }
+
   getVisits(): Observable<any> {
     return this.http.get(`${this.apiUrl}/private/stats/analytics`);
   }
