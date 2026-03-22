@@ -15,12 +15,13 @@ import { EngineService } from '../../../services/graphicsEngine/engine.service';
 import { SimulationService } from '../../../services/graphicsEngine/simulation.service';
 import { FurnitureService } from '../../../services/graphicsEngine/furniture.service';
 import { InteractionService } from '../../../services/graphicsEngine/interaction.service';
+import { VoiceControlService } from '../../../services/graphicsEngine/voice-control.service';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
   imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls],
-  providers: [EngineService, SimulationService, FurnitureService, InteractionService],
+  providers: [EngineService, SimulationService, FurnitureService, InteractionService, VoiceControlService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,7 +100,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     public engineService: EngineService,
     public simulationService: SimulationService,
     public furnitureService: FurnitureService,
-    public interactionService: InteractionService
+    public interactionService: InteractionService,
+    public voiceControlService: VoiceControlService
   ) {
     effect(() => {
       const step = this.currentStep();
@@ -189,6 +191,21 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.goToStep(targetLogicalIndex);
 
     });
+
+    // Inicializar control de voz con annyang
+    this.voiceControlService.init(
+      () => {
+        if (this.mode() === 'manual') this.nextStep();
+      },
+      () => {
+        if (this.mode() === 'manual') this.prevStep();
+      },
+      (logicalIndex: number) => {
+        if (this.mode() !== 'manual') this.setMode('manual');
+        this.goToStep(logicalIndex);
+      },
+      () => this.goToLastStep()
+    );
   }
 
   ngAfterViewInit(): void {
@@ -224,6 +241,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     window.removeEventListener('resize', this.boundWindowResize);
 
     this.interactionService.dispose();
+    this.voiceControlService.dispose();
 
     if (this.chatbotSub) {
       this.chatbotSub.unsubscribe();
@@ -294,6 +312,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.furniture?.reference_number) {
       this.apiService.changeStep(this.furniture.reference_number, 0).subscribe();
     }
+  }
+
+  goToLastStep(): void {
+    this.setMode('final');
   }
 
   openFinishModal(): void {

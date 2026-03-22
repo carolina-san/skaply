@@ -16,6 +16,9 @@ export class FooterControls {
   totalSteps = input<number>(0);
   isSimulationPaused = input<boolean>(false);
   simulationSpeed = input<number>(1);
+  isVoiceListening = input<boolean>(false);
+  isVoiceSupported = input<boolean>(false);
+  isVoiceSoundActive = input<boolean>(false);
 
   // Outputs
   modeChange = output<'manual' | 'simulation' | 'final'>();
@@ -25,6 +28,7 @@ export class FooterControls {
   togglePauseAction = output<void>();
   speedChange = output<number>();
   finishAction = output<void>();
+  toggleVoiceAction = output<void>();
 
   readonly simulationSpeeds = [0.5, 1, 1.5, 2];
 

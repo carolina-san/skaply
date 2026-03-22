@@ -12,3 +12,64 @@
 .btn-opciones-mueble.active {
     @apply bg-azul-claro text-marron-oscuro rounded-full border-marron-oscuro/50 border-1;
 }
+
+/* ── Botón de micrófono (control de voz) ── */
+.voice-mic-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: #f5ede4;   /* beige */
+  color: #452621;              /* marron-oscuro */
+  transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.voice-mic-btn:hover {
+  background-color: #BAD5E3;   /* azul-claro Skaply */
+  transform: scale(1.08);
+}
+
+/* Activo: fondo azul Skaply en vez de rojo */
+.voice-mic-btn--active {
+  background-color: #94adba;   /* azul-medio Skaply */
+  color: #452621;
+}
+
+.voice-mic-btn--active:hover {
+  background-color: #BAD5E3;
+}
+
+/* ── Ondas tipo sonar (sólo cuando hay sonido real) ── */
+.voice-wave-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid #BAD5E3;   /* azul-claro Skaply */
+  opacity: 0;
+  pointer-events: none;
+  animation: voice-sonar 1.2s ease-out forwards;
+}
+
+/* Delays escalonados para efecto de propagación */
+.voice-wave-ring--1 { animation-delay: 0ms; }
+.voice-wave-ring--2 { animation-delay: 180ms; }
+.voice-wave-ring--3 { animation-delay: 360ms; }
+
+@keyframes voice-sonar {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  60% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}

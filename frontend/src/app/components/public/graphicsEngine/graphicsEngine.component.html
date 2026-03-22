@@ -65,9 +65,12 @@
   @if(showFooterControls() && !isARActive()) {
   <app-footer-controls [hasIsolatedPart]="isolatedPart() !== null" [mode]="mode()" [manualStep]="manualStep()"
     [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()" [simulationSpeed]="simulationSpeed()"
+    [isVoiceListening]="voiceControlService.isListening()"
+    [isVoiceSupported]="voiceControlService.isSupported()"
+    [isVoiceSoundActive]="voiceControlService.isSoundActive()"
     (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
     (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
-    (finishAction)="openFinishModal()">
+    (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()">
   </app-footer-controls>
   }
 </div>
