@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Vector3 } from '../../../engine/interfaces';
@@ -304,6 +304,28 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.manualStep.update(step => (step > 0 ? step - 1 : step));
     if (this.furniture?.reference_number) {
       this.apiService.changeStep(this.furniture.reference_number, this.currentLogicalStep()).subscribe();
+    }
+  }
+
+  //pasar los pasos con el teclado del ordenador, pero solo si no se está en AR y el modo es manual
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeyDown(event: KeyboardEvent): void {
+    if (this.mode() !== 'manual' || this.isARActive()) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+    const target = event.target as HTMLElement | null;
+    if (target) {
+      const tagName = target.tagName;
+      const isFormField = tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+      if (isFormField || target.isContentEditable) return;
+    }
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.nextStep();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.prevStep();
     }
   }
 

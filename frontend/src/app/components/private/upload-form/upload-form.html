@@ -12,146 +12,117 @@
   <form [formGroup]="furnitureForm" (ngSubmit)="onSubmit()" class="furniture-form">
     <h4 class="text-base font-bold mb-2 text-marron-oscuro/60">Crear Nuevo Mueble</h4>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="name">Nombre del Mueble *</label>
-        <input
-          type="text"
-          id="name"
-          formControlName="name"
-          placeholder="Ej: Silla de oficina"
-          class="form-input"
-          [class.error]="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched"
-        />
-        <span class="error-message" *ngIf="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched">
-          El nombre es requerido (máximo 50 caracteres)
-        </span>
+    <div class="form-columns">
+      <div class="form-column">
+        <div class="form-group">
+          <label for="reference">Número de Referencia *</label>
+          <input type="text" id="reference" formControlName="reference_number" required placeholder="Ej: REF-001"
+            class="form-input"
+            [class.error]="furnitureForm.get('reference_number')?.invalid && furnitureForm.get('reference_number')?.touched" />
+          <span class="error-message"
+            *ngIf="furnitureForm.get('reference_number')?.invalid && furnitureForm.get('reference_number')?.touched">
+            El número de referencia es requerido
+          </span>
+        </div>
+        
+        <div class="form-group">
+          <label for="name">Nombre del Mueble *</label>
+          <input type="text" id="name" formControlName="name" placeholder="Ej: Silla de oficina" class="form-input"
+            [class.error]="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched" />
+          <span class="error-message" *ngIf="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched">
+            El nombre es requerido (máximo 50 caracteres)
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descripción Corta *</label>
+          <input type="text" id="description" formControlName="short_description"
+            placeholder="Describe brevemente el mueble" class="form-input"
+            [class.error]="furnitureForm.get('short_description')?.invalid && furnitureForm.get('short_description')?.touched" />
+          <span class="error-message"
+            *ngIf="furnitureForm.get('short_description')?.invalid && furnitureForm.get('short_description')?.touched">
+            La descripción es requerida
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoría *</label>
+          <select id="category" formControlName="category_id" class="form-select"
+            [class.error]="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched">
+            <option value="">Selecciona</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
+          <span class="error-message"
+            *ngIf="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched">
+            Requerido
+          </span>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="description">Descripción Corta *</label>
-        <input
-          type="text"
-          id="description"
-          formControlName="short_description"
-          placeholder="Describe brevemente el mueble"
-          class="form-input"
-          [class.error]="furnitureForm.get('short_description')?.invalid && furnitureForm.get('short_description')?.touched"
-        />
-        <span class="error-message" *ngIf="furnitureForm.get('short_description')?.invalid && furnitureForm.get('short_description')?.touched">
-          La descripción es requerida
-        </span>
-      </div>
-    </div>
+      <div class="form-column">
+        <div class="form-group">
+          <label>Color *</label>
+          <div class="color-selector-compact">
+            <label *ngFor="let color of colors" class="color-option-compact"
+              [class.selected]="furnitureForm.get('color_id')?.value === color.id" [attr.title]="color.name">
+              <input type="radio" formControlName="color_id" [value]="color.id" />
+              <div class="color-circle-compact" [style.background-color]="color.hex"></div>
+            </label>
+          </div>
+          <span class="error-message"
+            *ngIf="furnitureForm.get('color_id')?.invalid && furnitureForm.get('color_id')?.touched">
+            Requerido
+          </span>
+        </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="category">Categoría *</label>
-        <select
-          id="category"
-          formControlName="category_id"
-          class="form-select"
-          [class.error]="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched"
-        >
-          <option value="">Selecciona una categoría</option>
-          <option *ngFor="let cat of categories" [value]="cat.id">
-            {{ cat.name }}
-          </option>
-        </select>
-        <span class="error-message" *ngIf="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched">
-          La categoría es requerida
-        </span>
-      </div>
+        <div class="form-group">
+          <label>Dificultad *</label>
+          <div class="difficulty-selector-compact">
+            <label class="difficulty-option-compact difficulty-low"
+              [class.selected]="furnitureForm.get('difficulty')?.value === 'low'" title="Baja">
+              <input type="radio" formControlName="difficulty" value="low" />
+              <span class="difficulty-icon">Fácil</span>
+            </label>
+            <label class="difficulty-option-compact difficulty-medium"
+              [class.selected]="furnitureForm.get('difficulty')?.value === 'medium'" title="Media">
+              <input type="radio" formControlName="difficulty" value="medium" />
+              <span class="difficulty-icon">Medio</span>
+            </label>
+            <label class="difficulty-option-compact difficulty-high"
+              [class.selected]="furnitureForm.get('difficulty')?.value === 'high'" title="Alta">
+              <input type="radio" formControlName="difficulty" value="high" />
+              <span class="difficulty-icon">Difícil</span>
+            </label>
+          </div>
+          <span class="error-message"
+            *ngIf="furnitureForm.get('difficulty')?.invalid && furnitureForm.get('difficulty')?.touched">
+            Requerido
+          </span>
+        </div>
 
-      <div class="form-group">
-        <label for="color">Color *</label>
-        <select
-          id="color"
-          formControlName="color_id"
-          class="form-select"
-          [class.error]="furnitureForm.get('color_id')?.invalid && furnitureForm.get('color_id')?.touched"
-        >
-          <option value="">Selecciona un color</option>
-          <option *ngFor="let color of colors" [value]="color.id">
-            {{ color.name }}
-          </option>
-        </select>
-        <span class="error-message" *ngIf="furnitureForm.get('color_id')?.invalid && furnitureForm.get('color_id')?.touched">
-          El color es requerido
-        </span>
-      </div>
-    </div>
+        <div class="form-group">
+          <label for="people">Personas Requeridas *</label>
+          <input type="number" id="people" formControlName="required_people" min="1" max="10" class="form-input"
+            [class.error]="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched" />
+          <span class="error-message"
+            *ngIf="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched">
+            Mínimo 1 persona requerida
+          </span>
+        </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="difficulty">Dificultad *</label>
-        <select
-          id="difficulty"
-          formControlName="difficulty"
-          class="form-select"
-          [class.error]="furnitureForm.get('difficulty')?.invalid && furnitureForm.get('difficulty')?.touched"
-        >
-          <option value="">Selecciona la dificultad</option>
-          <option value="low">Baja</option>
-          <option value="medium">Media</option>
-          <option value="high">Alta</option>
-        </select>
-        <span class="error-message" *ngIf="furnitureForm.get('difficulty')?.invalid && furnitureForm.get('difficulty')?.touched">
-          La dificultad es requerida
-        </span>
-      </div>
-
-      <div class="form-group">
-        <label for="people">Personas Requeridas *</label>
-        <input
-          type="number"
-          id="people"
-          formControlName="required_people"
-          min="1"
-          max="10"
-          class="form-input"
-          [class.error]="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched"
-        />
-        <span class="error-message" *ngIf="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched">
-          Mínimo 1 persona requerida
-        </span>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label for="reference">Número de Referencia</label>
-        <input
-          type="text"
-          id="reference"
-          formControlName="reference_number"
-          placeholder="Ej: REF-001"
-          class="form-input"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="image">URL de Imagen</label>
-        <input
-          type="url"
-          id="image"
-          formControlName="image_url"
-          placeholder="https://..."
-          class="form-input"
-        />
+        <div class="form-group">
+          <label for="image">URL de Imagen</label>
+          <input type="url" id="image" formControlName="image_url" placeholder="https://..." class="form-input" />
+        </div>
       </div>
     </div>
 
     <div class="form-group">
       <label for="glb-file">Archivo GLB (Modelo 3D) *</label>
       <div class="file-input-wrapper">
-        <input
-          type="file"
-          id="glb-file"
-          accept=".glb"
-          (change)="onGlbFileSelected($event)"
-          class="file-input"
-        />
+        <input type="file" id="glb-file" accept=".glb" (change)="onGlbFileSelected($event)" class="file-input" />
         <label for="glb-file" class="file-label">
           {{ glbFile ? glbFile.name : 'Selecciona archivo .glb' }}
         </label>
@@ -162,13 +133,7 @@
     <div class="form-group">
       <label for="pdf-file">Archivo PDF (Manual de Montaje) *</label>
       <div class="file-input-wrapper">
-        <input
-          type="file"
-          id="pdf-file"
-          accept=".pdf"
-          (change)="onPdfFileSelected($event)"
-          class="file-input"
-        />
+        <input type="file" id="pdf-file" accept=".pdf" (change)="onPdfFileSelected($event)" class="file-input" />
         <label for="pdf-file" class="file-label">
           {{ pdfFile ? pdfFile.name : 'Selecciona archivo .pdf' }}
         </label>
@@ -177,18 +142,10 @@
     </div>
 
     <div class="form-actions">
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="isSubmitting || !glbFile || !pdfFile"
-      >
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || !glbFile || !pdfFile">
         {{ isSubmitting ? 'Creando...' : 'Crear Mueble' }}
       </button>
-      <button
-        type="reset"
-        class="btn btn-secondary"
-        [disabled]="isSubmitting"
-      >
+      <button type="reset" class="btn btn-secondary" [disabled]="isSubmitting">
         Limpiar Formulario
       </button>
     </div>

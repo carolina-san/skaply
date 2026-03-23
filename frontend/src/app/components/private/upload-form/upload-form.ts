@@ -35,6 +35,7 @@ export class UploadForm implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.loadColors();
+    console.log('Upload form initialized');
   }
 
   private initializeForm(): void {
@@ -45,7 +46,7 @@ export class UploadForm implements OnInit {
       color_id: ['', Validators.required],
       difficulty: ['', Validators.required],
       required_people: [1, [Validators.required, Validators.min(1)]],
-      reference_number: [''],
+      reference_number: ['', Validators.required],
       image_url: ['']
     });
   }
@@ -66,6 +67,7 @@ export class UploadForm implements OnInit {
     this.apiService.getColors().subscribe({
       next: (response: any) => {
         this.colors = Array.isArray(response.data) ? response.data : response;
+        console.log('Colores cargados:', this.colors);
       },
       error: (err) => {
         console.error('Error loading colors:', err);

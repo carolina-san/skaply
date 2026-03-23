@@ -32,7 +32,10 @@ export class GestionIncidencias implements OnInit, OnChanges {
 
   isResolveModalOpen: boolean = false;
   isEscalateModalOpen: boolean = false;
+  isDescriptionModalOpen: boolean = false;
   selectedIssue: Issue | null = null;
+  selectedDescription: string = '';
+  expandedDescriptions: { [key: number]: boolean } = {};
 
   constructor(
     private apiService: ApiService,
@@ -188,5 +191,16 @@ export class GestionIncidencias implements OnInit, OnChanges {
         }
       });
     }
+  }
+
+  // Modal de descripción
+  openDescriptionModal(description: string): void {
+    this.selectedDescription = description;
+    this.isDescriptionModalOpen = true;
+  }
+
+  closeDescriptionModal(): void {
+    this.isDescriptionModalOpen = false;
+    this.selectedDescription = '';
   }
 }

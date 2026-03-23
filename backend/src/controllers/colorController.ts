@@ -12,16 +12,16 @@ export class ColorController {
 
     getColors = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const result = await this.colorService.getAllColorsFoundInFurniture()
+            const result = await this.colorService.getAllColors()
             res.status(200).json({
                 data: result
             })
 
             if (result.length === 0) {
-                next(new ApiError('NOT_FOUND', 'No colors found for this furniture'));
+                next(new ApiError('NOT_FOUND', 'No colors found'));
             }
         } catch (error) {
-            next(new ApiError('INTERNAL_SERVER', 'Error fetching all colors found in furniture'))
+            next(new ApiError('INTERNAL_SERVER', 'Error fetching colors'))
         }
     }
 

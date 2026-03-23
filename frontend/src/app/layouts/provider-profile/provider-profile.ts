@@ -8,16 +8,17 @@ import { ProviderStats } from '../../components/private/provider-stats/provider-
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { UploadForm } from '../../components/private/upload-form/upload-form';
+import { Reviews } from '../../components/private/reviews/reviews';
 
 @Component({
   standalone: true,
   selector: 'app-provider-profile',
-  imports: [ProfileSidebar, GestionMuebles, GestionIncidencias, ProviderStats, UploadForm,   CommonModule, FormsModule],
+  imports: [ProfileSidebar, GestionMuebles, GestionIncidencias, ProviderStats, UploadForm, Reviews, CommonModule, FormsModule],
   templateUrl: './provider-profile.html',
   styleUrls: ['./provider-profile.css']
 })
 export class ProviderProfile implements OnInit {
-  activeTab: 'muebles' | 'incidencias' | 'estadisticas' | 'subir-mueble'  = 'muebles';
+  activeTab: 'muebles' | 'incidencias' | 'estadisticas' | 'subir-mueble' | 'reviews' = 'muebles';
   searchText: string = '';
   pendingIssuesCount: number = 0;
   currentUser: any;
@@ -49,7 +50,7 @@ export class ProviderProfile implements OnInit {
     }
   }
 
-  setActiveTab(tab: 'estadisticas' | 'muebles' | 'incidencias' | 'subir-mueble') {
+  setActiveTab(tab: 'estadisticas' | 'muebles' | 'incidencias' | 'subir-mueble' | 'reviews'): void {
     this.activeTab = tab;
     if (tab === 'incidencias') {
       // Refrescar el contador cuando se cambia a la pestaña de incidencias

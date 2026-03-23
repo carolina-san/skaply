@@ -16,6 +16,13 @@ import { FilterOptions, ProviderBasic, Color, Furniture } from '../../types';
 import { DifficultyLabels } from '../../utils/difficulty-labels';
 import { SeoService } from '../../services/seo.service';
 
+interface FurnitureReview {
+  id: number;
+  stars: number;
+  text: string | null;
+  created_at: string;
+}
+
 
 @Component({
   standalone: true,
@@ -48,6 +55,10 @@ export class Home implements OnInit {
   selectedFurniture: Furniture | undefined;
   isIncidenciaModalOpen = false;
   isLoadingFurnitures = false;
+  averageRating: number | null = null;
+  reviewCount: number = 0;
+  furnitureReviews: FurnitureReview[] = [];
+  isReviewsModalOpen = false;
 
   constructor(
     private apiService: ApiService,
@@ -149,17 +160,63 @@ export class Home implements OnInit {
   openFurnitureModal(furniture: Furniture) {
     this.selectedFurniture = furniture;
     this.isFurnitureModalOpen = true;
+    this.loadFurnitureRatingSummary(furniture.id);
   }
 
   closeFurnitureModal() {
     this.isFurnitureModalOpen = false;
     this.selectedFurniture = undefined;
+    this.averageRating = null;
+    this.reviewCount = 0;
+    this.furnitureReviews = [];
     // Limpiar el query param de la URL al cerrar el modal
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
       replaceUrl: true
     });
+  }
+
+  loadFurnitureRatingSummary(furnitureId: number) {
+    this.averageRating = null;
+    this.reviewCount = 0;
+    this.furnitureReviews = [];
+
+    this.apiService.getFurnitureReviews(furnitureId).subscribe({
+      next: (response) => {
+        const reviews: FurnitureReview[] = response?.data || [];
+        this.furnitureReviews = reviews;
+
+        if (!reviews.length) {
+          this.averageRating = null;
+          this.reviewCount = 0;
+          return;
+        }
+
+        const totalStars = reviews.reduce((sum: number, review: any) => sum + Number(review.stars || 0), 0);
+        this.reviewCount = reviews.length;
+        this.averageRating = totalStars / this.reviewCount;
+      },
+      error: () => {
+        // El backend devuelve 404 cuando no hay reseñas; en ambos casos mostramos estado "sin valoraciones".
+        this.averageRating = null;
+        this.reviewCount = 0;
+        this.furnitureReviews = [];
+      }
+    });
+  }
+
+  openReviewsModal() {
+    this.isFurnitureModalOpen = false;
+    this.isReviewsModalOpen = true;
+  }
+
+  onReviewsModalOpenChange(isOpen: boolean) {
+    this.isReviewsModalOpen = isOpen;
+
+    if (!isOpen && this.selectedFurniture) {
+      this.isFurnitureModalOpen = true;
+    }
   }
 
   /**
