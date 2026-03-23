@@ -28,7 +28,7 @@ export class TextureResource extends Resource {
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         // Evitar problemas de imágenes con tamaño no potencia de 2
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); // O true si las UVs lo requieren (depende de Assimp)
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); // O true si las UVs lo requieren
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.generateMipmap(gl.TEXTURE_2D);
         this.setDefaultParameters();
@@ -63,6 +63,7 @@ export class TextureResource extends Resource {
     // LOAD FROM COLOR
     
     loadFromColor(r: number, g: number, b: number, a: number = 255): void {
+        //console.log(`loadFromColor: r=${r} g=${g} b=${b} a=${a}`);
         const gl = this.gl;
         const data = new Uint8Array([r, g, b, a]);
         this.texture = gl.createTexture()!;

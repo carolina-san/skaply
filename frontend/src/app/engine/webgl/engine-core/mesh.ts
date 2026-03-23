@@ -9,6 +9,9 @@ export interface MeshResource {
     texCoords: Float32Array;
     indices: Uint32Array;
     texture?: TextureResource;
+    // Bounding boxes
+    boundsMin: Float32Array;
+    boundsMax: Float32Array;
 }
 
 export class Mesh extends Entity {
@@ -16,7 +19,8 @@ export class Mesh extends Entity {
     private vao?: WebGLVertexArrayObject;
     private indexCount: number = 0;
     private initialized = false;
-    
+    private opacity: number = 1.0;
+
     constructor(
         public resource: MeshResource,         
         private gl: WebGL2RenderingContext
@@ -24,14 +28,22 @@ export class Mesh extends Entity {
         super();
     }
 
-    draw (modelMatrix: mat4, shader: ShaderResource): void {
-        //console.log('mesh model matrix:' ,modelMatrix);
-        const gl = this.gl;
+    // SETTERS
 
+    setOpacity(value: number): void {
+        this.opacity = Math.max(0, Math.min(1, value));
+    }
+
+
+    draw (modelMatrix: mat4, shader: ShaderResource): void {
+        
+        const gl = this.gl;
+        
         if (!this.initialized) { this.initializeBuffers(); }
         
         shader.setMat4("uModelMatrix", modelMatrix);
-        
+        shader.setFloat("uOpacity", this.opacity);
+     
         // Bind texture if available
         if (this.resource.texture) {
             this.resource.texture.bind(0);
@@ -39,10 +51,9 @@ export class Mesh extends Entity {
         }
  
         gl.bindVertexArray(this.vao!);
-        //gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
-
         gl.bindVertexArray(null);
+
         
         // logs
         //console.log('VAO bound:', gl.getParameter(gl.VERTEX_ARRAY_BINDING));
@@ -96,6 +107,14 @@ export class Mesh extends Entity {
         this.indexCount = this.resource.indices.length;
         this.initialized = true;
 
+    }
+
+    drawRaw(shader: ShaderResource): void {
+        const gl = this.gl;
+        if (!this.initialized) { this.initializeBuffers(); }
+        gl.bindVertexArray(this.vao!);
+        gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
+        gl.bindVertexArray(null);
     }
 
 }

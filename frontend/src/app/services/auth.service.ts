@@ -11,7 +11,12 @@ export interface User {
   id: number;
   name?: string;
   telephone?: string;
+  tax_address?: string;
+  cif?: string;
   image_url?: string;
+  enabled?: boolean;
+  visible?: boolean;
+  registration_status?: 'pending' | 'approved' | 'rejected';
 }
 
 @Injectable({

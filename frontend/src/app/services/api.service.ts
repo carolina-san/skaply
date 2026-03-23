@@ -41,6 +41,10 @@ export class ApiService {
   }
 
 
+  createFurniture(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/private/furniture`, data);
+  }
+
   updateFurniture(id: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/private/furniture/${id}`, data);
   }
@@ -184,6 +188,11 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/chatbot/start`, { furniture_ref, sessionId });
   }
 
+  changeStep(furniture_ref: string, step_number: number): Observable<any> {
+    const sessionId = sessionStorage.getItem('chatbot_session');
+    return this.http.post(`${this.apiUrl}/chatbot/step`, { furniture_ref, step_number, sessionId });
+  }
+
   resetAssembly(): Observable<any> {
     const sessionId = sessionStorage.getItem('chatbot_session');
     return this.http.post(`${this.apiUrl}/chatbot/reset`, { sessionId });
@@ -215,6 +224,10 @@ export class ApiService {
       body.text = text;
     }
     return this.http.post(`${this.apiUrl}/furniture/${furnitureId}/reviews`, body);
+  }
+
+  getFurnitureReviews(furnitureId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/furniture/${furnitureId}/reviews`);
   }
 
   getVisits(): Observable<any> {

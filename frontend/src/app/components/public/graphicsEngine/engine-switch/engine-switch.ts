@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,6 @@ import { CommonModule } from '@angular/common';
   styleUrl: './engine-switch.css'
 })
 export class EngineSwitch {
-  @Input() selectedEngine: string = 'threejs';
-  @Output() engineChanged = new EventEmitter<string>();
+  selectedEngine = input<string>('threejs');
+  engineChanged = output<string>();
 }

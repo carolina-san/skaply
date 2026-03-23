@@ -1,0 +1,101 @@
+<div class="w-full h-full bg-beige flex flex-col">
+
+	<div *ngIf="!isLoading && (furnitureOptions.length > 0 || providerOptions.length > 0)" class="flex pt-2 pb-2 gap-2">
+		<select *ngIf="furnitureOptions.length > 0" [(ngModel)]="selectedFurnitureId" (change)="onFurnitureChange()" class="filtros-select">
+			<option [ngValue]="null" [ngClass]="selectedFurnitureId === null ? 'hidden' : ''">
+				{{ selectedFurnitureId === null ? 'Mueble' : 'Todos los muebles' }}
+			</option>
+			<option *ngFor="let furniture of furnitureOptions" [value]="furniture.id">
+				{{ furniture.name }}
+			</option>
+		</select>
+
+		<select *ngIf="providerOptions.length > 0" [(ngModel)]="selectedProviderId" (change)="onProviderChange()" class="filtros-select">
+			<option [ngValue]="null" [ngClass]="selectedProviderId === null ? 'hidden' : ''">
+				{{ selectedProviderId === null ? 'Proveedor' : 'Todos los proveedores' }}
+			</option>
+			<option *ngFor="let provider of providerOptions" [value]="provider.id">
+				{{ provider.name }}
+			</option>
+		</select>
+	</div>
+
+	<div *ngIf="isLoading" class="flex-1 flex items-center justify-center">
+		<p class="text-marron-oscuro">Cargando valoraciones...</p>
+	</div>
+
+	<div *ngIf="!isLoading && totalItems === 0" class="flex-1 flex items-center justify-center">
+		<div class="text-center">
+			<svg xmlns="http://www.w3.org/2000/svg" height="80px" viewBox="0 -960 960 960" width="80px" fill="#8B7355"
+				class="mx-auto mb-4">
+				<path
+					d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+			</svg>
+			<p class="text-xl font-semibold text-marron-oscuro mb-2">No hay resultados</p>
+			<p class="text-gray-600">No se encontraron valoraciones que coincidan con los filtros seleccionados</p>
+		</div>
+	</div>
+
+	<div *ngIf="!isLoading && totalItems > 0" class="mt-2 bg-white rounded-xl overflow-hidden flex-shrink-0 flex flex-col">
+		<div class="grid grid-cols-12 bg-azul-claro px-3 py-1 text-sm text-marron-oscuro">
+			<h4 class="col-span-3 font-bold">Mueble</h4>
+			<h4 class="col-span-2 text-center font-bold flex items-center justify-center gap-1">
+				Estrellas
+				<app-sort-button [orderBy]="orderBy" [orderDir]="orderDir" column="stars"
+					(sortChange)="onOrderByChange($event)"></app-sort-button>
+			</h4>
+			<h4 class="col-span-5 font-bold">Descripción</h4>
+			<h4 class="col-span-2 text-center font-bold flex items-center justify-center gap-1">
+				Fecha creación
+				<app-sort-button [orderBy]="orderBy" [orderDir]="orderDir" column="created_at"
+					(sortChange)="onOrderByChange($event)"></app-sort-button>
+			</h4>
+		</div>
+
+		<div class="divide-y divide-gray-200">
+			<div *ngFor="let review of paginatedReviews" class="grid grid-cols-12 px-2 py-2 items-center hover:bg-gray-50 transition">
+				<div class="col-span-3 px-2">
+					<div class="flex items-center gap-3 min-w-0">
+						<div class="w-10 h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0">
+							<img *ngIf="review.furniture_image_url" [src]="review.furniture_image_url" [alt]="review.furniture_name"
+								class="w-full h-full object-cover" />
+							<div *ngIf="!review.furniture_image_url" class="w-full h-full flex items-center justify-center text-gray-400">
+								<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+									fill="currentColor">
+									<path
+										d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z" />
+								</svg>
+							</div>
+						</div>
+						<p class="font-medium text-gray-800 text-sm truncate">{{ review.furniture_name }}</p>
+					</div>
+				</div>
+
+				<div class="col-span-2 flex items-center justify-center gap-0.5" [attr.aria-label]="review.stars + ' de 5 estrellas'">
+					<svg *ngFor="let filled of getStarIcons(review.stars)" xmlns="http://www.w3.org/2000/svg" height="16px"
+						viewBox="0 -960 960 960" width="16px" [attr.fill]="filled ? '#d97706' : '#d1d5db'">
+						<path
+							d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z" />
+					</svg>
+				</div>
+
+				<div class="col-span-5 px-2">
+					<p class="text-sm text-gray-700 leading-tight" [title]="review.text || 'Sin descripción'">
+						{{ review.text || 'Sin descripción' }}
+					</p>
+				</div>
+
+				<div class="col-span-2 text-center text-gray-600 font-mono text-xs">
+					{{ review.created_at | date:'dd/MM/yyyy' }}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="flex-1"></div>
+
+	<div *ngIf="!isLoading && totalItems > 0">
+		<app-pagination [currentPage]="currentPage" [totalItems]="totalItems" [itemsPerPage]="itemsPerPage"
+			(pageChange)="goToPage($event)"></app-pagination>
+	</div>
+</div>

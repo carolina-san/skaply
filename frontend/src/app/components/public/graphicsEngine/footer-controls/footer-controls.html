@@ -1,0 +1,157 @@
+<footer
+  class="flex flex-col md:flex-row items-center justify-center bg-transparent text-marron-oscuro w-full relative"
+  [class.opacity-60]="hasIsolatedPart()">
+
+  <!--Primera fila de botones-->
+  @if (mode() !== 'final') {
+  <div class="flex items-center justify-start w-full md:w-auto mb-2 md:mb-0 h-10 md:absolute md:left-0">
+
+    <!-- Mode Toggle, no aparece en el modo final -->
+    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
+
+      <button (click)="modeChange.emit('manual')" class="btn-opciones-mueble" [ngClass]="{ 'active': mode() === 'manual' }">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+          <path
+            d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
+        </svg>
+        <p [ngClass]="{'hidden md:block': mode() === 'manual'}">Manual</p>
+      </button>
+      <button (click)="modeChange.emit('simulation')" class="btn-opciones-mueble"
+        [ngClass]="{ 'active': mode() === 'simulation' }">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
+          <path
+            d="M701-535q14-9 14-25t-14-25L506-710q-15-10-30.5-1.5T460-685v250q0 18 15.5 26.5T506-410l195-125ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-520q0-17 11.5-28.5T120-720q17 0 28.5 11.5T160-680v520h520q17 0 28.5 11.5T720-120q0 17-11.5 28.5T680-80H160Zm160-720v480-480Z" />
+        </svg>
+        <p [ngClass]="{'hidden md:block': mode() === 'simulation'}">Auto</p>
+      </button>
+    </div>
+  </div>
+  }
+
+  <!--Segunda fila de botones-->
+  <div
+    class="w-full md:max-w-100 flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1 mx-auto gap-1 ">
+
+    <!--Boton volver al inicio-->
+    @if (mode() === 'manual') {
+    <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStepAction.emit(0)"
+      [class.bg-beige-oscuro]="manualStep() === 0">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
+      </svg>
+    </button>
+    }
+
+    <!--Boton volver al montaje-->
+    @if (mode() === 'final') {
+    <button (click)="modeChange.emit('manual')"
+      class="bg-beige px-3 py-2 flex items-center gap-1 rounded-full hover:bg-azul-claro transition-all duration-200 ">
+
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="m142-480 294 294q15 15 14.5 35T435-116q-15 15-35 15t-35-15L57-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T436-844q15 15 15 35t-15 35L142-480Z" />
+      </svg>
+      Volver al montaje
+    </button>
+    }
+
+    <!--Boton play/pause-->
+    @if (mode() === 'simulation') {
+    <button (click)="togglePauseAction.emit()"
+      class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige">
+      @if(isSimulationPaused()) {
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      } @else {
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+      </svg>
+      }
+    </button>
+    }
+
+
+    <!--Botones siguiente anterior-->
+    @if (mode() === 'manual') {
+    <div class="flex flex-row items-center justify-center gap-2 w-full">
+      <!--Boton anterior-->
+      <button (click)="prevStepAction.emit()" [disabled]="isManualFirstStep"
+        class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200  disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
+          xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+
+      @if (manualStep() < totalSteps() - 1) { 
+        <!--Boton siguiente-->
+        <button (click)="nextStepAction.emit()"
+          class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+
+        } @else {
+        <!--Boton terminar-->
+        <button (click)="finishAction.emit()"
+          class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform  disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
+          Terminar
+        </button>
+        }
+    </div>
+
+    <!-- Botón de micrófono (control de voz) -->
+    @if (isVoiceSupported()) {
+    <button
+      (click)="toggleVoiceAction.emit()"
+      [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
+      class="voice-mic-btn"
+      [class.voice-mic-btn--active]="isVoiceListening()">
+
+      @if (isVoiceSoundActive()) {
+        <span class="voice-wave-ring voice-wave-ring--1"></span>
+        <span class="voice-wave-ring voice-wave-ring--2"></span>
+        <span class="voice-wave-ring voice-wave-ring--3"></span>
+      }
+
+      <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+        <path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/>
+      </svg>
+    </button>
+    }
+    }
+
+    <!--Botones velocidad-->
+    @if (mode() === 'simulation') {
+    <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige">
+      @for(speed of simulationSpeeds; track speed) {
+      <button (click)="speedChange.emit(speed)" class="btn-opciones-mueble"
+        [ngClass]="{ 'active': simulationSpeed() === speed }">
+        {{speed}}x
+      </button>
+      }
+    </div>
+    }
+
+    <!--Boton modo final-->
+    <button (click)="modeChange.emit('final')"
+      class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
+      [class.bg-beige-oscuro]="mode() === 'final'">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+        <path
+          d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
+      </svg>
+    </button>
+  </div>
+</footer>

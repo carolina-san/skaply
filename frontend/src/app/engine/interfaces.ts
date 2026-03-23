@@ -11,9 +11,11 @@ export interface RenderableObject {
     setRotation(x: number, y: number, z: number): void;
     setScale(x: number, y: number, z: number): void;
     setVisible(visible: boolean): void;
+    setOpacity(value: number): void;
     add(child: RenderableObject): void;
     remove(child: RenderableObject): void;
     getPosition(): Vector3;
+    getRotation(): Vector3;
     lookAt(target: Vector3): void;
     userData: any;
     castShadow: boolean;
@@ -55,7 +57,7 @@ export abstract class EngineFacade {
     // Object Creation
     // abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
     // abstract createGroup(): RenderableObject;
-    abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number, color: number | string): Promise<RenderableObject>;
+    abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject>;
 
     // Scene Management
     abstract addToScene(object: RenderableObject): void;

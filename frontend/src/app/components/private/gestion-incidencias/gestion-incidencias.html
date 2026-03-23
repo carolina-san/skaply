@@ -63,8 +63,10 @@
         </div>
 
         <!-- Descripción -->
-        <div class="col-span-2 px-2">
-          <p class="text-sm text-gray-700 line-clamp-2 leading-tight">{{ issue.description }}</p>
+        <div class="col-span-2 px-2 cursor-pointer" (click)="issue.id && (expandedDescriptions[issue.id] = !expandedDescriptions[issue.id])">
+          <p class="text-sm text-gray-700 leading-tight" [ngClass]="{'line-clamp-2': !issue.id || !expandedDescriptions[issue.id]}">
+            {{ issue.description }}
+          </p>
         </div>
 
         <!-- Usuario -->
@@ -93,11 +95,10 @@
           {{ issue.provider_name || 'N/A' }}
         </div>
 
-        <!-- Acciones -->
         <div class="col-span-2 flex justify-center gap-0.5 text-gray-600">
 
-          <!-- Botón Resolver (solo si está pendiente o escalada) -->
-          <button *ngIf="issue.status !== 'resolved'" class="btn-acciones" (click)="openResolveModal(issue)">
+          <!-- Botón Resolver (solo si está pendiente o escalada, pero proveedores no ven el botón en escaladas) -->
+          <button *ngIf="issue.status !== 'resolved' && (currentUser?.role !== 'provider' || issue.status !== 'escalated')" class="btn-acciones" (click)="openResolveModal(issue)">
             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#452621">
               <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
             </svg>

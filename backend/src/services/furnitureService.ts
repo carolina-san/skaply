@@ -73,7 +73,31 @@ export class FurnitureService {
     );
     return result.rows.length > 0;
   }
+  async partInFurniture(furnitureId: number, partName: string): Promise<boolean> {
+    const result = await pool.query(
+      `SELECT 1 FROM part p join furniture_part fp on p.id = fp.part_id
+      WHERE fp.furniture_id = $1 AND p.reference_number = $2
+      LIMIT 1`,
+      [furnitureId, partName]
+    );
+    return result.rows.length > 0;
+  }
 
+  async getParts(furnitureId: number, stepNumber: number) {
+    try {
+      const result = await pool.query(
+        `SELECT p.reference_number FROM part p
+        join furniture_part fp on p.id = fp.part_id 
+        join step_part sp on p.id = sp.part_id
+        join step s on sp.stepId = s.id
+        WHERE fp.furniture_id = $1 AND s.step_number = $2`,
+        [furnitureId, stepNumber]
+      );
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
   async getAllFurniture(page?: number, limit?: number) {
     try {
       let query = `
@@ -427,10 +451,102 @@ export class FurnitureService {
     }
   }
 
+  // async getFurniturePartsUris(furnitureId: number) {
+  //   try {
+  //     const query = `
+  //       SELECT 
+  //         p.id AS part_id,
+  //         p.reference_number,
+  //         p.file_uri
+  //       FROM Furniture_Part fp
+  //       JOIN Part p ON p.id = fp.part_id
+  //       WHERE fp.furniture_id = $1
+  //       AND p.file_uri != ''
+  //     `;
+
+  //     const result = await pool.query(query, [furnitureId]);
+  //     if (result.rows.length === 0) return null;
+  //     return result.rows;
+
+  //   } catch (error) {
+  //     console.error('Database Error:', error);
+  //     throw error;
+  //   }
+  // }
+  
   // Devuelve toda la iformación necesaria para el motor gráfico
+  // async getFurnitureAssembly(furnitureId: number) {
+  //   try {
+  //     const query = `
+  //     SELECT
+  //       f.required_people,
+  //       s.id AS step_id,
+  //       s.step_number,
+  //       s.description,
+  //       s.used_in_step_with_id,
+  //       s.scene_camera_angle,
+  //       s.scene_camera_rotation_axis,
+  //       COALESCE(json_agg(
+  //         DISTINCT jsonb_build_object(
+  //           'instance_id',  fp.id,
+  //           'part_id', p.id,
+  //           'reference_number', p.reference_number,
+  //           'file_uri', p.file_uri,
+  //           'color_id', p.color_id,
+  //           'quantity', sp.quantity,
+  //           'axis', fp.exploded_axis,
+  //           'distance', fp.exploded_distance,
+  //           'pos_x', fp.assembled_pos_x,
+  //           'pos_y', fp.assembled_pos_y,
+  //           'pos_z', fp.assembled_pos_z
+  //         )
+  //       ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
+  //       COALESCE(json_agg(
+  //         DISTINCT jsonb_build_object(
+  //           'tool_id', t.id,
+  //           'name', t.name
+  //         )
+  //       ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tools
+  //     FROM Step s
+  //     JOIN Furniture f              ON f.id = s.furniture_id
+  //     LEFT JOIN Furniture_Part fp   ON fp.step_id = s.id
+  //     LEFT JOIN Part p              ON p.id = sp.part_id
+  //     LEFT JOIN Step_Tool st        ON st.stepid = s.id  
+  //     LEFT JOIN Tool t              ON t.id = st.tool_id
+  //     WHERE s.furniture_id = $1
+  //     GROUP BY 
+  //       f.required_people,
+  //       s.id,
+  //       s.step_number,
+  //       s.description,
+  //       s.used_in_step_with_id,
+  //       s.scene_camera_angle,
+  //       s.scene_camera_rotation_axis
+  //     ORDER BY s.step_number ASC
+  //   `;
+
+  //     const result = await pool.query(query, [furnitureId]);
+
+  //     // Check if we found any steps; if not, return null or an empty object
+  //     if (result.rows.length === 0) return null;
+
+  //     return {
+  //       furniture_id: furnitureId,
+  //       required_people: result.rows[0].required_people,
+  //       steps: result.rows
+  //     };
+
+  //   } catch (error) {
+  //     // SECURITY TIP: Log the actual error internally, but don't expose 
+  //     // DB details to the user.
+  //     console.error('Database Error:', error);
+  //     throw error;
+  //   }
+  // }
+
   async getFurnitureAssembly(furnitureId: number) {
-    try {
-      const query = `
+  try {
+    const query = `
       SELECT
         f.required_people,
         s.id AS step_id,
@@ -441,36 +557,35 @@ export class FurnitureService {
         s.scene_camera_rotation_axis,
         COALESCE(json_agg(
           DISTINCT jsonb_build_object(
-            'part_id', p.id,
+            'instance_id',  fp.id,
+            'part_id',      p.id,
             'reference_number', p.reference_number,
-            'file_uri', p.file_uri,
-            'color_id', p.color_id,
-            'quantity', sp.quantity,
-            'axis', fp.exploded_axis,
-            'distance', fp.exploded_distance,
-            'pos_x', fp.assembled_pos_x,
-            'pos_y', fp.assembled_pos_y,
-            'pos_z', fp.assembled_pos_z
-
+            'file_uri',     p.file_uri,
+            'color_id',     p.color_id,
+            'axis',         fp.exploded_axis,
+            'distance',     fp.exploded_distance,
+            'pos_x',        fp.assembled_pos_x,
+            'pos_y',        fp.assembled_pos_y,
+            'pos_z',        fp.assembled_pos_z,
+            'rot_x',        fp.assembled_rot_x,
+            'rot_y',        fp.assembled_rot_y,
+            'rot_z',        fp.assembled_rot_z
           )
-        ) FILTER (WHERE p.id IS NOT NULL), '[]') AS parts,
+        ) FILTER (WHERE fp.id IS NOT NULL), '[]') AS parts,
         COALESCE(json_agg(
           DISTINCT jsonb_build_object(
             'tool_id', t.id,
-            'name', t.name
+            'name',    t.name
           )
         ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tools
       FROM Step s
       JOIN Furniture f ON f.id = s.furniture_id
-      LEFT JOIN Step_Part sp ON sp.stepid = s.id  -- Changed stepId to stepid
-      LEFT JOIN Part p ON p.id = sp.part_id
-      LEFT JOIN Furniture_Part fp 
-        ON fp.part_id = p.id 
-        AND fp.furniture_id = s.furniture_id
-      LEFT JOIN Step_Tool st ON st.stepid = s.id  -- Changed stepId to stepid
-      LEFT JOIN Tool t ON t.id = st.tool_id
+      LEFT JOIN Furniture_Part fp ON fp.step_id = s.id
+      LEFT JOIN Part p            ON p.id = fp.part_id
+      LEFT JOIN Step_Tool st      ON st.stepid = s.id
+      LEFT JOIN Tool t            ON t.id = st.tool_id
       WHERE s.furniture_id = $1
-      GROUP BY 
+      GROUP BY
         f.required_people,
         s.id,
         s.step_number,
@@ -481,24 +596,20 @@ export class FurnitureService {
       ORDER BY s.step_number ASC
     `;
 
-      const result = await pool.query(query, [furnitureId]);
+    const result = await pool.query(query, [furnitureId]);
+    if (result.rows.length === 0) return null;
 
-      // Check if we found any steps; if not, return null or an empty object
-      if (result.rows.length === 0) return null;
+    return {
+      furniture_id: furnitureId,
+      required_people: result.rows[0].required_people,
+      steps: result.rows
+    };
 
-      return {
-        furniture_id: furnitureId,
-        required_people: result.rows[0].required_people,
-        steps: result.rows
-      };
-
-    } catch (error) {
-      // SECURITY TIP: Log the actual error internally, but don't expose 
-      // DB details to the user.
-      console.error('Database Error:', error);
-      throw error;
-    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw error;
   }
+}
 
   async getStepByRef(furnitureRef: string, stepNumber: number) {
     try {

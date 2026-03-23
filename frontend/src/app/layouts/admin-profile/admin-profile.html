@@ -29,6 +29,10 @@
             {{ escalatedIssuesCount }}
           </span>
         </button>
+        <button (click)="setActiveTab('reviews')" [ngClass]="[activeTab === 'reviews' ? 'selected-tab' : 'opacity-40']"
+          class="nav-tab">
+          Valoraciones
+        </button>
         <button (click)="setActiveTab('dashboard')"
           [ngClass]="[activeTab === 'dashboard' ? 'selected-tab' : 'opacity-40']" class="nav-tab">
           Estadísticas
@@ -58,6 +62,7 @@
         class="h-full block"></app-gestion-solicitudes>
       <app-gestion-incidencias *ngIf="activeTab === 'incidencias'" [searchText]="searchText"
         class="h-full block"></app-gestion-incidencias>
+      <app-reviews *ngIf="activeTab === 'reviews'" [searchText]="searchText" class="h-full block"></app-reviews>
       <app-stats *ngIf="activeTab === 'dashboard'" class="h-full block"></app-stats>
     </div>
   </div>

@@ -17,6 +17,7 @@ export class Export implements OnChanges {
   @Input() selectedFurniture: Furniture | undefined;
   selectedFurnitureSteps: any[] = [];
   difficultyLabels: typeof DifficultyLabels = DifficultyLabels;
+  isDownloadingPdf = false;
 
   provider: ProviderBasic | undefined;
   category: any | undefined;
@@ -75,41 +76,46 @@ export class Export implements OnChanges {
   }
 
   async downloadPDF() {
-    if (!this.selectedFurniture) return;
+    if (!this.selectedFurniture || this.isDownloadingPdf) return;
+
+    this.isDownloadingPdf = true;
 
     const furniture = this.selectedFurniture;
     const doc = new jsPDF();
 
-    // Cargar fuente Inter
     try {
-      const fontResponse = await fetch('assets/fonts/inter.ttf');
-      const fontBlob = await fontResponse.blob();
-      const reader = new FileReader();
+      const loadFontAsBase64 = async (fontPath: string): Promise<string> => {
+        const fontResponse = await fetch(fontPath);
+        const fontBlob = await fontResponse.blob();
 
-      const fontResponseBold = await fetch('assets/fonts/Inter-Bold.ttf');
-      const fontBlobBold = await fontResponseBold.blob();
-      const readerBold = new FileReader();
-
-      reader.readAsDataURL(fontBlob);
-      readerBold.readAsDataURL(fontBlobBold);
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        const base64Font = base64data.split(',')[1];
-
-        const base64dataBold = readerBold.result as string;
-        const base64FontBold = base64dataBold.split(',')[1];
-
-        doc.addFileToVFS("inter.ttf", base64Font);
-        doc.addFont("inter.ttf", "inter", "normal");
-        doc.addFileToVFS("Inter-Bold.ttf", base64FontBold);
-        doc.addFont("Inter-Bold.ttf", "inter", "bold");
-
-        this.generatePDFContent(doc, furniture);
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = reader.result as string;
+            resolve(base64data.split(',')[1]);
+          };
+          reader.onerror = () => reject(new Error(`Error reading font: ${fontPath}`));
+          reader.readAsDataURL(fontBlob);
+        });
       };
+
+      const [base64Font, base64FontBold] = await Promise.all([
+        loadFontAsBase64('assets/fonts/inter.ttf'),
+        loadFontAsBase64('assets/fonts/Inter-Bold.ttf')
+      ]);
+
+      doc.addFileToVFS('inter.ttf', base64Font);
+      doc.addFont('inter.ttf', 'inter', 'normal');
+      doc.addFileToVFS('Inter-Bold.ttf', base64FontBold);
+      doc.addFont('Inter-Bold.ttf', 'inter', 'bold');
+
+      await this.generatePDFContent(doc, furniture);
     } catch (error) {
-      console.error("Error loading font:", error);
+      console.error('Error loading font:', error);
       // Fallback a fuente por defecto si falla
-      this.generatePDFContent(doc, furniture);
+      await this.generatePDFContent(doc, furniture);
+    } finally {
+      this.isDownloadingPdf = false;
     }
   }
 

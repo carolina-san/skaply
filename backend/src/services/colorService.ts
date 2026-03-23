@@ -2,6 +2,18 @@ import pool from '@config/database';
 
 export class ColorService {
 
+    async getAllColors() {
+        try {
+            const result = await pool.query(`
+                SELECT id, name, hex
+                FROM Color
+                ORDER BY name ASC`);
+            return result.rows;
+        } catch (error) {
+            throw new Error('Error fetching colors')
+        }
+    }
+
     async getAllColorsFoundInFurniture() {
         try {
             const result = await pool.query(`

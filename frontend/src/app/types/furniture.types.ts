@@ -27,10 +27,12 @@ export interface AssemblyPartRef {
     file_uri: string;
     quantity: number;
     reference_number: string;
-    name?: string; // Optional if not in API, but useful
     pos_x: number;
     pos_y: number;
     pos_z: number;
+    rot_x: number;
+    rot_y: number;
+    rot_z: number;
 }
 
 export interface AssemblyStep {
@@ -57,9 +59,11 @@ export interface AssemblyPart {
     object: RenderableObject;
     startPosition: Vector3;
     targetPosition: Vector3;
+    rotation: Vector3;
     appearStep: number;
     joinStep: number;
     name: string;
     description: string;
     arrow?: RenderableObject;
+    arrowOpacity?: number;
 }

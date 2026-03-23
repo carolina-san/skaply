@@ -1,0 +1,5 @@
+@import "../../../../styles.css";
+
+.filtros-select {
+	@apply w-40 px-2 py-1.5 rounded-full border border-gray-300 bg-white text-marron-oscuro text-sm focus:outline-none focus:ring-1 focus:ring-marron-oscuro;
+}

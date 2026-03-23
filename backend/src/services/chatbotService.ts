@@ -84,13 +84,51 @@ export class ChatbotService {
       sessionId
     );
 
-    const parametersStruct = struct.encode({ furniture_ref: furnitureRef });
+    const parametersStruct = struct.encode({ furniture_ref: furnitureRef, step_number: 1 });
 
     const request = {
       session: sessionPath,
       queryInput: {
         event: {
           name: 'INICIAR_MONTAJE',
+          parameters: parametersStruct,
+          languageCode: 'es'
+        }
+      }
+    };
+
+    const [responses] = await this.sessionClient.detectIntent(request);
+    const result = responses.queryResult;
+
+    return {
+      fulfillmentText: result?.fulfillmentText ?? '',
+      fulfillmentMessages: result?.fulfillmentMessages ?? []
+    };
+  }
+
+  /**
+   * Actualiza el parametro step_number en el contexto de montaje_context de Dialogflow
+   */
+  async changeStepContext(furnitureRef: string, stepNumber: number, sessionId: string): Promise<any> {
+    try {
+      await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+    } catch (error) {
+      return {
+        fulfillmentText: `No existe un mueble con la referencia "${furnitureRef}". Por favor, verifica la referencia e intenta de nuevo.`
+      };
+    }
+    const sessionPath = this.sessionClient.projectAgentSessionPath(
+      this.projectId,
+      sessionId
+    );
+
+    const parametersStruct = struct.encode({ furniture_ref: furnitureRef, furniture_step: stepNumber });
+    console.log("Cambio el paso del context a ", stepNumber);
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        event: {
+          name: 'CAMBIAR_PASO_MONTAJE',
           parameters: parametersStruct,
           languageCode: 'es'
         }
@@ -1010,7 +1048,6 @@ export class ChatbotService {
   }
 
   async goToStep(furnitureRef: string, stepNumber: number, session?: string): Promise<any> {
-    console.log("Entra en goToStep service");
     try {
       return {
         fulfillmentMessages: [
@@ -1040,6 +1077,77 @@ export class ChatbotService {
       console.error("Error in goToStep:", error);
       return {
         fulfillmentText: "Hubo un error al intentar ir a ese paso."
+      };
+    }
+  }
+
+  async isolatePart(furnitureRef: string, partName: string, session?: string): Promise<any> {
+    try {
+      const furnitureId = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+      const partExists = await this.furnitureService.partInFurniture(furnitureId, partName);
+      if (!partExists) {
+        return {
+          fulfillmentText: `La pieza ${partName} no existe en este mueble.`
+        };
+      }
+      return {
+        fulfillmentMessages: [
+          {
+            payload: {
+              action: "isolate.part",
+              furniture_ref: furnitureRef,
+              part_name: partName,
+              richContent: [
+                [
+                  {
+                    type: "description",
+                    text: [
+                      `Aislando la pieza ${partName}...`
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in isolatePart:", error);
+      return {
+        fulfillmentText: "Hubo un error al intentar aislar la pieza."
+      };
+    }
+  }
+
+  async getStepParts(furnitureRef: string, stepNumber: number, session?: string): Promise<any> {
+    try {
+      const furnitureId = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
+      const stepParts = await this.furnitureService.getParts(furnitureId, stepNumber);
+      return {
+        fulfillmentMessages: [
+          {
+            payload: {
+              action: "get.step.parts",
+              furniture_ref: furnitureRef,
+              step_number: stepNumber,
+              richContent: [
+                [
+                  {
+                    type: "chips",
+                    options: stepParts.map((part: any) => ({
+                      text: part.reference_number,
+                    }))
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      };
+    } catch (error) {
+      console.error("Error in getStepParts:", error);
+      return {
+        fulfillmentText: "Hubo un error al intentar obtener las piezas del paso."
       };
     }
   }

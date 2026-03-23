@@ -5,6 +5,8 @@ import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
 
+    private name: string = '';
+
     // entity and nodes
     private entity: Entity | null = null;
     private children: Node[] = [];
@@ -17,12 +19,15 @@ export class Node {
 
     // final transformation (parent x node)
     private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
+    private lastModelMatrix: mat4 = mat4.create();
 
-    // only if local transformations were made
-    private needsUpdate: boolean = true;
-    private name: string = '';
-    private visible: boolean = true;  // Add visibility flag
+    private needsUpdate: boolean = true; // only if local transformations were made
+    
+    private visible: boolean = true;  
+    private isHighlighted: boolean = false;
 
+    //Bounding Boxes
+    private pickBounds: { min: vec3; max: vec3 } | null = null;
 
     // CHILDREN MANAGEMENT
 
@@ -77,7 +82,18 @@ export class Node {
     setVisible(visible: boolean): void {
         this.visible = visible;
     }
-    
+
+    setIsHighlighted(value: boolean): void {
+        this.isHighlighted = value;
+    }
+
+    setPickBounds(min: vec3, max: vec3): void { //Coger los límites
+        this.pickBounds = {
+            min: vec3.clone(min),
+            max: vec3.clone(max)
+        };
+    }
+
     // GETTERS
 
     getEntity(): Entity | null {
@@ -108,13 +124,31 @@ export class Node {
         return this.transformMatrix;
     }
 
+    getLastModelMatrix(): mat4 {
+        return this.lastModelMatrix;
+    }
+
     getName(): string {
         return this.name;
+    }
+
+    getPickBounds(): { min: vec3; max: vec3 } | null {
+        return this.pickBounds;
+    }
+
+    getChildren(): readonly Node[] { // Necesario para saber a que hacerle la bound y el raycast
+        return this.children;
+    }
+
+    getIsHighlighted(): boolean {
+        return this.isHighlighted;
     }
 
     isVisible(): boolean {
         return this.visible;
     }
+
+    
 
     // LOCAL MATRIX (PRIVATE)
 
@@ -145,7 +179,10 @@ export class Node {
             
             // draw entity 
             if (this.entity) {
-                this.entity.draw(this.getTransformMatrix(), shader);
+                const worldMatrix = this.getTransformMatrix();
+                this.lastModelMatrix = worldMatrix;
+                //shader.setFloat("uHighlight", this.isHighlighted ? 1.0 : 0.0);
+                this.entity.draw(worldMatrix, shader);
             }
 
             // recursive - only traverse visible children
@@ -174,7 +211,7 @@ export class Node {
         this.needsUpdate = true;
     }
 
-    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE)
+    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE
 
     getObjectByName(name: string): Node | null {
         if (this.name === name) return this;

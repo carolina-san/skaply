@@ -1,7 +1,7 @@
 @import "../../../../styles.css";
 
 .btn-acciones {
-    @apply flex flex-col items-center justify-center px-2 hover:bg-azul-claro/30 rounded-full transition gap-0.5 text-xs;
+    @apply flex flex-col items-center bg-azul-claro/40 justify-center px-4 hover:bg-azul-claro/80 rounded-full transition gap-0.5 text-xs;
 }
 
 .filtros-select {

@@ -175,7 +175,7 @@
          sm:rounded-bl-xl sm:rounded-tr-none">
       </div>
       <div class="flex flex-col p-3 sm:p-5 gap-3 sm:gap-5 w-full">
-        <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2">
+        <div class="flex items-center gap-2 sm:gap-4 mb-1 sm:mb-2 flex-wrap">
           <span class="px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-bold rounded-full" [ngClass]="{
             'bg-green-100 text-green-600': selectedFurniture?.difficulty === 'low',
             'bg-orange-100 text-orange-600': selectedFurniture?.difficulty === 'medium',
@@ -186,8 +186,18 @@
           <span class="text-xs text-gray-500">
             REF: {{ selectedFurniture?.reference_number }}
           </span>
-
-
+          <button type="button" (click)="openReviewsModal()"
+            class="flex items-center gap-1 text-xs text-marron-oscuro/80 hover:text-marron-oscuro underline-offset-2 hover:underline transition">
+            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#d97706">
+              <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z" />
+            </svg>
+            <span *ngIf="averageRating !== null; else noReviewsInline">
+              {{ averageRating | number:'1.1-1' }} / 5
+            </span>
+            <ng-template #noReviewsInline>
+              <span>Sin valoraciones</span>
+            </ng-template>
+          </button>
         </div>
         <div class="mt-auto">
           <h2 class="text-2xl sm:text-4xl font-extrabold text-marron-oscuro">
@@ -217,6 +227,31 @@
                 d="M646-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h446L532-634q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T589-691l183 183q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L589-269q-12 12-28.5 11.5T532-270q-11-12-11.5-28t11.5-28l114-114Z" />
             </svg>
           </button>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+
+  <app-modal [open]="isReviewsModalOpen" (openChange)="onReviewsModalOpenChange($event)">
+    <div class="p-4 sm:p-6 bg-beige rounded-xl max-h-[80vh] overflow-auto">
+      <h3 class="text-xl sm:text-2xl font-bold text-marron-oscuro mb-1">Valoraciones</h3>
+      <p class="text-sm text-marron-oscuro/80 mb-4">{{ selectedFurniture?.name }}</p>
+
+      <div *ngIf="furnitureReviews.length === 0" class="text-sm text-gray-600">
+        Este mueble no tiene valoraciones todavía.
+      </div>
+
+      <div *ngIf="furnitureReviews.length > 0" class="space-y-3">
+        <div *ngFor="let review of furnitureReviews" class="bg-white rounded-xl px-3 py-2 border border-beige-oscuro/60">
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <div class="flex items-center gap-1">
+              <svg *ngFor="let i of [1,2,3,4,5]" xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960"
+                width="14px" [attr.fill]="i <= review.stars ? '#d97706' : '#d1d5db'">
+                <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z" />
+              </svg>
+            </div>
+          </div>
+          <p class="text-sm text-marron-oscuro/90">{{ review.text || 'Sin comentario' }}</p>
         </div>
       </div>
     </div>
