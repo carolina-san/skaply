@@ -6,7 +6,7 @@ export interface VoiceCommandInfo {
   /** Texto legible de la acción detectada */
   label: string;
   /** Icono SVG path de Material Symbols para acompañar el texto */
-  icon: 'next' | 'prev' | 'goto' | 'final' | 'restart';
+  icon: 'next' | 'prev' | 'goto' | 'final' | 'restart' | 'error';
 }
 
 @Injectable()
@@ -84,6 +84,7 @@ export class VoiceControlService {
       'ir al paso número :numero': (n: string) => this.handleGoToStep(n),
 
       // ── Reiniciar ───────────────────────────────────────────────────
+      'inicio': () => this.handleRestart(),
       'reiniciar': () => this.handleRestart(),
       'volver al inicio': () => this.handleRestart(),
       'volver al principio': () => this.handleRestart(),
@@ -107,15 +108,25 @@ export class VoiceControlService {
       clearTimeout(this.soundTimeout);
       this.isSoundActive.set(false);
     });
+    // Si annyang detecta voz pero no hace "match" con nuestros comandos
+    annyang.addCallback('resultNoMatch', () => {
+      this.run({ label: 'No entendido', icon: 'error' }, () => { });
+    });
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────
+
+  private showError(msg: string): void {
+    this.run({ label: msg, icon: 'error' }, () => { });
+  }
 
   private handleNextStep(): void {
     const current = this.getManualStep?.() ?? 0;
     const total = this.getTotalManualSteps?.() ?? 0;
     if (current < total - 1) {
       this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.());
+    } else {
+      this.showError('Este es el último paso');
     }
   }
 
@@ -123,6 +134,8 @@ export class VoiceControlService {
     const current = this.getManualStep?.() ?? 0;
     if (current > 0) {
       this.run({ label: 'Paso anterior', icon: 'prev' }, () => this.onPrevStep?.());
+    } else {
+      this.showError('Este es el primer paso');
     }
   }
 
@@ -131,6 +144,8 @@ export class VoiceControlService {
     const total = this.getTotalManualSteps?.() ?? 0;
     if (current < total - 1) {
       this.run({ label: 'Ver resultado', icon: 'final' }, () => this.onLastStep?.());
+    } else {
+      this.showError('Ya estás en el final');
     }
   }
 
@@ -138,6 +153,8 @@ export class VoiceControlService {
     const current = this.getManualStep?.() ?? 0;
     if (current > 0) {
       this.run({ label: 'Reiniciar', icon: 'restart' }, () => this.onGoToStep?.(0));
+    } else {
+      this.showError('Ya estás al inicio');
     }
   }
 
@@ -162,6 +179,7 @@ export class VoiceControlService {
       );
     } else {
       console.warn(`[VoiceControl] Paso inválido o fuera de rango: "${raw}" (Límite lógico: ${totalLogical})`);
+      this.showError('Ese paso no existe');
     }
   }
 
