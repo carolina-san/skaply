@@ -238,7 +238,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       () => this.goToLastStep(),
       () => this.manualStep(),
       () => this.totalSteps(),
-      () => Math.floor(this.totalSteps() / this.stepsRatio())
+      () => Math.floor(this.totalSteps() / this.stepsRatio()),
+      () => this.isolatedPart() !== null
     );
   }
 

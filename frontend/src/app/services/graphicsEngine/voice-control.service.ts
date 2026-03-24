@@ -24,6 +24,7 @@ export class VoiceControlService {
   private getManualStep?: () => number;
   private getTotalManualSteps?: () => number;
   private getTotalLogicalSteps?: () => number;
+  private getHasIsolatedPart?: () => boolean;
   private soundTimeout?: ReturnType<typeof setTimeout>;
   private commandTimeout?: ReturnType<typeof setTimeout>;
 
@@ -37,7 +38,8 @@ export class VoiceControlService {
     onLast: () => void,
     getManualStep: () => number,
     getTotalManualSteps: () => number,
-    getTotalLogicalSteps: () => number
+    getTotalLogicalSteps: () => number,
+    getHasIsolatedPart: () => boolean
   ): void {
     this.onNextStep = onNext;
     this.onPrevStep = onPrev;
@@ -46,6 +48,7 @@ export class VoiceControlService {
     this.getManualStep = getManualStep;
     this.getTotalManualSteps = getTotalManualSteps;
     this.getTotalLogicalSteps = getTotalLogicalSteps;
+    this.getHasIsolatedPart = getHasIsolatedPart;
 
     if (!isSpeechRecognitionSupported()) {
       console.warn('[VoiceControl] SpeechRecognition no está disponible en este navegador.');
@@ -116,11 +119,20 @@ export class VoiceControlService {
 
   // ── Helpers ──────────────────────────────────────────────────────────
 
+  private checkIsolation(): boolean {
+    if (this.getHasIsolatedPart?.()) {
+      this.showError('Cierra la inspección primero');
+      return true;
+    }
+    return false;
+  }
+
   private showError(msg: string): void {
     this.run({ label: msg, icon: 'error' }, () => { });
   }
 
   private handleNextStep(): void {
+    if (this.checkIsolation()) return;
     const current = this.getManualStep?.() ?? 0;
     const total = this.getTotalManualSteps?.() ?? 0;
     if (current < total - 1) {
@@ -131,6 +143,7 @@ export class VoiceControlService {
   }
 
   private handlePrevStep(): void {
+    if (this.checkIsolation()) return;
     const current = this.getManualStep?.() ?? 0;
     if (current > 0) {
       this.run({ label: 'Paso anterior', icon: 'prev' }, () => this.onPrevStep?.());
@@ -140,6 +153,7 @@ export class VoiceControlService {
   }
 
   private handleLastStep(): void {
+    if (this.checkIsolation()) return;
     const current = this.getManualStep?.() ?? 0;
     const total = this.getTotalManualSteps?.() ?? 0;
     if (current < total - 1) {
@@ -150,6 +164,7 @@ export class VoiceControlService {
   }
 
   private handleRestart(): void {
+    if (this.checkIsolation()) return;
     const current = this.getManualStep?.() ?? 0;
     if (current > 0) {
       this.run({ label: 'Reiniciar', icon: 'restart' }, () => this.onGoToStep?.(0));
@@ -170,6 +185,7 @@ export class VoiceControlService {
   }
 
   private handleGoToStep(raw: string): void {
+    if (this.checkIsolation()) return;
     const n = this.parseSpanishNumber(raw.trim().toLowerCase());
     const totalLogical = this.getTotalLogicalSteps?.() ?? 0;
     if (n !== null && n >= 1 && n <= totalLogical) {
