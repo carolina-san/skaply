@@ -57,6 +57,7 @@ export abstract class EngineFacade {
     // Object Creation
     // abstract createMesh(geometry: GeometryConfig, material: MaterialConfig): RenderableObject;
     // abstract createGroup(): RenderableObject;
+    abstract createGroup(name?: string): RenderableObject;
     abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject>;
 
     // Scene Management
@@ -76,8 +77,6 @@ export abstract class EngineFacade {
     abstract raycast(x: number, y: number): RenderableObject | null; // x, y are normalized device coordinates (-1 to +1)
     abstract setHighlight(objects: RenderableObject[]): void;
 
-    abstract checkControlsState(): boolean; // Returns true if moved from initial state
-
     // Camera getter for internal calculations if needed (e.g. projecting 3d to 2d)
     //abstract getCamera(): any;
     abstract getCamera(): CameraState;
@@ -89,4 +88,9 @@ export abstract class EngineFacade {
     abstract wrapNativeObject(native: any): RenderableObject;
 
     abstract dispose(): void;
+
+    abstract frameObjectFromParts(
+        parts: { currentPosition: Vector3; nativeObject: any }[],
+        margin?: number
+    ): void;
 }

@@ -17,7 +17,8 @@ export class FurnitureService {
     parts: AssemblyPart[],
     totalSteps: number,
     stepDescriptions: string[],
-    sortedSteps: any[]
+    sortedSteps: any[],
+    furnitureRoot: RenderableObject
   }> {
     const data = await this.apiService.getFurnitureById(furnitureId).toPromise();
     if (!data) { throw new Error('Furniture not found'); }
@@ -30,12 +31,16 @@ export class FurnitureService {
     parts: AssemblyPart[], 
     totalSteps: number, 
     stepDescriptions: string[], 
-    sortedSteps: any[] }> 
+    sortedSteps: any[],
+    furnitureRoot: RenderableObject 
+  }> 
     {
 
     const parts: AssemblyPart[] = [];
     const stepDescriptions: string[] = [];
     let currentStepIndex = 0;
+
+    const furnitureRoot = this.engineService.getEngine().createGroup('furniture');
 
     const sortedSteps = data.steps.sort((a, b) => a.step_number - b.step_number);
 
@@ -53,7 +58,8 @@ export class FurnitureService {
           continue;
         }
 
-        this.engineService.getEngine().addToScene(mesh);
+        furnitureRoot.add(mesh);
+        //this.engineService.getEngine().addToScene(mesh);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.setVisible(false);
@@ -87,9 +93,11 @@ export class FurnitureService {
       }
       currentStepIndex++;
     }
+    
+    this.engineService.getEngine().addToScene(furnitureRoot); 
 
     const totalSteps = currentStepIndex * 2;
-    return { parts, totalSteps, stepDescriptions, sortedSteps };
+    return { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot };
   }
 
   private async loadMesh(partRef: AssemblyPartRef): 
