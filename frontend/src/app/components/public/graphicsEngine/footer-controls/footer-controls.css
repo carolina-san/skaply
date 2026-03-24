@@ -15,22 +15,56 @@
 
 /* ── Botón de micrófono (control de voz) ── */
 .voice-btn {
-  @apply flex absolute h-10 w-10 px-2 py-2 bg-beige rounded-full duration-200 items-center justify-center right-15 bottom-14 md:right-0 md:bottom-1;
+  @apply flex absolute h-10 w-auto min-w-10 max-w-10 px-0 bg-beige rounded-full duration-300 items-center justify-center right-15 bottom-14 md:right-0 md:bottom-1 overflow-hidden transition-all whitespace-nowrap;
+}
+
+.voice-btn.has-command {
+  @apply max-w-[250px] px-4 gap-2;
 }
 
 .voice-btn:hover {
   @apply bg-azul-claro;
 }
 
-/* Activo: fondo azul Skaply en vez de rojo */
+/* Activo: animación de scale para indicar que escucha */
 .voice-btn--active {
-  background-color: #94adba;
-  /* azul-medio Skaply */
-  color: #452621;
+  @apply bg-azul-claro;
+  animation: voice-listen-pulse 1.3s infinite ease-in-out;
 }
 
-.voice-btn--active:hover {
-  background-color: #BAD5E3;
+@keyframes voice-listen-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(148, 173, 186, 0.7);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(148, 173, 186, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(148, 173, 186, 0);
+  }
+}
+
+/* ── Toast de comando de voz ── */
+.voice-command-toast {
+  @apply absolute bottom-2 right-0 z-60 flex items-center gap-2 px-3 py-1 text-azul-claro font-semibold text-sm;
+
+  /* Aparece con slide-up + fade */
+  animation: voice-toast-in 0.22s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes voice-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── Ondas tipo sonar (sólo cuando hay sonido real) ── */

@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { VoiceCommandInfo } from '../../../../services/graphicsEngine/voice-control.service';
 
 @Component({
   selector: 'app-footer-controls',
@@ -11,6 +12,7 @@ import { CommonModule } from '@angular/common';
 export class FooterControls {
   // Inputs
   hasIsolatedPart = input<boolean>(false);
+  lastCommand = input<VoiceCommandInfo | null>(null);
   mode = input<'manual' | 'simulation' | 'final'>('manual');
   manualStep = input<number>(0);
   totalSteps = input<number>(0);

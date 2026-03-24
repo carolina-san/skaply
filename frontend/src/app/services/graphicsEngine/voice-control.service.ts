@@ -6,22 +6,25 @@ export interface VoiceCommandInfo {
   /** Texto legible de la acción detectada */
   label: string;
   /** Icono SVG path de Material Symbols para acompañar el texto */
-  icon: 'next' | 'prev' | 'goto' | 'final';
+  icon: 'next' | 'prev' | 'goto' | 'final' | 'restart';
 }
 
 @Injectable()
 export class VoiceControlService {
-  isListening    = signal(false);
-  isSupported    = signal(false);
-  isSoundActive  = signal(false);
+  isListening = signal(false);
+  isSupported = signal(false);
+  isSoundActive = signal(false);
   /** Orden que acaba de reconocerse; null si no hay nada que mostrar */
-  lastCommand    = signal<VoiceCommandInfo | null>(null);
+  lastCommand = signal<VoiceCommandInfo | null>(null);
 
   private onNextStep?: () => void;
   private onPrevStep?: () => void;
   private onGoToStep?: (step: number) => void;
   private onLastStep?: () => void;
-  private soundTimeout?:   ReturnType<typeof setTimeout>;
+  private getManualStep?: () => number;
+  private getTotalManualSteps?: () => number;
+  private getTotalLogicalSteps?: () => number;
+  private soundTimeout?: ReturnType<typeof setTimeout>;
   private commandTimeout?: ReturnType<typeof setTimeout>;
 
   /** Duración en ms que el toast es visible tras reconocer la orden */
@@ -31,12 +34,18 @@ export class VoiceControlService {
     onNext: () => void,
     onPrev: () => void,
     onGoTo: (step: number) => void,
-    onLast: () => void
+    onLast: () => void,
+    getManualStep: () => number,
+    getTotalManualSteps: () => number,
+    getTotalLogicalSteps: () => number
   ): void {
     this.onNextStep = onNext;
     this.onPrevStep = onPrev;
     this.onGoToStep = onGoTo;
     this.onLastStep = onLast;
+    this.getManualStep = getManualStep;
+    this.getTotalManualSteps = getTotalManualSteps;
+    this.getTotalLogicalSteps = getTotalLogicalSteps;
 
     if (!isSpeechRecognitionSupported()) {
       console.warn('[VoiceControl] SpeechRecognition no está disponible en este navegador.');
@@ -48,29 +57,37 @@ export class VoiceControlService {
 
     const commands = {
       // ── Paso siguiente ───────────────────────────────────────────────
-      'siguiente paso': () => this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.()),
-      'paso siguiente': () => this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.()),
-      'siguiente':      () => this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.()),
-      'avanza':         () => this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.()),
+      'siguiente paso': () => this.handleNextStep(),
+      'paso siguiente': () => this.handleNextStep(),
+      'siguiente': () => this.handleNextStep(),
+      'avanza': () => this.handleNextStep(),
 
       // ── Paso anterior ────────────────────────────────────────────────
-      'paso anterior':  () => this.run({ label: 'Paso anterior',  icon: 'prev' }, () => this.onPrevStep?.()),
-      'anterior':       () => this.run({ label: 'Paso anterior',  icon: 'prev' }, () => this.onPrevStep?.()),
-      'paso atrás':     () => this.run({ label: 'Paso anterior',  icon: 'prev' }, () => this.onPrevStep?.()),
-      'paso atras':     () => this.run({ label: 'Paso anterior',  icon: 'prev' }, () => this.onPrevStep?.()),
-      'retrocede':      () => this.run({ label: 'Paso anterior',  icon: 'prev' }, () => this.onPrevStep?.()),
+      'paso anterior': () => this.handlePrevStep(),
+      'anterior': () => this.handlePrevStep(),
+      'paso atrás': () => this.handlePrevStep(),
+      'paso atras': () => this.handlePrevStep(),
+      'retrocede': () => this.handlePrevStep(),
 
       // ── Último paso / resultado final ────────────────────────────────
-      'último paso':      () => this.run({ label: 'Último paso',  icon: 'final' }, () => this.onLastStep?.()),
-      'ultimo paso':      () => this.run({ label: 'Último paso',  icon: 'final' }, () => this.onLastStep?.()),
-      'resultado':        () => this.run({ label: 'Ver resultado', icon: 'final' }, () => this.onLastStep?.()),
-      'final':            () => this.run({ label: 'Ver resultado', icon: 'final' }, () => this.onLastStep?.()),
-      'ver el resultado': () => this.run({ label: 'Ver resultado', icon: 'final' }, () => this.onLastStep?.()),
+      'último paso': () => this.handleLastStep(),
+      'ultimo paso': () => this.handleLastStep(),
+      'resultado': () => this.handleLastStep(),
+      'final': () => this.handleLastStep(),
+      'ver el resultado': () => this.handleLastStep(),
+      'ver resultado': () => this.handleLastStep(),
+      'paso final': () => this.handleLastStep(),
 
       // ── Ir a paso concreto ───────────────────────────────────────────
-      'ir al paso :numero':         (n: string) => this.handleGoToStep(n),
-      'paso :numero':               (n: string) => this.handleGoToStep(n),
-      'ir al paso número :numero':  (n: string) => this.handleGoToStep(n),
+      'ir al paso :numero': (n: string) => this.handleGoToStep(n),
+      'paso :numero': (n: string) => this.handleGoToStep(n),
+      'ir al paso número :numero': (n: string) => this.handleGoToStep(n),
+
+      // ── Reiniciar ───────────────────────────────────────────────────
+      'reiniciar': () => this.handleRestart(),
+      'volver al inicio': () => this.handleRestart(),
+      'volver al principio': () => this.handleRestart(),
+      'empezar de nuevo': () => this.handleRestart()
     };
 
     annyang.addCommands(commands);
@@ -94,6 +111,36 @@ export class VoiceControlService {
 
   // ── Helpers ──────────────────────────────────────────────────────────
 
+  private handleNextStep(): void {
+    const current = this.getManualStep?.() ?? 0;
+    const total = this.getTotalManualSteps?.() ?? 0;
+    if (current < total - 1) {
+      this.run({ label: 'Siguiente paso', icon: 'next' }, () => this.onNextStep?.());
+    }
+  }
+
+  private handlePrevStep(): void {
+    const current = this.getManualStep?.() ?? 0;
+    if (current > 0) {
+      this.run({ label: 'Paso anterior', icon: 'prev' }, () => this.onPrevStep?.());
+    }
+  }
+
+  private handleLastStep(): void {
+    const current = this.getManualStep?.() ?? 0;
+    const total = this.getTotalManualSteps?.() ?? 0;
+    if (current < total - 1) {
+      this.run({ label: 'Ver resultado', icon: 'final' }, () => this.onLastStep?.());
+    }
+  }
+
+  private handleRestart(): void {
+    const current = this.getManualStep?.() ?? 0;
+    if (current > 0) {
+      this.run({ label: 'Reiniciar', icon: 'restart' }, () => this.onGoToStep?.(0));
+    }
+  }
+
   /**
    * Muestra el toast con la info del comando y luego ejecuta el callback.
    * El toast desaparece automáticamente tras TOAST_MS milisegundos.
@@ -107,13 +154,14 @@ export class VoiceControlService {
 
   private handleGoToStep(raw: string): void {
     const n = this.parseSpanishNumber(raw.trim().toLowerCase());
-    if (n !== null && n >= 1) {
+    const totalLogical = this.getTotalLogicalSteps?.() ?? 0;
+    if (n !== null && n >= 1 && n <= totalLogical) {
       this.run(
         { label: `Ir al paso ${n}`, icon: 'goto' },
         () => this.onGoToStep?.(n - 1)
       );
     } else {
-      console.warn(`[VoiceControl] No se pudo interpretar el número: "${raw}"`);
+      console.warn(`[VoiceControl] Paso inválido o fuera de rango: "${raw}" (Límite lógico: ${totalLogical})`);
     }
   }
 
@@ -142,7 +190,8 @@ export class VoiceControlService {
 
   start(): void {
     if (!this.isSupported()) return;
-    annyang.start({ autoRestart: true, continuous: true });
+    // Poner continuous: false hace que lance el resultado en cuanto detecta una pausa natural, acelerando mucho la respuesta
+    annyang.start({ autoRestart: true, continuous: false });
     this.isListening.set(true);
   }
 
