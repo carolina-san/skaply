@@ -17,6 +17,7 @@ export class GraphicsHeader {
   visibleSteps = input<number[]>([]);
   currentLogicalStep = input<number>(0);
   hasIsolatedPart = input<boolean>(false);
+  isolatedPartName = input<string>('');
   isSimulating = input<boolean>(false);
   isManualComplete = input<boolean>(false);
   stepDescriptions = input<string[]>([]);

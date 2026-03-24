@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AssemblyPart } from '../../types/furniture.types';
 import { EngineService } from './engine.service';
 import { ChatbotInteractionService } from '../chatbot-interaction.service';
@@ -11,12 +12,14 @@ export interface InteractionStateContext {
   getCurrentStep: () => number;
   getParts: () => AssemblyPart[];
   isolatePart: (part: AssemblyPart) => void;
+  setMode: (mode: 'manual' | 'simulation' | 'final') => void;
 }
 
 @Injectable()
 export class InteractionService {
   private canvas!: HTMLCanvasElement;
   private ctx!: InteractionStateContext;
+  private partIsolationSub?: Subscription;
 
   private pressTimer: any;
   private isPointerDown = false;
@@ -46,6 +49,23 @@ export class InteractionService {
     canvas.addEventListener('mousedown', this.onInteraction);
     canvas.addEventListener('touchstart', this.onInteraction);
     canvas.addEventListener('wheel', this.onInteraction);
+
+    this.partIsolationSub = this.chatbotInteractionService.partIsolation$.subscribe(({ partName }) => {
+      const parts = this.ctx.getParts();
+      const foundPart = parts.find(p => p.name === partName || p.name.includes(partName));
+      if (foundPart) {
+        // Por si ya se ha aislado la pieza, que el chatbot no la cambie
+        const currentlyIsolated = this.ctx.getIsolatedPart();
+        if (currentlyIsolated && currentlyIsolated.name === foundPart.name) {
+          return;
+        }
+
+        if (this.ctx.getMode() !== 'manual') {
+          this.ctx.setMode('manual');
+        }
+        this.ctx.isolatePart(foundPart);
+      }
+    });
   }
 
 
@@ -62,6 +82,9 @@ export class InteractionService {
   }
 
   public dispose(): void {
+    if (this.partIsolationSub) {
+      this.partIsolationSub.unsubscribe();
+    }
     if (this.pressTimer) {
       clearTimeout(this.pressTimer);
       this.pressTimer = null;
@@ -118,10 +141,13 @@ export class InteractionService {
   private formatPieceName(name: string): string {
     const parts = name.split('_');
     const lastPart = parts[parts.length - 1];
-    if (parts.length > 1 && (/^\d/.test(lastPart) || /^(M\d)/i.test(lastPart))) {
-      parts.pop(); // Remove dimension part
+
+    // Solo si NO empieza por M8, le recortamos la dimensión final
+    if (!name.startsWith('M8') && parts.length > 1 && (/^\d/.test(lastPart) || /^(M\d)/i.test(lastPart))) {
+      parts.pop();
     }
-    return parts.join(' ');
+
+    return parts.join(' ').trim();
   }
 
   private onPointerMove(event: PointerEvent): void {

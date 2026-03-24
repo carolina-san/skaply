@@ -221,7 +221,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       }
       const targetLogicalIndex = Math.max(0, stepNumber - 1);
       this.goToStep(targetLogicalIndex);
-
     });
 
     // Inicializar control de voz con annyang
@@ -468,7 +467,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       getIsolatedPart: () => this.isolatedPart(),
       getCurrentStep: () => this.currentStep(),
       getParts: () => this.parts,
-      isolatePart: (part) => this.isolatePart(part)
+      isolatePart: (part) => this.isolatePart(part),
+      setMode: (mode) => this.setMode(mode)
     });
 
     window.addEventListener('resize', this.boundWindowResize);

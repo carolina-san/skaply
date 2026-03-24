@@ -1,5 +1,8 @@
 <footer class="flex flex-col md:flex-row items-center justify-center bg-transparent text-marron-oscuro w-full relative"
   [class.opacity-60]="hasIsolatedPart()">
+  @if(hasIsolatedPart()) {
+    <div class="absolute inset-0 z-50 cursor-not-allowed rounded-3xl" (click)="$event.stopPropagation()"></div>
+  }
 
   <!--Primera fila de botones-->
   @if (mode() !== 'final') {
