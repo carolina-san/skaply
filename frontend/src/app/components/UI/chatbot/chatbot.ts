@@ -51,7 +51,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
         private filterSharingService: FilterSharingService,
         private chatbotInteractionService: ChatbotInteractionService
     ) {
-        this.isCatalogPage = this.router.url.split('?')[0].includes('catalogo');
+        this.isCatalogPage = this.router.url.split('?')[0].includes('home');
     }
 
 
@@ -273,7 +273,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
                                         this.filterSharingService.setSelectedCategory(categoryData.id);
-                                        this.router.navigate(['/catalogo']);
+                                        this.router.navigate(['/home']);
                                     }
                                 },
                                 error: (error) => {
@@ -293,7 +293,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                                         this.filterSharingService.clearSelectedCategory();
                                         this.filterSharingService.clearSelectedColors();
                                         this.filterSharingService.setSelectedColor(colorData.id);
-                                        this.router.navigate(['/catalogo']);
+                                        this.router.navigate(['/home']);
                                     }
                                 },
                                 error: (error) => { console.error('Error:', error); }
@@ -460,7 +460,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                 // if (selectedCategory) {
                 //     // Es una categoría, navegar al catálogo con el filtro
                 //     this.filterSharingService.setSelectedCategory(selectedCategory.id);
-                //     this.router.navigate(['/catalogo']);
+                //     this.router.navigate(['/home']);
                 //     return;
                 // }
 
@@ -472,7 +472,7 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                         // if (selectedColor) {
                         //     // Es un color, navegar al catálogo con el filtro de color
                         //     this.filterSharingService.setSelectedColor(selectedColor.id);
-                        //     this.router.navigate(['/catalogo']);
+                        //     this.router.navigate(['/home']);
                         // }
                     },
                     error: (error) => {

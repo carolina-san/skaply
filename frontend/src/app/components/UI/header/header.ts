@@ -89,7 +89,7 @@ export class Header {
 
   goHome(): void {
     this.finMontaje();
-    this.router.navigate(['/catalogo']);
+    this.router.navigate(['/home']);
   }
   goLogin(): void {
     this.router.navigate(['/login']);
@@ -103,7 +103,7 @@ export class Header {
   // Cerrar sesión (se mantiene por si acaso, pero el botón ahora usa goToProfile)
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/catalogo']);
+    this.router.navigate(['/home']);
   }
 
   goToProfile(): void {

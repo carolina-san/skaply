@@ -14,7 +14,7 @@ import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
     { path: '', component: Landing },
-    { path: 'catalogo', component: Home },
+    { path: 'home', component: Home },
     { path: 'viewer-3d/:ref', component: Viewer3D },
     { path: 'register', component: Register },
     { path: 'login', component: Login },
@@ -25,5 +25,5 @@ export const routes: Routes = [
     { path: 'legal-notice', component: LegalNotice },
     { path: 'privacy', component: Privacy },
     { path: 'webgl1', component: WebglSceneComponent }, //new
-    { path: '**', redirectTo: 'catalogo' } // Redirige cualquier ruta no encontrada al catálogo
+    { path: '**', redirectTo: 'home' } // Redirige cualquier ruta no encontrada al catálogo
 ];
