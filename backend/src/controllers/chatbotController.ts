@@ -232,9 +232,12 @@ export class ChatbotController {
                         c.name.endsWith('/contexts/montaje_context')
                     );
                     const ref = ctx?.parameters?.furniture_ref;
-                    const step = ctx?.parameters?.furniture_step + 1;
-                    console.log("Entra en getStepParts controller", ctx.parameters);
-                    res.status(200).json(await this.chatbotService.getStepParts(ref || '', step || '', session));
+                    let parsedStep = 0;
+                    if (ctx?.parameters?.furniture_step !== undefined) {
+                        parsedStep = Number(ctx.parameters.furniture_step);
+                    }
+
+                    res.status(200).json(await this.chatbotService.getStepParts(ref || '', parsedStep, session));
                     return;
                 }
                 default:

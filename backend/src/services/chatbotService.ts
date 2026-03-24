@@ -84,7 +84,7 @@ export class ChatbotService {
       sessionId
     );
 
-    const parametersStruct = struct.encode({ furniture_ref: furnitureRef, step_number: 1 });
+    const parametersStruct = struct.encode({ furniture_ref: furnitureRef, furniture_step: 0 });
 
     const request = {
       session: sessionPath,
@@ -94,6 +94,7 @@ export class ChatbotService {
           parameters: parametersStruct,
           languageCode: 'es'
         }
+
       }
     };
 
@@ -1084,8 +1085,8 @@ export class ChatbotService {
   async isolatePart(furnitureRef: string, partName: string, session?: string): Promise<any> {
     try {
       const furnitureId = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
-      const partExists = await this.furnitureService.partInFurniture(furnitureId, partName);
-      if (!partExists) {
+      const fullPartName = await this.furnitureService.getFullPartNameInFurniture(furnitureId, partName);
+      if (!fullPartName) {
         return {
           fulfillmentText: `La pieza ${partName} no existe en este mueble.`
         };
@@ -1096,7 +1097,7 @@ export class ChatbotService {
             payload: {
               action: "isolate.part",
               furniture_ref: furnitureRef,
-              part_name: partName,
+              part_name: fullPartName,
               richContent: [
                 [
                   {
@@ -1123,13 +1124,22 @@ export class ChatbotService {
     try {
       const furnitureId = await this.furnitureService.getFurnitureIdByRef(furnitureRef);
       const stepParts = await this.furnitureService.getParts(furnitureId, stepNumber);
+      if (stepParts.length === 0) {
+        return {
+          fulfillmentText: `No hay piezas nuevas en el paso ${stepNumber}.`
+        };
+      }
+
       return {
         fulfillmentMessages: [
+          {
+            text: { text: [`Las piezas nuevas del paso ${stepNumber} son:`] }
+          },
           {
             payload: {
               action: "get.step.parts",
               furniture_ref: furnitureRef,
-              step_number: stepNumber,
+              furniture_step: stepNumber,
               richContent: [
                 [
                   {

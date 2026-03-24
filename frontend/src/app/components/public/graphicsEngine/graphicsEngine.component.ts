@@ -320,7 +320,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (targetStep >= 0 && targetStep < this.totalSteps()) {
       this.manualStep.set(targetStep);
       if (this.furniture?.reference_number) {
-        this.apiService.changeStep(this.furniture.reference_number, targetStep).subscribe();
+        this.apiService.changeStep(this.furniture.reference_number, logicalStepIndex + 1).subscribe();
       }
     }
   }
@@ -328,14 +328,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   nextStep(): void {
     this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep()).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep() + 1).subscribe();
     }
   }
 
   prevStep(): void {
     this.manualStep.update(step => (step > 0 ? step - 1 : step));
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep()).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep() + 1).subscribe();
     }
   }
 
@@ -364,7 +364,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   reset(): void {
     this.manualStep.set(0);
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, 0).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, 1).subscribe();
     }
   }
 

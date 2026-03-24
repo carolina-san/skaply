@@ -27,7 +27,7 @@ export class InteractionService {
   constructor(
     private engineService: EngineService,
     private chatbotInteractionService: ChatbotInteractionService
-  ) {}
+  ) { }
 
   public init(canvas: HTMLCanvasElement, ctx: InteractionStateContext): void {
     this.canvas = canvas;
@@ -109,9 +109,19 @@ export class InteractionService {
       const part = this.findPartForObject(hitObject);
       if (part && this.ctx.getCurrentStep() >= part.appearStep) {
         this.ctx.isolatePart(part);
-        this.chatbotInteractionService.requestAutoSendPiece('pieza: ' + part.name);
+        part.name = part.name.replace('pieza: ', '');
+        this.chatbotInteractionService.requestAutoSendPiece('pieza: ' + this.formatPieceName(part.name));
       }
     }
+  }
+
+  private formatPieceName(name: string): string {
+    const parts = name.split('_');
+    const lastPart = parts[parts.length - 1];
+    if (parts.length > 1 && (/^\d/.test(lastPart) || /^(M\d)/i.test(lastPart))) {
+      parts.pop(); // Remove dimension part
+    }
+    return parts.join(' ');
   }
 
   private onPointerMove(event: PointerEvent): void {
