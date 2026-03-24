@@ -17,10 +17,9 @@
           (keypress)="onSearchKeyPress($event)" (blur)="onSearchBlur()" class="w-full bg-beige rounded-full pl-10 pr-4 py-2 text-marron-oscuro focus:outline-none 
         focus:ring-2 focus:bg-beige-oscuro focus:ring-beige transition-all duration-300" />
         <span (click)="openQrScanner()" class="btn-busqueda absolute right-1 block sm:hidden cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
-            fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
             <path
-              d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l50-54q11-12 26.5-19t32.5-7h170q17 0 32.5 7t26.5 19l50 54h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z" />
+              d="M120-560v-240q0-17 11.5-28.5T160-840h240q17 0 28.5 11.5T440-800v240q0 17-11.5 28.5T400-520H160q-17 0-28.5-11.5T120-560Zm80-40h160v-160H200v160Zm-80 440v-240q0-17 11.5-28.5T160-440h240q17 0 28.5 11.5T440-400v240q0 17-11.5 28.5T400-120H160q-17 0-28.5-11.5T120-160Zm80-40h160v-160H200v160Zm320-360v-240q0-17 11.5-28.5T560-840h240q17 0 28.5 11.5T840-800v240q0 17-11.5 28.5T800-520H560q-17 0-28.5-11.5T520-560Zm80-40h160v-160H600v160Zm160 480v-80h80v80h-80ZM520-360v-80h80v80h-80Zm80 80v-80h80v80h-80Zm-80 80v-80h80v80h-80Zm80 80v-80h80v80h-80Zm80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80 80v-80h80v80h-80Z" />
           </svg>
         </span>
       </div>
@@ -242,11 +241,12 @@
       </div>
 
       <div *ngIf="furnitureReviews.length > 0" class="space-y-3">
-        <div *ngFor="let review of furnitureReviews" class="bg-white rounded-xl px-3 py-2 border border-beige-oscuro/60">
+        <div *ngFor="let review of furnitureReviews"
+          class="bg-white rounded-xl px-3 py-2 border border-beige-oscuro/60">
           <div class="flex items-center justify-between gap-3 mb-1">
             <div class="flex items-center gap-1">
-              <svg *ngFor="let i of [1,2,3,4,5]" xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960"
-                width="14px" [attr.fill]="i <= review.stars ? '#d97706' : '#d1d5db'">
+              <svg *ngFor="let i of [1,2,3,4,5]" xmlns="http://www.w3.org/2000/svg" height="14px"
+                viewBox="0 -960 960 960" width="14px" [attr.fill]="i <= review.stars ? '#d97706' : '#d1d5db'">
                 <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z" />
               </svg>
             </div>
@@ -262,10 +262,7 @@
     (applyFilter)="onApplyFilters($event)">
   </app-filter-panel>
 
-  <app-scanner 
-    [(isOpen)]="isQrScannerOpen" 
-    (onScanSuccess)="onQrScanned($event)"
-    (close)="closeQrScanner()">
+  <app-scanner [(isOpen)]="isQrScannerOpen" (onScanSuccess)="onQrScanned($event)" (close)="closeQrScanner()">
   </app-scanner>
 
   <app-chatbot (abrirModalIncidencia)="abrirModalIncidencia()"></app-chatbot>
