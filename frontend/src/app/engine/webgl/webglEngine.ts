@@ -471,13 +471,13 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         // gl 
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl2', { stencil: true })!;
+        this.gl = canvas.getContext('webgl2', { stencil: true, antialias: true })!;
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
 
         this.outlinePass = new OutlinePass(this.gl);
-        await this.outlinePass.init(width, height);
+        await this.outlinePass.init(this.canvas.width, this.canvas.height);
 
         // camera 
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
@@ -518,12 +518,17 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     resize(width: number, height: number): void {
         if (!this.canvas || !this.gl) return;
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.gl.viewport(0, 0, width, height);
+
+        const pixelRatio = window.devicePixelRatio || 1;
+        this.canvas.width = Math.floor(width * pixelRatio);
+        this.canvas.height = Math.floor(height * pixelRatio);
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
 
-        this.outlinePass?.resize(width, height);
+        this.outlinePass?.resize(this.canvas.width, this.canvas.height);
     }
 
     // CAMERA
@@ -660,7 +665,10 @@ export class WebGLEngineAdapter extends EngineFacade {
                 this.outlinePass.renderMask(meshesWithMatrix, cam.viewMatrix, cam.projectionMatrix);
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-                this.outlinePass.drawEdges([0, 1, 1], 2.0);
+
+                const outlineThickness = 1.5 * (window.devicePixelRatio || 1);
+                this.outlinePass.drawEdges([0, 1, 1], outlineThickness);
+
                 gl.enable(gl.DEPTH_TEST);
                 gl.disable(gl.BLEND);
             }

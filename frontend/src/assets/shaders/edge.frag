@@ -12,26 +12,30 @@ uniform float uTexelHeight;
 out vec4 fragColor;
 
 void main() {
-  float mask = texture(uMaskTexture, vTexCoord).r;
+  float centerMask = texture(uMaskTexture, vTexCoord).r;
 
-  // Si el pixel actual ES parte de la pieza, no dibujar outline
-  if (mask > 0.5) {
-    discard;
-  }
-
-  // Buscar si algún vecino en el radio es parte de la pieza
   float maxNeighbor = 0.0;
-  for (float x = -uThickness; x <= uThickness; x += 1.0) {
-    for (float y = -uThickness; y <= uThickness; y += 1.0) {
-      vec2 offset = vec2(x * uTexelWidth, y * uTexelHeight);
-      maxNeighbor = max(maxNeighbor, texture(uMaskTexture, vTexCoord + offset).r);
+  float limit = ceil(uThickness);
+  float radiusSq = uThickness * uThickness;
+
+  for (float x = -limit; x <= limit; x += 1.0) {
+    for (float y = -limit; y <= limit; y += 1.0) {
+      if (x*x + y*y <= radiusSq) {
+        vec2 offset = vec2(x * uTexelWidth, y * uTexelHeight);
+        maxNeighbor = max(maxNeighbor, texture(uMaskTexture, vTexCoord + offset).r);
+      }
     }
   }
 
-  // Solo pintar si hay un vecino que sí es pieza (borde exterior)
-  if (maxNeighbor > 0.5) {
-    fragColor = vec4(uOutlineColor, 1.0);
-  } else {
+  // Calculamos el borde externo restando el interior, preservando el antialiasing
+  float alpha = clamp(maxNeighbor - centerMask, 0.0, 1.0);
+
+  // Amplificamos ligeramente la opacidad del borde para que sea más visible pero sin bordes duros
+  alpha = smoothstep(0.0, 0.8, alpha);
+
+  if (alpha <= 0.0) {
     discard;
   }
+
+  fragColor = vec4(uOutlineColor, alpha);
 }
