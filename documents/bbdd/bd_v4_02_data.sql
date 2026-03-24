@@ -73,7 +73,7 @@ VALUES
     NULL,
     'F2837018R',
     'Proveedor',
-    '123456782',
+    '1223456734',
     'Calle Mayor 3',
     'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg',
     'provider',
@@ -227,7 +227,7 @@ VALUES
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
-    7,
+    6,
     'low',
     3,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
@@ -243,7 +243,7 @@ VALUES
     'Armario modular',
     'VR123456',
     5,
-    7,
+    6,
     'medium',
     3,
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
