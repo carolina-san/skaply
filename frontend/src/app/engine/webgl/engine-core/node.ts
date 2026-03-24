@@ -213,10 +213,10 @@ export class Node {
 
     // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE
 
-    getObjectByName(name: string): Node | null {
+    getNodeByName(name: string): Node | null {
         if (this.name === name) return this;
         for (const child of this.children) {
-            const found = child.getObjectByName(name);
+            const found = child.getNodeByName(name);
             if (found) return found;
         }
         return null;

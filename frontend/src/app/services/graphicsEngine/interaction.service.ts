@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { AssemblyPart } from '../../types/furniture.types';
 import { EngineService } from './engine.service';
 import { ChatbotInteractionService } from '../chatbot-interaction.service';
@@ -22,6 +22,7 @@ export class InteractionService {
   private isPointerDown = false;
   private pointerDownPos = { x: 0, y: 0 };
   private readonly LONG_PRESS_DURATION = 500; // ms
+  public isUserManuallyMoved = signal(false);
 
   constructor(
     private engineService: EngineService,
@@ -40,6 +41,24 @@ export class InteractionService {
     canvas.addEventListener('pointermove', this.onPointerMove);
     canvas.addEventListener('pointerup', this.onPointerUp);
     canvas.addEventListener('pointerleave', this.onPointerUp);
+
+    this.onInteraction = this.onInteraction.bind(this);
+    canvas.addEventListener('mousedown', this.onInteraction);
+    canvas.addEventListener('touchstart', this.onInteraction);
+    canvas.addEventListener('wheel', this.onInteraction);
+  }
+
+
+  public hasUserManuallyMoved(): boolean {
+    return this.isUserManuallyMoved();
+  }
+
+  public resetUserManuallyMoved(): void {
+    this.isUserManuallyMoved.set(false);
+  }
+
+  private onInteraction(): void {
+    this.isUserManuallyMoved.set(true);
   }
 
   public dispose(): void {
@@ -52,6 +71,9 @@ export class InteractionService {
       this.canvas.removeEventListener('pointermove', this.onPointerMove);
       this.canvas.removeEventListener('pointerup', this.onPointerUp);
       this.canvas.removeEventListener('pointerleave', this.onPointerUp);
+      this.canvas.removeEventListener('mousedown', this.onInteraction);
+      this.canvas.removeEventListener('touchstart', this.onInteraction);
+      this.canvas.removeEventListener('wheel', this.onInteraction);
     }
   }
 

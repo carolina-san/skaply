@@ -123,14 +123,14 @@ export class ThreeEngineAdapter extends EngineFacade {
     private outlinePass!: OutlinePass;
     private raycaster = new THREE.Raycaster();
     private gltfLoader = new GLTFLoader(); //3D model 
-
     private gltfCache: Map<string, THREE.Object3D> = new Map();
 
     // Smooth transition state
     private targetPosition = new THREE.Vector3();
     private targetLookAt = new THREE.Vector3();
     private isTransitioning = false;
-    private lerpFactor = 0.1; // Adjust for speed/smoothness
+    private transitionType: 'frame' | 'rotate' | null = null;
+    private lerpFactor = 0.04;
 
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
@@ -165,6 +165,27 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.controls.maxDistance = 15;
         this.controls.target.set(0, 1, 0);
         this.controls.saveState();
+
+        this.controls.addEventListener('start', () => {
+            if (this.isTransitioning && this.transitionType !== 'rotate') {
+                this.isTransitioning = false;
+                this.transitionType = null;
+            }
+        });
+
+        // Also constantly monitor for active dragging because 'start' won't fire again if already pressed
+        this.renderer.domElement.addEventListener('pointermove', (e: MouseEvent) => {
+            if (this.isTransitioning && e.buttons > 0 && this.transitionType !== 'rotate') {
+                this.isTransitioning = false;
+                this.transitionType = null;
+            }
+        });
+        this.renderer.domElement.addEventListener('touchmove', (e: TouchEvent) => {
+            if (this.isTransitioning && e.touches.length > 0 && this.transitionType !== 'rotate') {
+                this.isTransitioning = false;
+                this.transitionType = null;
+            }
+        }, { passive: true });
 
         // Initialize targets with starting state
         this.targetPosition.copy(this.camera.position);
@@ -206,6 +227,8 @@ export class ThreeEngineAdapter extends EngineFacade {
                 this.controls.target.copy(this.targetLookAt);
                 this.controls.update();
                 this.isTransitioning = false;
+                this.transitionType = null;
+                this.controls.enabled = true;
             }
         } else {
             this.controls?.update();
@@ -260,6 +283,7 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.targetPosition.set(position.x, position.y, position.z);
         this.targetLookAt.set(target.x, target.y, target.z);
         this.isTransitioning = true;
+        this.transitionType = 'frame';
     }
 
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
@@ -284,6 +308,8 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.targetPosition.copy(baseTarget).add(offset);
         this.targetLookAt.copy(baseTarget);
         this.isTransitioning = true;
+        this.transitionType = 'rotate';
+        this.controls.enabled = false;
     }
 
     updateControls(): void {
@@ -305,6 +331,7 @@ export class ThreeEngineAdapter extends EngineFacade {
             this.targetPosition.set(c.position0.x, c.position0.y, c.position0.z);
             this.targetLookAt.set(c.target0.x, c.target0.y, c.target0.z);
             this.isTransitioning = true;
+            this.transitionType = 'frame';
         } else {
             this.controls.reset();
         }
@@ -352,19 +379,6 @@ export class ThreeEngineAdapter extends EngineFacade {
         //     });
         // });
         this.outlinePass.selectedObjects = threeObjects;
-    }
-
-    checkControlsState(): boolean {
-        if (!this.controls) return false;
-        const c: any = this.controls;
-        const threshold = 0.01;
-        if (c.position0 && c.target0) {
-            const distPos = this.controls.object.position.distanceTo(c.position0);
-            const distTarget = this.controls.target.distanceTo(c.target0);
-            const distZoom = Math.abs(this.camera.zoom - c.zoom0);
-            return distPos > threshold || distTarget > threshold || distZoom > threshold;
-        }
-        return false;
     }
 
     getCamera(): CameraState {
@@ -422,6 +436,12 @@ export class ThreeEngineAdapter extends EngineFacade {
         return new ThreeRenderableObject(native as THREE.Object3D);
     }
 
+    createGroup(name?: string): RenderableObject {
+        const obj = new THREE.Object3D();
+        if (name) obj.name = name ?? '';
+        return new ThreeRenderableObject(obj);
+    }
+
 
     dispose(): void {
         this.renderer?.dispose();
@@ -437,4 +457,9 @@ export class ThreeEngineAdapter extends EngineFacade {
         });
         this.controls?.dispose();
     }
+
+    frameObjectFromParts(
+        parts: { currentPosition: Vector3; nativeObject: any }[],
+        margin?: number
+    ): void { }
 }
