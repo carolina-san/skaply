@@ -1,19 +1,19 @@
 <div
   class="w-full h-full rounded-3xl flex flex-col p-2 sm:px-4 border-0 shadow-none bg-transparent transition-colors duration-300">
 
-  <app-graphics-header *ngIf="!isARActive()" 
-    [engineUse]="engineUse()" [furnitureName]="furnitureName()" [mode]="mode()" [visibleSteps]="visibleSteps()"
-    [currentLogicalStep]="logicalStep()" [hasIsolatedPart]="isolatedPart() !== null"
+  <app-graphics-header *ngIf="!isARActive()" [engineUse]="engineUse()" [furnitureName]="furnitureName()" [mode]="mode()"
+    [visibleSteps]="visibleSteps()" [currentLogicalStep]="logicalStep()" [hasIsolatedPart]="isolatedPart() !== null"
     [isolatedPartName]="isolatedPart()?.name || ''" [isSimulating]="isSimulating()"
     [isManualComplete]="isManualComplete()" [stepDescriptions]="stepDescriptions()"
-    (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)">
+    (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
+    (exitIsolationAction)="exitIsolation()">
   </app-graphics-header>
 
 
 
   <!-- Canvas Container-->
   <div class=" relative h-full">
-    <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()"
+    <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()" [hasIsolatedPart]="isolatedPart() !== null"
       (arStateChange)="onArStateChange($event)"></app-ar-overlay>
 
     <!-- Main Canvas -->
@@ -22,23 +22,11 @@
     </canvas>
 
     @if (isolatedPart(); as part) {
-    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-      <button *ngIf="!isARActive()" (click)="exitIsolation()"
-        class="px-4 py-2 bg-azul-claro text-marron-oscuro font-semibold rounded-full hover:bg-azul-claro-dim transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        <span>Ver todo</span>
-      </button>
-    </div>
     }
 
     <!-- Reset Camera Button Overlay -->
     @if (isCameraMoved() && mode() !== 'simulation') {
-    <button (click)="resetCameraPosition()"
+    <button *ngIf="!isARActive()" (click)="resetCameraPosition()"
       class="absolute bottom-1 left-0 flex px-3 py-2 bg-beige justify-center items-center rounded-full transition-all duration-200 transform hover:scale-105 z-50 shadow-lg text-marron-oscuro hover:bg-marron-claro hover:text-beige">
       <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
         <path
@@ -89,13 +77,13 @@
 
   <!-- Footer Controls -->
   @if(showFooterControls() && !isARActive()) {
-  <app-footer-controls [hasIsolatedPart]="isolatedPart() !== null"
-    [mode]="mode()" [manualStep]="manualStep()" [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()"
-    [simulationSpeed]="simulationSpeed()" [isVoiceListening]="voiceControlService.isListening()"
-    [isVoiceSupported]="voiceControlService.isSupported()" [isVoiceSoundActive]="voiceControlService.isSoundActive()"
-    (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
-    (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
-    (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()">
+  <app-footer-controls [hasIsolatedPart]="isolatedPart() !== null" [mode]="mode()" [manualStep]="manualStep()"
+    [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()" [simulationSpeed]="simulationSpeed()"
+    [isVoiceListening]="voiceControlService.isListening()" [isVoiceSupported]="voiceControlService.isSupported()"
+    [isVoiceSoundActive]="voiceControlService.isSoundActive()" (modeChange)="setMode($event)"
+    (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()" (nextStepAction)="nextStep()"
+    (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)" (finishAction)="openFinishModal()"
+    (toggleVoiceAction)="voiceControlService.toggle()">
   </app-footer-controls>
   }
 </div>

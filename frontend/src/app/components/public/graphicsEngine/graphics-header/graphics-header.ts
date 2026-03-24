@@ -25,6 +25,7 @@ export class GraphicsHeader {
   // Outputs
   engineChanged = output<string>();
   goToStepAction = output<number>();
+  exitIsolationAction = output<void>();
 
   @ViewChild('stepsContainer') private stepsContainer!: ElementRef<HTMLElement>;
 

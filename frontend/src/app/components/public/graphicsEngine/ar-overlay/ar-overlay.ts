@@ -6,7 +6,8 @@ import { EngineService } from '../../../../services/graphicsEngine/engine.servic
   selector: 'app-ar-overlay',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './ar-overlay.html'
+  templateUrl: './ar-overlay.html',
+  styleUrl: './ar-overlay.css'
 })
 export class ArOverlay implements OnDestroy {
   private engineService = inject(EngineService);
@@ -16,6 +17,7 @@ export class ArOverlay implements OnDestroy {
   // Inputs
   isSmallScreen = input<boolean>(false);
   mode = input<'manual' | 'simulation' | 'final'>('manual');
+  hasIsolatedPart = input<boolean>(false);
 
   // Outputs
   arStateChange = output<boolean>();
@@ -50,7 +52,7 @@ export class ArOverlay implements OnDestroy {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       this.videoStream = stream;
       this.isARActive.set(true);
-      
+
       const engine = this.engineService.getEngine();
       engine.toggleControls(true, false);
       engine.setBackground(null);
@@ -93,7 +95,7 @@ export class ArOverlay implements OnDestroy {
     if (this.videoRef?.nativeElement) {
       this.videoRef.nativeElement.srcObject = null;
     }
-    
+
     this.arStateChange.emit(false);
   }
 }

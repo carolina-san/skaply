@@ -1,0 +1,5 @@
+@import "../../../../../styles.css";
+
+.btn {
+    @apply flex items-center justify-center gap-1 pr-4 pl-3 py-1 text-marron-oscuro font-semibold rounded-full transition-all duration-200 border border-marron-oscuro/40;
+}
