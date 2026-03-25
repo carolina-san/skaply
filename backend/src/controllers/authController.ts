@@ -170,7 +170,7 @@ export class AuthController {
 
         // Redirect to frontend without token in URL
         const frontendUrl = process.env.FRONTEND_URL;
-        res.redirect(`${frontendUrl}/catalogo`); // Redirige al catálogo después del login OAuth
+        res.redirect(`${frontendUrl}/home`); // Redirige al catálogo después del login OAuth
       } catch (error) {
         console.error('Google callback error:', error);
         res.redirect(`${process.env.FRONTEND_URL}/login?error=callback_failed`);

@@ -83,14 +83,26 @@ export class FurnitureService {
     return result.rows.length > 0;
   }
 
+  async getFullPartNameInFurniture(furnitureId: number, partialName: string): Promise<string | null> {
+    const searchString = '%' + partialName.trim().replace(/\s+/g, '%') + '%';
+    const result = await pool.query(
+      `SELECT p.reference_number FROM part p 
+       JOIN furniture_part fp ON p.id = fp.part_id
+       WHERE fp.furniture_id = $1 AND p.reference_number ILIKE $2
+       LIMIT 1`,
+      [furnitureId, searchString]
+    );
+    return result.rows.length > 0 ? result.rows[0].reference_number : null;
+  }
+
   async getParts(furnitureId: number, stepNumber: number) {
     try {
       const result = await pool.query(
-        `SELECT p.reference_number FROM part p
-        join furniture_part fp on p.id = fp.part_id 
-        join step_part sp on p.id = sp.part_id
-        join step s on sp.stepId = s.id
-        WHERE fp.furniture_id = $1 AND s.step_number = $2`,
+        `SELECT DISTINCT p.reference_number 
+         FROM step s
+         JOIN furniture_part fp ON fp.step_id = s.id
+         JOIN part p ON p.id = fp.part_id
+         WHERE s.furniture_id = $1 AND s.step_number = $2`,
         [furnitureId, stepNumber]
       );
       return result.rows;

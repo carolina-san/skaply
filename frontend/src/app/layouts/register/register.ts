@@ -89,7 +89,7 @@ export class Register {
   }
 
   goHome() {
-    this.router.navigate(['/catalogo']);
+    this.router.navigate(['/home']);
   }
 
   onGoogleRegister(): void {

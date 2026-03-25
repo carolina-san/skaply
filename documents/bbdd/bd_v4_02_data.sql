@@ -52,25 +52,10 @@ INSERT INTO "User" (
     visible
 )
 VALUES
--- ADMIN: Maria
+-- ADMIN
 (
-    'maria@gmail.com',
-    'Maria',
-    NULL,
-    NULL,
-    '123456789',
-    '123 User St',
-    '',
-    'admin',
-    NOW(),
-    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    NULL,
-    false
-),
--- ADMIN: Lucia
-(
-    'lucia@gmail.com',
-    'Lucia',
+    'admin@gmail.com',
+    'Admin',
     'CIF8372',
     NULL,
     '123456780',
@@ -82,20 +67,20 @@ VALUES
     NULL,
     false
 ),
--- ADMIN: Carlos
+-- PROVIDER: Proveedor
 (
-    'carlos@gmail.com',
-    'Carlos',
+    'proveedor@gmail.com',
     NULL,
-    NULL,
-    '123456781',
-    '789 User St',
-    '',
-    'admin',
+    'F2837018R',
+    'Proveedor',
+    '1223456734',
+    'Calle Mayor 3',
+    'https://muebleslospacos.es/wp-content/uploads/2024/03/mueble-salon-class-806-salcedo-1024x673.jpg',
+    'provider',
     NOW(),
     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    NULL,
-    false
+    'approved',
+    true
 ),
 -- PROVIDER: IqUa
 (
@@ -146,10 +131,10 @@ VALUES
 (
     'correo@activo.com',
     null,
-    'A03137874', 
+    'E3945678A', 
     'Activo', 
-    '+34966560700', 
-    'Avenida la libertad, 19, 03610, petrer (Alicante)', 
+    '+34 833 273 456', 
+    'Calle Castelló 11, 38220', 
     'https://img.freepik.com/vector-gratis/plantilla-logotipo-ateismo-diseno-plano_23-2149242249.jpg?semt=ais_hybrid&w=740&q=80', 
     'provider', 
     NOW(),
@@ -242,12 +227,12 @@ VALUES
     'Mesa individual Vital Pro',
     'VR515F200',
     2,
-    7,
+    6,
     'low',
     3,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
     'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', --cambiar
-    'https://skaply.ovh/catalogo?furniture=VR515F200',
+    'https://skaply.ovh/home?furniture=VR515F200',
     'pdf1',
     true,
     NOW()
@@ -258,12 +243,12 @@ VALUES
     'Armario modular',
     'VR123456',
     5,
-    7,
+    6,
     'medium',
     3,
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
     'https://actiucdn.net/cdn-cgi/image/width=960,height=999,fit=contain,format=auto,quality=95/uploads/images/modules/5531/img-6-2.jpg', --cambiar
-    'https://skaply.ovh/catalogo?furniture=123456',
+    'https://skaply.ovh/home?furniture=123456',
     'pdf2',
     true,
     NOW()

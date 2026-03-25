@@ -117,7 +117,8 @@ export class CameraController {
         private cameraNode: Node,
         private cameraEntity: Camera,
         private canvas: HTMLCanvasElement,
-        isMobile: boolean
+        isMobile: boolean,
+        private onInteractionCallback: () => boolean
     ) {
         // initial orbit state (spherical coordinates)
         this.radius = isMobile ? 3.84 : 3.5355;
@@ -218,17 +219,6 @@ export class CameraController {
         this.updateOrbit();
     }
 
-    hasMovedFromDefault(): boolean {
-
-        // compare current eye and target to default values
-        const eye = this.computeEye();
-        const defaultEye = this.computeEyeFrom(this.defaultRadius, this.defaultTheta, this.defaultPhi, this.defaultTarget);
-
-        // check if current eye or target differ significantly from default
-        return vec3.dist(eye, defaultEye) > 0.1
-            || vec3.dist(this.target, this.defaultTarget) > 0.1;
-    }
-
     // SET CAMERA PROPS 
 
     setCameraProps(position: Vector3, target: Vector3): void {
@@ -316,14 +306,22 @@ export class CameraController {
     private lastTouchY = 0;       // for touch orbit/pan
     private lastTouchDist = 0;      // for touch zoom
 
+    private assertInteraction(): boolean {
+        if (!this.onInteractionCallback()) {
+            this.isDragging = false;
+            return false;
+        }
+        return true;
+    }
+
     // bind event handlers to preserve 'this' context
-    private _onMouseDown = (e: MouseEvent) => this.onMouseDown(e);
-    private _onMouseMove = (e: MouseEvent) => this.onMouseMove(e);
+    private _onMouseDown = (e: MouseEvent) => { if (this.assertInteraction()) this.onMouseDown(e); };
+    private _onMouseMove = (e: MouseEvent) => { if (this.isDragging && this.assertInteraction()) this.onMouseMove(e); };
     private _onMouseUp = (_: MouseEvent) => { this.isDragging = false; };
-    private _onWheel = (e: WheelEvent) => { e.preventDefault(); this.zoom(e.deltaY); };
+    private _onWheel = (e: WheelEvent) => { if (this.assertInteraction()) { e.preventDefault(); this.zoom(e.deltaY); } };
     private _onContextMenu = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
-    private _onTouchStart = (e: TouchEvent) => this.onTouchStart(e);
-    private _onTouchMove = (e: TouchEvent) => this.onTouchMove(e);
+    private _onTouchStart = (e: TouchEvent) => { if (this.assertInteraction()) this.onTouchStart(e); };
+    private _onTouchMove = (e: TouchEvent) => { if (this.isDragging && this.assertInteraction()) this.onTouchMove(e); };
     private _onTouchEnd = (e: TouchEvent) => { if (e.touches.length === 0) this.isDragging = false; };
 
     // add event listeners to canvas and window
@@ -432,6 +430,8 @@ export class WebGLEngineAdapter extends EngineFacade {
 
 
     private readonly mobileThreshold = 768; // px
+    private readonly furnitureRootName = 'furniture'; // px
+
 
     private gl!: WebGL2RenderingContext;
     private canvas!: HTMLCanvasElement;
@@ -459,15 +459,10 @@ export class WebGLEngineAdapter extends EngineFacade {
     private transitionTargetPosition: Vector3 | null = null;// A donde va la camara
     private transitionTargetLookAt: Vector3 | null = null; // Hacia donde vamoh a mirar en la transición!
     private isTransitioning = false;  // Si hay una rotación en curso
-    private transitionLerpFactor = 0.1; //Suavizado
+    private transitionType: 'frame' | 'rotate' | null = null;
+    private transitionLerpFactor = 0.04;
     private defaultCameraPosition: Vector3 | null = null;
     private defaultCameraTarget: Vector3 | null = null;
-
-    // ⚠️ DE MOMENTO NO HACEN FALTA
-    private controlsEnabled = false;
-    private controlsAutoRotate = false;
-    private controlsAutoRotateSpeed = 2;
-
     private ready = false;
 
     // INIT
@@ -476,13 +471,13 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         // gl 
         this.canvas = canvas;
-        this.gl = canvas.getContext('webgl2', { stencil: true })!;
+        this.gl = canvas.getContext('webgl2', { stencil: true, antialias: true })!;
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.disable(this.gl.CULL_FACE); // ⚠️ CAMBIAR EN FUTURO! -> ARREGLAR TABLERO DEL .BLENDER
         this.resize(width, height);
 
         this.outlinePass = new OutlinePass(this.gl);
-        await this.outlinePass.init(width, height);
+        await this.outlinePass.init(this.canvas.width, this.canvas.height);
 
         // camera 
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
@@ -500,7 +495,8 @@ export class WebGLEngineAdapter extends EngineFacade {
             this.cameraNode,
             this.cameraEntity,
             canvas,
-            width < this.mobileThreshold
+            width < this.mobileThreshold,
+            () => this.handleUserInteraction()
         );
 
         // Variables para la rotacion de pasos de cámara
@@ -522,12 +518,17 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     resize(width: number, height: number): void {
         if (!this.canvas || !this.gl) return;
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.gl.viewport(0, 0, width, height);
+
+        const pixelRatio = window.devicePixelRatio || 1;
+        this.canvas.width = Math.floor(width * pixelRatio);
+        this.canvas.height = Math.floor(height * pixelRatio);
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+
+        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
 
-        this.outlinePass?.resize(width, height);
+        this.outlinePass?.resize(this.canvas.width, this.canvas.height);
     }
 
     // CAMERA
@@ -539,9 +540,9 @@ export class WebGLEngineAdapter extends EngineFacade {
     // ⚠️  Ya se usa con las variables de rotateCamera()
     updateControls(): void {
         if (                                // Hay una transación activa? Hay posicion destino? Hay target?
-        this.isTransitioning &&
-        this.transitionTargetPosition &&
-        this.transitionTargetLookAt
+            this.isTransitioning &&
+            this.transitionTargetPosition &&
+            this.transitionTargetLookAt
         ) {
             const cam = this.getCamera();  //Coge la camara y calcula la siguiente posición con el vector y la acerca un poco 
 
@@ -563,24 +564,35 @@ export class WebGLEngineAdapter extends EngineFacade {
             const dy = this.transitionTargetPosition.y - nextPosition.y;
             const dz = this.transitionTargetPosition.z - nextPosition.z;
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);  // Calcula la distancia real (3D) entre actual y destino
-             if (distance < 0.001) {
+            if (distance < 0.001) {
                 this.cameraController.setCameraProps(   //Coloca la camara en el destino
                     this.transitionTargetPosition,
                     this.transitionTargetLookAt
                 );
                 this.isTransitioning = false;  //Marca que ha terminado y ya no entrará en el bloque
+                this.transitionType = null;
             }
 
             return;
-        }  
+        }
+    }
+
+    private handleUserInteraction(): boolean {
+        if (this.isTransitioning && this.transitionType === 'rotate') {
+            return false; // User cannot interrupt an assigned rotation
+        }
+        // Cancel panning/framing transitions so user can move freely
+        this.isTransitioning = false;
+        this.transitionType = null;
+        return true;
     }
 
     resetControls(): void {
         //this.cameraController.reset();
 
-         if (!this.defaultCameraPosition || !this.defaultCameraTarget) { // Comprueba si está guardada la cámara por defecto
-        this.cameraController.reset();
-        return;
+        if (!this.defaultCameraPosition || !this.defaultCameraTarget) { // Comprueba si está guardada la cámara por defecto
+            this.cameraController.reset();
+            return;
         }
 
         this.transitionTargetPosition = {
@@ -592,18 +604,11 @@ export class WebGLEngineAdapter extends EngineFacade {
         };
 
         this.isTransitioning = true;
+        this.transitionType = 'frame';
 
     }
 
-    checkControlsState(): boolean {
-        if (!this.cameraController) {
-            console.warn('Camera controller not yet initialized');
-            return false;
-        }
-        return this.cameraController.hasMovedFromDefault();
-    }
-
-    toggleControls(enable: boolean, autoRotate: boolean): void { 
+    toggleControls(enable: boolean, autoRotate: boolean): void {
         enable ? this.cameraController.initListeners()   // o exponer enable/disable
             : this.cameraController.dispose();
     }
@@ -660,7 +665,10 @@ export class WebGLEngineAdapter extends EngineFacade {
                 this.outlinePass.renderMask(meshesWithMatrix, cam.viewMatrix, cam.projectionMatrix);
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                 gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-                this.outlinePass.drawEdges([0, 1, 1], 2.0);
+
+                const outlineThickness = 1.5 * (window.devicePixelRatio || 1);
+                this.outlinePass.drawEdges([0, 1, 1], outlineThickness);
+
                 gl.enable(gl.DEPTH_TEST);
                 gl.disable(gl.BLEND);
             }
@@ -732,7 +740,7 @@ export class WebGLEngineAdapter extends EngineFacade {
 
             return this.wrapNativeObject(meshNode);
         }
-        
+
         // multiple primitives (diferent textures) 
         else {
             const modelNode = new Node();
@@ -758,6 +766,12 @@ export class WebGLEngineAdapter extends EngineFacade {
             throw new Error("Object is not a WebGl valid Node.");
         }
         return new WebGlRenderableObject(native);
+    }
+
+    createGroup(name?: string): RenderableObject {
+        const node = new Node();
+        if (name) node.setName(name);
+        return new WebGlRenderableObject(node);
     }
 
     private setArrowRotationFromDir(arrow: RenderableObject, dir: { x: number, y: number, z: number }) {
@@ -980,7 +994,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         return tMin >= 0 ? tMin : tMax;
     }
 
-   private transformRayToLocalSpace(
+    private transformRayToLocalSpace(
         origin: vec3,
         direction: vec3,
         worldMatrix: mat4
@@ -1008,8 +1022,10 @@ export class WebGLEngineAdapter extends EngineFacade {
         };
     }
 
-    private getPickableRootNodes(): readonly Node[] {
-        return this.rootNode
+    private getPickableRootNodes(): readonly Node[] | null {
+        const furnitureNode = this.rootNode.getNodeByName(this.furnitureRootName);
+        if (!furnitureNode) return null;
+        return furnitureNode
             .getChildren()
             .filter(node => node.isVisible() && node.getPickBounds() !== null);
     }
@@ -1017,9 +1033,11 @@ export class WebGLEngineAdapter extends EngineFacade {
     raycast(x: number, y: number): RenderableObject | null {
 
         if (!this.ready) return null;
-        
+
         const ray = this.buildWorldRayFromNdc(x, y);
         const pickableNodes = this.getPickableRootNodes();
+
+        if (!pickableNodes) return null;
 
         let bestNode: Node | null = null;
         let bestHit = Infinity;
@@ -1058,7 +1076,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     }
 
     setHighlight(objects: RenderableObject[]): void {
-        
+
         // clear prevous highlights
         for (const node of this.highlightedNodes) {
             node.setIsHighlighted(false);
@@ -1078,7 +1096,7 @@ export class WebGLEngineAdapter extends EngineFacade {
 
     private collectNodesFromNode(node: Node): void {
         if (!node.isVisible()) return;
-        
+
         if (node.getEntity() instanceof Mesh) {
             this.highlightedNodes.add(node);
         }
@@ -1091,20 +1109,25 @@ export class WebGLEngineAdapter extends EngineFacade {
     rotateCamera(axis: 'x' | 'y' | 'z', angleDegrees: number): void {
         const cam = this.getCamera();
 
+        // Always rotate based on the UNROTATED default camera if available,
+        // otherwise it will rotate starting from the current lagging physical position.
+        const basePos = this.defaultCameraPosition ? this.defaultCameraPosition : cam.position;
+        const baseTgt = this.defaultCameraTarget ? this.defaultCameraTarget : cam.target;
+
         const position = vec3.fromValues(  //Convertimos la posición actual a un vector de gl-matrix para que lo pueda interpretar la librería
-            cam.position.x,
-            cam.position.y,
-            cam.position.z
+            basePos.x,
+            basePos.y,
+            basePos.z
         );
 
         const target = vec3.fromValues(
-            cam.target.x,
-            cam.target.y,
-            cam.target.z
+            baseTgt.x,
+            baseTgt.y,
+            baseTgt.z
         );
 
         const rotatedPosition = vec3.create(); // Para guardar la posición final
-        const angleRadians = angleDegrees * (Math.PI/180); //La libreria solo trabaja en radianes, convertimos grados a radianes
+        const angleRadians = angleDegrees * (Math.PI / 180); //La libreria solo trabaja en radianes, convertimos grados a radianes
 
         if (axis === 'x') { //Elige el eje de giro
             vec3.rotateX(rotatedPosition, position, target, angleRadians);
@@ -1130,20 +1153,138 @@ export class WebGLEngineAdapter extends EngineFacade {
         };
 
         this.transitionTargetLookAt = {
-            ...cam.target // Esto es el operador spread de objetos y equivale a mandarle todas las posiciones de target (x, y, z)
+            ...baseTgt // Esto es el operador spread de objetos y equivale a mandarle todas las posiciones de target (x, y, z)
         };
 
         this.isTransitioning = true;
+        this.transitionType = 'rotate';
     }
 
-    // ------------------------------------------
+    // FRAME OBJECT FROM PARTS (camera frames the object in the center of the screen)
 
-    // metodo que no sé si hará falta o no.
-    // private applyAutoRotation(): void {
-    //     // Incrementally rotate the scene based on controlsAutoRotateSpeed
-    //     const rotationDelta = (this.controlsAutoRotateSpeed * 0.016) * 0.01; // 0.016 ~ 60fps
-    //     this.cameraNode.rotate(0, rotationDelta, 0);
-    // }
+    frameObjectFromParts(
+        parts: { currentPosition: Vector3; nativeObject: any }[],
+        margin = 1.25
+    ): void {
+        if (!parts.length) return;
 
+        const aabb = this.computeWorldAABB(parts);
+        if (!aabb) return;
+
+        const center = this.computeAABBCenter(aabb.min, aabb.max);
+        const radius = this.computeBoundingSphereRadius(aabb.min, aabb.max, margin);
+        const distance = this.computeCameraDistance(radius);
+
+        const curPos = this.isTransitioning && this.transitionTargetPosition
+            ? this.transitionTargetPosition
+            : this.cameraController.getCameraPosition();
+
+        const curTgt = this.isTransitioning && this.transitionTargetLookAt
+            ? this.transitionTargetLookAt
+            : this.cameraController.getTarget();
+
+        const currentFrame = this.calculateZoomedPosition(curPos, curTgt, center, distance);
+
+        this.applyTransitionFrame(currentFrame);
+
+        const basePos = this.defaultCameraPosition ?? curPos;
+        const baseTgt = this.defaultCameraTarget ?? curTgt;
+
+        const defaultFrame = this.calculateZoomedPosition(basePos, baseTgt, center, distance);
+
+        this.defaultCameraTarget = defaultFrame.target;
+        this.defaultCameraPosition = defaultFrame.position;
+    }
+
+    private computeWorldAABB(parts: { currentPosition: Vector3; nativeObject: any }[]): { min: vec3, max: vec3 } | null {
+        const points: vec3[] = [];
+
+        for (const part of parts) {
+            const node = (part.nativeObject as WebGlRenderableObject).node;
+            const bounds = node.getPickBounds();
+            if (!bounds) continue;
+
+            const { min, max } = bounds;
+            const pos = part.currentPosition;
+
+            const corners: vec3[] = [
+                vec3.fromValues(min[0], min[1], min[2]),
+                vec3.fromValues(max[0], min[1], min[2]),
+                vec3.fromValues(min[0], max[1], min[2]),
+                vec3.fromValues(max[0], max[1], min[2]),
+                vec3.fromValues(min[0], min[1], max[2]),
+                vec3.fromValues(max[0], min[1], max[2]),
+                vec3.fromValues(min[0], max[1], max[2]),
+                vec3.fromValues(max[0], max[1], max[2]),
+            ];
+
+            for (const c of corners) {
+                c[0] += pos.x;
+                c[1] += pos.y;
+                c[2] += pos.z;
+                points.push(c);
+            }
+        }
+
+        if (!points.length) return null;
+
+        const minP = vec3.clone(points[0]);
+        const maxP = vec3.clone(points[0]);
+
+        for (const p of points) {
+            vec3.min(minP, minP, p);
+            vec3.max(maxP, maxP, p);
+        }
+
+        return { min: minP, max: maxP };
+    }
+
+    private computeAABBCenter(min: vec3, max: vec3): vec3 {
+        const center = vec3.create();
+        vec3.add(center, min, max);
+        vec3.scale(center, center, 0.5);
+        return center;
+    }
+
+    private computeBoundingSphereRadius(min: vec3, max: vec3, margin: number): number {
+        const halfExtent = vec3.create();
+        vec3.sub(halfExtent, max, min);
+        vec3.scale(halfExtent, halfExtent, 0.5);
+        return vec3.length(halfExtent) * margin;
+    }
+
+    private computeCameraDistance(radius: number): number {
+        const fovY = this.cameraEntity.getFov() * (Math.PI / 180);
+        return radius / Math.tan(fovY / 2);
+    }
+
+    private applyTransitionFrame(frame: { position: Vector3, target: Vector3 }) {
+        this.transitionTargetPosition = frame.position;
+        this.transitionTargetLookAt = frame.target;
+        this.isTransitioning = true;
+        this.transitionType = 'frame';
+    }
+
+    private calculateZoomedPosition(
+        basePosition: Vector3,
+        baseTarget: Vector3,
+        center: vec3,
+        targetDistance: number
+    ): { position: Vector3, target: Vector3 } {
+        const dx = basePosition.x - baseTarget.x;
+        const dy = basePosition.y - baseTarget.y;
+        const dz = basePosition.z - baseTarget.z;
+        const currentDist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const scale = targetDistance / currentDist;
+
+        return {
+            position: {
+                x: center[0] + dx * scale,
+                y: center[1] + dy * scale,
+                z: center[2] + dz * scale,
+            },
+            target: { x: center[0], y: center[1], z: center[2] }
+        };
+    }
 
 }

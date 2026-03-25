@@ -1,26 +1,19 @@
 <div
   class="w-full h-full rounded-3xl flex flex-col p-2 sm:px-4 border-0 shadow-none bg-transparent transition-colors duration-300">
 
-  <!-- Header -->
-  <app-graphics-header *ngIf="!isARActive()"
-    [engineUse]="engineUse()"
-    [furnitureName]="furnitureName()"
-    [mode]="mode()"
-    [visibleSteps]="visibleSteps()"
-    [currentLogicalStep]="currentLogicalStep()"
-    [hasIsolatedPart]="isolatedPart() !== null"
-    [isSimulating]="isSimulating()"
-    [isManualComplete]="isManualComplete()"
-    [stepDescriptions]="stepDescriptions()"
-    (engineChanged)="onEngineChange($event)"
-    (goToStepAction)="goToStep($event)">
+  <app-graphics-header *ngIf="!isARActive()" [engineUse]="engineUse()" [furnitureName]="furnitureName()" [mode]="mode()"
+    [visibleSteps]="visibleSteps()" [currentLogicalStep]="logicalStep()" [hasIsolatedPart]="isolatedPart() !== null"
+    [isolatedPartName]="isolatedPart()?.name || ''" [isSimulating]="isSimulating()"
+    [isManualComplete]="isManualComplete()" [stepDescriptions]="stepDescriptions()"
+    (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
+    (exitIsolationAction)="exitIsolation()">
   </app-graphics-header>
 
 
 
   <!-- Canvas Container-->
   <div class=" relative h-full">
-    <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()"
+    <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()" [hasIsolatedPart]="isolatedPart() !== null"
       (arStateChange)="onArStateChange($event)"></app-ar-overlay>
 
     <!-- Main Canvas -->
@@ -29,69 +22,17 @@
     </canvas>
 
     @if (isolatedPart(); as part) {
-    <div *ngIf="!isARActive()" class="absolute top-20 left-1/2 -translate-x-1/2 z-10">
-      <button (click)="exitIsolation()"
-        class="px-4 py-2 bg-azul-claro text-marron-oscuro font-semibold rounded-full hover:bg-azul-claro-dim transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center space-x-2">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        <span>Ver todo</span>
-      </button>
-    </div>
-
-    <div *ngIf="!isARActive()" class="absolute bottom-4 left-4 text-beige max-w-xs p-4 rounded-lg">
-      <h3 class="font-bold text-lg text-beige">{{ part.name }}</h3>
-      <p class="text-sm mt-1 text-marron-oscuro">{{ part.description }}</p>
-    </div>
     }
 
     <!-- Reset Camera Button Overlay -->
     @if (isCameraMoved() && mode() !== 'simulation') {
-    <button (click)="resetCameraPosition()"
+    <button *ngIf="!isARActive()" (click)="resetCameraPosition()"
       class="absolute bottom-1 left-0 flex px-3 py-2 bg-beige justify-center items-center rounded-full transition-all duration-200 transform hover:scale-105 z-50 shadow-lg text-marron-oscuro hover:bg-marron-claro hover:text-beige">
       <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
         <path
           d="M480-360v-60q0-25 17.5-42.5T540-480h60L480-360Zm0 161v-85l196-196h85L480-199Zm2 75 353-354q16 4 27.5 15.5T878-435L524-82q-16-5-26.5-15.5T482-124Zm117 44 281-281v85L684-80h-85Zm161 0 120-120v60q0 25-17.5 42.5T820-80h-60ZM480-760q-117 0-198.5 81.5T200-480q0 72 32.5 132t87.5 98v-70q0-17 11.5-28.5T360-360q17 0 28.5 11.5T400-320v160q0 17-11.5 28.5T360-120H200q-17 0-28.5-11.5T160-160q0-17 11.5-28.5T200-200h54q-62-50-98-122.5T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q114 0 204 62.5T814-615q6 16 0 31t-22 21q-16 6-31.5 0T739-585q-31-78-100.5-126.5T480-760Z" />
       </svg>
     </button>
-    }
-
-    <!-- Toast de comando de voz reconocido -->
-    @if (voiceControlService.lastCommand(); as cmd) {
-    <div class="voice-command-toast">
-
-      <!-- Icono del tipo de acción -->
-      @if (cmd.icon === 'next') {
-      <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-        <polyline points="12 5 19 12 12 19"></polyline>
-      </svg>
-      }
-      @if (cmd.icon === 'prev') {
-      <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
-      }
-      @if (cmd.icon === 'goto') {
-      <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor">
-        <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Zm20 200h-60v-200H300v-60h200v-60H300v-60h180q25 0 42.5 17.5T540-600v120q0 25-17.5 42.5T480-420h-60v60h180v80Z"/>
-      </svg>
-      }
-      @if (cmd.icon === 'final') {
-      <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor">
-        <path d="m382-354 339-339q12-12 28-12t28 12q12 12 12 28.5T777-636L410-268q-12 12-28 12t-28-12L182-440q-12-12-11.5-28.5T183-497q12-12 28.5-12t28.5 12l142 143Z"/>
-      </svg>
-      }
-
-      <!-- Texto del comando -->
-      <span>{{ cmd.label }}</span>
-    </div>
     }
 
   </div>
@@ -101,9 +42,8 @@
   @if(showFooterControls() && !isARActive()) {
   <app-footer-controls [hasIsolatedPart]="isolatedPart() !== null" [mode]="mode()" [manualStep]="manualStep()"
     [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()" [simulationSpeed]="simulationSpeed()"
-    [isVoiceListening]="voiceControlService.isListening()"
-    [isVoiceSupported]="voiceControlService.isSupported()"
-    [isVoiceSoundActive]="voiceControlService.isSoundActive()"
+    [lastCommand]="voiceControlService.lastCommand()" [isVoiceListening]="voiceControlService.isListening()"
+    [isVoiceSupported]="voiceControlService.isSupported()" [isVoiceSoundActive]="voiceControlService.isSoundActive()"
     (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
     (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
     (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()">

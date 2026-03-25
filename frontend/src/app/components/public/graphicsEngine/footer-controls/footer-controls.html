@@ -1,6 +1,8 @@
-<footer
-  class="flex flex-col md:flex-row items-center justify-center bg-transparent text-marron-oscuro w-full relative"
+<footer class="flex flex-col md:flex-row items-center justify-center bg-transparent text-marron-oscuro w-full relative"
   [class.opacity-60]="hasIsolatedPart()">
+  @if(hasIsolatedPart()) {
+  <div class="absolute inset-0 z-50 cursor-not-allowed rounded-3xl" (click)="$event.stopPropagation()"></div>
+  }
 
   <!--Primera fila de botones-->
   @if (mode() !== 'final') {
@@ -9,7 +11,8 @@
     <!-- Mode Toggle, no aparece en el modo final -->
     <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
 
-      <button (click)="modeChange.emit('manual')" class="btn-opciones-mueble" [ngClass]="{ 'active': mode() === 'manual' }">
+      <button (click)="modeChange.emit('manual')" class="btn-opciones-mueble"
+        [ngClass]="{ 'active': mode() === 'manual' }">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
             d="M400-320v160h160v-160H400Zm-80-80v-160H160v160h160Zm80 0h160v-160H400v160Zm240 0h160v-160H640v160Zm0-240h160v-160H640v160ZM320-320H160q-33 0-56.5-23.5T80-400v-160q0-33 23.5-56.5T160-640h400v-160q0-33 23.5-56.5T640-880h160q33 0 56.5 23.5T880-800v400q0 33-23.5 56.5T800-320H640v160q0 33-23.5 56.5T560-80H400q-33 0-56.5-23.5T320-160v-160Z" />
@@ -34,8 +37,8 @@
 
     <!--Boton volver al inicio-->
     @if (mode() === 'manual') {
-    <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200" (click)="goToStepAction.emit(0)"
-      [class.bg-beige-oscuro]="manualStep() === 0">
+    <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
+      (click)="goToStepAction.emit(0)" [class.bg-beige-oscuro]="manualStep() === 0">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
@@ -90,8 +93,7 @@
         </svg>
       </button>
 
-      @if (manualStep() < totalSteps() - 1) { 
-        <!--Boton siguiente-->
+      @if (manualStep() < totalSteps() - 1) { <!--Boton siguiente-->
         <button (click)="nextStepAction.emit()"
           class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
           <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
@@ -110,27 +112,8 @@
         </button>
         }
     </div>
-
-    <!-- Botón de micrófono (control de voz) -->
-    @if (isVoiceSupported()) {
-    <button
-      (click)="toggleVoiceAction.emit()"
-      [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
-      class="voice-mic-btn"
-      [class.voice-mic-btn--active]="isVoiceListening()">
-
-      @if (isVoiceSoundActive()) {
-        <span class="voice-wave-ring voice-wave-ring--1"></span>
-        <span class="voice-wave-ring voice-wave-ring--2"></span>
-        <span class="voice-wave-ring voice-wave-ring--3"></span>
-      }
-
-      <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-        <path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/>
-      </svg>
-    </button>
     }
-    }
+
 
     <!--Botones velocidad-->
     @if (mode() === 'simulation') {
@@ -154,4 +137,68 @@
       </svg>
     </button>
   </div>
+  <!-- Botón de micrófono (control de voz) -->
+  @if (isVoiceSupported()) {
+  <!-- Ondas separadas del botón para que el overflow-hidden del botón no las recorte -->
+  @if (isVoiceListening()) {
+  <div class="absolute right-15 bottom-14 md:right-0 md:bottom-1 h-10 w-10 pointer-events-none rounded-full z-0">
+    @if (isVoiceSoundActive()) {
+    <span class="voice-wave-ring voice-wave-ring--1"></span>
+    <span class="voice-wave-ring voice-wave-ring--2"></span>
+    <span class="voice-wave-ring voice-wave-ring--3"></span>
+    }
+  </div>
+  }
+
+  <button (click)="toggleVoiceAction.emit()"
+    [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
+    class="voice-btn shadow-lg z-10" [class.voice-btn--active]="isVoiceListening()"
+    [class.has-command]="lastCommand() !== null">
+
+    @if (!lastCommand()) {
+    <svg class="shrink-0" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+      fill="currentColor">
+      <path
+        d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z" />
+    </svg>
+    } @else {
+    @if (lastCommand(); as cmd) {
+    @if (cmd.icon === 'next') { <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+      <polyline points="12 5 19 12 12 19"></polyline>
+    </svg> }
+    @if (cmd.icon === 'prev') { <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg> }
+    @if (cmd.icon === 'goto') { <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" height="22px"
+      viewBox="0 -960 960 960" width="22px" fill="currentColor">
+      <path
+        d="M380-320q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l224 224q11 11 11 28t-11 28q-11 11-28 11t-28-11L532-372q-30 24-69 38t-83 14Zm0-80q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
+    </svg> }
+    @if (cmd.icon === 'final') { <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" height="22px"
+      viewBox="0 -960 960 960" width="22px" fill="currentColor">
+      <path
+        d="m382-354 339-339q12-12 28-12t28 12q12 12 12 28.5T777-636L410-268q-12 12-28 12t-28-12L182-440q-12-12-11.5-28.5T183-497q12-12 28.5-12t28.5 12l142 143Z" />
+    </svg> }
+    @if (cmd.icon === 'restart') { <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" height="22px"
+      viewBox="0 -960 960 960" width="22px" fill="currentColor">
+      <path
+        d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
+    </svg> }
+    @if (cmd.icon === 'error') { <svg class="w-5 h-5 shrink-0 text-red-500" xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+      stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg> }
+
+    <span class="font-semibold text-sm shrink-0">{{ cmd.label }}</span>
+    }
+    }
+  </button>
+  }
+
 </footer>

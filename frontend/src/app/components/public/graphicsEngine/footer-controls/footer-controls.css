@@ -1,47 +1,70 @@
 @import "../../../../../styles.css";
 
 .btn-opciones-mueble {
-    @apply flex flex-row px-2 py-1 h-full rounded-full duration-200 items-center text-marron-oscuro gap-1 text-sm font-medium;
-    transition-property: background-color, color;
+  @apply flex flex-row px-2 py-1 h-full rounded-full duration-200 items-center text-marron-oscuro gap-1 text-sm font-medium;
+  transition-property: background-color, color;
 }
 
 .btn-opciones-mueble:hover {
-    @apply bg-azul-claro;
+  @apply bg-azul-claro;
 }
 
 .btn-opciones-mueble.active {
-    @apply bg-azul-claro text-marron-oscuro rounded-full border-marron-oscuro/50 border-1;
+  @apply bg-azul-claro text-marron-oscuro rounded-full border-marron-oscuro/50 border-1;
 }
 
 /* ── Botón de micrófono (control de voz) ── */
-.voice-mic-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 9999px;
-  background-color: #f5ede4;   /* beige */
-  color: #452621;              /* marron-oscuro */
-  transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
-  flex-shrink: 0;
-  overflow: visible;
+.voice-btn {
+  @apply flex absolute h-10 w-auto min-w-10 max-w-10 px-0 bg-beige rounded-full duration-300 items-center justify-center right-15 bottom-14 md:right-0 md:bottom-1 overflow-hidden transition-all whitespace-nowrap;
 }
 
-.voice-mic-btn:hover {
-  background-color: #BAD5E3;   /* azul-claro Skaply */
-  transform: scale(1.08);
+.voice-btn.has-command {
+  @apply max-w-[250px] px-4 gap-2;
 }
 
-/* Activo: fondo azul Skaply en vez de rojo */
-.voice-mic-btn--active {
-  background-color: #94adba;   /* azul-medio Skaply */
-  color: #452621;
+.voice-btn:hover {
+  @apply bg-azul-claro;
 }
 
-.voice-mic-btn--active:hover {
-  background-color: #BAD5E3;
+/* Activo: animación de scale para indicar que escucha */
+.voice-btn--active {
+  @apply bg-azul-claro;
+  animation: voice-listen-pulse 1.3s infinite ease-in-out;
+}
+
+@keyframes voice-listen-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(148, 173, 186, 0.7);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(148, 173, 186, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(148, 173, 186, 0);
+  }
+}
+
+/* ── Toast de comando de voz ── */
+.voice-command-toast {
+  @apply absolute bottom-2 right-0 z-60 flex items-center gap-2 px-3 py-1 text-azul-claro font-semibold text-sm;
+
+  /* Aparece con slide-up + fade */
+  animation: voice-toast-in 0.22s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes voice-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── Ondas tipo sonar (sólo cuando hay sonido real) ── */
@@ -49,25 +72,36 @@
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 2px solid #BAD5E3;   /* azul-claro Skaply */
+  border: 2px solid #BAD5E3;
+  /* azul-claro Skaply */
   opacity: 0;
   pointer-events: none;
   animation: voice-sonar 1.2s ease-out forwards;
 }
 
 /* Delays escalonados para efecto de propagación */
-.voice-wave-ring--1 { animation-delay: 0ms; }
-.voice-wave-ring--2 { animation-delay: 180ms; }
-.voice-wave-ring--3 { animation-delay: 360ms; }
+.voice-wave-ring--1 {
+  animation-delay: 0ms;
+}
+
+.voice-wave-ring--2 {
+  animation-delay: 180ms;
+}
+
+.voice-wave-ring--3 {
+  animation-delay: 360ms;
+}
 
 @keyframes voice-sonar {
   0% {
     transform: scale(1);
     opacity: 0.85;
   }
+
   60% {
     opacity: 0.35;
   }
+
   100% {
     transform: scale(2.4);
     opacity: 0;

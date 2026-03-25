@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit, OnDestroy, OnInit, signal, computed, input, output, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Vector3 } from '../../../engine/interfaces';
+import { Vector3, RenderableObject } from '../../../engine/interfaces';
 import { ApiService } from '../../../services/api.service';
 import { Furniture } from '../../../types';
 import { GraphicsHeader } from './graphics-header/graphics-header';
@@ -44,15 +44,20 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   isolatedPart = signal<AssemblyPart | null>(null);
   mode = signal<'manual' | 'simulation' | 'final'>('manual');
   isSmallScreen = signal(false);
-  isCameraMoved = signal(false);
+  isCameraMoved!: import('@angular/core').Signal<boolean>;
   stepDescriptions = signal<string[]>([]);
   showFooterControls = signal(true);
-  currentLogicalStep = signal(0);
   isARActive = signal(false);
 
   // COMPUTED
   isSimulating = computed(() => this.mode() === 'simulation');
   isManualComplete = computed(() => this.manualStep() === this.totalSteps() - 1);
+
+  logicalStep = computed(() => {
+    const step = this.currentStep();
+    const ratio = this.stepsRatio();
+    return Math.floor(step / ratio);
+  });
 
   currentStep = computed(() => {
     switch (this.mode()) {
@@ -78,9 +83,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   furniture?: Furniture;
 
   // PRIVATE STATE
+  private furnitureRoot: RenderableObject | null = null;
   private parts: AssemblyPart[] = [];
   private stepsData = signal<AssemblyStep[]>([]);
-  private lastProcessedStep = -1;
+  //private lastProcessedStep = -1;
+  private lastFramedStep = -1;
   private lastRotationConfig = { angle: null as number | null, axis: null as string | null };
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
@@ -103,54 +110,79 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     public interactionService: InteractionService,
     public voiceControlService: VoiceControlService
   ) {
-    effect(() => {
-      const step = this.currentStep();
-      const ratio = this.stepsRatio();
+    this.isCameraMoved = this.interactionService.isUserManuallyMoved;
 
-      const logicalStep = Math.floor(step / ratio);
-
-      if (this.currentLogicalStep() !== logicalStep) {
-        this.currentLogicalStep.set(logicalStep);
-      }
-    });
     effect(() => {
-      const stepIndex = this.currentLogicalStep();
+      const engine = this.engineService.getEngine();
+      if (!engine) return;
+
+      const mode = this.mode();
+      const stepIndex = this.logicalStep();
       const steps = this.stepsData();
+      const lastRotAngle = this.lastRotationConfig.angle;
+      const lastRotAxis = this.lastRotationConfig.axis;
 
-      if (this.lastProcessedStep === stepIndex && steps.length > 0) return;
-      this.lastProcessedStep = stepIndex;
+      console.log('stepIndex: ' + stepIndex);
+      console.log('mode: ' + mode);
+      console.log('lastRotAngle: ' + lastRotAngle);
+      console.log('lastRotAxis: ' + lastRotAxis);
 
-      const engineFacade = this.engineService.getEngine();
-      if (!engineFacade) return;
-
-      if (this.mode() === 'final') {
-        if (this.lastRotationConfig.angle !== null || this.lastRotationConfig.axis !== null) {
-          engineFacade.resetControls();
+      if (mode === 'final') {
+        if (lastRotAngle !== null || lastRotAxis !== null) {
           this.lastRotationConfig = { angle: null, axis: null };
         }
-      } else if (steps.length > 0 && steps[stepIndex]) {
-        const stepData = steps[stepIndex];
-        const hasNewRotation = stepData.scene_camera_angle !== null && stepData.scene_camera_rotation_axis !== null;
-        const rotationChanged = stepData.scene_camera_angle !== this.lastRotationConfig.angle ||
-          stepData.scene_camera_rotation_axis !== this.lastRotationConfig.axis;
 
-        if (rotationChanged) {
-          if (hasNewRotation) {
-            engineFacade.rotateCamera(
-              stepData.scene_camera_rotation_axis as 'x' | 'y' | 'z',
-              Number(stepData.scene_camera_angle)
-            );
-          } else {
-            engineFacade.resetControls();
-          }
-
-          this.lastRotationConfig = {
-            angle: stepData.scene_camera_angle,
-            axis: stepData.scene_camera_rotation_axis
-          };
+        if (this.furnitureRoot && this.lastFramedStep !== -2) {
+          this.lastFramedStep = -2;
+          this.interactionService.resetUserManuallyMoved();
+          engine.frameObjectFromParts(
+            this.parts.map(p => ({
+              currentPosition: p.targetPosition,
+              nativeObject: p.object
+            }))
+          );
         }
+        return;
       }
 
+      const currentStep = this.currentStep();
+      let didFrame = false;
+
+      // framing the objects
+      if (this.furnitureRoot && !this.isolatedPart() && this.lastFramedStep !== currentStep) {
+        this.lastFramedStep = currentStep;
+        engine.frameObjectFromParts(
+          this.parts
+            .filter(p => p.appearStep <= currentStep)
+            .map(p => ({
+              currentPosition: p.object.getPosition(),
+              nativeObject: p.object
+            }))
+        );
+        didFrame = true;
+      }
+
+      // rotation 
+      const stepData = steps[stepIndex];
+      if (!stepData) return;
+
+      const stepAngle = stepData.scene_camera_angle;
+      const stepAxis = stepData.scene_camera_rotation_axis;
+
+      const hasNewRotation = stepAngle !== null && stepAxis !== null;
+      const rotationChanged = stepAngle !== lastRotAngle || stepAxis !== lastRotAxis;
+
+      if (rotationChanged || (didFrame && hasNewRotation)) {
+        if (hasNewRotation) {
+          engine.rotateCamera(stepAxis as 'x' | 'y' | 'z', Number(stepAngle));
+          this.interactionService.resetUserManuallyMoved();
+        } else if (rotationChanged) {
+          if (!this.interactionService.hasUserManuallyMoved()) {
+            engine.resetControls();
+          }
+        }
+        this.lastRotationConfig = { angle: stepAngle, axis: stepAxis };
+      }
     });
   }
 
@@ -173,7 +205,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           await this.initEngine();
 
           const furnitureData = await this.furnitureService.loadFurniture(String(ref));
-
+          this.furnitureRoot = furnitureData.furnitureRoot;
           this.parts = furnitureData.parts;
           this.totalSteps.set(furnitureData.totalSteps);
           this.stepDescriptions.set(furnitureData.stepDescriptions);
@@ -189,7 +221,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       }
       const targetLogicalIndex = Math.max(0, stepNumber - 1);
       this.goToStep(targetLogicalIndex);
-
     });
 
     // Inicializar control de voz con annyang
@@ -204,7 +235,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
         if (this.mode() !== 'manual') this.setMode('manual');
         this.goToStep(logicalIndex);
       },
-      () => this.goToLastStep()
+      () => this.goToLastStep(),
+      () => this.manualStep(),
+      () => this.totalSteps(),
+      () => Math.floor(this.totalSteps() / this.stepsRatio()),
+      () => this.isolatedPart() !== null
     );
   }
 
@@ -288,7 +323,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (targetStep >= 0 && targetStep < this.totalSteps()) {
       this.manualStep.set(targetStep);
       if (this.furniture?.reference_number) {
-        this.apiService.changeStep(this.furniture.reference_number, targetStep).subscribe();
+        this.apiService.changeStep(this.furniture.reference_number, logicalStepIndex + 1).subscribe();
       }
     }
   }
@@ -296,14 +331,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   nextStep(): void {
     this.manualStep.update(step => (step < this.totalSteps() - 1 ? step + 1 : step));
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, this.currentLogicalStep()).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep() + 1).subscribe();
     }
   }
 
   prevStep(): void {
     this.manualStep.update(step => (step > 0 ? step - 1 : step));
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, this.currentLogicalStep()).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, this.logicalStep() + 1).subscribe();
     }
   }
 
@@ -332,7 +367,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   reset(): void {
     this.manualStep.set(0);
     if (this.furniture?.reference_number) {
-      this.apiService.changeStep(this.furniture.reference_number, 0).subscribe();
+      this.apiService.changeStep(this.furniture.reference_number, 1).subscribe();
     }
   }
 
@@ -354,12 +389,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       );
       this.preIsolationCameraState = null;
     } else {
-      engineFacade.setCameraProps(engineFacade.getCamera().position, { x: 0, y: 1, z: 0 }); // Reset target
+      engineFacade.setCameraProps(engineFacade.getCamera().position, { x: 0, y: 1, z: 0 });
     }
   }
 
   resetCameraPosition(): void {
     this.engineService.getEngine().resetControls();
+    this.interactionService.resetUserManuallyMoved();
   }
 
   public toggleSimulation(): void {
@@ -435,7 +471,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       getIsolatedPart: () => this.isolatedPart(),
       getCurrentStep: () => this.currentStep(),
       getParts: () => this.parts,
-      isolatePart: (part) => this.isolatePart(part)
+      isolatePart: (part) => this.isolatePart(part),
+      setMode: (mode) => this.setMode(mode)
     });
 
     window.addEventListener('resize', this.boundWindowResize);
@@ -447,7 +484,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
       if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        const { parts, totalSteps, stepDescriptions, sortedSteps } = await this.furnitureService.createPartsFromApi(assemblyData);
+        const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.createPartsFromApi(assemblyData);
+
+        this.furnitureRoot = furnitureRoot;
 
         if (parts.length > 0) {
           this.parts = parts;
@@ -464,17 +503,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   // START OF ANIMATE FUNCTIONS
 
-  private updateCameraState(): void {
-    const isMoved = this.engineService.getEngine().checkControlsState();
-    if (this.isCameraMoved() !== isMoved) {
-      this.isCameraMoved.set(isMoved);
-    }
-  }
-
   private animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
 
-    this.updateCameraState();
     if (this.isSimulating()) {
       this.simulationService.runSimulation(this.totalSteps());
     }

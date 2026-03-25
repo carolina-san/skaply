@@ -46,7 +46,7 @@ export class Login implements OnInit {
     } else if (role === 'provider') {
       this.router.navigate(['/provider']);
     } else {
-      this.router.navigate(['/catalogo']);
+      this.router.navigate(['/home']);
     }
   }
 
@@ -70,7 +70,7 @@ export class Login implements OnInit {
             this.redirectByRole(user.role);
           } else {
             // Si no hay usuario, ir al catálogo por defecto
-            this.router.navigate(['/catalogo']);
+            this.router.navigate(['/home']);
           }
         });
       },

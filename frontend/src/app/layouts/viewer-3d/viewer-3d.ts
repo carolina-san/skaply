@@ -227,7 +227,7 @@ export class Viewer3D implements OnInit {
         setTimeout(() => {
           this.closeReviewModal();
           this.finMontaje();
-          this.router.navigate(['/catalogo']);
+          this.router.navigate(['/home']);
         }, 1500);
       },
       error: (error) => {
@@ -243,7 +243,7 @@ export class Viewer3D implements OnInit {
   skipReview(): void {
     this.closeReviewModal();
     this.finMontaje();
-    this.router.navigate(['/catalogo']);
+    this.router.navigate(['/home']);
   }
 
   toggleWireframe(): void {
