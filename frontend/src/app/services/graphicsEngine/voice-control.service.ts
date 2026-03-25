@@ -14,6 +14,8 @@ export class VoiceControlService {
   isListening = signal(false);
   isSupported = signal(false);
   isSoundActive = signal(false);
+  /** Flujo del diálogo de permiso de micrófono, igual que arFlowState en AR */
+  micFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
   /** Orden que acaba de reconocerse; null si no hay nada que mostrar */
   lastCommand = signal<VoiceCommandInfo | null>(null);
 
@@ -220,13 +222,48 @@ export class VoiceControlService {
   // ── Ciclo de vida ─────────────────────────────────────────────────────
 
   toggle(): void {
-    if (this.isListening()) { this.stop(); } else { this.start(); }
+    if (this.isListening()) {
+      this.stop();
+    } else {
+      // Abre el diálogo de permiso primero, igual que hace el AR con la cámara
+      this.micFlowState.set('requesting');
+    }
   }
 
-  start(): void {
+  /** El usuario ha pulsado "Permitir" en el diálogo: pedimos acceso real al micro */
+  async proceedWithMicPermission(): Promise<void> {
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia not supported');
+      }
+      // Esto dispara la notificación nativa del navegador
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Una vez concedido podemos liberar el stream; annyang usará la misma API internamente
+      stream.getTracks().forEach(t => t.stop());
+      this.micFlowState.set('idle');
+      this.start();
+    } catch {
+      console.warn('[VoiceControl] Permiso de micrófono denegado.');
+      this.micFlowState.set('denied');
+    }
+  }
+
+  cancelMicPermission(): void {
+    this.micFlowState.set('idle');
+  }
+
+  closeMicDenied(): void {
+    this.micFlowState.set('idle');
+  }
+
+  retryMicPermission(): void {
+    this.micFlowState.set('requesting');
+  }
+
+  private start(): void {
     if (!this.isSupported()) return;
-    // Poner continuous: false hace que lance el resultado en cuanto detecta una pausa natural, acelerando mucho la respuesta
-    annyang.start({ autoRestart: true, continuous: true });
+    // continuous: false lanza el resultado en cuanto detecta una pausa natural → respuesta más rápida
+    annyang.start({ autoRestart: true, continuous: false });
     this.isListening.set(true);
   }
 
