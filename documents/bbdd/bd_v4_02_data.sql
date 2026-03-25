@@ -268,14 +268,14 @@ INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id, 
 (1,7,'Ensamblar tablero',NULL, NULL, NULL),                 
 (1,8,'4 Tornillos M6 L= 16 mm',NULL, 120.00, 'x'),          
 -- MUEBLE DE ACTIU ARMARIO MODULAR
-(2,1,'Atornillar 6 pernos al panel lateral',NULL, NULL, NULL),     
-(2,2,'Ensamblar el tablero inferior y las dos baldas',NULL, NULL, NULL),    
-(2,3,'Atornillar 6 pernos al tablero y las baldas',NULL, NULL, NULL),   
-(2,4,'Ensamblar el panel lateral',NULL, NULL, NULL),     
-(2,5,'Ensamblar el tablero trasero',NULL, NULL, NULL),  
-(2,6,'Atornillar 6 pernos en la parte superior de los tableros',NULL, NULL, NULL),     
-(2,7,'Ensamblar el tablero superior',NULL, NULL, NULL),     
-(2,8,'Añadir la puerta derecha',NULL, NULL, NULL),
+(2,1,'Atornillar 6 pernos al panel lateral',NULL, 90.00,'z'),     
+(2,2,'Ensamblar el tablero inferior y las dos baldas',NULL, 90.00, 'z'),    
+(2,3,'Atornillar 6 pernos al tablero y las baldas',NULL, 90.00, 'z'),   
+(2,4,'Ensamblar el panel lateral',NULL, 90.00,'z'),     
+(2,5,'Ensamblar el tablero trasero',NULL, 200.00, 'y'),  
+(2,6,'Atornillar 6 pernos en la parte superior de los tableros',NULL, 200.00, 'y'),     
+(2,7,'Ensamblar el tablero superior',NULL, 90.00, 'z'),     
+(2,8,'Añadir la puerta derecha',NULL, NUll, NULL),
 (2,9,'Añadir la puerta izquierda',NULL, NULL, NULL)   
 ;    
 
