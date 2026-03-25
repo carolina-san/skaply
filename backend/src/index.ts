@@ -33,6 +33,12 @@ app.use(
     },
   })
 );
+// Helmet v7 bloquea micrófono y cámara por defecto con Permissions-Policy.
+// Lo sobreescribimos para que el control por voz y el AR funcionen correctamente.
+app.use((_req, res, next) => {
+  res.setHeader('Permissions-Policy', "microphone=(self), camera=(self)");
+  next();
+});
 app.use(corsMiddleware);
 app.use(morgan('combined'));
 app.use(express.json());

@@ -232,19 +232,40 @@ export class VoiceControlService {
 
   /** El usuario ha pulsado "Permitir" en el diálogo: pedimos acceso real al micro */
   async proceedWithMicPermission(): Promise<void> {
+    // Si el navegador no soporta getUserMedia (algunos móviles), iniciamos annyang
+    // directamente: él mismo gestiona el permiso vía SpeechRecognition internamente.
+    if (!navigator.mediaDevices?.getUserMedia) {
+      console.info('[VoiceControl] getUserMedia no disponible, iniciando annyang directamente.');
+      this.micFlowState.set('idle');
+      this.start();
+      return;
+    }
+
     try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('getUserMedia not supported');
-      }
-      // Esto dispara la notificación nativa del navegador
+      // En escritorio: getUserMedia dispara la notificación nativa del navegador.
+      // Esto es necesario cuando Permissions-Policy bloquea SpeechRecognition directamente.
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Una vez concedido podemos liberar el stream; annyang usará la misma API internamente
+      // Una vez concedido el permiso, liberamos el stream; annyang usará la misma API internamente
       stream.getTracks().forEach(t => t.stop());
       this.micFlowState.set('idle');
       this.start();
-    } catch {
-      console.warn('[VoiceControl] Permiso de micrófono denegado.');
-      this.micFlowState.set('denied');
+    } catch (err) {
+      const error = err as DOMException;
+      console.error('[VoiceControl] Error al solicitar micrófono:', error?.name, error?.message, err);
+
+      if (error?.name === 'NotAllowedError' || error?.name === 'NotFoundError') {
+        // El usuario denegó explícitamente o no hay micrófono
+        this.micFlowState.set('denied');
+      } else if (error?.name === 'SecurityError') {
+        // HTTP sin HTTPS
+        this.micFlowState.set('denied');
+        console.warn('[VoiceControl] La página debe servirse por HTTPS.');
+      } else {
+        // Error inesperado: intentar arrancar annyang igualmente
+        console.warn('[VoiceControl] getUserMedia falló inesperadamente, intentando annyang directamente:', error?.name);
+        this.micFlowState.set('idle');
+        this.start();
+      }
     }
   }
 
