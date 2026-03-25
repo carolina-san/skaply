@@ -104,8 +104,9 @@ export class VoiceControlService {
       this.soundTimeout = setTimeout(() => this.isSoundActive.set(false), 1500);
     });
     annyang.addCallback('result', () => {
+      this.isSoundActive.set(true);
       clearTimeout(this.soundTimeout);
-      this.isSoundActive.set(false);
+      this.soundTimeout = setTimeout(() => this.isSoundActive.set(false), 2000);
     });
     annyang.addCallback('end', () => {
       clearTimeout(this.soundTimeout);
@@ -225,7 +226,7 @@ export class VoiceControlService {
   start(): void {
     if (!this.isSupported()) return;
     // Poner continuous: false hace que lance el resultado en cuanto detecta una pausa natural, acelerando mucho la respuesta
-    annyang.start({ autoRestart: true, continuous: false });
+    annyang.start({ autoRestart: true, continuous: true });
     this.isListening.set(true);
   }
 
