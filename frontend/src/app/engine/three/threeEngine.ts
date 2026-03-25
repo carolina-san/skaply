@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
-import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { Bounds3, CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 class ThreeRenderableObject implements RenderableObject {
@@ -244,6 +244,46 @@ export class ThreeEngineAdapter extends EngineFacade {
         arrow.setScale(length, length, length);
         arrow.userData = { isArrow: true };
         return arrow;
+    }
+
+    getObjectLocalBounds(object: RenderableObject): Bounds3 | null {
+        const root = object.nativeObject;
+        if (!(root instanceof THREE.Object3D)) {
+            return null;
+        }
+
+        root.updateWorldMatrix(true, true);
+
+        const inverseRootMatrix = root.matrixWorld.clone().invert();
+        const localBounds = new THREE.Box3();
+        let hasBounds = false;
+
+        root.traverse((child: THREE.Object3D) => {
+            if (!(child instanceof THREE.Mesh) || !child.geometry) return;
+
+            if (!child.geometry.boundingBox) {
+                child.geometry.computeBoundingBox();
+            }
+            if (!child.geometry.boundingBox) return;
+
+            child.updateWorldMatrix(true, false);
+            const childLocalMatrix = new THREE.Matrix4().multiplyMatrices(
+                inverseRootMatrix,
+                child.matrixWorld
+            );
+
+            localBounds.union(child.geometry.boundingBox.clone().applyMatrix4(childLocalMatrix));
+            hasBounds = true;
+        });
+
+        if (!hasBounds) {
+            return null;
+        }
+
+        return {
+            min: { x: localBounds.min.x, y: localBounds.min.y, z: localBounds.min.z },
+            max: { x: localBounds.max.x, y: localBounds.max.y, z: localBounds.max.z }
+        };
     }
 
     private setArrowRotationFromDir(arrow: RenderableObject, dir: { x: number, y: number, z: number }) {

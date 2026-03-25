@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { EngineFacade, RenderableObject, Vector3 } from '../../engine/interfaces';
+import { Bounds3, EngineFacade, RenderableObject, Vector3 } from '../../engine/interfaces';
 import { ThreeEngineAdapter } from '../../engine/three/threeEngine';
 import { WebGLEngineAdapter } from '../../engine/webgl/webglEngine';
 
@@ -62,5 +62,9 @@ export class EngineService {
     length: number
   ): Promise<RenderableObject> {
     return this.engine.createArrowHelper(dir, position, length);
+  }
+
+  public getObjectLocalBounds(object: RenderableObject): Bounds3 | null {
+    return this.engine.getObjectLocalBounds(object);
   }
 }

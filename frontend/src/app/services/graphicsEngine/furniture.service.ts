@@ -83,7 +83,7 @@ export class FurnitureService {
           description: `Part: ${partRef.reference_number}`
         };
 
-        const arrow = await this.createArrow(partRef, offsetDistance, offsetAxis);
+        const arrow = await this.createArrow(mesh, partRef, offsetDistance, offsetAxis);
         if (arrow) {
           assemblyPart.arrow = arrow;
           assemblyPart.object.add(arrow);
@@ -112,7 +112,12 @@ export class FurnitureService {
     return { mesh, targetPos };
   }
 
-  private async createArrow(partRef: AssemblyPartRef, offsetDistance: number, offsetAxis: string): Promise<RenderableObject | undefined> {
+  private async createArrow(
+    mesh: RenderableObject,
+    partRef: AssemblyPartRef,
+    offsetDistance: number,
+    offsetAxis: string
+  ): Promise<RenderableObject | undefined> {
     let length = Math.abs(offsetDistance);
     if (length <= 0.01) return undefined;
     
@@ -120,9 +125,8 @@ export class FurnitureService {
     const sign = -(Math.sign(offsetDistance));
     let dir: Vector3 = { x: 0, y: 0, z: 0 };
     
-    let offset = 0.035;
-    length = length - offset;
-    offset = offset * sign;
+    const offset = this.getArrowOffset(mesh, offsetAxis, sign);
+    length = Math.max(length - 0.035, 0.01);
 
     if      (offsetAxis === 'x')  {dir.x = 1; arrowPosition.x = offset; }
     else if (offsetAxis === 'y')  {dir.y = 1; arrowPosition.y = offset;}
@@ -146,6 +150,18 @@ export class FurnitureService {
     }
  
     return arrow;
+  }
+
+  private getArrowOffset(mesh: RenderableObject, axis: string, sign: number): number {
+    const padding = 0.035;
+    const bounds = this.engineService.getObjectLocalBounds(mesh);
+
+    if (!bounds || sign === 0) {
+      return padding * (sign || 1);
+    }
+
+    const boundary = sign > 0 ? bounds.max[axis as keyof Vector3] : bounds.min[axis as keyof Vector3];
+    return boundary + padding * sign;
   }
 
   private rotateVector(vector: Vector3, rotX: number, rotY: number, rotZ: number): Vector3 {

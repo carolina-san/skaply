@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
+import { Bounds3, CameraState, EngineFacade, GeometryConfig, MaterialConfig, RenderableObject, Vector3 } from '../interfaces';
 import { ResourceManager } from '../../engine/webgl/resource/resource-manager';
 import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
 import { Node } from '../../engine/webgl/engine-core/node';
@@ -789,6 +789,23 @@ export class WebGLEngineAdapter extends EngineFacade {
         arrow.setScale(length, length, length);
         this.setArrowRotationFromDir(arrow, dir);
         return arrow;
+    }
+
+    getObjectLocalBounds(object: RenderableObject): Bounds3 | null {
+        const node = object.nativeObject;
+        if (!(node instanceof Node)) {
+            return null;
+        }
+
+        const bounds = node.getPickBounds();
+        if (!bounds) {
+            return null;
+        }
+
+        return {
+            min: { x: bounds.min[0], y: bounds.min[1], z: bounds.min[2] },
+            max: { x: bounds.max[0], y: bounds.max[1], z: bounds.max[2] }
+        };
     }
 
     private createArrowMesh(arrowLenght: number): Mesh {
