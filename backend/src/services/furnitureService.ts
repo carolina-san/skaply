@@ -130,7 +130,7 @@ export class FurnitureService {
               f.short_description,
               f.visible
           FROM public.furniture f
-          INNER JOIN Step s ON s.furniture_id = f.id
+          LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`;
@@ -140,7 +140,7 @@ export class FurnitureService {
 
         // Count query
         const countQueryResult = await pool.query(`SELECT COUNT(DISTINCT f.id) FROM public.furniture f 
-          INNER JOIN Step s ON s.furniture_id = f.id
+          LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id`);
@@ -186,7 +186,7 @@ export class FurnitureService {
               f.short_description,
               f.visible
           FROM public.furniture f
-          INNER JOIN Step s ON s.furniture_id = f.id
+          LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id
@@ -217,9 +217,9 @@ export class FurnitureService {
               f.difficulty,
               f.short_description,
               f.visible,
-              COUNT(*) AS total_steps
+              COUNT(s.id) AS total_steps
           FROM public.furniture f
-          INNER JOIN Step s ON s.furniture_id = f.id
+          LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id
@@ -270,9 +270,9 @@ export class FurnitureService {
               f.difficulty,
               f.short_description,
               f.required_people,
-              COUNT(*) AS total_steps
+              COUNT(s.id) AS total_steps
           FROM public.furniture f
-          INNER JOIN Step s ON s.furniture_id = f.id
+          LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
           INNER JOIN "User" p ON f.provider_id = p.id
           INNER JOIN Color cl ON f.color_id = cl.id

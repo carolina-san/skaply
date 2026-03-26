@@ -9,7 +9,7 @@
   <div class="mt-2 flex flex-col justify-center items-center w-full lg:items-start">
     <!-- Nombre del mueble -->
     @if (furnitureName() && mode() !== 'manual') {
-    <p class="font-semibold text-base sm:text-xl transition-colors text-azul-claro mb-2">
+    <p class="font-bold text-base sm:text-xl transition-colors text-azul-claro mb-2">
       {{ furnitureName() }}
     </p>
     }
@@ -55,7 +55,9 @@
     <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Demostración automática
     </p>
     } @else if (mode() === 'final') {
-    <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Resultado Final</p>
+    <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">
+      {{ isSingleModel() ? 'Este mueble no dispone de montaje' : 'Resultado Final' }}
+    </p>
     } @else if (isManualComplete()) {
     <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">¡Listo! Estructura
       completada.</p>

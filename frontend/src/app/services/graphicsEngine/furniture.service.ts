@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EngineService } from './engine.service';
 import { ApiService } from '../api.service';
-import { FurnitureAssembly, AssemblyPart, AssemblyPartRef, AssemblyStep } from '../../types/furniture.types';
+import { FurnitureAssembly, AssemblyPart, AssemblyPartRef, AssemblyStep, Furniture } from '../../types/furniture.types';
 import { RenderableObject, Vector3 } from '../../engine/interfaces';
 
 @Injectable()
@@ -22,8 +22,59 @@ export class FurnitureService {
   }> {
     const data = await this.apiService.getFurnitureById(furnitureId).toPromise();
     if (!data) { throw new Error('Furniture not found'); }
-    const result = await this.createPartsFromApi(data);
+    const result = await this.createPartsFromApi(data as any);
     return {...result};
+  }
+
+  public async loadSingleFurnitureModel(furniture: Furniture): 
+  Promise<{ 
+    parts: AssemblyPart[], 
+    totalSteps: number, 
+    stepDescriptions: string[], 
+    sortedSteps: any[],
+    furnitureRoot: RenderableObject 
+  }> {
+    const parts: AssemblyPart[] = [];
+    const stepDescriptions: string[] = ['Modelo 3D cargado'];
+    const sortedSteps: any[] = [];
+    
+    const engine = this.engineService.getEngine();
+    const furnitureRoot = engine.createGroup('furniture');
+
+    if (furniture.file_uri) {
+        try {
+            const mesh = await engine.loadGLTF(furniture.file_uri);
+            if (mesh) {
+                furnitureRoot.add(mesh);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                
+                const startPos = { x: 0, y: 0, z: 0 };
+                const targetPos = { x: 0, y: 0, z: 0 };
+                const rotation = { x: 0, y: 0, z: 0 };
+                
+                mesh.setPosition(0, 0, 0);
+                mesh.setVisible(true);
+
+                parts.push({
+                    object: mesh,
+                    startPosition: startPos,
+                    targetPosition: targetPos,
+                    rotation: rotation,
+                    appearStep: 0,
+                    joinStep: 1,
+                    name: furniture.reference_number || 'Main Model',
+                    description: furniture.name || 'Furniture Model'
+                });
+            }
+        } catch (e) {
+            console.error(`Failed to load single furniture GLTF: ${furniture.file_uri}`, e);
+        }
+    }
+
+    engine.addToScene(furnitureRoot); 
+
+    return { parts, totalSteps: 1, stepDescriptions, sortedSteps, furnitureRoot };
   }
 
   public async createPartsFromApi(data: FurnitureAssembly): 

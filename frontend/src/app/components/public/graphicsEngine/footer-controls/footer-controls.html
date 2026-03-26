@@ -151,8 +151,8 @@
   <button (click)="toggleBgColorAction.emit()"
     class="absolute right-15 bottom-26 md:right-0 md:bottom-14 flex w-10 h-10 justify-center bg-beige text-marron-oscuro items-center rounded-full transition-all duration-200 transform z-50 shadow-lg hover:bg-azul-claro"
     [ngClass]="isWhiteBg() ? ' border border-marron-oscuro' : 'border-none'"
-    [title]="isWhiteBg() ? 'Fondo transparente' : 'Fondo blanco'"
-    [class.opacity-60]="hasIsolatedPart() || isLoading()" [class.pointer-events-none]="hasIsolatedPart() || isLoading()">
+    [title]="isWhiteBg() ? 'Fondo transparente' : 'Fondo blanco'" [class.opacity-60]="hasIsolatedPart() || isLoading()"
+    [class.pointer-events-none]="hasIsolatedPart() || isLoading()">
 
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
       <path
@@ -176,9 +176,9 @@
   <button (click)="toggleVoiceAction.emit()"
     [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
     class="voice-btn shadow-lg z-10" [class.voice-btn--active]="isVoiceListening()"
-    [class.has-command]="lastCommand() !== null" [class.border]="isWhiteBg()"
-    [class.border-marron-oscuro]="isWhiteBg()"
-    [class.opacity-60]="hasIsolatedPart() || isLoading()" [class.pointer-events-none]="hasIsolatedPart() || isLoading()">
+    [class.has-command]="lastCommand() !== null" [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()"
+    [class.opacity-60]="hasIsolatedPart() || isLoading()"
+    [class.pointer-events-none]="hasIsolatedPart() || isLoading()">
 
     @if (!lastCommand()) {
     <svg class="shrink-0" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"

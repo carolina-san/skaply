@@ -5,6 +5,7 @@
     [visibleSteps]="visibleSteps()" [currentLogicalStep]="logicalStep()" [hasIsolatedPart]="isolatedPart() !== null"
     [isolatedPartName]="isolatedPart()?.name || ''" [isSimulating]="isSimulating()"
     [isManualComplete]="isManualComplete()" [stepDescriptions]="stepDescriptions()" [isWhiteBg]="isWhiteBg()"
+    [isSingleModel]="totalSteps() <= 1"
     (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
     (exitIsolationAction)="exitIsolation()">
   </app-graphics-header>

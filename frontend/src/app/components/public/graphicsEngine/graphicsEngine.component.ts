@@ -217,7 +217,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
           if (!this.animationFrameId) this.animate();
         } else if (!this.useExternalModel) {
-           this.isLoading.set(false);
+          this.isLoading.set(false);
         }
       });
 
@@ -268,7 +268,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
               });
             }
           } else {
-             this.isLoading.set(false);
+            this.isLoading.set(false);
           }
 
           this.resizeObserver.disconnect();
@@ -418,7 +418,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public setMode(newMode: 'manual' | 'simulation' | 'final'): void {
-    if (this.mode() === 'final' && newMode === 'final') {
+    if (this.totalSteps() <= 1) newMode = 'final';
+    if (this.mode() === 'final' && newMode === 'final' && this.totalSteps() > 1) {
       newMode = 'manual';
     };
     if (this.mode() === newMode) return;
@@ -492,11 +493,32 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private async createFurniture(): Promise<void> {
     try {
       const furnitureId = Number(this.furniture?.id);
-      const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+      let loaded = false;
+      try {
+        const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
 
-      if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
-        const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.createPartsFromApi(assemblyData);
+        if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
+          const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.createPartsFromApi(assemblyData);
 
+          this.furnitureRoot = furnitureRoot;
+
+          if (parts.length > 0) {
+            this.parts = parts;
+            this.totalSteps.set(totalSteps);
+            this.stepDescriptions.set(stepDescriptions);
+            this.stepsData.set(sortedSteps);
+            this.mode.set('manual');
+            this.showFooterControls.set(true);
+            loaded = true;
+          }
+        }
+      } catch (error) {
+        console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
+      }
+
+      if (!loaded && this.furniture && this.furniture.file_uri) {
+        const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.loadSingleFurnitureModel(this.furniture);
+        
         this.furnitureRoot = furnitureRoot;
 
         if (parts.length > 0) {
@@ -504,11 +526,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           this.totalSteps.set(totalSteps);
           this.stepDescriptions.set(stepDescriptions);
           this.stepsData.set(sortedSteps);
-          return;
+          this.mode.set('final');
+          this.showFooterControls.set(false);
         }
       }
     } catch (error) {
-      console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
+      console.warn('Failed to load furniture fallback.', error);
     }
   }
 

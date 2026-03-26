@@ -22,6 +22,7 @@ export class GraphicsHeader {
   isManualComplete = input<boolean>(false);
   stepDescriptions = input<string[]>([]);
   isWhiteBg = input<boolean>(false);
+  isSingleModel = input<boolean>(false);
 
   // Outputs
   engineChanged = output<string>();
