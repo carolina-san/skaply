@@ -5,6 +5,11 @@ export interface Vector3 {
     z: number;
 }
 
+export interface Bounds3 {
+    min: Vector3;
+    max: Vector3;
+}
+
 export interface RenderableObject {
     uuid: string;
     setPosition(x: number, y: number, z: number): void;
@@ -59,6 +64,7 @@ export abstract class EngineFacade {
     // abstract createGroup(): RenderableObject;
     abstract createGroup(name?: string): RenderableObject;
     abstract createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject>;
+    abstract getObjectLocalBounds(object: RenderableObject): Bounds3 | null;
 
     // Scene Management
     abstract addToScene(object: RenderableObject): void;
