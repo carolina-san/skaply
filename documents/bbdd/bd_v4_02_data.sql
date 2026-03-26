@@ -186,7 +186,20 @@ INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 ('/storage/actiu/mueble_modular/balda_0.76x0.36m.glb','balda_0.76x0.36m', 1),
 ('/storage/actiu/mueble_modular/puerta_izquierda_0.4x0.7m.glb','puerta_izquierda_0.4x0.7m', 1),
 ('/storage/actiu/mueble_modular/puerta_derecha_0.4x0.7m.glb','puerta_derecha_0.4x0.7m', 1),
-('/storage/tornillos/perno_40mm.glb','perno_40mm', 1)
+('/storage/tornillos/perno_40mm.glb','perno_40mm', 1),
+
+-- Silla rustica
+('/storage/iqua/silla_rustica/Brazo1.glb','Brazo1', 1),
+('/storage/iqua/silla_rustica/Brazo2.glb','Brazo2', 1),
+('/storage/iqua/silla_rustica/Pata1.glb','Pata1', 1),
+('/storage/iqua/silla_rustica/Pata2.glb','Pata2', 1),
+('/storage/iqua/silla_rustica/Refuerzo1.glb','Refuerzo1', 1),
+('/storage/iqua/silla_rustica/Refuerzo2.glb','Refuerzo2', 1),
+('/storage/iqua/silla_rustica/Sillon.glb','Sillon', 1),
+('/storage/iqua/silla_rustica/Taco1.glb','Taco1', 1),
+('/storage/iqua/silla_rustica/Taco2.glb','Taco2', 1),
+('/storage/iqua/silla_rustica/Respaldo.glb','Respaldo', 1)
+
 
 ;
 
@@ -248,7 +261,23 @@ VALUES
     3,
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
     'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTilEH05Ouz7Hf1GMGFyaOM4-RueO57otwlBJBfUWsbxMkEp6TXnnMBi75JAiK5fid7X1OSM-Rxd-AMzLgAkAManhGjylcG',
+    'https://skaply.ovh/home?furniture=VR123456',
     'pdf2',
+    true,
+    NOW()
+),
+(
+    '', -- prueba
+    'Silla rústica',
+    'VR232243',
+    1,
+    3,
+    'medium',
+    3,
+    'Silla de estilo mid-century con tapizado en tono verde oliva, integrada en un ambiente cálido y natural que resalta su diseño elegante y funcional. La pieza se presenta colocada junto a la pared, creando un rincón acogedor y realista dentro del salón, ideal para zonas de lectura o descanso.', 
+    'https://i.ibb.co/JwVpPh5M/silla1.png',
+    'https://skaply.ovh/home?furniture=VR232243',
+    'pdf3',
     true,
     NOW()
 );
@@ -275,7 +304,24 @@ INSERT INTO Step (furniture_id, step_number, description, used_in_step_with_id, 
 (2,6,'Atornillar 6 pernos en la parte superior de los tableros',NULL, 200.00, 'y'),     
 (2,7,'Ensamblar el tablero superior',NULL, 90.00, 'z'),     
 (2,8,'Añadir la puerta derecha',NULL, NUll, NULL),
-(2,9,'Añadir la puerta izquierda',NULL, NULL, NULL)   
+(2,9,'Añadir la puerta izquierda',NULL, NULL, NULL),
+-- Silla rustica
+(3,1,'Colocar tacos en la pata 1',NULL,NULL,NULL),
+(3,2,'Fijar refuerzo lateral',NULL,NULL,NULL),
+(3,3,'Colocar tacos adicionales',NULL,NULL,NULL),
+(3,4,'Instalar brazo lateral',NULL,NULL,NULL),
+(3,5,'Colocar la segunda pata',NULL,NULL,NULL),
+(3,6,'Asegurar tacos de unión',NULL,NULL,NULL),
+(3,7,'Fijar refuerzo estructural',NULL,NULL,NULL),
+(3,8,'Colocar tacos de ajuste',NULL,NULL,NULL),
+(3,9,'Instalar segundo brazo',NULL,NULL,NULL),
+(3,10,'Colocar tacos finales',NULL,NULL,NULL),
+(3,11,'Fijar asiento principal',NULL,NULL,NULL),
+(3,12,'Asegurar tacos del asiento',NULL,NULL,NULL),
+(3,13,'Instalar respaldo del asiento',NULL,NULL,NULL);   
+
+
+
 ;    
 
 -- ============================
@@ -336,7 +382,31 @@ INSERT INTO Furniture_Part (furniture_id, part_id, step_id, exploded_axis, explo
   (2, 16, 14, 'y', 0.25, 0.302391, 1.096975, -0.183135, 0, 0, 3.141592),
   (2, 12, 15, 'y', 0.3499999940395355, 0, 1.122959, 0.017566, 0, 0, 0),
   (2, 14, 16, 'z', 0.3499999940395355, -0.19816, 0.391562, 0.216814, 0, 0, 0),
-  (2, 15, 17, 'z', 0.3499999940395355, 0.197691, 0.392026, 0.216871, 0, 0, 0);
+  (2, 15, 17, 'z', 0.3499999940395355, 0.197691, 0.392026, 0.216871, 0, 0, 0),
+
+  -- silla rustica
+  (3, 24, 18, 'x', 0.20000000298023224, -0.2712, 0.384208, 0.47331, 0, 0, -1.570796),
+  (3, 19, 18, NULL, 0, -0.294369, 0.344123, 0.251144, 0, 0, 0),
+  (3, 24, 18, 'x', 0.20000000298023224, -0.2712, 0.324208, -0.00669, 0, 0, -1.570796),
+  (3, 21, 19, 'x', 0.30000001192092896, -0.253363, 0.355363, 0.231662, 0, 0, 0),
+  (3, 25, 20, 'y', 0.20000000298023224, -0.29439, 0.62, 0.20331, 0, -3.141593, 0),
+  (3, 17, 21, 'y', 0.30000001192092896, -0.294388, 0.63572, 0.161824, 0, 0, 0),
+  (3, 20, 22, NULL, 0, 0.348492, 0.344173, 0.251129, 0, 0, 0),
+  (3, 24, 23, 'x', -0.20000000298023224, 0.32242, 0.384208, 0.47331, 0, 0, -1.570796),
+  (3, 24, 23, 'x', -0.20000000298023224, 0.32242, 0.324208, -0.00669, 0, 0, -1.570796),
+  (3, 22, 24, 'x', -0.30000001192092896, 0.307486, 0.351184, 0.234553, 0, 0, 0),
+  (3, 25, 25, 'y', 0.20000000298023224, 0.34561, 0.62, 0.20331, 0, -3.141593, 0),
+  (3, 18, 26, 'y', 0.30000001192092896, 0.348473, 0.63572, 0.161824, 0, 0, 0),
+  (3, 24, 27, 'y', 0.20000000298023224, -0.2512, 0.354208, 0.10331, 0, -3.141593, 0),
+  (3, 24, 27, 'y', 0.20000000298023224, -0.2512, 0.384208, 0.36331, 0, -3.141593, 0),
+  (3, 24, 27, 'y', 0.20000000298023224, 0.30242, 0.354208, 0.10331, 0, -3.141593, 0),
+  (3, 24, 27, 'y', 0.20000000298023224, 0.30242, 0.384208, 0.36331, 0, -3.141593, 0),
+  (3, 23, 28, 'y', 0.30000001192092896, 0.025937, 0.436019, 0.277643, 0, 0, 0),
+  (3, 24, 29, 'y', 0.30000001192092896, -0.1912, 0.444208, -0.01669, 0, -3.141593, 0),
+  (3, 24, 29, 'y', 0.30000001192092896, 0.24242, 0.444208, -0.01669, 0, -3.141593, 0),
+  (3, 24, 29, 'y', 0.30000001192092896, 0.02561, 0.444208, -0.01669, 0, -3.141593, 0),
+  (3, 26, 30, 'y', 0.30000001192092896, 0.028409, 0.752572, -0.108157, 0, 0, 0);
+
           
 -- ============================
 -- STEP_TOOL (asocia herramientas a los pasos)
