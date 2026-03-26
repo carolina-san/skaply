@@ -16,11 +16,12 @@ import { SimulationService } from '../../../services/graphicsEngine/simulation.s
 import { FurnitureService } from '../../../services/graphicsEngine/furniture.service';
 import { InteractionService } from '../../../services/graphicsEngine/interaction.service';
 import { VoiceControlService } from '../../../services/graphicsEngine/voice-control.service';
+import { SpinnerComponent } from '../../UI/spinner/spinner';
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls],
+  imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls, SpinnerComponent],
   providers: [EngineService, SimulationService, FurnitureService, InteractionService, VoiceControlService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
@@ -49,6 +50,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   showFooterControls = signal(true);
   isARActive = signal(false);
   isWhiteBg = signal(false);
+  isLoading = signal(true);
 
   // COMPUTED
   isSimulating = computed(() => this.mode() === 'simulation');
@@ -211,8 +213,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           this.totalSteps.set(furnitureData.totalSteps);
           this.stepDescriptions.set(furnitureData.stepDescriptions);
           this.stepsData.set(furnitureData.sortedSteps);
+          this.isLoading.set(false);
 
           if (!this.animationFrameId) this.animate();
+        } else if (!this.useExternalModel) {
+           this.isLoading.set(false);
         }
       });
 
@@ -257,8 +262,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
           if (this.useExternalModel) {
             if (this.furniture) {
-              this.createFurniture().then(() => this.animate());
+              this.createFurniture().then(() => {
+                this.isLoading.set(false);
+                this.animate();
+              });
             }
+          } else {
+             this.isLoading.set(false);
           }
 
           this.resizeObserver.disconnect();

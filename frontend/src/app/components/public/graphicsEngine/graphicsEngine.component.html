@@ -21,6 +21,11 @@
       style="touch-action: none; overscroll-behavior: none; outline: none;">
     </canvas>
 
+    <!-- Loading Spinner -->
+    @if (isLoading()) {
+    <app-spinner message="Cargando entorno 3D..."></app-spinner>
+    }
+
     @if (isolatedPart(); as part) {
     }
 
