@@ -21,6 +21,7 @@ export class FooterControls {
   isVoiceListening = input<boolean>(false);
   isVoiceSupported = input<boolean>(false);
   isVoiceSoundActive = input<boolean>(false);
+  micFlowState = input<'idle' | 'requesting' | 'denied'>('idle');
 
   // Outputs
   modeChange = output<'manual' | 'simulation' | 'final'>();
@@ -31,6 +32,10 @@ export class FooterControls {
   speedChange = output<number>();
   finishAction = output<void>();
   toggleVoiceAction = output<void>();
+  proceedMicPermission = output<void>();
+  cancelMicPermission = output<void>();
+  closeMicDenied = output<void>();
+  retryMicPermission = output<void>();
 
   readonly simulationSpeeds = [0.5, 1, 1.5, 2];
 

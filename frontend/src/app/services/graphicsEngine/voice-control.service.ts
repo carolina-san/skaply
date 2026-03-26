@@ -14,6 +14,8 @@ export class VoiceControlService {
   isListening = signal(false);
   isSupported = signal(false);
   isSoundActive = signal(false);
+  /** Flujo del diálogo de permiso de micrófono, igual que arFlowState en AR */
+  micFlowState = signal<'idle' | 'requesting' | 'denied'>('idle');
   /** Orden que acaba de reconocerse; null si no hay nada que mostrar */
   lastCommand = signal<VoiceCommandInfo | null>(null);
 
@@ -104,8 +106,9 @@ export class VoiceControlService {
       this.soundTimeout = setTimeout(() => this.isSoundActive.set(false), 1500);
     });
     annyang.addCallback('result', () => {
+      this.isSoundActive.set(true);
       clearTimeout(this.soundTimeout);
-      this.isSoundActive.set(false);
+      this.soundTimeout = setTimeout(() => this.isSoundActive.set(false), 2000);
     });
     annyang.addCallback('end', () => {
       clearTimeout(this.soundTimeout);
@@ -219,12 +222,68 @@ export class VoiceControlService {
   // ── Ciclo de vida ─────────────────────────────────────────────────────
 
   toggle(): void {
-    if (this.isListening()) { this.stop(); } else { this.start(); }
+    if (this.isListening()) {
+      this.stop();
+    } else {
+      // Abre el diálogo de permiso primero, igual que hace el AR con la cámara
+      this.micFlowState.set('requesting');
+    }
   }
 
-  start(): void {
+  /** El usuario ha pulsado "Permitir" en el diálogo: pedimos acceso real al micro */
+  async proceedWithMicPermission(): Promise<void> {
+    // Si el navegador no soporta getUserMedia (algunos móviles), iniciamos annyang
+    // directamente: él mismo gestiona el permiso vía SpeechRecognition internamente.
+    if (!navigator.mediaDevices?.getUserMedia) {
+      console.info('[VoiceControl] getUserMedia no disponible, iniciando annyang directamente.');
+      this.micFlowState.set('idle');
+      this.start();
+      return;
+    }
+
+    try {
+      // En escritorio: getUserMedia dispara la notificación nativa del navegador.
+      // Esto es necesario cuando Permissions-Policy bloquea SpeechRecognition directamente.
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Una vez concedido el permiso, liberamos el stream; annyang usará la misma API internamente
+      stream.getTracks().forEach(t => t.stop());
+      this.micFlowState.set('idle');
+      this.start();
+    } catch (err) {
+      const error = err as DOMException;
+      console.error('[VoiceControl] Error al solicitar micrófono:', error?.name, error?.message, err);
+
+      if (error?.name === 'NotAllowedError' || error?.name === 'NotFoundError') {
+        // El usuario denegó explícitamente o no hay micrófono
+        this.micFlowState.set('denied');
+      } else if (error?.name === 'SecurityError') {
+        // HTTP sin HTTPS
+        this.micFlowState.set('denied');
+        console.warn('[VoiceControl] La página debe servirse por HTTPS.');
+      } else {
+        // Error inesperado: intentar arrancar annyang igualmente
+        console.warn('[VoiceControl] getUserMedia falló inesperadamente, intentando annyang directamente:', error?.name);
+        this.micFlowState.set('idle');
+        this.start();
+      }
+    }
+  }
+
+  cancelMicPermission(): void {
+    this.micFlowState.set('idle');
+  }
+
+  closeMicDenied(): void {
+    this.micFlowState.set('idle');
+  }
+
+  retryMicPermission(): void {
+    this.micFlowState.set('requesting');
+  }
+
+  private start(): void {
     if (!this.isSupported()) return;
-    // Poner continuous: false hace que lance el resultado en cuanto detecta una pausa natural, acelerando mucho la respuesta
+    // continuous: false lanza el resultado en cuanto detecta una pausa natural → respuesta más rápida
     annyang.start({ autoRestart: true, continuous: false });
     this.isListening.set(true);
   }

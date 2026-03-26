@@ -202,3 +202,51 @@
   }
 
 </footer>
+
+<!-- Diálogo de permiso de micrófono (igual que el de cámara en AR) -->
+@if (micFlowState() !== 'idle') {
+<div class="fixed inset-0 w-full h-full flex items-center justify-center z-[100] backdrop-blur-sm" role="dialog"
+  aria-modal="true">
+  <div class="max-w-sm w-full p-6 rounded-2xl shadow-2xl text-center bg-beige text-marron-oscuro">
+    @if (micFlowState() === 'requesting') {
+    <h3 class="text-xl font-bold text-marron-oscuro mb-2">Control por voz</h3>
+    <p class="mb-2 text-sm text-marron-oscuro">
+      Para usar el control por voz necesitamos acceso a tu micrófono.
+    </p>
+    <p class="mb-6 text-sm text-marron-oscuro">No se guarda ni se comparte.</p>
+    <div class="flex justify-center space-x-4">
+      <button (click)="cancelMicPermission.emit()" class="btn bg-marron-claro/60 hover:bg-marron-claro">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Cancelar</span>
+      </button>
+      <button (click)="proceedMicPermission.emit()" class="btn bg-azul-claro hover:bg-azul-medio">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Permitir</span>
+      </button>
+    </div>
+    } @else if (micFlowState() === 'denied') {
+    <h3 class="text-xl font-bold text-red-400 mb-2">Acceso denegado</h3>
+    <p class="mb-6 text-sm text-azul-claro">
+      Para usar el control por voz necesitas conceder permiso al micrófono en la configuración del navegador.
+    </p>
+    <div class="flex justify-center space-x-4">
+      <button (click)="closeMicDenied.emit()"
+        class="px-6 py-2 font-semibold rounded-full transition-colors bg-white">
+        Entendido
+      </button>
+      <button (click)="retryMicPermission.emit()"
+        class="px-6 py-2 bg-azul-claro text-marron-oscuro font-semibold rounded-full hover:brightness-110 transition-transform duration-200 transform hover:scale-105">
+        Reintentar
+      </button>
+    </div>
+    }
+  </div>
+</div>
+}

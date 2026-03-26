@@ -44,9 +44,14 @@
     [totalSteps]="totalSteps()" [isSimulationPaused]="isSimulationPaused()" [simulationSpeed]="simulationSpeed()"
     [lastCommand]="voiceControlService.lastCommand()" [isVoiceListening]="voiceControlService.isListening()"
     [isVoiceSupported]="voiceControlService.isSupported()" [isVoiceSoundActive]="voiceControlService.isSoundActive()"
+    [micFlowState]="voiceControlService.micFlowState()"
     (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
     (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
-    (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()">
+    (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()"
+    (proceedMicPermission)="voiceControlService.proceedWithMicPermission()"
+    (cancelMicPermission)="voiceControlService.cancelMicPermission()"
+    (closeMicDenied)="voiceControlService.closeMicDenied()"
+    (retryMicPermission)="voiceControlService.retryMicPermission()">
   </app-footer-controls>
   }
 </div>

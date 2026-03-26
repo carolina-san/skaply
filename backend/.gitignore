@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 dialogflow.json
 credentials.json
-.config.js
+#.config.js
 
 # Environment variables
 .env

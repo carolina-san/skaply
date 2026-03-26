@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { Furniture, ProviderBasic, Color } from '../../../types';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Furniture, ProviderBasic } from '../../../types';
 import { DifficultyLabels } from '../../../utils/difficulty-labels';
 import { ApiService } from '../../../services/api.service';
 
@@ -79,7 +77,8 @@ export class Export implements OnChanges {
     if (!this.selectedFurniture || this.isDownloadingPdf) return;
 
     this.isDownloadingPdf = true;
-
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
     const furniture = this.selectedFurniture;
     const doc = new jsPDF();
 
@@ -109,17 +108,17 @@ export class Export implements OnChanges {
       doc.addFileToVFS('Inter-Bold.ttf', base64FontBold);
       doc.addFont('Inter-Bold.ttf', 'inter', 'bold');
 
-      await this.generatePDFContent(doc, furniture);
+      await this.generatePDFContent(doc, furniture, autoTable);
     } catch (error) {
       console.error('Error loading font:', error);
       // Fallback a fuente por defecto si falla
-      await this.generatePDFContent(doc, furniture);
+      await this.generatePDFContent(doc, furniture, autoTable);
     } finally {
       this.isDownloadingPdf = false;
     }
   }
 
-  async generatePDFContent(doc: jsPDF, furniture: Furniture) {
+  async generatePDFContent(doc: any, furniture: Furniture, autoTable: any) {
     // Helper para cargar imágenes como Promesa
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
@@ -259,7 +258,7 @@ export class Export implements OnChanges {
         const stepsData = this.selectedFurnitureSteps.map((step, index) => {
           const stepNumber = index + 1;
           const parts = step.parts && step.parts.length > 0
-            ? step.parts.map((p: any) => `${p.reference_number} (x${p.quantity})`).join(', ')
+            ? step.parts.map((p: any) => `${p.reference_number}`).join(', ')
             : 'Sin piezas';
           const description = step.description || (step.tools && step.tools.length > 0
             ? step.tools.map((t: any) => t.name).join(', ')
