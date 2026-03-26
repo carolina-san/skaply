@@ -22,6 +22,7 @@ export class FooterControls {
   isVoiceSupported = input<boolean>(false);
   isVoiceSoundActive = input<boolean>(false);
   micFlowState = input<'idle' | 'requesting' | 'denied'>('idle');
+  isWhiteBg = input<boolean>(false);
 
   // Outputs
   modeChange = output<'manual' | 'simulation' | 'final'>();
@@ -36,6 +37,7 @@ export class FooterControls {
   cancelMicPermission = output<void>();
   closeMicDenied = output<void>();
   retryMicPermission = output<void>();
+  toggleBgColorAction = output<void>();
 
   readonly simulationSpeeds = [0.5, 1, 1.5, 2];
 

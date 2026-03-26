@@ -1,14 +1,21 @@
-<div class="flex items-center justify-center space-x-0.5 border-1 border-beige rounded-full p-0.5 text-xs">
+<div class="flex items-center justify-center space-x-0.5 border-1 rounded-full p-0.5 text-xs"
+    [ngClass]="isWhiteBg() ? 'border-marron-oscuro' : 'border-beige'">
     <button
-        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-beige text-xs rounded-full transition-all duration-200 transform flex items-center space-x-1"
-        [ngClass]="{ 'bg-azul-claro text-marron-oscuro': selectedEngine() === 'threejs' }"
-        (click)="engineChanged.emit('threejs')">
+        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-xs rounded-full transition-all duration-200 transform flex items-center space-x-1"
+        [ngClass]="{ 
+           'bg-azul-claro text-marron-oscuro': selectedEngine() === 'threejs',
+           'text-marron-oscuro': selectedEngine() !== 'threejs' && isWhiteBg(),
+           'text-beige': selectedEngine() !== 'threejs' && !isWhiteBg()
+        }" (click)="engineChanged.emit('threejs')">
         ThreeJS
     </button>
     <button
-        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-beige text-xs  rounded-full transition-all duration-200 transform flex items-center space-x-1"
-        [ngClass]="{ 'bg-azul-claro text-marron-oscuro': selectedEngine() === 'webgl' }"
-        (click)="engineChanged.emit('webgl')">
+        class="px-2 py-0.5 active:bg-azul-claro active:text-marron-oscuro text-xs rounded-full transition-all duration-200 transform flex items-center space-x-1"
+        [ngClass]="{ 
+           'bg-azul-claro text-marron-oscuro': selectedEngine() === 'webgl',
+           'text-marron-oscuro': selectedEngine() !== 'webgl' && isWhiteBg(),
+           'text-beige': selectedEngine() !== 'webgl' && !isWhiteBg()
+        }" (click)="engineChanged.emit('webgl')">
         WebGL
     </button>
 </div>

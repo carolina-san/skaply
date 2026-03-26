@@ -48,6 +48,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   stepDescriptions = signal<string[]>([]);
   showFooterControls = signal(true);
   isARActive = signal(false);
+  isWhiteBg = signal(false);
 
   // COMPUTED
   isSimulating = computed(() => this.mode() === 'simulation');

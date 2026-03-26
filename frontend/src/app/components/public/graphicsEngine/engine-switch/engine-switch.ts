@@ -11,4 +11,5 @@ import { CommonModule } from '@angular/common';
 export class EngineSwitch {
   selectedEngine = input<string>('threejs');
   engineChanged = output<string>();
+  isWhiteBg = input<boolean>(false);
 }

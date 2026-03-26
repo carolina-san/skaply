@@ -9,7 +9,8 @@
   <div class="flex items-center justify-start w-full md:w-auto mb-2 md:mb-0 h-10 md:absolute md:left-0">
 
     <!-- Mode Toggle, no aparece en el modo final -->
-    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige">
+    <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige"
+      [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
 
       <button (click)="modeChange.emit('manual')" class="btn-opciones-mueble"
         [ngClass]="{ 'active': mode() === 'manual' }">
@@ -33,12 +34,14 @@
 
   <!--Segunda fila de botones-->
   <div
-    class="w-full md:max-w-100 flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1 mx-auto gap-1 ">
+    class="w-full md:max-w-100 flex flex-row text-marron-oscuro items-center justify-between z-10 bg-beige/40 rounded-full py-1 px-1 mx-auto gap-1 "
+    [ngClass]="isWhiteBg() ? 'bg-marron-oscuro/40' : 'bg-beige/40'">
 
     <!--Boton volver al inicio-->
     @if (mode() === 'manual') {
     <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
-      (click)="goToStepAction.emit(0)" [class.bg-beige-oscuro]="manualStep() === 0">
+      (click)="goToStepAction.emit(0)" [class.bg-beige-oscuro]="manualStep() === 0" [class.border]="isWhiteBg()"
+      [class.border-marron-oscuro]="isWhiteBg()">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440q0-17 11.5-28.5T160-480q17 0 28.5 11.5T200-440q0 117 81.5 198.5T480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720h-6l34 34q12 12 11.5 28T508-630q-12 12-28.5 12.5T451-629L348-732q-12-12-12-28t12-28l103-103q12-12 28.5-11.5T508-890q11 12 11.5 28T508-834l-34 34h6q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80q-75 0-140.5-28.5Z" />
@@ -49,7 +52,8 @@
     <!--Boton volver al montaje-->
     @if (mode() === 'final') {
     <button (click)="modeChange.emit('manual')"
-      class="bg-beige px-3 py-2 flex items-center gap-1 rounded-full hover:bg-azul-claro transition-all duration-200 ">
+      class="bg-beige px-3 py-2 flex items-center gap-1 rounded-full hover:bg-azul-claro transition-all duration-200"
+      [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
 
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
@@ -62,7 +66,8 @@
     <!--Boton play/pause-->
     @if (mode() === 'simulation') {
     <button (click)="togglePauseAction.emit()"
-      class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige">
+      class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige"
+      [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
       @if(isSimulationPaused()) {
       <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -84,7 +89,8 @@
     <div class="flex flex-row items-center justify-center gap-2 w-full">
       <!--Boton anterior-->
       <button (click)="prevStepAction.emit()" [disabled]="isManualFirstStep"
-        class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200  disabled:opacity-50 disabled:cursor-not-allowed">
+        class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
         <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
@@ -95,7 +101,8 @@
 
       @if (manualStep() < totalSteps() - 1) { <!--Boton siguiente-->
         <button (click)="nextStepAction.emit()"
-          class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
           <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -107,7 +114,8 @@
         } @else {
         <!--Boton terminar-->
         <button (click)="finishAction.emit()"
-          class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform  disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro">
+          class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro"
+          [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
           Terminar
         </button>
         }
@@ -117,7 +125,8 @@
 
     <!--Botones velocidad-->
     @if (mode() === 'simulation') {
-    <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige">
+    <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige"
+      [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
       @for(speed of simulationSpeeds; track speed) {
       <button (click)="speedChange.emit(speed)" class="btn-opciones-mueble"
         [ngClass]="{ 'active': simulationSpeed() === speed }">
@@ -129,14 +138,27 @@
 
     <!--Boton modo final-->
     <button (click)="modeChange.emit('final')"
-      class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200 "
-      [class.bg-beige-oscuro]="mode() === 'final'">
+      class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
+      [class.bg-beige-oscuro]="mode() === 'final'" [class.border]="isWhiteBg()"
+      [class.border-marron-oscuro]="isWhiteBg()">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
         <path
           d="M200-120q-17 0-28.5-11.5T160-160v-40q-50 0-85-35t-35-85v-200q0-50 35-85t85-35v-80q0-50 35-85t85-35h400q50 0 85 35t35 85v80q50 0 85 35t35 85v200q0 50-35 85t-85 35v40q0 17-11.5 28.5T760-120q-17 0-28.5-11.5T720-160v-40H240v40q0 17-11.5 28.5T200-120Zm-40-160h640q17 0 28.5-11.5T840-320v-200q0-17-11.5-28.5T800-560q-17 0-28.5 11.5T760-520v160H200v-160q0-17-11.5-28.5T160-560q-17 0-28.5 11.5T120-520v200q0 17 11.5 28.5T160-280Zm120-160h400v-80q0-27 11-49t29-39v-112q0-17-11.5-28.5T680-760H280q-17 0-28.5 11.5T240-720v112q18 17 29 39t11 49v80Zm200 0Zm0 160Zm0-80Z" />
       </svg>
     </button>
   </div>
+  <!-- Background Toggle Button -->
+  <button (click)="toggleBgColorAction.emit()"
+    class="absolute right-15 bottom-26 md:right-0 md:bottom-14 flex w-10 h-10 justify-center bg-beige text-marron-oscuro items-center rounded-full transition-all duration-200 transform z-50 shadow-lg hover:bg-azul-claro"
+    [ngClass]="isWhiteBg() ? ' border border-marron-oscuro' : 'border-none'"
+    [title]="isWhiteBg() ? 'Fondo transparente' : 'Fondo blanco'">
+
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+      <path
+        d="M346-160H240q-33 0-56.5-23.5T160-240v-106l-77-78q-11-12-17-26.5T60-480q0-15 6-29.5T83-536l77-78v-106q0-33 23.5-56.5T240-800h106l78-77q12-11 26.5-17t29.5-6q15 0 29.5 6t26.5 17l78 77h106q33 0 56.5 23.5T800-720v106l77 78q11 12 17 26.5t6 29.5q0 15-6 29.5T877-424l-77 78v106q0 33-23.5 56.5T720-160H614l-78 77q-12 11-26.5 17T480-60q-15 0-29.5-6T424-83l-78-77Zm34-80 100 100 100-100h140v-140l100-100-100-100v-140H580L480-820 380-720H240v140L140-480l100 100v140h140Zm100-40q83 0 141.5-58.5T680-480q0-83-58.5-141.5T480-680v400Z" />
+    </svg>
+  </button>
+
   <!-- Botón de micrófono (control de voz) -->
   @if (isVoiceSupported()) {
   <!-- Ondas separadas del botón para que el overflow-hidden del botón no las recorte -->
@@ -153,7 +175,8 @@
   <button (click)="toggleVoiceAction.emit()"
     [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
     class="voice-btn shadow-lg z-10" [class.voice-btn--active]="isVoiceListening()"
-    [class.has-command]="lastCommand() !== null">
+    [class.has-command]="lastCommand() !== null" [class.border]="isWhiteBg()"
+    [class.border-marron-oscuro]="isWhiteBg()">
 
     @if (!lastCommand()) {
     <svg class="shrink-0" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
@@ -216,16 +239,16 @@
     <p class="mb-6 text-sm text-marron-oscuro">No se guarda ni se comparte.</p>
     <div class="flex justify-center space-x-4">
       <button (click)="cancelMicPermission.emit()" class="btn bg-marron-claro/60 hover:bg-marron-claro">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
         <span>Cancelar</span>
       </button>
       <button (click)="proceedMicPermission.emit()" class="btn bg-azul-claro hover:bg-azul-medio">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         <span>Permitir</span>
@@ -237,8 +260,7 @@
       Para usar el control por voz necesitas conceder permiso al micrófono en la configuración del navegador.
     </p>
     <div class="flex justify-center space-x-4">
-      <button (click)="closeMicDenied.emit()"
-        class="px-6 py-2 font-semibold rounded-full transition-colors bg-white">
+      <button (click)="closeMicDenied.emit()" class="px-6 py-2 font-semibold rounded-full transition-colors bg-white">
         Entendido
       </button>
       <button (click)="retryMicPermission.emit()"
@@ -249,4 +271,4 @@
     }
   </div>
 </div>
-}
+}

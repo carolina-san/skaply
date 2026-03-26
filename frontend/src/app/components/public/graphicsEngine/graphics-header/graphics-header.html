@@ -3,7 +3,8 @@
   <div class="absolute inset-0 z-50 cursor-not-allowed rounded-3xl" (click)="$event.stopPropagation()"></div>
   }
   <app-engine-switch [selectedEngine]="engineUse() === 'threeJS' ? 'threejs' : 'webgl'"
-    (engineChanged)="engineChanged.emit($event)" class="lg:order-2" [class.opacity-60]="hasIsolatedPart()">
+    (engineChanged)="engineChanged.emit($event)" class="lg:order-2" [class.opacity-60]="hasIsolatedPart()"
+    [isWhiteBg]="isWhiteBg()">
   </app-engine-switch>
   <div class="mt-2 flex flex-col justify-center items-center w-full lg:items-start">
     <!-- Nombre del mueble -->
@@ -22,9 +23,11 @@
         class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
         [ngClass]="{
           'bg-azul-claro': stepIndex <= currentLogicalStep(),
-          'bg-white/30 text-beige': stepIndex > currentLogicalStep(),
+          'bg-white/30 text-beige': stepIndex > currentLogicalStep() && !isWhiteBg(),
+          'bg-marron-claro/30 text-marron-oscuro': stepIndex > currentLogicalStep() && isWhiteBg(),
           'scale-115': stepIndex === currentLogicalStep(),
-          'font-bold': stepIndex === currentLogicalStep()
+          'font-bold': stepIndex === currentLogicalStep(),
+          'border border-marron-oscuro': isWhiteBg()
         }">
         {{ stepIndex + 1 }}
       </button>
@@ -35,9 +38,11 @@
     <div class="flex items-center justify-center space-x-2 text-sm"></div>
     @if (hasIsolatedPart()) {
     <div class="flex flex-col md:flex-row items-center justify-center  mt-1 gap-2 relative z-[60]">
-      <p class="font-semibold text-beige">Inspeccionando pieza: {{ isolatedPartName() }}</p>
+      <p class="font-semibold" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Inspeccionando pieza: {{
+        isolatedPartName() }}</p>
       <button (click)="exitIsolationAction.emit()"
-        class="w-fit px-2 py-0.5 bg-azul-claro text-marron-oscuro font-semibold rounded-full transition-all duration-200  hover:opacity-80 shadow-lg flex items-center justify-start gap-1 text-sm">
+        class="w-fit px-2 py-0.5 bg-azul-claro text-marron-oscuro font-semibold rounded-full transition-all duration-200  hover:opacity-80 shadow-lg flex items-center justify-start gap-1 text-sm"
+        [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
 
         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
           <path
@@ -47,13 +52,16 @@
       </button>
     </div>
     } @else if (isSimulating()) {
-    <p class="font-semibold mt-1 text-beige">Demostración automática</p>
+    <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Demostración automática
+    </p>
     } @else if (mode() === 'final') {
-    <p class="font-semibold mt-1 text-beige">Resultado Final</p>
+    <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Resultado Final</p>
     } @else if (isManualComplete()) {
-    <p class="font-semibold mt-1 text-beige">¡Listo! Estructura completada.</p>
+    <p class="font-semibold mt-1" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">¡Listo! Estructura
+      completada.</p>
     } @else {
-    <p class="font-semibold mt-1 text-sm sm:text-base transition-colors text-beige">
+    <p class="font-semibold mt-1 text-sm sm:text-base transition-colors"
+      [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">
       {{ stepDescriptions()[currentLogicalStep()] || 'Cargando paso...' }}
     </p>
     }

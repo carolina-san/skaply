@@ -21,6 +21,7 @@ export class GraphicsHeader {
   isSimulating = input<boolean>(false);
   isManualComplete = input<boolean>(false);
   stepDescriptions = input<string[]>([]);
+  isWhiteBg = input<boolean>(false);
 
   // Outputs
   engineChanged = output<string>();
