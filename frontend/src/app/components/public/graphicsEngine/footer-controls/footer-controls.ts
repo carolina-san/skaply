@@ -23,6 +23,7 @@ export class FooterControls {
   isVoiceSoundActive = input<boolean>(false);
   micFlowState = input<'idle' | 'requesting' | 'denied'>('idle');
   isWhiteBg = input<boolean>(false);
+  isLoading = input<boolean>(false);
 
   // Outputs
   modeChange = output<'manual' | 'simulation' | 'final'>();
