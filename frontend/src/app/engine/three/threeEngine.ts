@@ -147,7 +147,8 @@ export class ThreeEngineAdapter extends EngineFacade {
         const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
         this.scene.add(hemisphereLight);
 
-        this.camera = new THREE.PerspectiveCamera(50, width / height, 0.005, 1000);
+        //this.camera = new THREE.PerspectiveCamera(45, width / height, 0.005, 1000);
+        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 100);
         // En móvil (pantalla pequeña), alejar más la cámara para que el mueble se vea más pequeño
         const isMobile = width < 768;
         const cameraDistance = isMobile ? 2.5 : 2;
@@ -504,13 +505,15 @@ export class ThreeEngineAdapter extends EngineFacade {
     ): void {
         if (!parts.length || !this.camera || !this.controls) return;
 
+        margin = 1.30; // ⚠️ NO ACEPTA BIEN EL DEL PARAMETRO
+
         const box = new THREE.Box3();
         let hasValidParts = false;
 
         for (const part of parts) {
             const wrapper = part.nativeObject as ThreeRenderableObject;
             const obj = wrapper.nativeObject;
-            
+
             // Compute the bounding box of the object
             const partBox = new THREE.Box3().setFromObject(obj);
             if (partBox.isEmpty()) continue;
@@ -546,7 +549,7 @@ export class ThreeEngineAdapter extends EngineFacade {
 
         // Current camera direction
         const direction = new THREE.Vector3().subVectors(this.camera.position, this.controls.target).normalize();
-        
+
         // Target camera position
         const newPos = center.clone().add(direction.multiplyScalar(distance));
 

@@ -479,7 +479,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         await this.outlinePass.init(this.canvas.width, this.canvas.height);
 
         // camera 
-        this.cameraEntity.setPerspective(45, width / height, 0.005, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.01, 100);
         this.cameraNode.setEntity(this.cameraEntity);
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
@@ -525,7 +525,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas.style.height = height + 'px';
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.cameraEntity.setPerspective(45, width / height, 0.005, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.01, 100);
 
         this.outlinePass?.resize(this.canvas.width, this.canvas.height);
     }

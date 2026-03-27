@@ -127,10 +127,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const lastRotAngle = this.lastRotationConfig.angle;
       const lastRotAxis = this.lastRotationConfig.axis;
 
-      console.log('stepIndex: ' + stepIndex);
-      console.log('mode: ' + mode);
-      console.log('lastRotAngle: ' + lastRotAngle);
-      console.log('lastRotAxis: ' + lastRotAxis);
+      // console.log('stepIndex: ' + stepIndex);
+      // console.log('mode: ' + mode);
+      // console.log('lastRotAngle: ' + lastRotAngle);
+      // console.log('lastRotAxis: ' + lastRotAxis);
+
+      let margin = 1.05;
+      if (this.isSmallScreen()) {
+        margin = 1.25;
+      }
 
       if (mode === 'final') {
         if (lastRotAngle !== null || lastRotAxis !== null) {
@@ -144,7 +149,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             this.parts.map(p => ({
               currentPosition: p.targetPosition,
               nativeObject: p.object
-            }))
+            })), margin
           );
         }
         return;
@@ -162,7 +167,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             .map(p => ({
               currentPosition: p.object.getPosition(),
               nativeObject: p.object
-            }))
+            })), margin
         );
         didFrame = true;
       }
@@ -586,6 +591,6 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     engineFacade.frameObjectFromParts([{
       currentPosition: part.object.getPosition(),
       nativeObject: part.object
-    }], 1.1);
+    }], 1.25);
   }
 }
