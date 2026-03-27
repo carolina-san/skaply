@@ -247,7 +247,7 @@ VALUES
     'low',
     1,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
-    'https://www.oficinasmontiel.com/img/p/1/8/9/8/9/3/189893.jpg?_gl=1*yx77bx*_up*MQ..*_gs*MQ..&gclid=Cj0KCQjwj47OBhCmARIsAF5wUEH2hRH0qE6rC4VB8jPHwDbCzIJ6n5nFejVg8zppyY5oHN-Zs9zkpRsaAj5XEALw_wcB', --cambiar
+    '/storage/fotos/actiu_mesa_vital_pro.jpg', --de su web
     'https://skaply.ovh/home?furniture=VR515F200',
     'pdf1',
     true,
@@ -263,7 +263,7 @@ VALUES
     'medium',
     1,
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
-    'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTilEH05Ouz7Hf1GMGFyaOM4-RueO57otwlBJBfUWsbxMkEp6TXnnMBi75JAiK5fid7X1OSM-Rxd-AMzLgAkAManhGjylcG',
+    '/storage/fotos/actiu_armario_modular.png',
     'https://skaply.ovh/home?furniture=VR123456',
     'pdf2',
     true,
