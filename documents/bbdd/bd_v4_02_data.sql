@@ -162,7 +162,10 @@ INSERT INTO Color (name, hex) VALUES
 ('Azul', '#2196F3'),
 ('Gris', '#9E9E9E'),
 ('Marrón', '#795548'),
-('Negro', '#212121');
+('Negro', '#212121'),
+('Blanco', '#ffffff')
+;
+
 
 -- ============================
 -- PARTS
@@ -242,7 +245,7 @@ VALUES
     2,
     6,
     'low',
-    3,
+    1,
     'Vital Pro es la línea de mesas pensada para cubrir todo tipo de necesidades: mesas operativas, pasando por mesas con espacios de trabajo compartidos así como mesas de reuniones.', --de su web
     'https://www.oficinasmontiel.com/img/p/1/8/9/8/9/3/189893.jpg?_gl=1*yx77bx*_up*MQ..*_gs*MQ..&gclid=Cj0KCQjwj47OBhCmARIsAF5wUEH2hRH0qE6rC4VB8jPHwDbCzIJ6n5nFejVg8zppyY5oHN-Zs9zkpRsaAj5XEALw_wcB', --cambiar
     'https://skaply.ovh/home?furniture=VR515F200',
@@ -258,7 +261,7 @@ VALUES
     5,
     6,
     'medium',
-    3,
+    1,
     'Nuestros armarios modulares son la opción ideal para llevar el orden a cualquier espacio adaptándolo al estilo, a las dimensiones o a la filosofía de trabajo. Un sistema personalizable para mantener organizado cualquier entorno laboral.', --de su web
     'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTilEH05Ouz7Hf1GMGFyaOM4-RueO57otwlBJBfUWsbxMkEp6TXnnMBi75JAiK5fid7X1OSM-Rxd-AMzLgAkAManhGjylcG',
     'https://skaply.ovh/home?furniture=VR123456',
@@ -267,20 +270,178 @@ VALUES
     NOW()
 ),
 (
-    '', -- prueba
+    '', 
     'Silla rústica',
     'VR232243',
     1,
     3,
     'medium',
-    3,
+    2,
     'Silla de estilo mid-century con tapizado en tono verde oliva, integrada en un ambiente cálido y natural que resalta su diseño elegante y funcional. La pieza se presenta colocada junto a la pared, creando un rincón acogedor y realista dentro del salón, ideal para zonas de lectura o descanso.', 
-    'https://i.ibb.co/JwVpPh5M/silla1.png',
+    --'https://i.ibb.co/JwVpPh5M/silla1.png',
+    'https://i.postimg.cc/CxM7hhBx/silla1.png',
     'https://skaply.ovh/home?furniture=VR232243',
     'pdf3',
     true,
     NOW()
-);
+),
+-- SILLAS
+(
+    '/storage/muebles/cover_chair.glb', 
+    'Silla de madera redondeada',
+    'VR22891',
+    1,
+    3,
+    'low',
+    5,
+    'Silla de madera de diseño moderno con acabado natural, respaldo curvo y reposabrazos integrados. Elegante, cómoda y resistente, ideal para comedor o espacios contemporáneos con estilo cálido.', 
+    'https://i.postimg.cc/1zqVCQq7/cover-chair.png',
+    'https://skaply.ovh/home?furniture=VR22891',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/silla_azul.glb', 
+    'Silla de madera azul',
+    'VR2342',
+    1,
+    3,
+    'low',
+    3,
+    'Silla tapizada con diseño moderno y estampado artístico, patas de madera resistentes y asiento acolchado. Ideal para comedor o sala, aporta estilo, comodidad y un toque decorativo único al espacio.', 
+    'https://i.postimg.cc/SsrZs5Gn/silla-azul-sencilla-2.png',
+    'https://skaply.ovh/home?furniture=VR2342',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/office_chair.glb', 
+    'Silla de oficina negra',
+    'SO234234',
+    1,
+    4,
+    'medium',
+    6,
+    'Silla de oficina ergonómica con diseño moderno, tapizado en negro y estructura metálica. Giratoria, con ruedas y reposabrazos, ofrece comodidad y estilo profesional para espacios de trabajo.', 
+    'https://i.postimg.cc/9f1XBXmS/office-chair.png',
+    'https://skaply.ovh/home?furniture=SO234234',
+    'pdf4',
+    true,
+    NOW()
+),
+-- ESTANTERIAS
+(
+    '/storage/muebles/estanterias/estanteria_1.glb', 
+    'Estantería light',
+    'E234234',
+    5,
+    4,
+    'medium',
+    7,
+    'Estantería sencilla de 5 niveles con diseño moderno y compacto. Ideal para organizar libros y decoración, perfecta para integrarse en cualquier salón con estilo limpio y funcional.', 
+    'https://i.postimg.cc/j2dGqnLQ/estanteria-1.jpg',
+    'https://skaply.ovh/home?furniture=E234234',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/estanterias/estanteria_2.glb', 
+    'Estantería alta asimétrica',
+    'E234255242',
+    5,
+    4,
+    'medium',
+    6,
+    'Estantería moderna con estructura negra y baldas blancas. Diseño elegante y funcional, ideal para organizar y decorar espacios contemporáneos con estilo minimalista.', 
+    'https://i.postimg.cc/Hn61b4fq/estanteria-2.jpg',
+    'https://skaply.ovh/home?furniture=E234255242',
+    'pdf4',
+    true,
+    NOW()
+),
+-- MESAS
+(
+    '/storage/muebles/mesas/mesa_1.glb',
+    'Mesa de mármol',
+    'M232342',
+    2,
+    4,
+    'medium',
+    7,
+    'Mesa de mármol con diseño práctico y resistente, ideal para exterior, interior o eventos. Ligera, fácil de montar y perfecta para adaptarse a cualquier espacio del hogar.', 
+    'https://i.postimg.cc/sX8gRmNg/mesa-1b.png',
+    'https://skaply.ovh/home?furniture=M232342',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/mesas/mesa_2.glb', 
+    'Mesa de pino',
+    'M23232535',
+    2,
+    4,
+    'low',
+    1,
+    'Mesa de madera con patas metálicas grises, de diseño limpio y minimalista. Ideal para espacios de estilo japonés, aporta calma, funcionalidad y equilibrio al ambiente.', 
+    'https://i.postimg.cc/sXWMnbT5/mesa-2.jpg',
+    'https://skaply.ovh/home?furniture=M23232535',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/mesas/mesa_3.glb', 
+    'Mesa redonda auxiliar',
+    'M232325245',
+    2,
+    4,
+    'low',
+    1,
+    'Mesa auxiliar redonda de estilo clásico con base decorativa. Ideal para salones elegantes, perfecta para aportar un toque sofisticado y funcional al espacio.', 
+    'https://i.postimg.cc/hv53SyFS/mesa-3.png',
+    'https://skaply.ovh/home?furniture=M232325245',
+    'pdf4',
+    true,
+    NOW()
+),
+-- SOFAS
+(
+    '/storage/muebles/sofas/sofa_1.glb', 
+    'Sofa amplio claro',
+    'S34524525',
+    3,
+    4,
+    'medium',
+    1,
+    'Sofá de tres plazas con diseño minimalista y perfil bajo. Tapizado en beige claro con cojines amplios y mullidos. Líneas rectas, base discreta y estética contemporánea ideal para salones elegantes.', 
+    'https://i.postimg.cc/BZ1TyV84/sofa-1.jpg',
+    'https://skaply.ovh/home?furniture=S34524525',
+    'pdf4',
+    true,
+    NOW()
+),
+(
+    '/storage/muebles/sofas/sofa_2.glb', 
+    'Sofá moderno',
+    'S3452544345',
+    3,
+    4,
+    'medium',
+    4,
+    'Sofá de diseño minimalista con estética nórdica. Destaca por su respaldo abierto y lineal, tapizado en tela gris jaspeada y patas de madera clara. Una pieza funcional, moderna y de aire ligero.', 
+    'https://i.postimg.cc/d066sHrc/sofa-2.png',
+    'https://skaply.ovh/home?furniture=S3452544345',
+    'pdf4',
+    true,
+    NOW()
+)
+
+
+;
 
 -- ============================
 -- STEPS
