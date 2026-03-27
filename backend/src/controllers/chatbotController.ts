@@ -130,7 +130,7 @@ export class ChatbotController {
                     return;
                 }
                 case 'filter.by.color': {
-                    const color = parameters['furniture_color'];
+                    const color = parameters['color'];
                     res.status(200).json(await this.chatbotService.filterByColor(color));
                     return;
                 }
@@ -144,13 +144,15 @@ export class ChatbotController {
                         c.name.endsWith('/contexts/flujo_busqueda')
                     );
                     if (ctx) {
-                        console.log('categoria:', ctx.parameters.furniture_category, 'color:', ctx.parameters.furniture_color);
+                        console.log('Context parameters en get.furniture.recommendation:', ctx.parameters);
                     }
                     if (!ctx) {
                         next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar muebles'));
                         return;
                     }
-                    res.status(200).json(await this.chatbotService.getFurnitureRecomendation(ctx.parameters.furniture_category, ctx.parameters.furniture_color, session));
+                    const category = ctx.parameters.furniture_category || ctx.parameters.category;
+                    const color = ctx.parameters.furniture_color || ctx.parameters.color;
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendation(category, color, session));
                     return;
                 }
                 case 'get.furniture.recommendation.more': {
@@ -160,14 +162,16 @@ export class ChatbotController {
                         c.name.endsWith('/contexts/flujo_busqueda')
                     );
                     if (ctx) {
-                        console.log('categoria:', ctx.parameters.furniture_category, 'color:', ctx.parameters.furniture_color);
+                        console.log('Context parameters en get.furniture.recommendation.more:', ctx.parameters);
                     }
                     if (!ctx) {
                         next(new ApiError('BAD_REQUEST', 'Faltan datos para buscar más muebles'));
                         return;
                     }
+                    const category = ctx.parameters.furniture_category || ctx.parameters.category;
+                    const color = ctx.parameters.furniture_color || ctx.parameters.color;
                     const shownId = ctx.parameters.shown_furniture_id;
-                    res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(ctx.parameters.furniture_category, ctx.parameters.furniture_color, shownId));
+                    res.status(200).json(await this.chatbotService.getFurnitureRecomendationMore(category, color, shownId));
                     return;
                 }
                 case 'get.furniture.ref': {
