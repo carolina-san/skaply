@@ -1,23 +1,44 @@
-<article (click)="onCardClick()" class="group min-h-60 h-full relative flex flex-col text-marron-oscuro rounded-2xl overflow-hidden bg-beige 
+<article (click)="onCardClick()" class="group min-h-40 h-full max-h-80 relative flex flex-col text-marron-oscuro rounded-2xl overflow-hidden bg-beige 
   transition-all duration-400 shadow-sm cursor-pointer
   hover:shadow-lg hover:scale-102 hover:bg-beige-oscuro">
 
   <!-- Imagen del mueble -->
-  <div class="relative w-full aspect-[5/4] overflow-hidden ">
+  <div class="relative w-full aspect-[5.5/4] overflow-hidden shrink-0">
     <img [src]="furniture.image_url" alt="{{ furniture.name }}" class="w-full h-full object-cover object-center 
       transition-transform duration-400 
       group-hover:scale-105" />
+    <span
+      class="absolute  top-2 right-2 bg-azul-claro/80 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-bold text-marron-secundario shadow ">
+      {{ furniture.reference_number }}
+    </span>
   </div>
 
   <!-- Contenido -->
-  <section class="flex flex-col gap-2 p-4">
+  <section class="flex flex-col gap-2 p-4 flex-grow">
     <div class="flex items-start justify-between flex-col">
-      <h2 class="font-semibold text-base line-clamp-2">{{ furniture.name }}</h2>
-      <p class="text-gray-600 text-xs">
-        {{furniture.reference_number}}
-      </p>
+      <h2 class="font-semibold line-clamp-2 leading-tight">{{ furniture.name }}</h2>
+
+    </div>
+    <div class="flex items-start gap-1 text-xs font-bold uppercase tracking-wide text-marron-oscuro/80"
+      *ngIf="furniture.provider_name">
+
+      <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+        <path
+          d="M160-120q-33 0-56.5-23.5T80-200v-440q0-33 23.5-56.5T160-720h160v-80q0-33 23.5-56.5T400-880h160q33 0 56.5 23.5T640-800v80h160q33 0 56.5 23.5T880-640v440q0 33-23.5 56.5T800-120H160Zm0-80h640v-440H160v440Zm240-520h160v-80H400v80ZM160-200v-440 440Z" />
+      </svg>
+      <span class="text-xs font-bold uppercase tracking-wider text-marron-oscuro/80">{{ furniture.provider_name
+        }}</span>
     </div>
 
-    <p class="text-xs pt-2">{{ furniture.short_description }}</p>
+    <div class="relative flex-1 overflow-hidden min-h-0 pt-1">
+      <p class="text-xs text-marron-oscuro/80" title="{{ furniture.short_description }}">
+        {{ furniture.short_description }}
+      </p>
+
+    </div>
+    <div
+      class="absolute bottom-0 left-0 right-0 h-15 bg-gradient-to-t from-beige group-hover:from-beige-oscuro to-transparent pointer-events-none transition-colors duration-400">
+    </div>
+
   </section>
 </article>

@@ -392,7 +392,7 @@ export class FurnitureService {
       }
 
       if (search && search.trim() !== '') {
-        baseSql += ` AND (f.name ILIKE $${paramIndex} OR f.reference_number ILIKE $${paramIndex})`;
+        baseSql += ` AND (LOWER(TRANSLATE(f.name, 'áéíóúÁÉÍÓÚ', 'aeiouaeiou')) LIKE LOWER(TRANSLATE($${paramIndex}, 'áéíóúÁÉÍÓÚ', 'aeiouaeiou')) OR f.reference_number ILIKE $${paramIndex})`;
         params.push(`%${search}%`);
         paramIndex++;
       }
@@ -442,7 +442,6 @@ export class FurnitureService {
         params.push(limit, offset);
 
         const result = await pool.query(sql, params);
-        console.log(sql);
 
         return {
           rows: result.rows,
@@ -453,7 +452,6 @@ export class FurnitureService {
         };
       } else {
         const result = await pool.query(sql, params);
-        console.log(sql);
 
         return result.rows;
       }
@@ -485,7 +483,7 @@ export class FurnitureService {
   //     throw error;
   //   }
   // }
-  
+
   // Devuelve toda la iformación necesaria para el motor gráfico
   // async getFurnitureAssembly(furnitureId: number) {
   //   try {
@@ -557,8 +555,8 @@ export class FurnitureService {
   // }
 
   async getFurnitureAssembly(furnitureId: number) {
-  try {
-    const query = `
+    try {
+      const query = `
       SELECT
         f.required_people,
         s.id AS step_id,
@@ -608,20 +606,20 @@ export class FurnitureService {
       ORDER BY s.step_number ASC
     `;
 
-    const result = await pool.query(query, [furnitureId]);
-    if (result.rows.length === 0) return null;
+      const result = await pool.query(query, [furnitureId]);
+      if (result.rows.length === 0) return null;
 
-    return {
-      furniture_id: furnitureId,
-      required_people: result.rows[0].required_people,
-      steps: result.rows
-    };
+      return {
+        furniture_id: furnitureId,
+        required_people: result.rows[0].required_people,
+        steps: result.rows
+      };
 
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw error;
+    } catch (error) {
+      console.error('Database Error:', error);
+      throw error;
+    }
   }
-}
 
   async getStepByRef(furnitureRef: string, stepNumber: number) {
     try {
@@ -846,7 +844,7 @@ export class FurnitureService {
       const result = await pool.query(
         `SELECT id, name, image_url, reference_number, provider_id, short_description
          FROM public.furniture 
-         WHERE name ILIKE $1 AND visible = true`,
+         WHERE LOWER(TRANSLATE(name, 'áéíóúÁÉÍÓÚ', 'aeiouaeiou')) LIKE LOWER(TRANSLATE($1, 'áéíóúÁÉÍÓÚ', 'aeiouaeiou')) AND visible = true`,
         [name]
       );
       return result.rows;
