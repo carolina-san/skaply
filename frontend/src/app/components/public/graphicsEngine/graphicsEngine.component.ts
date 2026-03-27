@@ -402,6 +402,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     } else {
       engineFacade.setCameraProps(engineFacade.getCamera().position, { x: 0, y: 1, z: 0 });
     }
+    this.lastFramedStep = -1;
   }
 
   resetCameraPosition(): void {
@@ -518,7 +519,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
       if (!loaded && this.furniture && this.furniture.file_uri) {
         const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.loadSingleFurnitureModel(this.furniture);
-        
+
         this.furnitureRoot = furnitureRoot;
 
         if (parts.length > 0) {
@@ -576,8 +577,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       };
     }
     this.isolatedPart.set(part);
-    const pos = part.object.getPosition();
-    const closePos = { x: pos.x + 0.8, y: pos.y + 0.5, z: pos.z + 0.8 };
-    engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
+    engineFacade.frameObjectFromParts([{
+      currentPosition: part.object.getPosition(),
+      nativeObject: part.object
+    }], 1.1);
   }
 }

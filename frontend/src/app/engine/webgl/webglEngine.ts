@@ -107,8 +107,8 @@ export class CameraController {
     private readonly defaultTarget: vec3;
 
     // limits
-    private readonly minRadius = 1;
-    private readonly maxRadius = 10;
+    private readonly minRadius = 0.01;
+    private readonly maxRadius = 15;
 
     // epsilon to avoid gimbal lock at poles
     private static readonly PHI_EPSILON = 0.01;
@@ -234,7 +234,6 @@ export class CameraController {
         const computedRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
         this.radius = Math.min(this.maxRadius, Math.max(this.minRadius, computedRadius));
         const safeRadius = Math.max(this.radius, 0.00001); // avoid division by zero
-        this.radius = Math.max(0.001, Math.sqrt(dx * dx + dy * dy + dz * dz));
         this.theta = Math.atan2(dx, dz);
         this.phi = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
         this.phi = this.normalizePhi(this.phi); // avoid gimbal lock
@@ -480,7 +479,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         await this.outlinePass.init(this.canvas.width, this.canvas.height);
 
         // camera 
-        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.005, 100);
         this.cameraNode.setEntity(this.cameraEntity);
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
@@ -526,7 +525,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas.style.height = height + 'px';
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.005, 100);
 
         this.outlinePass?.resize(this.canvas.width, this.canvas.height);
     }
