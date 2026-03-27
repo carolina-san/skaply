@@ -97,6 +97,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private chatbotSub?: Subscription;
   private isViewInitialized = false;
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
+  private triggerFrame = signal(0);
   private destroy$ = new Subject<void>();
 
   get modelAssembly(): any {
@@ -116,6 +117,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.isCameraMoved = this.interactionService.isUserManuallyMoved;
 
     effect(() => {
+      this.triggerFrame(); // Depend on triggerFrame
       const engine = this.engineService.getEngine();
       if (!engine) return;
 
@@ -321,6 +323,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
                 part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
               });
             }
+            this.lastFramedStep = -1;
+            this.triggerFrame.update(v => v + 1);
             if (!this.animationFrameId) this.animate();
           });
         }
@@ -510,6 +514,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             this.stepsData.set(sortedSteps);
             this.mode.set('manual');
             this.showFooterControls.set(true);
+            this.triggerFrame.update(v => v + 1);
             loaded = true;
           }
         }
@@ -529,6 +534,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           this.stepsData.set(sortedSteps);
           this.mode.set('final');
           this.showFooterControls.set(false);
+          this.triggerFrame.update(v => v + 1);
         }
       }
     } catch (error) {
