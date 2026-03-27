@@ -166,9 +166,9 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.controls.maxDistance = 15;
         this.controls.target.set(0, 1, 0);
         if (isMobile) {
-            this.controls.rotateSpeed = 0.7;
-            this.controls.zoomSpeed = 0.5;
-            this.controls.panSpeed = 0.5;
+            this.controls.rotateSpeed = 0.8;
+            this.controls.zoomSpeed = 0.8;
+            this.controls.panSpeed = 0.8;
         }
         this.controls.saveState();
 

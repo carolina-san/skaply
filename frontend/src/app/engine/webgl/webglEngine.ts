@@ -321,7 +321,15 @@ export class CameraController {
     private _onContextMenu = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
     private _onTouchStart = (e: TouchEvent) => { if (this.assertInteraction()) this.onTouchStart(e); };
     private _onTouchMove = (e: TouchEvent) => { if (this.isDragging && this.assertInteraction()) this.onTouchMove(e); };
-    private _onTouchEnd = (e: TouchEvent) => { if (e.touches.length === 0) this.isDragging = false; };
+    private _onTouchEnd = (e: TouchEvent) => {
+        if (e.touches.length === 0) {
+            this.isDragging = false;
+        } else if (e.touches.length === 1) {
+            // recalibrate for single finger orbit to avoid jumping from previous midpoint/pair
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+        }
+    };
 
     // add event listeners to canvas and window
     initListeners(): void {
@@ -403,14 +411,14 @@ export class CameraController {
             const dy = e.touches[0].clientY - this.lastTouchY;
             this.lastTouchX = e.touches[0].clientX;
             this.lastTouchY = e.touches[0].clientY;
-            this.orbit(-dx * 0.003, -dy * 0.003);
+            this.orbit(-dx * 0.005, -dy * 0.005);
 
         } else if (e.touches.length === 2) { // two fingers -> pan + zoom
 
             // compute center movement for panning
             const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            this.pan((cx - this.lastTouchX) * 0.5, (cy - this.lastTouchY) * 0.5);
+            this.pan((cx - this.lastTouchX) * 0.8, (cy - this.lastTouchY) * 0.8);
             this.lastTouchX = cx;
             this.lastTouchY = cy;
 
@@ -418,7 +426,7 @@ export class CameraController {
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            this.zoom((this.lastTouchDist - dist) * 1.0);
+            this.zoom((this.lastTouchDist - dist) * 2.0);
             this.lastTouchDist = dist;
         }
     }
