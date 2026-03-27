@@ -287,7 +287,7 @@ VALUES
 ),
 -- SILLAS
 (
-    '/storage/muebles/cover_chair.glb', 
+    '/storage/muebles/sillas/silla_1.glb', 
     'Silla de madera redondeada',
     'VR22891',
     1,
@@ -302,7 +302,7 @@ VALUES
     NOW()
 ),
 (
-    '/storage/muebles/silla_azul.glb', 
+    '/storage/muebles/sillas/silla_2.glb', 
     'Silla de madera azul',
     'VR2342',
     1,
@@ -317,7 +317,7 @@ VALUES
     NOW()
 ),
 (
-    '/storage/muebles/office_chair.glb', 
+    '/storage/muebles/sillas/silla_3.glb', 
     'Silla de oficina negra',
     'SO234234',
     1,
