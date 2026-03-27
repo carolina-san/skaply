@@ -28,9 +28,7 @@ export class ColorService {
 
     async getColorByName(name: string) {
         try {
-            console.log("getColorByName");
-            const result = await pool.query('SELECT * FROM public.color WHERE name = $1', [name]);
-            console.log("Color found:", result.rows[0]);
+            const result = await pool.query('SELECT * FROM public.color WHERE LOWER(TRANSLATE(name, \'áéíóúÁÉÍÓÚ\', \'aeiouaeiou\')) = LOWER(TRANSLATE($1, \'áéíóúÁÉÍÓÚ\', \'aeiouaeiou\'))', [name]);
             return result.rows[0];
         } catch (error) {
             throw new Error('Color not found');
