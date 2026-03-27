@@ -238,7 +238,7 @@ export class ThreeEngineAdapter extends EngineFacade {
 
 
     async createArrowHelper(dir: Vector3, origin: Vector3, length: number): Promise<RenderableObject> {
-        const arrow = await this.loadGLTF('storage/flecha.glb');
+        const arrow = await this.loadGLTF('storage/modelos_3D/flecha.glb');
         this.setArrowRotationFromDir(arrow, dir);
         arrow.setPosition(origin.x, origin.y, origin.z);
         arrow.setScale(length, length, length);

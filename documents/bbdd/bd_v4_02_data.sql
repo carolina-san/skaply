@@ -172,36 +172,36 @@ INSERT INTO Color (name, hex) VALUES
 -- ============================
 INSERT INTO Part (file_uri, reference_number, color_id) VALUES
 -- PARTES MUEBLE ACTIU VITAL RPO
-('/storage/actiu/mesa_vital_pro/pata_0.8x0.05m.glb','pata_0.8x0.05m', 1),                 --1 pata
-('/storage/actiu/mesa_vital_pro/travesanio_1.75x0.105m.glb','travesanio_1.75x0.105m', 1),   --2 travesaño
-('/storage/actiu/mesa_vital_pro/tablero_1.8x0.8x0.025m.glb','tablero_1.8x0.8x0.025m', 1), --3 tablero
-('/storage/tornillos/M8_cabeza_plana_20mm.glb','M8_cabeza_plana_20mm', 1),                 --4 M8 20mm
-('/storage/tornillos/M8_cabeza_plana_17mm.glb','M8_cabeza_plana_17mm', 1),                 --5 M8 17mm
-('/storage/tornillos/M8_cabeza_plana_16mm.glb','M8_cabeza_plana_16mm', 1),                 --6 M8 16mm
-('/storage/tornillos/arandela_M8.glb','arandela_M8', 1),                                   --7 arandela
+('/storage/modelos_3D/actiu/mesa_vital_pro/pata_0.8x0.05m.glb','pata_0.8x0.05m', 1),                 --1 pata
+('/storage/modelos_3D/actiu/mesa_vital_pro/travesanio_1.75x0.105m.glb','travesanio_1.75x0.105m', 1),   --2 travesaño
+('/storage/modelos_3D/actiu/mesa_vital_pro/tablero_1.8x0.8x0.025m.glb','tablero_1.8x0.8x0.025m', 1), --3 tablero
+('/storage/modelos_3D/tornillos/M8_cabeza_plana_20mm.glb','M8_cabeza_plana_20mm', 1),                 --4 M8 20mm
+('/storage/modelos_3D/tornillos/M8_cabeza_plana_17mm.glb','M8_cabeza_plana_17mm', 1),                 --5 M8 17mm
+('/storage/modelos_3D/tornillos/M8_cabeza_plana_16mm.glb','M8_cabeza_plana_16mm', 1),                 --6 M8 16mm
+('/storage/modelos_3D/tornillos/arandela_M8.glb','arandela_M8', 1),                                   --7 arandela
 
 -- PARTES MUEBLE ACTIU ARMRIO MODULAR
-('/storage/actiu/mueble_modular/tablon_inferior_0.76x0.38m.glb','tablon_inferior_0.76x0.38m', 1),   --pata01 y pata02 deberían de ser la misma pieza
-('/storage/actiu/mueble_modular/tablon_izquierdo_1.09x0.4m.glb','tablon_izquierdo_1.09x0.4m', 1),
-('/storage/actiu/mueble_modular/tablon_derecho_1.09x0.4m.glb','tablon_derecho_1.09x0.4m', 1),
-('/storage/actiu/mueble_modular/tablon_trasero_0.76x1.09m.glb','tablon_trasero_0.76x1.09m', 1),
-('/storage/actiu/mueble_modular/tablon_superior_0.8x0.4m.glb','tablon_superior_0.8x0.4m', 1),
-('/storage/actiu/mueble_modular/balda_0.76x0.36m.glb','balda_0.76x0.36m', 1),
-('/storage/actiu/mueble_modular/puerta_izquierda_0.4x0.7m.glb','puerta_izquierda_0.4x0.7m', 1),
-('/storage/actiu/mueble_modular/puerta_derecha_0.4x0.7m.glb','puerta_derecha_0.4x0.7m', 1),
-('/storage/tornillos/perno_40mm.glb','perno_40mm', 1),
+('/storage/modelos_3D/actiu/mueble_modular/tablon_inferior_0.76x0.38m.glb','tablon_inferior_0.76x0.38m', 1),   --pata01 y pata02 deberían de ser la misma pieza
+('/storage/modelos_3D/actiu/mueble_modular/tablon_izquierdo_1.09x0.4m.glb','tablon_izquierdo_1.09x0.4m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/tablon_derecho_1.09x0.4m.glb','tablon_derecho_1.09x0.4m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/tablon_trasero_0.76x1.09m.glb','tablon_trasero_0.76x1.09m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/tablon_superior_0.8x0.4m.glb','tablon_superior_0.8x0.4m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/balda_0.76x0.36m.glb','balda_0.76x0.36m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/puerta_izquierda_0.4x0.7m.glb','puerta_izquierda_0.4x0.7m', 1),
+('/storage/modelos_3D/actiu/mueble_modular/puerta_derecha_0.4x0.7m.glb','puerta_derecha_0.4x0.7m', 1),
+('/storage/modelos_3D/tornillos/perno_40mm.glb','perno_40mm', 1),
 
 -- Silla rustica
-('/storage/iqua/silla_rustica/Brazo1.glb','Brazo1', 1),
-('/storage/iqua/silla_rustica/Brazo2.glb','Brazo2', 1),
-('/storage/iqua/silla_rustica/Pata1.glb','Pata1', 1),
-('/storage/iqua/silla_rustica/Pata2.glb','Pata2', 1),
-('/storage/iqua/silla_rustica/Refuerzo1.glb','Refuerzo1', 1),
-('/storage/iqua/silla_rustica/Refuerzo2.glb','Refuerzo2', 1),
-('/storage/iqua/silla_rustica/Sillon.glb','Sillon', 1),
-('/storage/iqua/silla_rustica/Taco1.glb','Taco1', 1),
-('/storage/iqua/silla_rustica/Taco2.glb','Taco2', 1),
-('/storage/iqua/silla_rustica/Respaldo.glb','Respaldo', 1)
+('/storage/modelos_3D/iqua/silla_rustica/Brazo1.glb','Brazo1', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Brazo2.glb','Brazo2', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Pata1.glb','Pata1', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Pata2.glb','Pata2', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Refuerzo1.glb','Refuerzo1', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Refuerzo2.glb','Refuerzo2', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Sillon.glb','Sillon', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Taco1.glb','Taco1', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Taco2.glb','Taco2', 1),
+('/storage/modelos_3D/iqua/silla_rustica/Respaldo.glb','Respaldo', 1)
 
 
 ;
@@ -278,8 +278,7 @@ VALUES
     'medium',
     2,
     'Silla de estilo mid-century con tapizado en tono verde oliva, integrada en un ambiente cálido y natural que resalta su diseño elegante y funcional. La pieza se presenta colocada junto a la pared, creando un rincón acogedor y realista dentro del salón, ideal para zonas de lectura o descanso.', 
-    --'https://i.ibb.co/JwVpPh5M/silla1.png',
-    'https://i.postimg.cc/CxM7hhBx/silla1.png',
+    '/storage/fotos/silla_rustica.png',
     'https://skaply.ovh/home?furniture=VR232243',
     'pdf3',
     true,
@@ -287,7 +286,7 @@ VALUES
 ),
 -- SILLAS
 (
-    '/storage/muebles/sillas/silla_1.glb', 
+    '/storage/modelos_3D/muebles/sillas/silla_1.glb', 
     'Silla de madera redondeada',
     'VR22891',
     1,
@@ -295,14 +294,14 @@ VALUES
     'low',
     5,
     'Silla de madera de diseño moderno con acabado natural, respaldo curvo y reposabrazos integrados. Elegante, cómoda y resistente, ideal para comedor o espacios contemporáneos con estilo cálido.', 
-    'https://i.postimg.cc/1zqVCQq7/cover-chair.png',
+    '/storage/fotos/silla_1.png',
     'https://skaply.ovh/home?furniture=VR22891',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/sillas/silla_2.glb', 
+    '/storage/modelos_3D/muebles/sillas/silla_2.glb', 
     'Silla de madera azul',
     'VR2342',
     1,
@@ -310,14 +309,14 @@ VALUES
     'low',
     3,
     'Silla tapizada con diseño moderno y estampado artístico, patas de madera resistentes y asiento acolchado. Ideal para comedor o sala, aporta estilo, comodidad y un toque decorativo único al espacio.', 
-    'https://i.postimg.cc/SsrZs5Gn/silla-azul-sencilla-2.png',
+    '/storage/fotos/silla_2.png',
     'https://skaply.ovh/home?furniture=VR2342',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/sillas/silla_3.glb', 
+    '/storage/modelos_3D/muebles/sillas/silla_3.glb', 
     'Silla de oficina negra',
     'SO234234',
     1,
@@ -325,7 +324,7 @@ VALUES
     'medium',
     6,
     'Silla de oficina ergonómica con diseño moderno, tapizado en negro y estructura metálica. Giratoria, con ruedas y reposabrazos, ofrece comodidad y estilo profesional para espacios de trabajo.', 
-    'https://i.postimg.cc/9f1XBXmS/office-chair.png',
+    '/storage/fotos/silla_3.png',
     'https://skaply.ovh/home?furniture=SO234234',
     'pdf4',
     true,
@@ -333,7 +332,7 @@ VALUES
 ),
 -- ESTANTERIAS
 (
-    '/storage/muebles/estanterias/estanteria_1.glb', 
+    '/storage/modelos_3D/muebles/estanterias/estanteria_1.glb', 
     'Estantería light',
     'E234234',
     5,
@@ -341,14 +340,14 @@ VALUES
     'medium',
     7,
     'Estantería sencilla de 5 niveles con diseño moderno y compacto. Ideal para organizar libros y decoración, perfecta para integrarse en cualquier salón con estilo limpio y funcional.', 
-    'https://i.postimg.cc/j2dGqnLQ/estanteria-1.jpg',
+    '/storage/fotos/estanteria_1.jpeg',
     'https://skaply.ovh/home?furniture=E234234',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/estanterias/estanteria_2.glb', 
+    '/storage/modelos_3D/muebles/estanterias/estanteria_2.glb', 
     'Estantería alta asimétrica',
     'E234255242',
     5,
@@ -356,7 +355,7 @@ VALUES
     'medium',
     6,
     'Estantería moderna con estructura negra y baldas blancas. Diseño elegante y funcional, ideal para organizar y decorar espacios contemporáneos con estilo minimalista.', 
-    'https://i.postimg.cc/Hn61b4fq/estanteria-2.jpg',
+    '/storage/fotos/estanteria_2.jpeg',
     'https://skaply.ovh/home?furniture=E234255242',
     'pdf4',
     true,
@@ -364,7 +363,7 @@ VALUES
 ),
 -- MESAS
 (
-    '/storage/muebles/mesas/mesa_1.glb',
+    '/storage/modelos_3D/muebles/mesas/mesa_1.glb',
     'Mesa de mármol',
     'M232342',
     2,
@@ -372,14 +371,14 @@ VALUES
     'medium',
     7,
     'Mesa de mármol con diseño práctico y resistente, ideal para exterior, interior o eventos. Ligera, fácil de montar y perfecta para adaptarse a cualquier espacio del hogar.', 
-    'https://i.postimg.cc/sX8gRmNg/mesa-1b.png',
+    '/storage/fotos/mesa_1.png',
     'https://skaply.ovh/home?furniture=M232342',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/mesas/mesa_2.glb', 
+    '/storage/modelos_3D/muebles/mesas/mesa_2.glb', 
     'Mesa de pino',
     'M23232535',
     2,
@@ -387,14 +386,14 @@ VALUES
     'low',
     1,
     'Mesa de madera con patas metálicas grises, de diseño limpio y minimalista. Ideal para espacios de estilo japonés, aporta calma, funcionalidad y equilibrio al ambiente.', 
-    'https://i.postimg.cc/sXWMnbT5/mesa-2.jpg',
+    '/storage/fotos/mesa_2.jpeg',
     'https://skaply.ovh/home?furniture=M23232535',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/mesas/mesa_3.glb', 
+    '/storage/modelos_3D/muebles/mesas/mesa_3.glb', 
     'Mesa redonda auxiliar',
     'M232325245',
     2,
@@ -402,7 +401,7 @@ VALUES
     'low',
     1,
     'Mesa auxiliar redonda de estilo clásico con base decorativa. Ideal para salones elegantes, perfecta para aportar un toque sofisticado y funcional al espacio.', 
-    'https://i.postimg.cc/hv53SyFS/mesa-3.png',
+    '/storage/fotos/mesa_3.png',
     'https://skaply.ovh/home?furniture=M232325245',
     'pdf4',
     true,
@@ -410,7 +409,7 @@ VALUES
 ),
 -- SOFAS
 (
-    '/storage/muebles/sofas/sofa_1.glb', 
+    '/storage/modelos_3D/muebles/sofas/sofa_1.glb', 
     'Sofa amplio claro',
     'S34524525',
     3,
@@ -418,14 +417,14 @@ VALUES
     'medium',
     1,
     'Sofá de tres plazas con diseño minimalista y perfil bajo. Tapizado en beige claro con cojines amplios y mullidos. Líneas rectas, base discreta y estética contemporánea ideal para salones elegantes.', 
-    'https://i.postimg.cc/BZ1TyV84/sofa-1.jpg',
+    '/storage/fotos/sofa_1.jpeg',
     'https://skaply.ovh/home?furniture=S34524525',
     'pdf4',
     true,
     NOW()
 ),
 (
-    '/storage/muebles/sofas/sofa_2.glb', 
+    '/storage/modelos_3D/muebles/sofas/sofa_2.glb', 
     'Sofá moderno',
     'S3452544345',
     3,
@@ -433,7 +432,7 @@ VALUES
     'medium',
     4,
     'Sofá de diseño minimalista con estética nórdica. Destaca por su respaldo abierto y lineal, tapizado en tela gris jaspeada y patas de madera clara. Una pieza funcional, moderna y de aire ligero.', 
-    'https://i.postimg.cc/d066sHrc/sofa-2.png',
+    '/storage/fotos/sofa_2.png',
     'https://skaply.ovh/home?furniture=S3452544345',
     'pdf4',
     true,
