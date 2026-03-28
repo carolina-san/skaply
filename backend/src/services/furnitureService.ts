@@ -128,7 +128,8 @@ export class FurnitureService {
               cl.hex AS color_hex,
               f.difficulty,
               f.short_description,
-              f.visible
+              f.visible,
+              (SELECT COUNT(*) FROM Step s WHERE s.furniture_id = f.id) AS total_steps
           FROM public.furniture f
           LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
@@ -184,7 +185,8 @@ export class FurnitureService {
               cl.hex AS color_hex,
               f.difficulty,
               f.short_description,
-              f.visible
+              f.visible,
+              (SELECT COUNT(*) FROM Step s WHERE s.furniture_id = f.id) AS total_steps
           FROM public.furniture f
           LEFT JOIN Step s ON s.furniture_id = f.id
           INNER JOIN Category c ON f.category_id = c.id
@@ -426,7 +428,8 @@ export class FurnitureService {
             f.difficulty,
             f.short_description,
             f.visible,
-            f.created_at
+            f.created_at,
+            (SELECT COUNT(*) FROM Step s WHERE s.furniture_id = f.id) AS total_steps
         ${baseSql}`;
 
       if (order_by && order_dir) {
