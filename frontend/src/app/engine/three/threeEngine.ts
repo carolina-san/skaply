@@ -130,7 +130,7 @@ export class ThreeEngineAdapter extends EngineFacade {
     private targetLookAt = new THREE.Vector3();
     private isTransitioning = false;
     private transitionType: 'frame' | 'rotate' | null = null;
-    private lerpFactor = 0.07;
+    private lerpFactor = 0.04;
 
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
@@ -492,16 +492,44 @@ export class ThreeEngineAdapter extends EngineFacade {
     dispose(): void {
         this.renderer?.dispose();
         this.scene?.traverse((object: any) => {
-            if (object.geometry) object.geometry.dispose();
+            if (object.geometry) {
+                object.geometry.dispose();
+            }
             if (object.material) {
-                if (Array.isArray(object.material)) {
-                    object.material.forEach((material: any) => material.dispose());
-                } else {
-                    object.material.dispose();
-                }
+                const materials = Array.isArray(object.material) ? object.material : [object.material];
+                materials.forEach((material: any) => {
+                    material.dispose();
+                    for (const key in material) {
+                        if (material[key] && material[key].isTexture) {
+                            material[key].dispose();
+                        }
+                    }
+                });
             }
         });
+
+        // Clear GLTF cache to release references to cached models
+        this.gltfCache.forEach((obj) => {
+            obj.traverse((child: any) => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    const materials = Array.isArray(child.material) ? child.material : [child.material];
+                    materials.forEach((m: any) => {
+                        m.dispose();
+                        for (const key in m) {
+                            if (m[key] && m[key].isTexture) {
+                                m[key].dispose();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        this.gltfCache.clear();
+
         this.controls?.dispose();
+        this.composer?.dispose();
+        if (this.outlinePass) this.outlinePass.dispose();
     }
 
     frameObjectFromParts(

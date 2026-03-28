@@ -467,7 +467,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     private transitionTargetLookAt: Vector3 | null = null; // Hacia donde vamoh a mirar en la transición!
     private isTransitioning = false;  // Si hay una rotación en curso
     private transitionType: 'frame' | 'rotate' | null = null;
-    private transitionLerpFactor = 0.07;
+    private transitionLerpFactor = 0.04;
     private defaultCameraPosition: Vector3 | null = null;
     private defaultCameraTarget: Vector3 | null = null;
     private ready = false;
@@ -687,10 +687,26 @@ export class WebGLEngineAdapter extends EngineFacade {
     // DISPOSE
 
     dispose(): void {
-        if (this.cameraController) { this.cameraController.dispose(); }
-        this.wrappers.clear();
         this.ready = false;
-        // ...resto cleanup...
+
+        if (this.cameraController) {
+            this.cameraController.dispose();
+        }
+
+        this.resourceManager.dispose();
+        this.shader?.dispose();
+        this.outlineShader?.dispose();
+        this.outlinePass?.dispose();
+
+        if (this.gl) {
+            const extension = this.gl.getExtension('WEBGL_lose_context');
+            if (extension) {
+                extension.loseContext();
+            }
+        }
+
+        this.wrappers.clear();
+        this.highlightedNodes.clear();
     }
 
     // Helper para unir Bounds y crea una caja que las cubre todas
