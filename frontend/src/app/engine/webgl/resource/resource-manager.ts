@@ -9,7 +9,7 @@ export class ResourceManager {
 
         // if resource already exists, return it
         if (this.resources.has(name)) {
-            console.log(`Resource ${name} already exists`);
+            //console.log(`Resource ${name} already exists`);
             return this.resources.get(name)! as T;
         }
 

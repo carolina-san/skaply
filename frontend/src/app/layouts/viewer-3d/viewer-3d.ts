@@ -148,7 +148,7 @@ export class Viewer3D implements OnInit {
     if (this.currentRoute.includes('viewer-3d')) {
       this.apiService.resetAssembly().subscribe({
         next: (res) => {
-          console.log("Montaje finalizado:", res);
+          //console.log("Montaje finalizado:", res);
         },
         error: (err) => {
           console.error("Error finalizando montaje:", err);
