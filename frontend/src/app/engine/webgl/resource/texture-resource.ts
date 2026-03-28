@@ -84,4 +84,11 @@ export class TextureResource extends Resource {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 
+    public dispose(): void {
+        if (this.texture) {
+            this.gl.deleteTexture(this.texture);
+            this.texture = undefined;
+        }
+    }
+
 }

@@ -235,4 +235,12 @@ export class MeshResource extends Resource {
             : undefined;
     }
 
+    dispose(): void {
+        this.textures.forEach(texture => texture.dispose());
+        this.textures.clear();
+        this.meshes.forEach(mesh => mesh.dispose());
+        this.meshes = [];
+        this.namedMeshes = [];
+    }
+
 }

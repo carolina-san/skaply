@@ -17,6 +17,7 @@ export interface MeshResource {
 export class Mesh extends Entity {
 
     private vao?: WebGLVertexArrayObject;
+    private buffers: WebGLBuffer[] = [];
     private indexCount: number = 0;
     private initialized = false;
     private opacity: number = 1.0;
@@ -69,6 +70,7 @@ export class Mesh extends Entity {
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
+        this.buffers.push(vbo);
         return vbo;
     }
 
@@ -77,6 +79,7 @@ export class Mesh extends Entity {
         const ebo = gl.createBuffer()!; // EBO: Element Buffer Object
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        this.buffers.push(ebo);
         return ebo;
     }
 
@@ -115,6 +118,19 @@ export class Mesh extends Entity {
         gl.bindVertexArray(this.vao!);
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.bindVertexArray(null);
+    }
+
+    public dispose(): void {
+        const gl = this.gl;
+        if (this.vao) {
+            gl.deleteVertexArray(this.vao);
+            this.vao = undefined;
+        }
+        this.buffers.forEach(buffer => {
+            gl.deleteBuffer(buffer);
+        });
+        this.buffers = [];
+        this.initialized = false;
     }
 
 }

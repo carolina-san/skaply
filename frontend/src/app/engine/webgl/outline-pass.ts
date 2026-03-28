@@ -177,4 +177,22 @@ export class OutlinePass {
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
   }
+
+  public dispose(): void {
+    const gl = this.gl;
+    
+    gl.deleteFramebuffer(this.msFbo);
+    gl.deleteRenderbuffer(this.msColorBuffer);
+    gl.deleteRenderbuffer(this.msDepthBuffer);
+
+    gl.deleteFramebuffer(this.fbo);
+    gl.deleteTexture(this.texture);
+    
+    if (this.quadVao) {
+      gl.deleteVertexArray(this.quadVao);
+    }
+    
+    this.maskShader?.dispose();
+    this.edgeShader?.dispose();
+  }
 }

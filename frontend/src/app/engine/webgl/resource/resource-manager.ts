@@ -9,6 +9,7 @@ export class ResourceManager {
 
         // if resource already exists, return it
         if (this.resources.has(name)) {
+            console.log(`Resource ${name} already exists`);
             return this.resources.get(name)! as T;
         }
 
@@ -17,5 +18,14 @@ export class ResourceManager {
         await resource.loadFile(name);
         this.resources.set(name, resource);
         return resource;
+    }
+
+    dispose(): void {
+        this.resources.forEach(resource => {
+            if ((resource as any).dispose) {
+                (resource as any).dispose();
+            }
+        });
+        this.resources.clear();
     }
 }
