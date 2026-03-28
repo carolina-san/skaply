@@ -467,7 +467,7 @@ export class WebGLEngineAdapter extends EngineFacade {
     private transitionTargetLookAt: Vector3 | null = null; // Hacia donde vamoh a mirar en la transición!
     private isTransitioning = false;  // Si hay una rotación en curso
     private transitionType: 'frame' | 'rotate' | null = null;
-    private transitionLerpFactor = 0.04;
+    private transitionLerpFactor = 0.07;
     private defaultCameraPosition: Vector3 | null = null;
     private defaultCameraTarget: Vector3 | null = null;
     private ready = false;

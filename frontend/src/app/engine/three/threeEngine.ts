@@ -130,7 +130,7 @@ export class ThreeEngineAdapter extends EngineFacade {
     private targetLookAt = new THREE.Vector3();
     private isTransitioning = false;
     private transitionType: 'frame' | 'rotate' | null = null;
-    private lerpFactor = 0.04;
+    private lerpFactor = 0.07;
 
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
