@@ -5,15 +5,14 @@
     [visibleSteps]="visibleSteps()" [currentLogicalStep]="logicalStep()" [hasIsolatedPart]="isolatedPart() !== null"
     [isolatedPartName]="isolatedPart()?.name || ''" [isSimulating]="isSimulating()"
     [isManualComplete]="isManualComplete()" [stepDescriptions]="stepDescriptions()" [isWhiteBg]="isWhiteBg()"
-    [isSingleModel]="totalSteps() <= 1"
-    (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
+    [isSingleModel]="totalSteps() <= 1" (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
     (exitIsolationAction)="exitIsolation()">
   </app-graphics-header>
 
 
 
   <!-- Canvas Container-->
-  <div class=" relative h-full">
+  <div class="relative h-full" [ngClass]="isARActive() ? 'fixed inset-0 z-10' : 'relative h-full'">
     <app-ar-overlay [isSmallScreen]="isSmallScreen()" [mode]="mode()" [hasIsolatedPart]="isolatedPart() !== null"
       (arStateChange)="onArStateChange($event)"></app-ar-overlay>
 
@@ -52,10 +51,10 @@
     [lastCommand]="voiceControlService.lastCommand()" [isVoiceListening]="voiceControlService.isListening()"
     [isVoiceSupported]="voiceControlService.isSupported()" [isVoiceSoundActive]="voiceControlService.isSoundActive()"
     [micFlowState]="voiceControlService.micFlowState()" [isWhiteBg]="isWhiteBg()" [isLoading]="isLoading()"
-    (modeChange)="setMode($event)"
-    (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()" (nextStepAction)="nextStep()"
-    (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)" (finishAction)="openFinishModal()"
-    (toggleVoiceAction)="voiceControlService.toggle()" (toggleBgColorAction)="isWhiteBg.set(!isWhiteBg())"
+    (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
+    (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
+    (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()"
+    (toggleBgColorAction)="isWhiteBg.set(!isWhiteBg())"
     (proceedMicPermission)="voiceControlService.proceedWithMicPermission()"
     (cancelMicPermission)="voiceControlService.cancelMicPermission()"
     (closeMicDenied)="voiceControlService.closeMicDenied()"

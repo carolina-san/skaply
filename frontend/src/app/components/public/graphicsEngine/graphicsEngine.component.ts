@@ -461,6 +461,20 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   onArStateChange(isActive: boolean): void {
     this.isARActive.set(isActive);
     this.arStateChange.emit(isActive);
+
+    // El canvas-container cambia de tamaño (relative → fixed inset-0 o viceversa).
+    // Esperamos un frame para que el DOM se actualice antes de leer las nuevas dimensiones.
+    requestAnimationFrame(() => {
+      const canvas = this.canvasRef?.nativeElement;
+      if (!canvas) return;
+      const container = canvas.parentElement;
+      if (!container) return;
+      const { width, height } = container.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        this.engineService.resize(width, height);
+      }
+    });
+
     if (!isActive) {
       const shouldRotate = this.mode() === 'simulation' && !this.simulationService.isSimulationPaused();
       const engineFacade = this.engineService.getEngine();

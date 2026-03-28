@@ -23,6 +23,8 @@ app-root {
 html {
   min-height: 100dvh;
   scroll-behavior: smooth;
+  /* Bloquea el zoom por doble toque y pellizco en móvil */
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -33,6 +35,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  touch-action: pan-x pan-y;
 }
 
 h1,

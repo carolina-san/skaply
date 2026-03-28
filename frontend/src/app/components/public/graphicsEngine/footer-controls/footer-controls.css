@@ -111,3 +111,21 @@
     opacity: 0;
   }
 }
+
+.animate-arrow {
+  animation: animate-arrow 1s ease-in-out infinite;
+}
+
+@keyframes animate-arrow {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(5px) scale(1.05);
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}

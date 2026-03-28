@@ -25,6 +25,7 @@ export class FooterControls {
   isWhiteBg = input<boolean>(false);
   isLoading = input<boolean>(false);
 
+
   // Outputs
   modeChange = output<'manual' | 'simulation' | 'final'>();
   goToStepAction = output<number>();
