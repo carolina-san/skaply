@@ -107,8 +107,8 @@ export class CameraController {
     private readonly defaultTarget: vec3;
 
     // limits
-    private readonly minRadius = 1;
-    private readonly maxRadius = 10;
+    private readonly minRadius = 0.01;
+    private readonly maxRadius = 15;
 
     // epsilon to avoid gimbal lock at poles
     private static readonly PHI_EPSILON = 0.01;
@@ -234,7 +234,6 @@ export class CameraController {
         const computedRadius = Math.sqrt(dx * dx + dy * dy + dz * dz);
         this.radius = Math.min(this.maxRadius, Math.max(this.minRadius, computedRadius));
         const safeRadius = Math.max(this.radius, 0.00001); // avoid division by zero
-        this.radius = Math.max(0.001, Math.sqrt(dx * dx + dy * dy + dz * dz));
         this.theta = Math.atan2(dx, dz);
         this.phi = Math.acos(Math.max(-1, Math.min(1, dy / safeRadius)));
         this.phi = this.normalizePhi(this.phi); // avoid gimbal lock
@@ -322,7 +321,15 @@ export class CameraController {
     private _onContextMenu = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
     private _onTouchStart = (e: TouchEvent) => { if (this.assertInteraction()) this.onTouchStart(e); };
     private _onTouchMove = (e: TouchEvent) => { if (this.isDragging && this.assertInteraction()) this.onTouchMove(e); };
-    private _onTouchEnd = (e: TouchEvent) => { if (e.touches.length === 0) this.isDragging = false; };
+    private _onTouchEnd = (e: TouchEvent) => {
+        if (e.touches.length === 0) {
+            this.isDragging = false;
+        } else if (e.touches.length === 1) {
+            // recalibrate for single finger orbit to avoid jumping from previous midpoint/pair
+            this.lastTouchX = e.touches[0].clientX;
+            this.lastTouchY = e.touches[0].clientY;
+        }
+    };
 
     // add event listeners to canvas and window
     initListeners(): void {
@@ -411,7 +418,7 @@ export class CameraController {
             // compute center movement for panning
             const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            this.pan(cx - this.lastTouchX, cy - this.lastTouchY);
+            this.pan((cx - this.lastTouchX) * 0.8, (cy - this.lastTouchY) * 0.8);
             this.lastTouchX = cx;
             this.lastTouchY = cy;
 
@@ -419,7 +426,7 @@ export class CameraController {
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            this.zoom((this.lastTouchDist - dist) * 10); // scale for touch zoom
+            this.zoom((this.lastTouchDist - dist) * 2.0);
             this.lastTouchDist = dist;
         }
     }
@@ -480,7 +487,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         await this.outlinePass.init(this.canvas.width, this.canvas.height);
 
         // camera 
-        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.01, 100);
         this.cameraNode.setEntity(this.cameraEntity);
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
@@ -526,7 +533,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.canvas.style.height = height + 'px';
 
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.cameraEntity.setPerspective(45, width / height, 0.1, 100);
+        this.cameraEntity.setPerspective(45, width / height, 0.01, 100);
 
         this.outlinePass?.resize(this.canvas.width, this.canvas.height);
     }

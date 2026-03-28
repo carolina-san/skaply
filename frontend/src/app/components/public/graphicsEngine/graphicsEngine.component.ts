@@ -97,6 +97,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private chatbotSub?: Subscription;
   private isViewInitialized = false;
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
+  private triggerFrame = signal(0);
   private destroy$ = new Subject<void>();
 
   get modelAssembly(): any {
@@ -116,6 +117,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.isCameraMoved = this.interactionService.isUserManuallyMoved;
 
     effect(() => {
+      this.triggerFrame(); // Depend on triggerFrame
       const engine = this.engineService.getEngine();
       if (!engine) return;
 
@@ -125,10 +127,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       const lastRotAngle = this.lastRotationConfig.angle;
       const lastRotAxis = this.lastRotationConfig.axis;
 
-      console.log('stepIndex: ' + stepIndex);
-      console.log('mode: ' + mode);
-      console.log('lastRotAngle: ' + lastRotAngle);
-      console.log('lastRotAxis: ' + lastRotAxis);
+      // console.log('stepIndex: ' + stepIndex);
+      // console.log('mode: ' + mode);
+      // console.log('lastRotAngle: ' + lastRotAngle);
+      // console.log('lastRotAxis: ' + lastRotAxis);
+
+      let margin = 1.05;
+      if (this.isSmallScreen()) {
+        margin = 1.25;
+      }
 
       if (mode === 'final') {
         if (lastRotAngle !== null || lastRotAxis !== null) {
@@ -142,7 +149,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             this.parts.map(p => ({
               currentPosition: p.targetPosition,
               nativeObject: p.object
-            }))
+            })), margin
           );
         }
         return;
@@ -160,7 +167,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             .map(p => ({
               currentPosition: p.object.getPosition(),
               nativeObject: p.object
-            }))
+            })), margin
         );
         didFrame = true;
       }
@@ -321,6 +328,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
                 part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
               });
             }
+            this.lastFramedStep = -1;
+            this.triggerFrame.update(v => v + 1);
             if (!this.animationFrameId) this.animate();
           });
         }
@@ -402,6 +411,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     } else {
       engineFacade.setCameraProps(engineFacade.getCamera().position, { x: 0, y: 1, z: 0 });
     }
+    this.lastFramedStep = -1;
   }
 
   resetCameraPosition(): void {
@@ -509,6 +519,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             this.stepsData.set(sortedSteps);
             this.mode.set('manual');
             this.showFooterControls.set(true);
+            this.triggerFrame.update(v => v + 1);
             loaded = true;
           }
         }
@@ -518,7 +529,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
       if (!loaded && this.furniture && this.furniture.file_uri) {
         const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.loadSingleFurnitureModel(this.furniture);
-        
+
         this.furnitureRoot = furnitureRoot;
 
         if (parts.length > 0) {
@@ -528,6 +539,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           this.stepsData.set(sortedSteps);
           this.mode.set('final');
           this.showFooterControls.set(false);
+          this.triggerFrame.update(v => v + 1);
         }
       }
     } catch (error) {
@@ -576,8 +588,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       };
     }
     this.isolatedPart.set(part);
-    const pos = part.object.getPosition();
-    const closePos = { x: pos.x + 0.8, y: pos.y + 0.5, z: pos.z + 0.8 };
-    engineFacade.setCameraProps(closePos, { x: pos.x, y: pos.y, z: pos.z });
+    engineFacade.frameObjectFromParts([{
+      currentPosition: part.object.getPosition(),
+      nativeObject: part.object
+    }], 1.25);
   }
 }

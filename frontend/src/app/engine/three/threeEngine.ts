@@ -147,7 +147,8 @@ export class ThreeEngineAdapter extends EngineFacade {
         const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
         this.scene.add(hemisphereLight);
 
-        this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+        //this.camera = new THREE.PerspectiveCamera(45, width / height, 0.005, 1000);
+        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 100);
         // En móvil (pantalla pequeña), alejar más la cámara para que el mueble se vea más pequeño
         const isMobile = width < 768;
         const cameraDistance = isMobile ? 2.5 : 2;
@@ -161,9 +162,14 @@ export class ThreeEngineAdapter extends EngineFacade {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.1;
-        this.controls.minDistance = 0.5;
+        this.controls.minDistance = 0.01;
         this.controls.maxDistance = 15;
         this.controls.target.set(0, 1, 0);
+        if (isMobile) {
+            this.controls.rotateSpeed = 0.8;
+            this.controls.zoomSpeed = 0.8;
+            this.controls.panSpeed = 0.8;
+        }
         this.controls.saveState();
 
         this.controls.addEventListener('start', () => {
@@ -500,6 +506,69 @@ export class ThreeEngineAdapter extends EngineFacade {
 
     frameObjectFromParts(
         parts: { currentPosition: Vector3; nativeObject: any }[],
-        margin?: number
-    ): void { }
+        margin = 1.25
+    ): void {
+        if (!parts.length || !this.camera || !this.controls) return;
+
+        margin = 1.30; // ⚠️ NO ACEPTA BIEN EL DEL PARAMETRO
+
+        const box = new THREE.Box3();
+        let hasValidParts = false;
+
+        for (const part of parts) {
+            const wrapper = part.nativeObject as ThreeRenderableObject;
+            const obj = wrapper.nativeObject;
+
+            // Compute the bounding box of the object
+            const partBox = new THREE.Box3().setFromObject(obj);
+            if (partBox.isEmpty()) continue;
+
+            // Apply current position (if it's different from the object's current position)
+            // Note: in Three.js, the object might already be at part.currentPosition, 
+            // but we use the provided currentPosition to be safe and consistent with the API.
+            const offset = new THREE.Vector3(
+                part.currentPosition.x - obj.position.x,
+                part.currentPosition.y - obj.position.y,
+                part.currentPosition.z - obj.position.z
+            );
+            partBox.translate(offset);
+
+            box.union(partBox);
+            hasValidParts = true;
+        }
+
+        if (!hasValidParts) return;
+
+        // Calculate center and size
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+
+        // Calculate bounding sphere radius
+        const radius = size.length() * 0.5 * margin;
+
+        // Calculate distance based on FOV
+        const fov = this.camera.fov * (Math.PI / 180);
+        const distance = radius / Math.tan(fov / 2);
+
+        // Current camera direction
+        const direction = new THREE.Vector3().subVectors(this.camera.position, this.controls.target).normalize();
+
+        // Target camera position
+        const newPos = center.clone().add(direction.multiplyScalar(distance));
+
+        // Set transition targets
+        this.targetPosition.copy(newPos);
+        this.targetLookAt.copy(center);
+        this.isTransitioning = true;
+        this.transitionType = 'frame';
+
+        // Update defaults for reset
+        const c: any = this.controls;
+        if (c.position0 && c.target0) {
+            c.position0.copy(this.targetPosition);
+            c.target0.copy(this.targetLookAt);
+        }
+    }
 }
