@@ -198,7 +198,6 @@ export class Home implements OnInit {
         this.averageRating = totalStars / this.reviewCount;
       },
       error: () => {
-        // El backend devuelve 404 cuando no hay reseñas; en ambos casos mostramos estado "sin valoraciones".
         this.averageRating = null;
         this.reviewCount = 0;
         this.furnitureReviews = [];

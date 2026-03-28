@@ -195,8 +195,9 @@ export class FurnitureController {
 
       const assemblyData = await this.furnitureService.getFurnitureAssembly(furnitureId);
 
+      // Si el mueble no tiene montaje, devolvemos 200 indicándolo (no es un error)
       if (!assemblyData) {
-        next(new ApiError('NOT_FOUND', 'Furniture assembly not found'));
+        res.status(200).json({ hasAssembly: false, steps: [] });
         return;
       }
 

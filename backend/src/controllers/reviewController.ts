@@ -30,11 +30,7 @@ export class ReviewController {
             }
             const result = await this.reviewService.getFurnitureReviews(id);
 
-            if (result.length === 0) {
-                next(new ApiError('NOT_FOUND', 'No reviews found for this furniture'));
-                return;
-            }
-
+            // Si no hay reseñas, devolvemos 200 con array vacío (no es un error)
             res.status(200).json({
                 data: result
             });
