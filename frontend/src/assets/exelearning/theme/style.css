@@ -1,19 +1,29 @@
-/* Default style (to review) */
+/* Skäply Custom Style for ExeLearning */
+@import "../../../styles.css";
+
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
 
 body.exe-export {
     padding: 1em 0;
+    background-color: var(--color-beige);
 }
 
 body.exe-web-site {
     padding: 0;
+    background-color: var(--color-beige);
 }
 
 .exe-content a {
-    color: #94adba;
+    color: var(--azul-claro);
+    transition: color 0.3s;
 }
+
 .exe-content a:hover,
 .exe-content a:focus {
-    color: #94adba;
+    color: var(--color-marron-oscuro);
 }
 
 #node-content-container.exe-content #node-content {
@@ -25,8 +35,8 @@ body.exe-web-site {
 }
 
 .exe-content {
-    color: #333;
-    background-color: #fff;
+    color: var(--color-marron-oscuro);
+    background-color: var(--color-beige);
 }
 
 .js .exe-export .exe-content {
@@ -39,19 +49,21 @@ body.exe-web-site {
 
 .exe-content .package-title {
     font-size: 1.25rem;
-    font-weight: 300;
+    font-weight: bold;
+    color: var(--color-marron-oscuro);
 }
 
 .exe-content .page-title {
-    color: #94adba;
-    font-size: 1.7rem;
+    color: var(--color-marron-secundario);
+    font-size: 1.9rem;
     text-align: left;
+    font-weight: bold;
 }
 
 .exe-single-page .package-header h1 {
-    color: #333;
-    font-size: 1.25rem;
-    font-weight: 300;
+    color: var(--color-marron-oscuro);
+    font-size: 1.5rem;
+    font-weight: bold;
     text-align: left;
     margin-bottom: 2em;
 }
@@ -62,16 +74,19 @@ body.exe-web-site {
 
 .exe-single-page .package-subtitle {
     top: -2.1em;
+    color: var(--color-marron-oscuro);
 }
 
-.exe-single-page main.page > section {
+.exe-single-page main.page>section {
     min-height: 4em;
 }
 
+/* Boxes inside content */
 .exe-content .box {
     margin: 20px 0;
     border: none;
-    background-color: #fff;
+    background-color: var(--color-beige);
+    border-radius: 12px;
 }
 
 .exe-web-site .exe-content .box {
@@ -83,8 +98,10 @@ body.exe-web-site {
 }
 
 #node-content-container.exe-content .box {
-    border: 1px dotted #ddd;
+    border: 1px solid var(--color-beige-oscuro);
+    padding: 10px;
 }
+
 #node-content-container.exe-content .box.hidden-idevices {
     border-style: solid;
 }
@@ -94,8 +111,9 @@ body.exe-web-site {
 }
 
 .exe-content .box-title {
-    color: #452621;
+    color: var(--color-marron-oscuro);
     font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .exe-content .box-head .exe-icon {
@@ -104,7 +122,7 @@ body.exe-web-site {
 
 .exe-web-site .page-content,
 #exe-client-search,
-.exe-web-site main > header,
+.exe-web-site main>header,
 .exe-web-site #siteFooterContent,
 .exe-export .exe-content {
     max-width: 1280px;
@@ -120,59 +138,71 @@ body.exe-web-site {
 .exe-export main {
     padding-top: 1.5em;
 }
+
 .exe-web-site main {
     padding-top: 4.5em;
 }
 
-/* siteNav */
+/* siteNav - Changed to marron-oscuro */
 #siteNav {
     float: left;
-    background: #f6f6f6;
-    _border-right: 1px solid #f0f0f0;
+    background: var(--color-marron-oscuro);
     width: 300px;
     padding-top: 66px;
     padding-left: 8px;
+    padding-right: 8px;
+    min-height: 100vh;
 }
+
 .exe-web-site .exe-content {
-    box-shadow: 
-        inset 300px 0 0 0 #f6f6f6,
-        inset 301px 0 0 0 #f0f0f0;
+    box-shadow:
+        inset 300px 0 0 0 var(--color-marron-oscuro),
+        inset 301px 0 0 0 var(--color-marron-oscuro);
 }
+
 #siteFooter {
     margin-bottom: 2em;
-    color: #555;
+    color: var(--color-beige-oscuro);
     font-size: 0.95em;
 }
+
 #siteNav .other-section {
     display: none;
 }
+
 #sidebar-nav.fixed {
     position: fixed;
 }
+
 body.siteNav-off #siteNav {
     display: none;
 }
+
 body.siteNav-off .exe-content {
     box-shadow: none;
 }
+
 .exe-web-site main.page {
     padding-top: 4.5em;
     padding-left: 320px;
     padding-right: 20px;
-    /* min-height: calc(100vh - 300px); */
 }
+
 .exe-web-site #siteFooter {
-    padding:  20px 20px 20px 320px;
+    padding: 20px 20px 20px 320px;
 }
+
 body.siteNav-off main.page,
 body.siteNav-off #siteFooter {
     padding-left: 20px;
 }
+
 #siteNav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
+
 #siteNav ul ul {
     margin-top: 5px;
 }
@@ -184,32 +214,35 @@ body.siteNav-off #siteFooter {
 }
 
 #siteNav a {
-    color: #000;
+    color: var(--color-beige);
     display: block;
     padding: 8px 15px;
     border-radius: 8px;
     max-width: 280px;
-    transition: background-color 0.5s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 500;
 }
 
 #siteNav a.active {
-    background: #fff;
-    color: #94adba;
+    background: var(--color-azul-claro);
+    color: var(--color-marron-oscuro);
+    font-weight: bold;
 }
 
 #siteNav a.highlighted-link {
-    color: #94adba;
-    background: #ededed;
+    color: var(--color-marron-oscuro);
+    background: var(--color-beige-oscuro);
 }
 
 #siteNav a.highlighted-link:hover,
 #siteNav a.highlighted-link:focus {
-    background: #fff;
+    background: var(--color-beige);
 }
 
 #siteNav a:hover {
-    background: #f2f2f2;
+    background: var(--color-beige-oscuro);
     text-decoration: none;
+    color: #fff;
 }
 
 #siteNav ul ul a {
@@ -225,6 +258,7 @@ body.siteNav-off #siteFooter {
 #siteNav ul ul ul ul a {
     padding-left: 75px;
 }
+
 /* pagination */
 .nav-buttons .nav-button,
 button.toggler {
@@ -234,23 +268,28 @@ button.toggler {
     display: block;
     width: 40px;
     height: 40px;
-    background: #94adba url(img/icons.png) no-repeat 0 0;
+    background: var(--color-azul-claro) url(img/icons.png) no-repeat 0 0;
     background-size: auto 40px;
     border-radius: 50%;
     z-index: 999;
     border: 0;
     transition: background-color 0.5s ease;
+    cursor: pointer;
 }
+
 .nav-buttons span.nav-button {
     cursor: not-allowed;
-    background-color: #b7b7b7;
+    background-color: var(--color-beige-oscuro);
 }
+
 .nav-buttons .nav-button-left {
     background-position: -80px 0;
 }
+
 .nav-buttons .nav-button-right {
     background-position: -120px 0;
 }
+
 button#searchBarTogger {
     background-position: -40px 0;
     display: none;
@@ -263,44 +302,53 @@ button#searchBarTogger {
 button#siteNavToggler {
     left: 280px;
 }
+
 button#searchBarTogger {
     left: 330px;
 }
+
 body.siteNav-off button#siteNavToggler {
     left: 65px;
 }
+
 body.siteNav-off button#searchBarTogger {
     left: 115px;
 }
+
 .nav-buttons a:hover,
 .nav-buttons a:focus,
 button.toggler:hover,
 button.toggler:focus {
-    background-color: #94adba;
-    border-color: #94adba;
+    background-color: var(--color-beige-oscuro);
+    border-color: var(--color-beige-oscuro);
 }
+
 .nav-buttons .nav-button span,
 .box-toggle span,
 #exe-client-search-reset span,
 #packageLicense .license-label {
     position: absolute;
-    clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+    clip: rect(1px 1px 1px 1px);
     clip: rect(1px, 1px, 1px, 1px);
 }
+
 .package-subtitle {
     font-size: .95em;
-    color: #666;
+    color: var(--color-beige-oscuro);
     position: relative;
     top: -.15em;
 }
+
 .nav-buttons .nav-button-right {
     left: auto;
     right: 15px;
 }
+
 /* Box toggler */
 .exe-export .box {
     position: relative;
 }
+
 .exe-export .box-toggle {
     width: 40px;
     height: 40px;
@@ -313,6 +361,7 @@ button.toggler:focus {
     right: 0;
     opacity: 0.6;
 }
+
 .exe-export .box-head:hover .box-toggle,
 .exe-export .box-toggle:focus {
     opacity: 1;
@@ -352,19 +401,20 @@ button.toggler:focus {
 }
 
 .exe-export .box.minimized .box-head {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--color-beige-oscuro);
 }
 
 .exe-export .box.no-header.minimized .box-head {
-    border-color: #fff;
+    border-color: var(--color-beige);
 }
 
 .exe-export .box .box-content {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    background: var(--color-beige);
+    border: 1px solid var(--color-beige-oscuro);
     padding: 20px;
     border-radius: 8px;
     overflow: auto;
+    color: var(--color-marron-oscuro);
 }
 
 .exe-export .box.no-header .box-content {
@@ -372,25 +422,35 @@ button.toggler:focus {
     border: none;
     padding: 20px 0;
 }
+
 /* Search bar */
 #exe-client-search {
     display: none;
     margin-bottom: 30px;
 }
+
 #exe-client-search-text {
     max-width: 80%;
     max-width: calc(100% - 90px);
     display: inline;
+    border-color: var(--color-beige-oscuro);
+    background-color: var(--color-beige);
+    color: var(--color-marron-oscuro);
+    padding: 8px;
+    border-radius: 4px;
 }
+
 #exe-client-search-submit {
     text-indent: -999em;
-    background: #94adba url(img/icons.png) no-repeat -41px -1px;
+    background: var(--color-azul-claro) url(img/icons.png) no-repeat -41px -1px;
     background-size: auto 40px;
     width: 38px;
     height: 38px;
     border: none;
     border-radius: 4px;
+    cursor: pointer;
 }
+
 #exe-client-search-reset.visible {
     background: url(img/icons.png) no-repeat -242px -1px;
     background-size: auto 40px;
@@ -404,23 +464,28 @@ button.toggler:focus {
     opacity: 0.6;
     border-radius: 4px;
 }
+
 #exe-client-search-reset:hover,
 #exe-client-search-reset:focus {
     opacity: 1;
 }
+
 #exe-client-search-submit:hover,
 #exe-client-search-submit:focus {
-    background-color: #94adba;
+    background-color: var(--color-beige-oscuro);
 }
+
 #exe-client-search-results-list ul,
 #exe-client-search-results-list li {
     margin: 2em 0;
     padding: 0;
     list-style: none;
 }
+
 #exe-client-search-results-list li {
     margin: 0 0 1em 0;
 }
+
 #exe-client-search-results-list p {
     margin-top: 2em;
 }
@@ -429,17 +494,19 @@ button.toggler:focus {
 #packageLicense {
     text-align: left;
     font-size: 0.9em;
-    color: #555;
+    color: var(--color-beige-oscuro);
     line-height: 1em;
     margin: 2.5em 0 2em 0;
     border: 1px solid transparent;
     border-radius: 2px;
 }
+
 #packageLicense p {
     margin: 0;
 }
+
 #packageLicense a {
-    color: #666;
+    color: var(--color-marron-oscuro);
     text-transform: capitalize;
     display: inline-block;
     white-space: nowrap;
@@ -448,36 +515,45 @@ button.toggler:focus {
     overflow: hidden;
     line-height: 15px;
 }
+
 #packageLicense a:hover,
 #packageLicense a:focus {
     text-decoration: none;
-    color: #94adba;
+    color: var(--color-azul-claro);
 }
+
 #packageLicense.propietary {
     position: absolute;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     height: 0;
 }
+
 #packageLicense.cc {
     padding: 0 20px 0 90px;
     background: url(img/licenses.gif) no-repeat 0 0;
 }
+
 #packageLicense.cc-by-sa {
     background-position: 0 -100px;
 }
+
 #packageLicensea.cc-by-nd {
     background-position: 0 -200px;
 }
+
 #packageLicense.cc-by-nc {
     background-position: 0 -300px;
 }
+
 #packageLicense.cc-by-nc-sa {
     background-position: 0 -400px;
 }
+
 #packageLicense.cc-by-nc-nd {
     background-position: 0 -500px;
 }
+
 #packageLicense.cc-0 {
     background-position: 0 -600px;
 }
@@ -485,20 +561,24 @@ button.toggler:focus {
 /* iDevice buttons */
 .exe-content .iDevice_buttons input,
 .exe-content .iDevice_buttons button {
-    background: #fff;
-    color: #555;
-    border: 1px solid #ccc;
-    padding: 4px 10px;
-    border-radius: 4px;
-    transition: 0.5s ease;
+    background: var(--color-marron-oscuro);
+    color: #EAE0D5;
+    border: 1px solid var(--color-marron-oscuro);
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: 0.3s ease;
+    font-weight: bold;
+    cursor: pointer;
 }
+
 .exe-content .iDevice_buttons input:hover,
 .exe-content .iDevice_buttons input:focus,
 .exe-content .iDevice_buttons button:hover,
 .exe-content .iDevice_buttons button:focus {
-    box-shadow: 2px 2px 4px #dbdbdb;
-    color: #000;
-    border-color: #bbb;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+    background-color: var(--color-beige-oscuro);
+    border-color: var(--color-beige-oscuro);
+    color: #fff;
 }
 
 /* Page counter */
@@ -507,19 +587,21 @@ button.toggler:focus {
     float: right;
     margin: 0 0 0.5em 20px;
     font-size: 0.9em;
-    color: #777;
-    font-weight: 300;
+    color: var(--color-beige-oscuro);
+    font-weight: bold;
 }
+
 .page-counter .page-counter-sep {
     margin: 0 0.1em;
 }
+
 .exe-web-site .page-counter {
     position: fixed;
     top: 18px;
     right: 70px;
     margin: 0;
     font-size: 0.9em;
-    color: #777;
+    color: var(--color-beige-oscuro);
     padding: 0 8px;
     border-radius: 4px;
     text-align: left;
@@ -530,28 +612,50 @@ button.toggler:focus {
     float: right;
     margin: 0 0 0 1em;
 }
+
 #teacher-mode-toggler.form-check-input:checked {
-    background-color: #94adba;
-    border-color: #94adba;
+    background-color: var(--color-azul-claro);
+    border-color: var(--color-azul-claro);
     font-size: 0.9em;
     margin-right: 0.6em;
 }
+
 label[for="teacher-mode-toggler"] {
     font-size: 0.9em;
-    color: #777;
+    color: var(--color-beige-oscuro);
     position: relative;
     top: -0.2em;
 }
 
 /* Bootstrap buttons */
 .exe-content .btn-primary {
-    background-color: #94adba;
-    border-color: #94adba;
+    background-color: var(--color-azul-claro);
+    border-color: var(--color-azul-claro);
+    color: var(--color-marron-oscuro);
+    font-weight: bold;
+    border-radius: 8px;
 }
+
 .exe-content .btn-primary:hover,
 .exe-content .btn-primary:focus {
-    background-color: #94adba;
-    border-color: #94adba;
+    background-color: var(--color-beige-oscuro);
+    border-color: var(--color-beige-oscuro);
+    color: #fff;
+}
+
+/* Tables and generic elements inside exelearning content */
+.exe-content table {
+    border-color: var(--color-beige-oscuro) !important;
+}
+
+.exe-content th {
+    background-color: var(--color-beige-oscuro) !important;
+    color: var(--color-beige) !important;
+}
+
+.exe-content td {
+    background-color: var(--color-beige) !important;
+    border-color: var(--color-beige-oscuro) !important;
 }
 
 /* Responsive design */
@@ -559,20 +663,25 @@ label[for="teacher-mode-toggler"] {
     #siteNav {
         width: 251px;
     }
+
     .exe-web-site .exe-content {
-        box-shadow: 
-            inset 251px 0 0 0 #f6f6f6,
-            inset 252px 0 0 0 #f0f0f0;
+        box-shadow:
+            inset 251px 0 0 0 var(--color-marron-oscuro),
+            inset 252px 0 0 0 var(--color-marron-oscuro);
     }
+
     #siteNav a {
         max-width: 235px;
     }
+
     button#siteNavToggler {
         left: 232px;
     }
+
     button#searchBarTogger {
         left: 282px;
     }
+
     .exe-web-site main.page,
     .exe-web-site #siteFooter {
         padding-left: 270px;
@@ -587,80 +696,96 @@ label[for="teacher-mode-toggler"] {
         min-height: 0 !important;
         height: auto !important;
     }
+
     .exe-web-site .exe-content {
         box-shadow: none;
     }
+
     body.exe-web-site main.page {
         padding-top: 2.5em;
         padding-left: 0;
     }
+
     body.exe-web-site #siteFooter {
         padding-left: 0;
     }
+
     .exe-web-site.siteNav-off main.page {
         padding-top: 5.5em;
     }
+
     .nav-buttons .nav-button,
     button.toggler {
         position: absolute;
     }
+
     #siteNav a {
         max-width: 100%;
     }
+
     #sidebar-nav.fixed {
         position: relative;
     }
+
     button#siteNavToggler {
         left: 65px;
     }
+
     button#searchBarTogger {
         left: 115px;
     }
+
     .exe-web-site .page-counter {
         background: none;
         position: absolute;
     }
+
     .exe-web-site .page-counter .page-counter-label {
         position: absolute;
-        clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+        clip: rect(1px 1px 1px 1px);
+        /* IE6, IE7 */
         clip: rect(1px, 1px, 1px, 1px);
     }
 }
 
 @media print {
+
     /* Node in new page: section.package-node{page-break-after:always} */
     html body.exe-export {
         background: #fff;
     }
+
     .exe-content {
         color: #000;
         padding: 0;
     }
+
     @page {
         margin: 1.5cm;
     }
-    /* Uncomment this to print URL after links:
-    a{font-weight:bolder;text-decoration:none!important}
-    a[href^=http]:after{content:" <" attr(href) "> "}
-    */
+
     #packageLicense.cc {
         background: none;
         padding-left: 0;
     }
+
     .exe-export .box-toggle {
         display: none;
     }
+
     /* Website */
     .exe-web-site #siteNav,
     .exe-web-site .nav-buttons,
     .exe-web-site button.toggler {
         display: none;
     }
+
     .exe-web-site #siteFooter,
     .exe-web-site main.page {
         padding-left: 0;
         padding-right: 0;
     }
+
     .exe-web-site main.page {
         padding-top: 1em;
     }
