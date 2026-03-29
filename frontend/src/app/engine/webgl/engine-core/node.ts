@@ -211,7 +211,7 @@ export class Node {
         this.needsUpdate = true;
     }
 
-    // ⚠️ PRUEBA (FUNCIONA, PERO DARLE UNA VUELTA AL TEMA DEL NOMBRE
+    // GET NODE BY NAME
 
     getNodeByName(name: string): Node | null {
         if (this.name === name) return this;
@@ -220,5 +220,16 @@ export class Node {
             if (found) return found;
         }
         return null;
+    }
+
+    // TRAVERSAL WITH ENTITY CALLBACK
+
+    traverseEntities(callback: (entity: Entity) => void): void {
+        if (this.entity) {
+            callback(this.entity);
+        }
+        for (const child of this.children) {
+            child.traverseEntities(callback);
+        }
     }
 }

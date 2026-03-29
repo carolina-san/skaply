@@ -10,6 +10,7 @@ export class OutlinePass {
   private fbo!: WebGLFramebuffer;
   private texture!: WebGLTexture;
   private quadVao!: WebGLVertexArrayObject;
+  private quadVbo!: WebGLBuffer;
   private maskShader!: ShaderResource;
   private edgeShader!: ShaderResource;
   private width: number = 0;
@@ -28,14 +29,19 @@ export class OutlinePass {
   resize(width: number, height: number): void {
     this.width = width;
     this.height = height;
-    // Recrear framebuffer con nuevo tamaño
+    
     this.gl.deleteFramebuffer(this.msFbo);
     this.gl.deleteRenderbuffer(this.msColorBuffer);
     this.gl.deleteRenderbuffer(this.msDepthBuffer);
 
     this.gl.deleteFramebuffer(this.fbo);
     this.gl.deleteTexture(this.texture);
+    
+    if (this.quadVao) {this.gl.deleteVertexArray(this.quadVao);}
+    if (this.quadVbo) {this.gl.deleteBuffer(this.quadVbo);}
+    
     this.createFramebuffer(width, height);
+    this.createQuad();
   }
 
   private createFramebuffer(width: number, height: number): void {
@@ -90,6 +96,7 @@ export class OutlinePass {
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
     this.quadVao = vao;
+    this.quadVbo = vbo;
   }
 
   private async createShaders(): Promise<void> {
@@ -168,7 +175,7 @@ export class OutlinePass {
     const errBefore = gl.getError();
     // console.log('GL error before draw:', errBefore);
     
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // ← OJO: el orden era (mode, first, count) — antes tenías (gl.TRIANGLE_STRIP, 4, 0) que está MAL
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); 
     
     const errAfter = gl.getError();
     // console.log('GL error after draw:', errAfter);
@@ -188,9 +195,8 @@ export class OutlinePass {
     gl.deleteFramebuffer(this.fbo);
     gl.deleteTexture(this.texture);
     
-    if (this.quadVao) {
-      gl.deleteVertexArray(this.quadVao);
-    }
+    if (this.quadVao) {gl.deleteVertexArray(this.quadVao);}
+    if (this.quadVbo) {gl.deleteBuffer(this.quadVbo);}
     
     this.maskShader?.dispose();
     this.edgeShader?.dispose();
