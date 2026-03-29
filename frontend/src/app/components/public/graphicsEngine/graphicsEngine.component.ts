@@ -99,6 +99,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private preIsolationCameraState: { position: Vector3, target: Vector3 } | null = null;
   private triggerFrame = signal(0);
   private destroy$ = new Subject<void>();
+  private destroyed = false;
+  private loadingAbortController: AbortController | null = null;
 
   get modelAssembly(): any {
     return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id));
@@ -207,22 +209,25 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.apiService.getFurnitureById(ref)
       .pipe(takeUntil(this.destroy$))
       .subscribe(async (f: any) => {
+        if (this.destroyed) return;
 
         this.furniture = f.data ? f.data : f;
 
         if (this.useExternalModel && this.isViewInitialized) {
+          try {
+            await this.initEngine();
+            if (this.destroyed) return;
 
-          await this.initEngine();
+            await this.createFurniture();
+            if (this.destroyed) return;
 
-          const furnitureData = await this.furnitureService.loadFurniture(String(ref));
-          this.furnitureRoot = furnitureData.furnitureRoot;
-          this.parts = furnitureData.parts;
-          this.totalSteps.set(furnitureData.totalSteps);
-          this.stepDescriptions.set(furnitureData.stepDescriptions);
-          this.stepsData.set(furnitureData.sortedSteps);
-          this.isLoading.set(false);
+            this.isLoading.set(false);
 
-          if (!this.animationFrameId) this.animate();
+            if (!this.animationFrameId) this.animate();
+          } catch (error) {
+            console.error('Error loading furniture in ngOnInit:', error);
+            if (!this.destroyed) this.isLoading.set(false);
+          }
         } else if (!this.useExternalModel) {
           this.isLoading.set(false);
         }
@@ -261,18 +266,25 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     window.addEventListener('resize', this.boundScreenResize);
 
     this.resizeObserver = new ResizeObserver(entries => {
+      if (this.destroyed) return;
       const entry = entries[0];
       if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-        this.initEngine().then(() => {
+        this.initEngine().then(async () => {
+          if (this.destroyed) return;
           this.setupEventListeners();
           this.isViewInitialized = true;
 
           if (this.useExternalModel) {
             if (this.furniture) {
-              this.createFurniture().then(() => {
+              try {
+                await this.createFurniture();
+                if (this.destroyed) return;
                 this.isLoading.set(false);
                 this.animate();
-              });
+              } catch (error) {
+                console.error('Error loading furniture in ngAfterViewInit:', error);
+                if (!this.destroyed) this.isLoading.set(false);
+              }
             }
           } else {
             this.isLoading.set(false);
@@ -286,8 +298,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.boundScreenResize);
@@ -301,6 +316,11 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     }
     this.destroy$.next();
     this.destroy$.complete();
+
+    // Clean up references before disposing engine
+    this.parts = [];
+    this.furnitureRoot = null;
+
     this.engineService.dispose();
   }
 
@@ -516,13 +536,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   private async createFurniture(): Promise<void> {
     try {
+      if (this.destroyed) return;
       const furnitureId = Number(this.furniture?.id);
       let loaded = false;
       try {
         const assemblyData: any = await firstValueFrom(this.apiService.getFurnitureAssemblyById(furnitureId));
+        if (this.destroyed) return;
 
         if (assemblyData && assemblyData.steps && assemblyData.steps.length > 0) {
           const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.createPartsFromApi(assemblyData);
+          if (this.destroyed) return;
 
           this.furnitureRoot = furnitureRoot;
 
@@ -538,11 +561,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
           }
         }
       } catch (error) {
+        if (this.destroyed) return;
         console.warn('Could not load or parse assembly steps from API, trying alternatives.', error);
       }
 
-      if (!loaded && this.furniture && this.furniture.file_uri) {
+      if (!loaded && !this.destroyed && this.furniture && this.furniture.file_uri) {
         const { parts, totalSteps, stepDescriptions, sortedSteps, furnitureRoot } = await this.furnitureService.loadSingleFurnitureModel(this.furniture);
+        if (this.destroyed) return;
 
         this.furnitureRoot = furnitureRoot;
 
@@ -564,6 +589,10 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   // START OF ANIMATE FUNCTIONS
 
   private animate(): void {
+    if (this.destroyed) {
+      this.animationFrameId = null;
+      return;
+    }
     this.animationFrameId = requestAnimationFrame(() => this.animate());
 
     if (this.isSimulating()) {

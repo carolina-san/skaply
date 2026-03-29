@@ -19,7 +19,7 @@
 
 /* ── Botón de micrófono (control de voz) ── */
 .voice-btn {
-  @apply flex absolute h-10 w-auto min-w-10 max-w-10 px-0 bg-beige rounded-full duration-300 items-center justify-center right-15 bottom-14 md:right-0 md:bottom-1 overflow-hidden transition-all whitespace-nowrap;
+  @apply flex absolute h-10 w-auto min-w-10 max-w-10 px-0 bg-beige rounded-full duration-300 items-center justify-center right-15 bottom-14 md:right-12 md:bottom-1 overflow-hidden transition-all whitespace-nowrap;
 }
 
 .voice-btn.has-command {

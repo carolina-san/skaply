@@ -150,7 +150,7 @@
   </div>
   <!-- Background Toggle Button -->
   <button (click)="toggleBgColorAction.emit()"
-    class="absolute right-15 bottom-26 md:right-0 md:bottom-14 flex w-10 h-10 justify-center bg-beige text-marron-oscuro items-center rounded-full transition-all duration-200 transform z-50 shadow-lg hover:bg-azul-claro"
+    class="absolute right-2.5 bottom-27 md:right-0 md:bottom-1 flex w-10 h-10 justify-center bg-beige text-marron-oscuro items-center rounded-full transition-all duration-200 transform z-50 shadow-lg hover:bg-azul-claro"
     [ngClass]="isWhiteBg() ? ' border border-marron-oscuro' : 'border-none'"
     [title]="isWhiteBg() ? 'Fondo transparente' : 'Fondo blanco'" [class.opacity-60]="hasIsolatedPart() || isLoading()"
     [class.pointer-events-none]="hasIsolatedPart() || isLoading()">
