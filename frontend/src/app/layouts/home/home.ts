@@ -77,13 +77,17 @@ export class Home implements OnInit, OnDestroy {
     this.loadProviders();
     this.loadColors();
 
-    // Verificar si hay un mueble en la URL para abrir su modal automáticamente
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const furnitureRef = params['furniture'];
-      if (furnitureRef) {
-        this.openFurnitureModalByRef(furnitureRef);
-      }
-    });
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const furnitureRef = params['furniture'];
+
+        if (furnitureRef) {
+          setTimeout(() => {
+            this.openFurnitureModalByRef(furnitureRef);
+          }, 500);
+        }
+      });
 
     // Suscribirse a los cambios de categoría desde el chatbot
     this.filterSharingService.selectedCategory$.pipe(takeUntil(this.destroy$)).subscribe(categoryId => {
