@@ -80,15 +80,14 @@ export class Home implements OnInit, OnDestroy {
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
-        const furnitureRef = params['furniture'];
+        let furnitureRef = params['furniture'];
 
         if (furnitureRef) {
-          const checkLoaded = setInterval(() => {
-            if (!this.isLoadingFurnitures) {
-              clearInterval(checkLoaded);
-              this.openFurnitureModalByRef(furnitureRef);
-            }
-          }, 100);
+          furnitureRef = furnitureRef.trim().replace(/[^A-Z0-9]/g, '');
+
+          console.log('Ref limpia:', furnitureRef);
+
+          this.openFurnitureModalByRef(furnitureRef);
         }
       });
 
@@ -239,8 +238,8 @@ export class Home implements OnInit, OnDestroy {
   openFurnitureModalByRef(referenceNumber: string) {
     this.apiService.getFurnitureById(referenceNumber).subscribe({
       next: (response) => {
-        if (response.data && response.data.length > 0) {
-          const furniture = response.data[0];
+        if (response.data) {
+          const furniture = response.data;
           this.openFurnitureModal(furniture);
         } else {
           console.error('Mueble no encontrado:', referenceNumber);
