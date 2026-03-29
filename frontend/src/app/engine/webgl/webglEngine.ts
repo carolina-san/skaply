@@ -693,6 +693,14 @@ export class WebGLEngineAdapter extends EngineFacade {
             this.cameraController.dispose();
         }
 
+        this.rootNode.traverseEntities(entity => {
+            if (typeof (entity as any).dispose === 'function') {
+                (entity as any).dispose();
+            }
+        });
+
+        this.rootNode = new Node();
+
         this.resourceManager.dispose();
         this.shader?.dispose();
         this.outlineShader?.dispose();

@@ -25,6 +25,7 @@ export class TextureResource extends Resource {
 
     private createTextureFromImage(image: HTMLImageElement): void {
         const gl = this.gl;
+        if (this.texture) { gl.deleteTexture(this.texture);}
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         // Evitar problemas de imágenes con tamaño no potencia de 2
@@ -65,6 +66,7 @@ export class TextureResource extends Resource {
     loadFromColor(r: number, g: number, b: number, a: number = 255): void {
         //console.log(`loadFromColor: r=${r} g=${g} b=${b} a=${a}`);
         const gl = this.gl;
+        if (this.texture) {gl.deleteTexture(this.texture);}
         const data = new Uint8Array([r, g, b, a]);
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
