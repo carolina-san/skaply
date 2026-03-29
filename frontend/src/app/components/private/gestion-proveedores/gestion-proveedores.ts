@@ -30,9 +30,6 @@ export class GestionProveedores implements OnInit, OnChanges {
   isDeleteModalOpen: boolean = false;
   isEditModalOpen: boolean = false;
   providerToDelete: any = null;
-  isInfoModalOpen: boolean = false;
-  infoTitle: string = '';
-  infoMessage: string = '';
 
   // Notificaciones
   errorMessage: string | null = null;
@@ -240,11 +237,11 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.apiService.updateProviderVisibility(provider.id, newStatus).subscribe(
       () => {
         provider.visible = newStatus;
-        this.infoTitle = 'Estado actualizado';
-        this.infoMessage = newStatus
-          ? `Se ha mostrado al proveedor "${provider.company_name}".`
-          : `Se ha ocultado al proveedor "${provider.company_name}".`;
-        this.isInfoModalOpen = true;
+        if (newStatus) {
+          this.showSuccess('Proveedor mostrado correctamente');
+        } else {
+          this.showSuccess('Proveedor ocultado correctamente');
+        }
         this.fetchProviders();
       },
       (error) => {
@@ -259,11 +256,11 @@ export class GestionProveedores implements OnInit, OnChanges {
     this.apiService.updateProviderEnabled(provider.id, newStatus).subscribe(
       () => {
         provider.enabled = newStatus;
-        this.infoTitle = 'Estado actualizado';
-        this.infoMessage = newStatus
-          ? `Se ha habilitado al proveedor "${provider.company_name}".`
-          : `Se ha bloqueado al proveedor "${provider.company_name}".`;
-        this.isInfoModalOpen = true;
+        if (newStatus) {
+          this.showSuccess('Proveedor habilitado correctamente');
+        } else {
+          this.showSuccess('Proveedor bloqueado correctamente');
+        }
         this.fetchProviders();
       },
       (error) => {
@@ -273,11 +270,6 @@ export class GestionProveedores implements OnInit, OnChanges {
     );
   }
 
-  closeInfoModal() {
-    this.isInfoModalOpen = false;
-    this.infoTitle = '';
-    this.infoMessage = '';
-  }
 
   // Calcular rango de items mostrados
   get startItem(): number {

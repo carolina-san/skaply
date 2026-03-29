@@ -24,6 +24,12 @@
             shadow-sm animate-fade-in">
     {{ errorMessage }}
   </div>
+  <div *ngIf="successMessage" class="fixed top-16 right-10 z-50 
+            bg-green-100 text-sm border border-1 border-green-400 
+            text-green-700 px-4 py-2 rounded-xl 
+            shadow-sm animate-fade-in">
+    {{ successMessage }}
+  </div>
 
   <!-- Mensaje de no hay resultados -->
   <div *ngIf="totalItems === 0" class="flex-1 flex items-center justify-center">
@@ -176,25 +182,6 @@
       </button>
       <button type="button" (click)="confirmDeleteProvider()" class="btn-eliminar">
         Eliminar
-      </button>
-    </div>
-  </div>
-</app-modal>
-
-<!-- Modal informativo de cambio de estado -->
-<app-modal [(open)]="isInfoModalOpen">
-  <div class="p-8 bg-white rounded-xl flex flex-col items-center text-center">
-    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-      <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#2563eb">
-        <path
-          d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z" />
-      </svg>
-    </div>
-    <h2 class="text-2xl font-bold text-marron-oscuro mb-2">{{ infoTitle }}</h2>
-    <p class="text-gray-600 mb-6">{{ infoMessage }}</p>
-    <div class="flex justify-center gap-3 w-full">
-      <button type="button" (click)="closeInfoModal()" class="btn-cancelar">
-        Aceptar
       </button>
     </div>
   </div>

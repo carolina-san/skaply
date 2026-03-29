@@ -95,7 +95,15 @@ export class Header implements OnInit, OnDestroy {
 
   goHome(): void {
     this.finMontaje();
-    this.router.navigate(['/home']);
+    if (this.isHome) {
+      this.scrollToTop();
+    }
+    else if (this.router.url.includes('home')) {
+      this.router.navigate(['/']);
+    }
+    else {
+      this.router.navigate(['/home']);
+    }
   }
   goLogin(): void {
     this.router.navigate(['/login']);

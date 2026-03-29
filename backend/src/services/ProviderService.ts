@@ -139,10 +139,11 @@ export class ProviderService {
       if (!enabled) {
         await this.updateProviderVisibility(id, false);
       }
+      const timestampField = enabled ? 'enabled_at' : 'disabled_at';
       const result = await pool.query(
         `
         UPDATE "User"
-        SET enabled = $1, enabled_at = CURRENT_TIMESTAMP
+        SET enabled = $1, ${timestampField} = CURRENT_TIMESTAMP
         WHERE id = $2
           AND role = $3
           AND registration_status = $4
