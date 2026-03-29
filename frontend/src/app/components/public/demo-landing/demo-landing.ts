@@ -53,6 +53,7 @@ export class DemoLanding implements AfterViewInit, OnDestroy {
   private animationFrameId: number | null = null;
   private resizeObserver!: ResizeObserver;
   private isolationTimer: any = null;
+  private boundResize = this.onWindowResize.bind(this);
 
   private simulationDirection = signal<'forward' | 'backward'>('forward');
   private lastStepTime = 0;
@@ -81,11 +82,29 @@ export class DemoLanding implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
-    this.renderer?.dispose();
-    window.removeEventListener('resize', this.onWindowResize);
     this.resizeObserver?.disconnect();
+    window.removeEventListener('resize', this.boundResize);
     if (this.isolationTimer) clearTimeout(this.isolationTimer);
+
+    // Limpiar escena Three.js
+    this.scene?.traverse((object: any) => {
+      if (object.geometry) object.geometry.dispose();
+      if (object.material) {
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.forEach((mat: any) => {
+          mat.dispose();
+          for (const key in mat) {
+            if (mat[key] && mat[key].isTexture) mat[key].dispose();
+          }
+        });
+      }
+    });
+    this.controls?.dispose();
+    this.composer?.dispose();
+    if (this.outlinePass) this.outlinePass.dispose();
+    this.renderer?.dispose();
   }
 
   public setMode(newMode: 'manual' | 'simulation' | 'final'): void {
@@ -154,7 +173,7 @@ export class DemoLanding implements AfterViewInit, OnDestroy {
     this.outlinePass.hiddenEdgeColor.set('#72b6d8');
     this.composer.addPass(this.outlinePass);
 
-    window.addEventListener('resize', this.onWindowResize.bind(this));
+    window.addEventListener('resize', this.boundResize);
   }
 
   private createPart(

@@ -132,6 +132,20 @@ export class ThreeEngineAdapter extends EngineFacade {
     private transitionType: 'frame' | 'rotate' | null = null;
     private lerpFactor = 0.04;
 
+    // Bound event handlers for proper cleanup
+    private onPointerMoveHandler = (e: MouseEvent) => {
+        if (this.isTransitioning && e.buttons > 0 && this.transitionType !== 'rotate') {
+            this.isTransitioning = false;
+            this.transitionType = null;
+        }
+    };
+    private onTouchMoveHandler = (e: TouchEvent) => {
+        if (this.isTransitioning && e.touches.length > 0 && this.transitionType !== 'rotate') {
+            this.isTransitioning = false;
+            this.transitionType = null;
+        }
+    };
+
     init(canvas: HTMLCanvasElement, width: number, height: number): void {
         this.scene = new THREE.Scene();
 
@@ -180,18 +194,8 @@ export class ThreeEngineAdapter extends EngineFacade {
         });
 
         // Also constantly monitor for active dragging because 'start' won't fire again if already pressed
-        this.renderer.domElement.addEventListener('pointermove', (e: MouseEvent) => {
-            if (this.isTransitioning && e.buttons > 0 && this.transitionType !== 'rotate') {
-                this.isTransitioning = false;
-                this.transitionType = null;
-            }
-        });
-        this.renderer.domElement.addEventListener('touchmove', (e: TouchEvent) => {
-            if (this.isTransitioning && e.touches.length > 0 && this.transitionType !== 'rotate') {
-                this.isTransitioning = false;
-                this.transitionType = null;
-            }
-        }, { passive: true });
+        this.renderer.domElement.addEventListener('pointermove', this.onPointerMoveHandler);
+        this.renderer.domElement.addEventListener('touchmove', this.onTouchMoveHandler, { passive: true });
 
         // Initialize targets with starting state
         this.targetPosition.copy(this.camera.position);
@@ -490,6 +494,12 @@ export class ThreeEngineAdapter extends EngineFacade {
 
 
     dispose(): void {
+        // Remove canvas event listeners before disposing renderer
+        if (this.renderer?.domElement) {
+            this.renderer.domElement.removeEventListener('pointermove', this.onPointerMoveHandler);
+            this.renderer.domElement.removeEventListener('touchmove', this.onTouchMoveHandler);
+        }
+
         this.renderer?.dispose();
         this.scene?.traverse((object: any) => {
             if (object.geometry) {

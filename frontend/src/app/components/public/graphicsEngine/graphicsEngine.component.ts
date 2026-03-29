@@ -100,7 +100,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private triggerFrame = signal(0);
   private destroy$ = new Subject<void>();
   private destroyed = false;
-  private loadingAbortController: AbortController | null = null;
+
 
   get modelAssembly(): any {
     return this.apiService.getFurnitureAssemblyById(Number(this.furniture?.id));
@@ -340,9 +340,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       this.engineService.dispose();
       this.parts = [];
       this.engineService.createEngineInstance();
-      this.initEngine().then(() => {
+      this.initEngine().then(async () => {
+        if (this.destroyed) return;
         if (this.furniture) {
-          this.createFurniture().then(() => {
+          try {
+            await this.createFurniture();
+            if (this.destroyed) return;
             if (this.mode() === 'final') {
               this.parts.forEach(part => {
                 part.object.setPosition(part.targetPosition.x, part.targetPosition.y, part.targetPosition.z);
@@ -351,7 +354,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
             this.lastFramedStep = -1;
             this.triggerFrame.update(v => v + 1);
             if (!this.animationFrameId) this.animate();
-          });
+          } catch (error) {
+            console.error('Error switching engine:', error);
+          }
         }
       });
     }
@@ -479,12 +484,14 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   onArStateChange(isActive: boolean): void {
+    if (this.destroyed) return;
     this.isARActive.set(isActive);
     this.arStateChange.emit(isActive);
 
     // El canvas-container cambia de tamaño (relative → fixed inset-0 o viceversa).
     // Esperamos un frame para que el DOM se actualice antes de leer las nuevas dimensiones.
     requestAnimationFrame(() => {
+      if (this.destroyed) return;
       const canvas = this.canvasRef?.nativeElement;
       if (!canvas) return;
       const container = canvas.parentElement;

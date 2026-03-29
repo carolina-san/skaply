@@ -50,26 +50,7 @@
   }
 }
 
-/* ── Toast de comando de voz ── */
-.voice-command-toast {
-  @apply absolute bottom-2 right-0 z-60 flex items-center gap-2 px-3 py-1 text-azul-claro font-semibold text-sm;
 
-  /* Aparece con slide-up + fade */
-  animation: voice-toast-in 0.22s ease-out forwards;
-  pointer-events: none;
-}
-
-@keyframes voice-toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
 
 /* ── Ondas tipo sonar (sólo cuando hay sonido real) ── */
 .voice-wave-ring {

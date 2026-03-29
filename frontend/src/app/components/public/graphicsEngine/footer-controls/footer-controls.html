@@ -104,9 +104,9 @@
           class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
           <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
-            [ngClass]="{'animate-arrow': isManualFirstStep && !hasIsolatedPart()}" xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
+            [ngClass]="{'animate-arrow': isManualFirstStep && !hasIsolatedPart() && !isLoading()}"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
@@ -165,7 +165,7 @@
   @if (isVoiceSupported()) {
   <!-- Ondas separadas del botón para que el overflow-hidden del botón no las recorte -->
   @if (isVoiceListening()) {
-  <div class="absolute right-15 bottom-14 md:right-0 md:bottom-1 h-10 w-10 pointer-events-none rounded-full z-0">
+  <div class="absolute right-15 bottom-14 md:right-12 md:bottom-1 h-10 w-10 pointer-events-none rounded-full z-0">
     @if (isVoiceSoundActive()) {
     <span class="voice-wave-ring voice-wave-ring--1"></span>
     <span class="voice-wave-ring voice-wave-ring--2"></span>

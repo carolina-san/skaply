@@ -302,6 +302,7 @@ export class VoiceControlService {
     if (!this.isSupported()) return;
     annyang.abort();
     annyang.removeCommands();
+    annyang.removeCallback();
     clearTimeout(this.soundTimeout);
     clearTimeout(this.commandTimeout);
     this.isListening.set(false);

@@ -1,7 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { Chatbot } from '../../components/UI/chatbot/chatbot';
 import { Footer } from '../../components/UI/footer/footer';
 import { FilterPanelComponent } from '../../components/public/filter-panel/filter-panel';
@@ -32,7 +33,9 @@ interface FurnitureReview {
   styleUrl: './home.css'
 })
 
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private boundScroll = () => { this.scrolled = window.scrollY > 70; };
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   @ViewChild(IssueForm) issueForm!: IssueForm;
 
@@ -75,7 +78,7 @@ export class Home implements OnInit {
     this.loadColors();
 
     // Verificar si hay un mueble en la URL para abrir su modal automáticamente
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const furnitureRef = params['furniture'];
       if (furnitureRef) {
         this.openFurnitureModalByRef(furnitureRef);
@@ -83,7 +86,7 @@ export class Home implements OnInit {
     });
 
     // Suscribirse a los cambios de categoría desde el chatbot
-    this.filterSharingService.selectedCategory$.subscribe(categoryId => {
+    this.filterSharingService.selectedCategory$.pipe(takeUntil(this.destroy$)).subscribe(categoryId => {
       if (categoryId !== null) {
         // Al seleccionar categoría desde el chatbot, limpiamos otros filtros para 'empezar de cero'
         this.selectedCategoryId = categoryId;
@@ -95,7 +98,7 @@ export class Home implements OnInit {
     });
 
     // Suscribirse a los cambios de color desde el chatbot
-    this.filterSharingService.selectedColors$.subscribe(colorIds => {
+    this.filterSharingService.selectedColors$.pipe(takeUntil(this.destroy$)).subscribe(colorIds => {
       if (colorIds && colorIds.length > 0) {
         // Al seleccionar color desde el chatbot, limpiamos categoría y otros filtros
         this.selectedCategoryId = null; // Limpiar categoría seleccionada
@@ -108,9 +111,7 @@ export class Home implements OnInit {
       }
     });
 
-    window.addEventListener("scroll", () => {
-      this.scrolled = window.scrollY > 70;
-    });
+    window.addEventListener('scroll', this.boundScroll);
 
     this.seo.setSeo({
       title: `Catálogo de muebles disponibles - Skäply`,
@@ -125,6 +126,12 @@ export class Home implements OnInit {
         'url': 'https://skaply.ovh/home'
       }
     });
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('scroll', this.boundScroll);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   abrirModalIncidencia() {

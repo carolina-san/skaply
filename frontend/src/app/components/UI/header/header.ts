@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
 import { Menu } from '../menu/menu';
 import { Location, CommonModule } from '@angular/common';
@@ -12,12 +13,14 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './header.html',
   styleUrls: ['./header.css']
 })
-export class Header {
+export class Header implements OnInit, OnDestroy {
 
   showBackButton = true;
   currentRoute: string = '';
   scrolled = false;
   private navigationHistory: string[] = [];
+  private routerSub?: Subscription;
+  private boundScroll = () => { this.scrolled = window.scrollY > 30; };
 
   constructor(
     private router: Router,
@@ -25,7 +28,7 @@ export class Header {
     private apiService: ApiService,
     private authService: AuthService
   ) {
-    this.router.events.subscribe((event) => {
+    this.routerSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.currentRoute = this.router.url;
         this.trackNavigation();
@@ -35,9 +38,12 @@ export class Header {
 
 
   ngOnInit() {
-    window.addEventListener("scroll", () => {
-      this.scrolled = window.scrollY > 30;
-    });
+    window.addEventListener('scroll', this.boundScroll);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('scroll', this.boundScroll);
+    this.routerSub?.unsubscribe();
   }
 
   private trackNavigation(): void {
