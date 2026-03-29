@@ -83,9 +83,12 @@ export class Home implements OnInit, OnDestroy {
         const furnitureRef = params['furniture'];
 
         if (furnitureRef) {
-          setTimeout(() => {
-            this.openFurnitureModalByRef(furnitureRef);
-          }, 500);
+          const checkLoaded = setInterval(() => {
+            if (!this.isLoadingFurnitures) {
+              clearInterval(checkLoaded);
+              this.openFurnitureModalByRef(furnitureRef);
+            }
+          }, 100);
         }
       });
 
