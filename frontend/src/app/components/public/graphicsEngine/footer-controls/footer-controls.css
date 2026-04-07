@@ -26,13 +26,15 @@
   @apply max-w-[250px] px-4 gap-2;
 }
 
-.voice-btn:hover {
-  @apply bg-azul-claro;
+@media (hover: hover) {
+  .voice-btn:hover {
+    @apply bg-azul-claro;
+  }
 }
 
 /* Activo: animación de scale para indicar que escucha */
 .voice-btn--active {
-  @apply bg-azul-claro;
+  @apply bg-azul-claro text-red-600;
   animation: voice-listen-pulse 1.3s infinite ease-in-out;
 }
 
