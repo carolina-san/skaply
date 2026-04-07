@@ -296,7 +296,7 @@
         'Estantería Skaply',
         'VR34525',
         5, --cat
-        3, --provider
+        2, --provider
         'low',
         1, --color
         'Cubo-estantería beis de diseño minimalista, montado en pared, con interior abierto y libros en tonos neutros. Estilo moderno y limpio, ideal para espacios acogedores', 
@@ -373,7 +373,7 @@
         'Estantería alta asimétrica',
         'E234255242',
         5,
-        4,
+        2,
         'medium',
         6,
         'Estantería moderna con estructura negra y baldas blancas. Diseño elegante y funcional, ideal para organizar y decorar espacios contemporáneos con estilo minimalista.', 
@@ -404,7 +404,7 @@
         'Mesa de pino',
         'M23232535',
         2,
-        4,
+        2,
         'low',
         1,
         'Mesa de madera con patas metálicas grises, de diseño limpio y minimalista. Ideal para espacios de estilo japonés, aporta calma, funcionalidad y equilibrio al ambiente.', 
@@ -450,7 +450,7 @@
         'Sofá moderno',
         'S3452544345',
         3,
-        4,
+        2,
         'medium',
         4,
         'Sofá de diseño minimalista con estética nórdica. Destaca por su respaldo abierto y lineal, tapizado en tela gris jaspeada y patas de madera clara. Una pieza funcional, moderna y de aire ligero.', 
