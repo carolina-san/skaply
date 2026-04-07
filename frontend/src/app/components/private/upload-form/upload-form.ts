@@ -23,6 +23,8 @@ export class UploadForm implements OnInit {
   isSubmitting = false;
   successMessage = '';
   errorMessage = '';
+  private messageTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private readonly messageDurationMs = 3500;
 
   constructor(
     private fb: FormBuilder,
@@ -58,7 +60,7 @@ export class UploadForm implements OnInit {
       },
       error: (err) => {
         console.error('Error loading categories:', err);
-        this.errorMessage = 'Error al cargar las categorías';
+        this.showErrorMessage('Error al cargar las categorías');
       }
     });
   }
@@ -71,7 +73,7 @@ export class UploadForm implements OnInit {
       },
       error: (err) => {
         console.error('Error loading colors:', err);
-        this.errorMessage = 'Error al cargar los colores';
+        this.showErrorMessage('Error al cargar los colores');
       }
     });
   }
@@ -80,8 +82,9 @@ export class UploadForm implements OnInit {
     const file = event.target.files[0];
     if (file && file.name.endsWith('.glb')) {
       this.glbFile = file;
+      this.dismissErrorMessage();
     } else {
-      this.errorMessage = 'Por favor selecciona un archivo .glb válido';
+      this.showErrorMessage('Por favor selecciona un archivo .glb válido');
       this.glbFile = null;
     }
   }
@@ -90,15 +93,16 @@ export class UploadForm implements OnInit {
     const file = event.target.files[0];
     if (file && file.name.endsWith('.pdf')) {
       this.pdfFile = file;
+      this.dismissErrorMessage();
     } else {
-      this.errorMessage = 'Por favor selecciona un archivo .pdf válido';
+      this.showErrorMessage('Por favor selecciona un archivo .pdf válido');
       this.pdfFile = null;
     }
   }
 
   async onSubmit(): Promise<void> {
     if (!this.furnitureForm.valid || !this.glbFile || !this.pdfFile) {
-      this.errorMessage = 'Por favor completa todos los campos requeridos y selecciona ambos archivos';
+      this.showErrorMessage('Por favor completa todos los campos requeridos y selecciona ambos archivos');
       return;
     }
 
@@ -109,7 +113,7 @@ export class UploadForm implements OnInit {
     try {
       const user = this.authService.getCurrentUser();
       if (!user) {
-        this.errorMessage = 'Usuario no autenticado';
+        this.showErrorMessage('Usuario no autenticado');
         this.isSubmitting = false;
         return;
       }
@@ -126,7 +130,7 @@ export class UploadForm implements OnInit {
 
       this.apiService.createFurniture(formData).subscribe({
         next: (response) => {
-          this.successMessage = 'Mueble creado correctamente';
+          this.showSuccessMessage('Mueble creado correctamente');
           this.furnitureForm.reset();
           this.glbFile = null;
           this.pdfFile = null;
@@ -143,12 +147,12 @@ export class UploadForm implements OnInit {
           }, 1200);
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Error al crear el mueble';
+          this.showErrorMessage(err.error?.message || 'Error al crear el mueble');
           this.isSubmitting = false;
         }
       });
     } catch (error: any) {
-      this.errorMessage = 'Error al procesar los archivos';
+      this.showErrorMessage('Error al procesar los archivos');
       this.isSubmitting = false;
     }
   }
@@ -161,7 +165,47 @@ export class UploadForm implements OnInit {
   }
 
   clearMessages(): void {
+    this.clearMessageTimer();
     this.successMessage = '';
     this.errorMessage = '';
+  }
+
+  private showErrorMessage(message: string): void {
+    this.successMessage = '';
+    this.errorMessage = message;
+    this.scheduleMessageClear();
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.errorMessage = '';
+    this.successMessage = message;
+    this.scheduleMessageClear();
+  }
+
+  private dismissErrorMessage(): void {
+    if (!this.errorMessage) {
+      return;
+    }
+
+    this.errorMessage = '';
+    if (!this.successMessage) {
+      this.clearMessageTimer();
+    }
+  }
+
+  private scheduleMessageClear(): void {
+    this.clearMessageTimer();
+    this.messageTimeoutId = setTimeout(() => {
+      this.clearMessages();
+    }, this.messageDurationMs);
+  }
+
+  private clearMessageTimer(): void {
+    if (!this.messageTimeoutId) {
+      return;
+    }
+
+    clearTimeout(this.messageTimeoutId);
+    this.messageTimeoutId = null;
   }
 }

@@ -1,12 +1,14 @@
 <div class="form-container">
-  <div *ngIf="successMessage" class="alert alert-success">
-    {{ successMessage }}
-    <button (click)="clearMessages()" class="close-btn">&times;</button>
-  </div>
+  <div class="toast-stack" *ngIf="successMessage || errorMessage">
+    <div *ngIf="successMessage" class="alert alert-success">
+      <span class="alert-text">{{ successMessage }}</span>
+      <button (click)="clearMessages()" class="close-btn">&times;</button>
+    </div>
 
-  <div *ngIf="errorMessage" class="alert alert-error">
-    {{ errorMessage }}
-    <button (click)="clearMessages()" class="close-btn">&times;</button>
+    <div *ngIf="errorMessage" class="alert alert-error">
+      <span class="alert-text">{{ errorMessage }}</span>
+      <button (click)="clearMessages()" class="close-btn">&times;</button>
+    </div>
   </div>
 
   <form [formGroup]="furnitureForm" (ngSubmit)="onSubmit()" class="furniture-form">
