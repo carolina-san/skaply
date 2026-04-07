@@ -194,18 +194,7 @@ export class Viewer3D implements OnInit {
     this.reviewStars.set(stars);
   }
 
-  submitReview(): void {
-    // Obtener y convertir el furniture ID
-    let furnitureId = 1; // ID por defecto
-    const inputId = this.furnitureId;
-
-    if (inputId) {
-      const parsedId = typeof inputId === 'string' ? parseInt(inputId, 10) : inputId;
-      if (!isNaN(parsedId) && parsedId > 0) {
-        furnitureId = parsedId;
-      }
-    }
-
+  async submitReview(): Promise<void> {
     const stars = this.reviewStars();
     const text = this.reviewText().trim();
 
@@ -217,29 +206,45 @@ export class Viewer3D implements OnInit {
     this.submitStatus.set('idle');
     this.submitMessage.set('');
 
-    this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
+    this.apiService.getFurnitureById(this.furnitureId).subscribe({
       next: (response) => {
-        this.submitStatus.set('success');
-        this.submitMessage.set('¡Gracias por tu reseña!');
-        this.isSubmittingReview.set(false);
+        if (!response.data) {
+          console.error('Mueble no encontrado:', this.furnitureId);
+          this.isSubmittingReview.set(false);
+          return;
+        }
 
-        // Retrasar el cierre para que se vea el mensaje
-        setTimeout(() => {
-          this.closeReviewModal();
-          this.finMontaje();
-          this.router.navigate(['/home']);
-        }, 1500);
+        const furnitureId = response.data.id;
+        console.log(furnitureId);
+
+        this.apiService.postReview(furnitureId, stars, text || undefined).subscribe({
+          next: () => {
+            this.submitStatus.set('success');
+            this.submitMessage.set('¡Gracias por tu reseña!');
+            this.isSubmittingReview.set(false);
+
+            setTimeout(() => {
+              this.closeReviewModal();
+              this.finMontaje();
+              this.router.navigate(['/home']);
+            }, 1500);
+          },
+          error: (error) => {
+            console.error('Error al guardar la review:', error);
+            this.isSubmittingReview.set(false);
+
+            const errorMessage = error.error?.message || error.message || 'Error desconocido';
+            this.submitStatus.set('error');
+            this.submitMessage.set('Error al guardar la reseña: ' + errorMessage);
+          }
+        });
       },
       error: (error) => {
-        console.error('Error al guardar la review:', error);
+        console.error('Error al cargar mueble:', error);
         this.isSubmittingReview.set(false);
-        const errorMessage = error.error?.message || error.message || 'Error desconocido';
-        this.submitStatus.set('error');
-        this.submitMessage.set('Error al guardar la reseña: ' + errorMessage);
       }
     });
   }
-
   skipReview(): void {
     this.closeReviewModal();
     this.finMontaje();
