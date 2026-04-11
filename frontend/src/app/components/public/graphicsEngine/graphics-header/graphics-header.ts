@@ -1,11 +1,10 @@
 import { Component, input, output, effect, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EngineSwitch } from '../engine-switch/engine-switch';
 
 @Component({
   selector: 'app-graphics-header',
   standalone: true,
-  imports: [CommonModule, EngineSwitch],
+  imports: [CommonModule],
   templateUrl: './graphics-header.html',
   styleUrls: ['./graphics-header.css']
 })
