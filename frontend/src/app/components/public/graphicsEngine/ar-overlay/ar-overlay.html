@@ -48,7 +48,7 @@
 </div>
 }
 
-@if (isSmallScreen() && mode() !== 'simulation') {
+@if (isSmallScreen() && mode() === 'final') {
 <button *ngIf="!isARActive() && !hasIsolatedPart()" (click)="toggleAR()"
   class="fixed top-24 right-2 flex items-center justify-center gap-1 px-2 py-1 rounded-full text-sm transition-colors z-55 bg-beige text-marron-oscuro hover:bg-marron-claro">
   <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"

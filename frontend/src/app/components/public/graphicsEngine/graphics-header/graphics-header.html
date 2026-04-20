@@ -15,23 +15,30 @@
     }
 
     @if (mode() === 'manual') {
-    <div #stepsContainer
-      class="flex items-center space-x-2 mb-2 overflow-x-auto max-w-[11rem] lg:max-w-[100%] px-4 lg:px-1 py-1  scrollbar-hide mask-fade lg:!mask-none "
-      [class.opacity-60]="hasIsolatedPart()">
-      @for (stepIndex of visibleSteps(); track stepIndex) {
-      <button (click)="goToStepAction.emit(stepIndex)"
-        class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
-        [ngClass]="{
-          'bg-azul-claro': stepIndex <= currentLogicalStep(),
-          'bg-white/30 text-beige': stepIndex > currentLogicalStep() && !isWhiteBg(),
-          'bg-marron-claro/30 text-marron-oscuro': stepIndex > currentLogicalStep() && isWhiteBg(),
-          'scale-115': stepIndex === currentLogicalStep(),
-          'font-bold': stepIndex === currentLogicalStep(),
-          'border border-marron-oscuro': isWhiteBg()
-        }">
-        {{ stepIndex + 1 }}
+    <div class="flex items-center gap-2 mb-2" [class.opacity-60]="hasIsolatedPart()">
+      <div #stepsContainer data-tour="steps-progress"
+        class="flex items-center space-x-2 overflow-x-auto max-w-[11rem] lg:max-w-[100%] px-4 lg:px-1 py-1 scrollbar-hide mask-fade lg:!mask-none">
+        @for (stepIndex of visibleSteps(); track stepIndex) {
+        <button (click)="goToStepAction.emit(stepIndex)"
+          class="w-6 h-6 shrink-0 rounded-full transition-all duration-300 flex items-center justify-center text-sm p-1 cursor-pointer hover:bg-azul-claro/50"
+          [ngClass]="{
+            'bg-azul-claro': stepIndex <= currentLogicalStep(),
+            'bg-white/30 text-beige': stepIndex > currentLogicalStep() && !isWhiteBg(),
+            'bg-marron-claro/30 text-marron-oscuro': stepIndex > currentLogicalStep() && isWhiteBg(),
+            'scale-115': stepIndex === currentLogicalStep(),
+            'font-bold': stepIndex === currentLogicalStep(),
+            'border border-marron-oscuro': isWhiteBg()
+          }">
+          {{ stepIndex + 1 }}
+        </button>
+        }
+      </div>
+
+      <button data-tour="tour-help-button" (click)="startTourAction.emit()"
+        class="w-8 h-8 shrink-0 rounded-full bg-beige/95 text-marron-oscuro border border-marron-oscuro/40 hover:bg-azul-claro transition-colors flex items-center justify-center font-bold"
+        [class.border-marron-oscuro]="isWhiteBg()" [class.bg-white]="isWhiteBg()" title="Tour guiado">
+        ?
       </button>
-      }
     </div>
     }
 

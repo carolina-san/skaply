@@ -1,4 +1,4 @@
-<div class="w-full h-full  flex flex-col p-2 sm:px-4 border-0 shadow-none transition-colors duration-300"
+<div #engineShell class="w-full h-full  flex flex-col p-2 sm:px-4 border-0 shadow-none transition-colors duration-300"
   [ngClass]="isWhiteBg() ? 'bg-white' : 'bg-transparent'">
 
   <app-graphics-header *ngIf="!isARActive()" [engineUse]="engineUse()" [furnitureName]="furnitureName()" [mode]="mode()"
@@ -6,7 +6,7 @@
     [isolatedPartName]="isolatedPart()?.name || ''" [isSimulating]="isSimulating()"
     [isManualComplete]="isManualComplete()" [stepDescriptions]="stepDescriptions()" [isWhiteBg]="isWhiteBg()"
     [isSingleModel]="totalSteps() <= 1" (engineChanged)="onEngineChange($event)" (goToStepAction)="goToStep($event)"
-    (exitIsolationAction)="exitIsolation()">
+    (exitIsolationAction)="exitIsolation()" (startTourAction)="startTour()">
   </app-graphics-header>
 
 
@@ -61,4 +61,10 @@
     (retryMicPermission)="voiceControlService.retryMicPermission()">
   </app-footer-controls>
   }
+
+  <app-graphics-tour-overlay [active]="tourActive()" [targetRect]="tourTargetRect()"
+    [panelCenterX]="tourPanelCenterX()" [stepIndex]="tourStepIndex()" [stepCount]="tourStepCount"
+    [title]="tourCurrentStep().title" [description]="tourCurrentStep().description"
+    (closeAction)="closeTour()" (prevAction)="prevTourStep()" (nextAction)="nextTourStep()">
+  </app-graphics-tour-overlay>
 </div>

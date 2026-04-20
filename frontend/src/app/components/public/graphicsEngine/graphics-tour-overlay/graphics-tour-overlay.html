@@ -1,0 +1,24 @@
+@if (active()) {
+<div class="fixed inset-0 bg-black/55 z-[115]" (click)="closeAction.emit()"></div>
+
+@if (targetRect(); as rect) {
+<div class="tour-highlight" [style.top.px]="rect.top - 8" [style.left.px]="rect.left - 8"
+  [style.width.px]="rect.width + 16" [style.height.px]="rect.height + 16"></div>
+}
+
+<div class="tour-card" [style.left.px]="panelCenterX()" (click)="$event.stopPropagation()">
+  <p class="tour-step-counter">Paso {{ stepIndex() + 1 }} de {{ stepCount() }}</p>
+  <h3 class="tour-title">{{ title() }}</h3>
+  <p class="tour-description">{{ description() }}</p>
+
+  <div class="tour-actions">
+    <button class="tour-btn tour-btn-secondary" (click)="closeAction.emit()">Cerrar</button>
+    <button class="tour-btn tour-btn-secondary" (click)="prevAction.emit()" [disabled]="stepIndex() === 0">
+      Anterior
+    </button>
+    <button class="tour-btn tour-btn-primary" (click)="nextAction.emit()">
+      {{ stepIndex() + 1 === stepCount() ? 'Finalizar' : 'Siguiente' }}
+    </button>
+  </div>
+</div>
+}

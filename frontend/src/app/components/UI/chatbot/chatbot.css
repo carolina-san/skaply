@@ -41,7 +41,13 @@
 }
 
 .btn-incidencia {
-  @apply bg-azul-claro text-marron-oscuro shadow-sm h-9 w-9 rounded-full hover:bg-azul-medio transition-colors duration-400 border border-marron-oscuro/60;
+  @apply bg-azul-claro text-marron-oscuro shadow-sm h-9 w-9 rounded-full hover:bg-azul-medio transition-colors duration-400 border border-marron-oscuro/60 flex items-center justify-center p-0;
+  line-height: 0;
+}
+
+.btn-incidencia svg {
+  @apply w-5 h-5;
+  display: block;
 }
 
 .titulo {

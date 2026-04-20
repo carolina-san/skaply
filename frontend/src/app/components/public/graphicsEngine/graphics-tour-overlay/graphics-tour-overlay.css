@@ -1,0 +1,84 @@
+@import "../../../../../styles.css";
+
+.tour-highlight {
+  position: fixed;
+  z-index: 116;
+  border-radius: 14px;
+  border: 2px solid #bad5e3;
+  box-shadow: 0 0 0 4px rgba(186, 213, 227, 0.28);
+  pointer-events: none;
+  transition: top 0.12s ease, left 0.12s ease, width 0.12s ease, height 0.12s ease;
+}
+
+.tour-card {
+  position: fixed;
+  z-index: 117;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, calc(100vw - 24px));
+  background: var(--color-beige);
+  border: 1px solid rgba(69, 38, 33, 0.2);
+  border-radius: 14px;
+  padding: 14px;
+  color: #452621;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+.tour-step-counter {
+  font-size: 12px;
+  color: rgba(69, 38, 33, 0.7);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.tour-title {
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.tour-description {
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.tour-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-btn {
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(69, 38, 33, 0.35);
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tour-btn-secondary {
+  background: var(--color-beige-oscuro);
+  color: #452621;
+}
+
+.tour-btn-primary {
+  background: #bad5e3;
+  color: #452621;
+  border-color: rgba(69, 38, 33, 0.45);
+}
+
+.tour-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tour-btn:not(:disabled):hover {
+  background: #94adba;
+}

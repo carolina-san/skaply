@@ -17,11 +17,19 @@ import { FurnitureService } from '../../../services/graphicsEngine/furniture.ser
 import { InteractionService } from '../../../services/graphicsEngine/interaction.service';
 import { VoiceControlService } from '../../../services/graphicsEngine/voice-control.service';
 import { SpinnerComponent } from '../../UI/spinner/spinner';
+import { GraphicsTourOverlay } from './graphics-tour-overlay/graphics-tour-overlay';
+
+interface GraphicsTourStep {
+  target: string;
+  title: string;
+  description: string;
+  requiredMode?: 'manual' | 'simulation' | 'final';
+}
 
 @Component({
   selector: 'app-graphics-engine',
   standalone: true,
-  imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls, SpinnerComponent],
+  imports: [CommonModule, FormsModule, GraphicsHeader, ArOverlay, FooterControls, SpinnerComponent, GraphicsTourOverlay],
   providers: [EngineService, SimulationService, FurnitureService, InteractionService, VoiceControlService],
   templateUrl: './graphicsEngine.component.html',
   styleUrls: ['./graphicsEngine.css'],
@@ -29,6 +37,7 @@ import { SpinnerComponent } from '../../UI/spinner/spinner';
 })
 export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('engineShell') private engineShellRef?: ElementRef<HTMLElement>;
 
   // INPUTS
   furnitureId = input<number | string>();
@@ -51,6 +60,85 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   isARActive = signal(false);
   isWhiteBg = signal(false);
   isLoading = signal(true);
+  tourActive = signal(false);
+  tourStepIndex = signal(0);
+  tourTargetRect = signal<{ top: number; left: number; width: number; height: number } | null>(null);
+  tourPanelCenterX = signal<number | null>(null);
+
+  private readonly tourSteps: GraphicsTourStep[] = [
+    {
+      target: 'tour-help-button',
+      title: 'Tour del visor',
+      description: 'Este botón abre esta guía para recorrer las funciones principales del motor gráfico.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'steps-progress',
+      title: 'Vista de pasos',
+      description: 'Aquí ves el avance del montaje. Puedes pulsar cada número para saltar directamente a ese paso.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'mode-manual',
+      title: 'Modo paso a paso',
+      description: 'En Manual controlas el montaje tú mismo, avanzando y retrocediendo cuando quieras.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'manual-prev',
+      title: 'Paso anterior',
+      description: 'Retrocede un paso para revisar una pieza o corregir una acción durante el montaje.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'manual-next',
+      title: 'Paso siguiente',
+      description: 'Avanza al siguiente paso del montaje manual.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'manual-reset',
+      title: 'Reiniciar montaje',
+      description: 'Vuelve al inicio del montaje manual con un solo clic.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'mode-simulation',
+      title: 'Modo automático',
+      description: 'Activa la simulación para ver el montaje reproduciéndose de forma automática.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'simulation-play',
+      title: 'Play y pausa',
+      description: 'En automático puedes pausar y reanudar la reproducción cuando lo necesites.',
+      requiredMode: 'simulation'
+    },
+    {
+      target: 'simulation-speed',
+      title: 'Velocidad de simulación',
+      description: 'Ajusta la velocidad (0.5x, 1x, 1.5x, 2x) para seguir mejor cada movimiento.',
+      requiredMode: 'simulation'
+    },
+    {
+      target: 'mode-final',
+      title: 'Vista de mueble montado',
+      description: 'Abre la vista final para inspeccionar el resultado completo del mueble ensamblado.',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'voice-control',
+      title: 'Control por voz',
+      description: 'Activa el micrófono para decir comandos como "siguiente paso" o "paso anterior".',
+      requiredMode: 'manual'
+    },
+    {
+      target: 'background-toggle',
+      title: 'Fondo del visor',
+      description: 'Cambia entre fondo transparente y blanco para mejorar la visualización del modelo.',
+      requiredMode: 'manual'
+    }
+  ];
 
   // COMPUTED
   isSimulating = computed(() => this.mode() === 'simulation');
@@ -82,6 +170,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     return count > 0 ? Array.from({ length: count }, (_, i) => i) : [];
   });
 
+  tourCurrentStep = computed(() => this.tourSteps[this.tourStepIndex()]);
+
   useExternalModel = true;
   furniture?: Furniture;
 
@@ -100,6 +190,8 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   private triggerFrame = signal(0);
   private destroy$ = new Subject<void>();
   private destroyed = false;
+  private tourUpdateRaf: number | null = null;
+  private shellResizeObserver?: ResizeObserver;
 
 
   get modelAssembly(): any {
@@ -199,7 +291,13 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private boundWindowResize = this.onWindowResize.bind(this);
-  private boundScreenResize = () => this.checkScreenSize();
+  private boundScreenResize = () => {
+    this.checkScreenSize();
+    this.updateTourPanelCenterX();
+    if (this.tourActive()) {
+      this.updateTourTarget();
+    }
+  };
 
   ngOnInit(): void {
     this.engineService.createEngineInstance();
@@ -263,7 +361,15 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {
     this.checkScreenSize();
+    this.updateTourPanelCenterX();
     window.addEventListener('resize', this.boundScreenResize);
+
+    if (this.engineShellRef?.nativeElement) {
+      this.shellResizeObserver = new ResizeObserver(() => {
+        this.updateTourPanelCenterX();
+      });
+      this.shellResizeObserver.observe(this.engineShellRef.nativeElement);
+    }
 
     this.resizeObserver = new ResizeObserver(entries => {
       if (this.destroyed) return;
@@ -304,7 +410,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    if (this.tourUpdateRaf !== null) {
+      cancelAnimationFrame(this.tourUpdateRaf);
+      this.tourUpdateRaf = null;
+    }
     this.resizeObserver?.disconnect();
+    this.shellResizeObserver?.disconnect();
     window.removeEventListener('resize', this.boundScreenResize);
     window.removeEventListener('resize', this.boundWindowResize);
 
@@ -424,6 +535,43 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.finished.emit();
   }
 
+  startTour(): void {
+    if (this.isARActive()) return;
+
+    this.updateTourPanelCenterX();
+    this.tourActive.set(true);
+    this.tourStepIndex.set(0);
+    this.activateTourStep(0);
+  }
+
+  closeTour(): void {
+    this.tourActive.set(false);
+    this.tourTargetRect.set(null);
+    if (this.tourUpdateRaf !== null) {
+      cancelAnimationFrame(this.tourUpdateRaf);
+      this.tourUpdateRaf = null;
+    }
+  }
+
+  nextTourStep(): void {
+    const nextIndex = this.tourStepIndex() + 1;
+    if (nextIndex >= this.tourSteps.length) {
+      this.closeTour();
+      return;
+    }
+    this.activateTourStep(nextIndex);
+  }
+
+  prevTourStep(): void {
+    const prevIndex = this.tourStepIndex() - 1;
+    if (prevIndex < 0) return;
+    this.activateTourStep(prevIndex);
+  }
+
+  get tourStepCount(): number {
+    return this.tourSteps.length;
+  }
+
   exitIsolation(): void {
     this.isolatedPart.set(null);
     const engineFacade = this.engineService.getEngine();
@@ -485,6 +633,9 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   onArStateChange(isActive: boolean): void {
     if (this.destroyed) return;
+    if (isActive && this.tourActive()) {
+      this.closeTour();
+    }
     this.isARActive.set(isActive);
     this.arStateChange.emit(isActive);
 
@@ -626,6 +777,12 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     if (width > 0 && height > 0) {
       this.engineService.resize(width, height);
     }
+
+    this.updateTourPanelCenterX();
+
+    if (this.tourActive()) {
+      this.updateTourTarget();
+    }
   }
 
   private isolatePart(part: AssemblyPart): void {
@@ -642,5 +799,69 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
       currentPosition: part.object.getPosition(),
       nativeObject: part.object
     }], 1.25);
+  }
+
+  private activateTourStep(index: number): void {
+    if (!this.tourActive()) return;
+
+    const boundedIndex = Math.min(Math.max(index, 0), this.tourSteps.length - 1);
+    const step = this.tourSteps[boundedIndex];
+
+    if (step.requiredMode && this.mode() !== step.requiredMode) {
+      this.setMode(step.requiredMode);
+    }
+
+    this.tourStepIndex.set(boundedIndex);
+    this.updateTourTarget();
+  }
+
+  private updateTourTarget(): void {
+    if (!this.tourActive()) return;
+
+    this.updateTourPanelCenterX();
+
+    const step = this.tourSteps[this.tourStepIndex()];
+
+    if (this.tourUpdateRaf !== null) {
+      cancelAnimationFrame(this.tourUpdateRaf);
+      this.tourUpdateRaf = null;
+    }
+
+    this.tourUpdateRaf = requestAnimationFrame(() => {
+      if (!this.tourActive()) return;
+
+      // Espera un frame extra para asegurar que cambios de modo/DOM estén pintados.
+      this.tourUpdateRaf = requestAnimationFrame(() => {
+        if (!this.tourActive()) return;
+
+        const target = document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null;
+        if (!target) {
+          this.tourTargetRect.set(null);
+          return;
+        }
+
+        target.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+
+        const rect = target.getBoundingClientRect();
+        this.tourTargetRect.set({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height
+        });
+        this.tourUpdateRaf = null;
+      });
+    });
+  }
+
+  private updateTourPanelCenterX(): void {
+    const shell = this.engineShellRef?.nativeElement;
+    if (!shell) {
+      this.tourPanelCenterX.set(null);
+      return;
+    }
+
+    const rect = shell.getBoundingClientRect();
+    this.tourPanelCenterX.set(rect.left + rect.width / 2);
   }
 }

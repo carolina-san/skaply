@@ -12,7 +12,7 @@
     <div class="flex items-center justify-center p-1 rounded-full text-sm font-medium transition-colors bg-beige"
       [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
 
-      <button (click)="modeChange.emit('manual')" class="btn-opciones-mueble"
+      <button data-tour="mode-manual" (click)="modeChange.emit('manual')" class="btn-opciones-mueble"
         [ngClass]="{ 'active': mode() === 'manual' }">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
@@ -20,7 +20,7 @@
         </svg>
         <p [ngClass]="{'hidden md:block': mode() === 'manual'}">Manual</p>
       </button>
-      <button (click)="modeChange.emit('simulation')" class="btn-opciones-mueble"
+      <button data-tour="mode-simulation" (click)="modeChange.emit('simulation')" class="btn-opciones-mueble"
         [ngClass]="{ 'active': mode() === 'simulation' }">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#452621">
           <path
@@ -39,7 +39,7 @@
 
     <!--Boton volver al inicio-->
     @if (mode() === 'manual') {
-    <button class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
+    <button data-tour="manual-reset" class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
       (click)="goToStepAction.emit(0)" [class.bg-beige-oscuro]="manualStep() === 0" [class.border]="isWhiteBg()"
       [class.border-marron-oscuro]="isWhiteBg()">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
@@ -65,7 +65,7 @@
 
     <!--Boton play/pause-->
     @if (mode() === 'simulation') {
-    <button (click)="togglePauseAction.emit()"
+    <button data-tour="simulation-play" (click)="togglePauseAction.emit()"
       class="w-10 h-10 flex items-center justify-center rounded-full transition-colors bg-beige"
       [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
       @if(isSimulationPaused()) {
@@ -88,7 +88,7 @@
     @if (mode() === 'manual') {
     <div class="flex flex-row items-center justify-center gap-2 w-full">
       <!--Boton anterior-->
-      <button (click)="prevStepAction.emit()" [disabled]="isManualFirstStep"
+      <button data-tour="manual-prev" (click)="prevStepAction.emit()" [disabled]="isManualFirstStep"
         class="group w-15 h-10 flex items-center bg-azul-claro justify-center rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
         <svg class="w-6 h-6 group-hover:translate-x-[-3px] transition-all duration-200 transform"
@@ -100,7 +100,7 @@
       </button>
 
       @if (manualStep() < totalSteps() - 1 || isLoading()) { <!--Boton siguiente-->
-        <button (click)="nextStepAction.emit()"
+        <button data-tour="manual-next" (click)="nextStepAction.emit()"
           class="group w-15 h-10 flex items-center justify-center bg-azul-claro rounded-full hover:bg-beige transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
           <svg class="w-6 h-6 group-hover:translate-x-[3px] transition-all duration-200 transform"
@@ -114,7 +114,7 @@
 
         } @else {
         <!--Boton terminar-->
-        <button (click)="finishAction.emit()"
+        <button data-tour="manual-finish" (click)="finishAction.emit()"
           class="px-6 h-10 flex items-center justify-center bg-azul-claro rounded-full transition-all duration-200 transform disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-marron-oscuro"
           [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
           Terminar
@@ -126,7 +126,7 @@
 
     <!--Botones velocidad-->
     @if (mode() === 'simulation') {
-    <div class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige"
+    <div data-tour="simulation-speed" class="flex items-center p-1 rounded-full text-sm font-medium space-x-1 transition-colors bg-beige"
       [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
       @for(speed of simulationSpeeds; track speed) {
       <button (click)="speedChange.emit(speed)" class="btn-opciones-mueble"
@@ -138,7 +138,7 @@
     }
 
     <!--Boton modo final-->
-    <button (click)="modeChange.emit('final')"
+    <button data-tour="mode-final" (click)="modeChange.emit('final')"
       class="bg-beige p-2 rounded-full hover:bg-azul-claro transition-all duration-200"
       [class.bg-beige-oscuro]="mode() === 'final'" [class.border]="isWhiteBg()"
       [class.border-marron-oscuro]="isWhiteBg()">
@@ -149,7 +149,7 @@
     </button>
   </div>
   <!-- Background Toggle Button -->
-  <button (click)="toggleBgColorAction.emit()"
+  <button data-tour="background-toggle" (click)="toggleBgColorAction.emit()"
     class="absolute right-2.5 bottom-27 md:right-0 md:bottom-1 flex w-10 h-10 justify-center bg-beige text-marron-oscuro items-center rounded-full transition-all duration-200 transform z-50 shadow-lg hover:bg-azul-claro"
     [ngClass]="isWhiteBg() ? ' border border-marron-oscuro' : 'border-none'"
     [title]="isWhiteBg() ? 'Fondo transparente' : 'Fondo blanco'" [class.opacity-60]="hasIsolatedPart() || isLoading()"
@@ -174,7 +174,7 @@
   </div>
   }
 
-  <button (click)="toggleVoiceAction.emit()"
+  <button data-tour="voice-control" (click)="toggleVoiceAction.emit()"
     [title]="isVoiceListening() ? 'Desactivar control por voz' : 'Activar control por voz (\'siguiente paso\' / \'paso anterior\')'"
     class="voice-btn shadow-lg z-10" [class.voice-btn--active]="isVoiceListening()"
     [class.has-command]="lastCommand() !== null" [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()"
