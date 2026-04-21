@@ -38,6 +38,8 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
     private autoSendPieceSub?: Subscription;
 
     isPlaying: boolean = false;
+    showWelcomePopup: boolean = false;
+    private welcomePopupShown: boolean = false;
 
     @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
     @ViewChild('messageInput') private messageInput!: ElementRef<HTMLInputElement>;
@@ -98,6 +100,15 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
             this.newMessage = pieceName;
             this.sendMessage();
         });
+
+        // Mostrar popup de bienvenida automáticamente cuando entra a la página
+        // (solo si no estamos en modo montaje)
+        setTimeout(() => {
+            if (!this.inMontajeMode && !this.welcomePopupShown) {
+                this.showWelcomePopup = true;
+                this.welcomePopupShown = true;
+            }
+        }, 800);
     }
     ngAfterViewChecked() {
         if (this.shouldScroll) {
@@ -125,8 +136,16 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                     document.body.style.overflow = '';
                     window.scrollTo({ top: this.scrollPosition, behavior: 'auto' });
                 }
+                // Cerrar popup de bienvenida cuando se cierra el chatbot
+                this.showWelcomePopup = false;
             }
 
+
+            // Mostrar popup de bienvenida la primera vez que se abre el chatbot
+            if (this.chatVisible && !this.welcomePopupShown && !this.inMontajeMode) {
+                this.showWelcomePopup = true;
+                this.welcomePopupShown = true;
+            }
 
             // Enviar welcome event la primera vez que se abre el chatbot (solo si no estamos en montaje)
             if (this.chatVisible && !this.welcomeEventSent && !this.inMontajeMode) {
@@ -612,5 +631,9 @@ export class Chatbot implements OnInit, AfterViewChecked, OnDestroy {
                     console.error("Error iniciando montaje automáticamente:", err);
                 }
             });
+    }
+
+    closeWelcomePopup() {
+        this.showWelcomePopup = false;
     }
 }

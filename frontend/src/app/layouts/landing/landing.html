@@ -68,7 +68,7 @@
     className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-azul-claro/5 rounded-full blur-3xl translate-y-1/4 -translate-x-1/4 pointer-events-none">
   </div>
   <!-- Sección de características, terminado y responsive-->
-  <section class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-20 page-main">
+  <section class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-20 page-main">
 
     <!-- Card 1: Visor 3D -->
     <div class="card-landing order-1 fade-slide" #card data-index="0">
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Card 2: Asistente Virtual -->
-    <div class="card-landing bg-beige! order-2 fade-slide" #card data-index="1">
+    <div class="card-landing order-2 fade-slide" #card data-index="1">
       <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" width="55px" viewBox="0 -960 960 960" fill="currentColor">
           <path
@@ -97,7 +97,7 @@
     </div>
 
     <!-- Card 3: Montaje sencillo -->
-    <div class="card-landing md:order-4 lg:order-3 fade-slide" #card data-index="2">
+    <div class="card-landing order-3 fade-slide" #card data-index="2">
       <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="55px" fill="currentColor">
           <path
@@ -109,16 +109,42 @@
       </p>
     </div>
 
-    <!-- Card 4: Accesible desde la web -->
-    <div class="card-landing bg-beige! md:order-3 lg:order-4 fade-slide" #card data-index="3">
+    <!-- Card 4: Control por Voz -->
+    <div class="card-landing order-4 fade-slide" #card data-index="3">
+      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="55px" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M480-320q50 0 85-35t35-85v-240q0-50-35-85t-85-35q-50 0-85 35t-35 85v240q0 50 35 85t85 35Zm0 80q-83 0-141.5-57.5T280-440h-80q0 100 70 170t170 70q100 0 170-70t70-170h-80q0 83-58.5 140.5T480-240Zm-40-360v-240q0-17 11.5-28.5T480-880q17 0 28.5 11.5T520-840v240q0 17-11.5 28.5T480-560q-17 0-28.5-11.5T440-600Zm200 60q-17 0-28.5-11.5T600-580q0-33-7-65t-19-61q-12-29 3-53t41-27q28 6 41 32t7 58q-15 40-23 81t-8 84q0 17-11.5 28.5T640-540Zm-320 0q-17 0-28.5-11.5T280-580q0-43-8-84t-23-81q-6-32 7-58t41-32q26-3 41 27t3 53q-12 29-19 61t-7 65q0 17-11.5 28.5T320-540Z" />
+        </svg></span>
+      <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Control por Voz</h3>
+      <p class="text-marron-oscuro text-base">
+        Navega y controla con tu voz, perfecto para cuando tienes las manos ocupadas.
+      </p>
+    </div>
+
+    <!-- Card 5: Modo AR -->
+    <div class="card-landing order-5 fade-slide" #card data-index="4">
+      <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="55px" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M120-120v-80h80v-480q0-33 23.5-56.5T280-760h400q33 0 56.5 23.5T760-680v480h80v80H120Zm160-80h400v-480H280v480Zm0 0v-480 480Zm120-120h160v-80H400v80Zm0-120h160v-80H400v80ZM200-760h560q0-33-23.5-56.5T680-840H280q-33 0-56.5 23.5T200-760Zm0 0h560-560Z" />
+        </svg></span>
+      <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Modo Realidad Aumentada</h3>
+      <p class="text-marron-oscuro text-base">
+        Visualiza el mueble montado en tu espacio real antes de empezar.
+      </p>
+    </div>
+
+    <!-- Card 6: Accesible desde la web -->
+    <div class="card-landing order-6 fade-slide" #card data-index="5">
       <span class="material-symbols-rounded text-marron-oscuro icon mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="55px" fill="currentColor">
           <path
             d="M120-560v-240q0-17 11.5-28.5T160-840h240q17 0 28.5 11.5T440-800v240q0 17-11.5 28.5T400-520H160q-17 0-28.5-11.5T120-560Zm80-40h160v-160H200v160Zm-80 440v-240q0-17 11.5-28.5T160-440h240q17 0 28.5 11.5T440-400v240q0 17-11.5 28.5T400-120H160q-17 0-28.5-11.5T120-160Zm80-40h160v-160H200v160Zm320-360v-240q0-17 11.5-28.5T560-840h240q17 0 28.5 11.5T840-800v240q0 17-11.5 28.5T800-520H560q-17 0-28.5-11.5T520-560Zm80-40h160v-160H600v160Zm160 480v-80h80v80h-80ZM520-360v-80h80v80h-80Zm80 80v-80h80v80h-80Zm-80 80v-80h80v80h-80Zm80 80v-80h80v80h-80Zm80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80 80v-80h80v80h-80Z" />
         </svg></span>
-      <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Accesible desde la web</h3>
+      <h3 class="text-2xl font-semibold text-marron-oscuro mb-2">Accesible desde cualquier dispositivo</h3>
       <p class="text-marron-oscuro text-base">
-        No necesitas instalar nada, funciona desde cualquier dispositivo.
+        Web, tablet o móvil. Funciona en cualquier lugar y dispositivo.
       </p>
     </div>
 

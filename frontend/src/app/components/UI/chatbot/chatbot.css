@@ -61,3 +61,83 @@
 .chip {
   @apply bg-marron-oscuro/10 text-marron-oscuro px-3 py-1 rounded-full text-sm hover:bg-marron-oscuro/20 transition;
 }
+
+/* Estilos del popup de bienvenida como bocadillo */
+.welcome-popup-overlay {
+  @apply fixed z-50 pointer-events-none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.welcome-popup-content {
+  @apply fixed bg-white rounded-2xl shadow-lg p-3 max-w-xs pointer-events-auto;
+  bottom: 90px;
+  right: 20px;
+  width: 220px;
+  animation: bubblePop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (min-width: 768px) {
+  .welcome-popup-content {
+    right: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .welcome-popup-content {
+    right: 68px;
+  }
+}
+
+/* Triangulo del bocadillo apuntando hacia abajo */
+.welcome-popup-content::after {
+  content: '';
+  @apply absolute bottom-0 right-6 w-0 h-0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid white;
+  transform: translateY(12px);
+}
+
+@keyframes bubblePop {
+  from {
+    opacity: 0;
+    transform: scale(0.3) translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.close-button {
+  @apply absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600 transition;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.welcome-icon {
+  @apply mb-2 flex justify-start;
+}
+
+.welcome-icon img {
+  @apply w-8 h-8 rounded-full shadow-sm;
+}
+
+.welcome-title {
+  @apply text-base font-bold text-marron-oscuro mb-1;
+}
+
+.welcome-message {
+  @apply text-gray-700 text-xs mb-3 leading-snug;
+  color: #333;
+}
+
+.welcome-button {
+  @apply bg-marron-oscuro text-white px-4 py-1 rounded-full text-xs font-semibold hover:bg-marron-oscuro/90 transition-colors duration-300 shadow-md hover:shadow-lg w-full;
+}

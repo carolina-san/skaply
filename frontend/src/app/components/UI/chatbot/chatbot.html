@@ -172,3 +172,19 @@
         </div>
     </div>
 </div>
+
+<!-- Popup de bienvenida como bocadillo - fuera del wrapper para posicionamiento correcto -->
+<div *ngIf="showWelcomePopup" class="welcome-popup-overlay">
+    <div class="welcome-popup-content">
+        <button class="close-button" (click)="closeWelcomePopup()">×</button>
+        <div class="flex gap-2">
+            <div class="welcome-icon">
+                <img src="assets/imgs/Allen.png" alt="Allen">
+            </div>
+            <div class="flex-1">
+                <h3 class="welcome-title">¡Hola!</h3>
+                <p class="welcome-message">Soy Allen, tu asistente virtual. ¡Estaré encantada de poder ayudarte!</p>
+            </div>
+        </div>
+    </div>
+</div>
