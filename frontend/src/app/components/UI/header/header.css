@@ -34,7 +34,7 @@
 }
 
 .header-assembly {
-  @apply lg:w-[75%] px-5 bg-marron-oscuro h-20;
+  @apply lg:w-[75%] px-5 bg-none h-18 pt-10 !z-20;
   /* ancho del header en modo montaje */
 }
 
