@@ -72,8 +72,8 @@
 }
 
 .welcome-popup-content {
-  @apply fixed bg-white rounded-2xl shadow-lg p-3 max-w-xs pointer-events-auto;
-  bottom: 90px;
+  @apply fixed bg-white rounded-xl shadow-lg px-3 py-2 max-w-xs pointer-events-auto;
+  bottom: 95px;
   right: 20px;
   width: 220px;
   animation: bubblePop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -81,13 +81,15 @@
 
 @media (min-width: 768px) {
   .welcome-popup-content {
-    right: 40px;
+    right: 45px;
+    bottom: 115px;
+
   }
 }
 
 @media (min-width: 1024px) {
   .welcome-popup-content {
-    right: 68px;
+    right: 73px;
   }
 }
 
@@ -106,6 +108,7 @@
     opacity: 0;
     transform: scale(0.3) translateY(60px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -121,20 +124,14 @@
   cursor: pointer;
 }
 
-.welcome-icon {
-  @apply mb-2 flex justify-start;
-}
 
-.welcome-icon img {
-  @apply w-8 h-8 rounded-full shadow-sm;
-}
 
 .welcome-title {
   @apply text-base font-bold text-marron-oscuro mb-1;
 }
 
 .welcome-message {
-  @apply text-gray-700 text-xs mb-3 leading-snug;
+  @apply text-gray-700 text-xs mb-1 leading-snug;
   color: #333;
 }
 

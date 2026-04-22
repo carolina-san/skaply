@@ -97,7 +97,8 @@
 
                             <!-- List item -->
                             <div *ngIf="item.type === 'list'" class="msg-bot">
-                                <h4 class="font-bold">{{ item.title }}</h4>
+                                <h4 class="font-bold titulo">{{ item.title }}</h4>
+                                <p *ngIf="item.subtitle" class="subtitulo">{{ item.subtitle }}</p>
                                 <div *ngIf="item.items && item.items.length > 0" class="text-sm space-y-2 mt-1 ml-2">
                                     <div *ngFor="let subitem of item.items">
                                         <p class="titulo">{{ subitem.title }}</p>
@@ -178,7 +179,7 @@
     <div class="welcome-popup-content">
         <button class="close-button" (click)="closeWelcomePopup()">×</button>
 
-        <div class="flex-1">
+        <div>
             <h3 class="welcome-title">¡Hola!</h3>
             <p class="welcome-message">Soy Allen, tu asistente virtual. ¡Estaré encantado de ayudarte!</p>
         </div>

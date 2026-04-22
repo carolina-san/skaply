@@ -1103,7 +1103,7 @@ export class ChatbotService {
                   {
                     type: "description",
                     text: [
-                      `Aislando la pieza ${partName}...`
+                      `Pieza ${fullPartName} aislada correctamente.`
                     ]
                   }
                 ]
