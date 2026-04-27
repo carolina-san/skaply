@@ -32,19 +32,19 @@ export class OpenData implements OnInit {
   datasetMetadata = {
     name: 'Skäply Furniture Dataset',
     description: 'Conjunto de datos abierto que contiene información estadística y descriptiva sobre los muebles disponibles en la plataforma Skäply.',
-    publisher: 'Grupo ABP Lynk',
+    publisher: 'Lynk Team',
     license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
     formats: ['CSV', 'JSON'],
     creationDate: '2026-04-27',
     updateFrequency: 'Mensual',
     language: 'Español',
-    observations: 'El dataset incluye identificadores, referencias, nombres, descripciones cortas, colores, dificultad de montaje, y el identificador del proveedor.'
+    observations: 'El dataset incluye identificadores, referencias, nombres, descripciones cortas, colores, dificultad de montaje, y el proveedor.'
   };
 
   constructor(
     private apiService: ApiService,
     private seoService: SeoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Configurar SEO y Schema.org
@@ -113,11 +113,11 @@ export class OpenData implements OnInit {
       next: (results: any) => {
         const data = results.furniture;
         if (data && data.data) {
-           this.furnitureList = data.data;
+          this.furnitureList = data.data;
         } else if (Array.isArray(data)) {
-           this.furnitureList = data;
+          this.furnitureList = data;
         } else if (data && data.furniture) {
-           this.furnitureList = data.furniture;
+          this.furnitureList = data.furniture;
         }
 
         if (results.categories && results.categories.data) {
@@ -139,9 +139,9 @@ export class OpenData implements OnInit {
 
   downloadCSV(): void {
     if (!this.furnitureList.length) return;
-    
+
     const headers = ['ID', 'Referencia', 'Nombre', 'Descripcion', 'Color', 'Dificultad', 'Proveedor', 'Categoria'];
-    
+
     const rows = this.furnitureList.map(item => [
       item.id,
       `"${item.reference_number || ''}"`,
@@ -152,18 +152,18 @@ export class OpenData implements OnInit {
       `"${this.getProviderName(item.provider_id) || ''}"`,
       `"${this.getCategoryName(item.category_id) || ''}"`
     ]);
-    
+
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
-    
+
     this.triggerDownload(csvContent, 'text/csv;charset=utf-8;', 'skaply-muebles-dataset.csv');
   }
 
   downloadJSON(): void {
     if (!this.furnitureList.length) return;
-    
+
     const jsonContent = JSON.stringify(this.furnitureList, null, 2);
     this.triggerDownload(jsonContent, 'application/json;charset=utf-8;', 'skaply-muebles-dataset.json');
   }
@@ -181,7 +181,7 @@ export class OpenData implements OnInit {
   }
 
   getDifficultyLabel(difficulty: string): string {
-    switch(difficulty) {
+    switch (difficulty) {
       case 'low': return 'Fácil';
       case 'medium': return 'Medio';
       case 'high': return 'Difícil';

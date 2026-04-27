@@ -33,7 +33,9 @@
         </li>
         <li class="flex justify-between">
           <span class="font-bold">Licencia:</span>
-          <span>{{ datasetMetadata.license }}</span>
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" class="underline">
+            {{ datasetMetadata.license }}
+          </a>
         </li>
       </ul>
     </section>
@@ -155,6 +157,11 @@
       Ver más
     </button>
   </div>
+  <p class="text-xs text-beige mt-4 text-center">
+    Datos publicados por {{ datasetMetadata.publisher }} bajo licencia
+    <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">
+      CC BY 4.0</a>.
+  </p>
 </main>
 
 <app-footer></app-footer>
