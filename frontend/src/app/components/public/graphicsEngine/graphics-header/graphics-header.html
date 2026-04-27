@@ -48,7 +48,7 @@
       <p class="font-semibold" [ngClass]="isWhiteBg() ? 'text-marron-oscuro' : 'text-beige'">Inspeccionando pieza: {{
         isolatedPartName() }}</p>
       <button (click)="exitIsolationAction.emit()"
-        class="w-fit px-2 py-0.5 bg-azul-claro text-marron-oscuro font-semibold rounded-full transition-all duration-200  hover:opacity-80 shadow-lg flex items-center justify-start gap-1 text-sm"
+        class="w-fit px-2 py-0.5 bg-azul-claro text-marron-oscuro font-semibold rounded-full transition-all duration-200  hover:opacity-80 shadow-lg flex items-center justify-start gap-1 text-sm md:hidden"
         [class.border]="isWhiteBg()" [class.border-marron-oscuro]="isWhiteBg()">
 
         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
