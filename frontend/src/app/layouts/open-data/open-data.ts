@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { SeoService } from '../../services/seo.service';
 import { Furniture } from '../../types/furniture.types';
-import { Header } from '../../components/UI/header/header';
 import { Footer } from '../../components/UI/footer/footer';
 import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-open-data',
   standalone: true,
-  imports: [CommonModule, Header, Footer],
+  imports: [CommonModule, Footer],
   templateUrl: './open-data.html',
   styleUrl: './open-data.css'
 })
