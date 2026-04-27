@@ -1,0 +1,160 @@
+<main class="pt-30 mx-auto page-main pb-10 fondo">
+  <h1 class="text-5xl font-bold text-azul-claro">Datos Abiertos</h1>
+
+  <p class="text-white mb-5">
+    Explora y descarga el conjunto de datos de muebles disponibles en Skäply.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <section class="bg-beige p-4 rounded-2xl ">
+      <h2 class="titulo">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+          <path
+            d="M508.5-291.5Q520-303 520-320v-160q0-17-11.5-28.5T480-520q-17 0-28.5 11.5T440-480v160q0 17 11.5 28.5T480-280q17 0 28.5-11.5Zm0-320Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+        </svg>
+        Información del Dataset
+      </h2>
+      <ul class="space-y-2 text-sm list-none text-marron-oscuro">
+        <li class="flex justify-between border-b border-beige-oscuro pb-2">
+          <span class="font-bold">Nombre:</span>
+          <span>{{ datasetMetadata.name }}</span>
+        </li>
+        <li class="flex justify-between border-b border-beige-oscuro pb-2">
+          <span class="font-bold">Publicador:</span>
+          <span>{{ datasetMetadata.publisher }}</span>
+        </li>
+        <li class="flex justify-between border-b border-beige-oscuro pb-2">
+          <span class="font-bold">Fecha Creación:</span>
+          <span>{{ datasetMetadata.creationDate }}</span>
+        </li>
+        <li class="flex justify-between border-b border-beige-oscuro pb-2">
+          <span class="font-bold">Actualización:</span>
+          <span>{{ datasetMetadata.updateFrequency }}</span>
+        </li>
+        <li class="flex justify-between">
+          <span class="font-bold">Licencia:</span>
+          <span>{{ datasetMetadata.license }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="bg-beige p-4 rounded-2xl flex flex-col">
+      <h2 class="titulo">
+
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+          <path
+            d="M465-339.5q-7-2.5-13-8.5L308-492q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T365-549l75 75v-286q0-17 11.5-28.5T480-800q17 0 28.5 11.5T520-760v286l75-75q12-12 28.5-11.5T652-548q11 12 11.5 28T652-492L508-348q-6 6-13 8.5t-15 2.5q-8 0-15-2.5ZM240-160q-33 0-56.5-23.5T160-240v-80q0-17 11.5-28.5T200-360q17 0 28.5 11.5T240-320v80h480v-80q0-17 11.5-28.5T760-360q17 0 28.5 11.5T800-320v80q0 33-23.5 56.5T720-160H240Z" />
+        </svg>
+        Descargar Datos
+      </h2>
+      <p class="text-sm text-marron-oscuro mb-6 flex-grow mt-4">
+        {{ datasetMetadata.description }}
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 mt-auto">
+        <button (click)="downloadCSV()" [disabled]="loading || !furnitureList.length"
+          class="flex-1 flex justify-center items-center px-4 py-3 bg-azul-claro text-marron-oscuro font-bold rounded-xl hover:bg-azul-medio transition-colors border-1 border-marron-oscuro/70 disabled:opacity-50 disabled:cursor-not-allowed gap-2">
+
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+            fill="currentColor">
+            <path
+              d="M465-339.5q-7-2.5-13-8.5L308-492q-12-12-11.5-28t11.5-28q12-12 28.5-12.5T365-549l75 75v-286q0-17 11.5-28.5T480-800q17 0 28.5 11.5T520-760v286l75-75q12-12 28.5-11.5T652-548q11 12 11.5 28T652-492L508-348q-6 6-13 8.5t-15 2.5q-8 0-15-2.5ZM240-160q-33 0-56.5-23.5T160-240v-80q0-17 11.5-28.5T200-360q17 0 28.5 11.5T240-320v80h480v-80q0-17 11.5-28.5T760-360q17 0 28.5 11.5T800-320v80q0 33-23.5 56.5T720-160H240Z" />
+          </svg>
+          Descargar CSV
+        </button>
+
+        <button (click)="downloadJSON()" [disabled]="loading || !furnitureList.length"
+          class="flex-1 flex justify-center items-center px-4 py-3 bg-white text-marron-oscuro font-bold rounded-xl hover:bg-gray-100 transition-colors border-1 border-marron-oscuro/70 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+          </svg>
+          Descargar JSON
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <section class=" ">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-1 pb-2 mt-5">
+      <h2 class="text-beige text-3xl font-bold">Vista Previa de Datos</h2>
+      <span
+        class="bg-azul-claro text-marron-oscuro text-sm font-bold px-2.5 py-0.5 rounded-full border border-marron-oscuro/70 mt-2 md:mt-0">
+        {{ furnitureList.length }} registros disponibles
+      </span>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded-2xl">
+      <div *ngIf="loading" class="p-12 flex justify-center items-center">
+        <div class="animate-spin rounded-full h-12 w-12 "></div>
+      </div>
+
+      <table *ngIf="!loading && furnitureList.length > 0"
+        class="w-full border-collapse border border-beige-oscuro min-w-full">
+        <thead class="bg-beige">
+          <tr>
+            <th scope="col" class="celda text-marron-oscuro">ID
+            </th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Referencia</th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Nombre</th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Categoría</th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Color</th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Dificultad</th>
+            <th scope="col" class="celda text-marron-oscuro">
+              Proveedor</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          <tr *ngFor="let item of visibleFurnitureList"
+            class="border-b border-gray-300 hover:bg-beige/80 even:bg-beige/20 transition-colors text-marron-oscuro">
+            <td class="celda font-semibold">{{ item.id }}
+            </td>
+            <td class="celda font-mono text-xs">{{
+              item.reference_number }}</td>
+            <td class="celda font-semibold">{{ item.name }}
+            </td>
+            <td class="celda">{{
+              getCategoryName(item.category_id) }}</td>
+            <td class="celda">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full  border border-beige-oscuro"
+                  [ngStyle]="{'background-color': item.color_hex}"></span>
+                {{ item.color_name }}
+              </div>
+            </td>
+            <td class="celda">
+              <span class="px-2 py-1 rounded-lg text-xs font-medium border border-beige-oscuro" [ngClass]="{
+                      'bg-green-100 text-green-800': item.difficulty === 'low',
+                      'bg-yellow-100 text-yellow-800': item.difficulty === 'medium',
+                      'bg-red-100 text-red-800': item.difficulty === 'high'
+                    }">
+                {{ getDifficultyLabel(item.difficulty) }}
+              </span>
+            </td>
+            <td class="celda">{{
+              getProviderName(item.provider_id) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+
+
+      <div *ngIf="!loading && furnitureList.length === 0" class="p-12 text-center text-marron-oscuro">
+        No hay datos disponibles en este momento.
+      </div>
+    </div>
+  </section>
+  <div *ngIf="!loading && visibleCount < furnitureList.length" class="p-4 flex justify-center">
+    <button (click)="showMore()"
+      class="px-6 py-2 bg-azul-claro text-marron-oscuro font-bold rounded-xl hover:bg-opacity-80 transition-colors border border-marron-oscuro/70 shadow-sm">
+      Ver más
+    </button>
+  </div>
+</main>
+
+<app-footer></app-footer>
