@@ -105,7 +105,7 @@ export class OpenData implements OnInit {
     });
 
     forkJoin({
-      furniture: this.apiService.getAllFurniture(),
+      furniture: this.apiService.getVisibleFurniture(),
       categories: this.apiService.getCategories(),
       providers: this.apiService.getVisibleProviders()
     }).subscribe({
