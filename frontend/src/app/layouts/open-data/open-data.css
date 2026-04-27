@@ -1,0 +1,17 @@
+@import "../../../styles.css";
+
+.titulo {
+  @apply flex items-center gap-2 pb-2 text-marron-oscuro text-2xl border-b-2 border-beige-oscuro mb-2;
+}
+
+h3 {
+  @apply text-marron-oscuro text-xl font-bold mt-4 mb-1;
+}
+
+h4 {
+  @apply text-marron-oscuro text-lg font-bold mt-3;
+}
+
+.celda {
+  @apply border border-beige-oscuro p-2 text-sm md:text-base;
+}
