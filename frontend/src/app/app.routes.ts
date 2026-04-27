@@ -1,31 +1,19 @@
 import { Routes } from '@angular/router';
-import { Home } from './layouts/home/home';
-import { Viewer3D } from './layouts/viewer-3d/viewer-3d';
-import { Landing } from './layouts/landing/landing';
-import { Register } from './layouts/register/register';
-import { Login } from './layouts/login/login';
-import { AdminProfile } from './layouts/admin-profile/admin-profile';
-import { Cookies } from './layouts/legal/cookies';
-import { LegalNotice } from './layouts/legal/legal-notice';
-import { Privacy } from './layouts/legal/privacy';
-import { ProviderProfile } from './layouts/provider-profile/provider-profile';
-import { WebglSceneComponent } from './layouts/webgl-demo-1/webgl-demo-1'; //new
 import { roleGuard } from './guards/role.guard';
-import { OpenData } from './layouts/open-data/open-data';
 
 export const routes: Routes = [
-    { path: '', component: Landing },
-    { path: 'home', component: Home },
-    { path: 'viewer-3d/:ref', component: Viewer3D },
-    { path: 'register', component: Register },
-    { path: 'login', component: Login },
-    { path: 'login/success', component: Login }, // Maneja el callback de Google OAuth
-    { path: 'admin', component: AdminProfile, canActivate: [roleGuard], data: { roles: ['admin'] } },
-    { path: 'provider', component: ProviderProfile, canActivate: [roleGuard], data: { roles: ['provider'] } },
-    { path: 'cookies', component: Cookies },
-    { path: 'legal-notice', component: LegalNotice },
-    { path: 'privacy', component: Privacy },
-    { path: 'open-data', component: OpenData },
-    { path: 'webgl1', component: WebglSceneComponent }, //new
-    { path: '**', redirectTo: 'home' } // Redirige cualquier ruta no encontrada al catálogo
+    { path: '', loadComponent: () => import('./layouts/landing/landing').then(m => m.Landing) },
+    { path: 'home', loadComponent: () => import('./layouts/home/home').then(m => m.Home) },
+    { path: 'viewer-3d/:ref', loadComponent: () => import('./layouts/viewer-3d/viewer-3d').then(m => m.Viewer3D) },
+    { path: 'register', loadComponent: () => import('./layouts/register/register').then(m => m.Register) },
+    { path: 'login', loadComponent: () => import('./layouts/login/login').then(m => m.Login) },
+    { path: 'login/success', loadComponent: () => import('./layouts/login/login').then(m => m.Login) }, 
+    { path: 'admin', loadComponent: () => import('./layouts/admin-profile/admin-profile').then(m => m.AdminProfile), canActivate: [roleGuard], data: { roles: ['admin'] } },
+    { path: 'provider', loadComponent: () => import('./layouts/provider-profile/provider-profile').then(m => m.ProviderProfile), canActivate: [roleGuard], data: { roles: ['provider'] } },
+    { path: 'cookies', loadComponent: () => import('./layouts/legal/cookies').then(m => m.Cookies) },
+    { path: 'legal-notice', loadComponent: () => import('./layouts/legal/legal-notice').then(m => m.LegalNotice) },
+    { path: 'privacy', loadComponent: () => import('./layouts/legal/privacy').then(m => m.Privacy) },
+    { path: 'open-data', loadComponent: () => import('./layouts/open-data/open-data').then(m => m.OpenData) },
+    { path: 'webgl1', loadComponent: () => import('./layouts/webgl-demo-1/webgl-demo-1').then(m => m.WebglSceneComponent) }, 
+    { path: '**', redirectTo: 'home' } 
 ];
