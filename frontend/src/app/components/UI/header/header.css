@@ -34,8 +34,12 @@
 }
 
 .header-assembly {
-  @apply lg:w-[75%] px-5 bg-none h-18 pt-10 !z-20;
+  @apply lg:w-[75%] px-5 bg-none h-18 pt-10 !z-20 transition-colors duration-300;
   /* ancho del header en modo montaje */
+}
+
+:host-context(.viewer-white-bg) .header-assembly {
+  @apply bg-marron-oscuro/90 backdrop-blur-md shadow-sm;
 }
 
 .logo-panel {

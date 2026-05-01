@@ -432,6 +432,7 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
     this.parts = [];
     this.furnitureRoot = null;
 
+    document.body.classList.remove('viewer-white-bg');
     this.engineService.dispose();
   }
 
@@ -629,6 +630,16 @@ export class GraphicsEngineComponent implements OnInit, AfterViewInit, OnDestroy
 
   setSimulationSpeed(speed: number): void {
     this.simulationService.simulationSpeed.set(speed);
+  }
+
+  toggleWhiteBg(): void {
+    const newValue = !this.isWhiteBg();
+    this.isWhiteBg.set(newValue);
+    if (newValue) {
+      document.body.classList.add('viewer-white-bg');
+    } else {
+      document.body.classList.remove('viewer-white-bg');
+    }
   }
 
   onArStateChange(isActive: boolean): void {

@@ -87,7 +87,7 @@
     (modeChange)="setMode($event)" (goToStepAction)="goToStep($event)" (prevStepAction)="prevStep()"
     (nextStepAction)="nextStep()" (togglePauseAction)="togglePause()" (speedChange)="setSimulationSpeed($event)"
     (finishAction)="openFinishModal()" (toggleVoiceAction)="voiceControlService.toggle()"
-    (toggleBgColorAction)="isWhiteBg.set(!isWhiteBg())"
+    (toggleBgColorAction)="toggleWhiteBg()"
     (proceedMicPermission)="voiceControlService.proceedWithMicPermission()"
     (cancelMicPermission)="voiceControlService.cancelMicPermission()"
     (closeMicDenied)="voiceControlService.closeMicDenied()"
