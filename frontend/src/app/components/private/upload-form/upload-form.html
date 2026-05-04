@@ -4,7 +4,6 @@
       <span class="alert-text">{{ successMessage }}</span>
       <button (click)="clearMessages()" class="close-btn">&times;</button>
     </div>
-
     <div *ngIf="errorMessage" class="alert alert-error">
       <span class="alert-text">{{ errorMessage }}</span>
       <button (click)="clearMessages()" class="close-btn">&times;</button>
@@ -15,23 +14,26 @@
     <h4 class="text-base font-bold mb-2 text-marron-oscuro/60">Crear Nuevo Mueble</h4>
 
     <div class="form-columns">
+      <!-- ── Columna izquierda ── -->
       <div class="form-column">
         <div class="form-group">
           <label for="reference">Número de Referencia *</label>
-          <input type="text" id="reference" formControlName="reference_number" required placeholder="Ej: REF-001"
-            class="form-input"
+          <input type="text" id="reference" formControlName="reference_number" required
+            placeholder="Ej: REF-001" class="form-input"
             [class.error]="furnitureForm.get('reference_number')?.invalid && furnitureForm.get('reference_number')?.touched" />
           <span class="error-message"
             *ngIf="furnitureForm.get('reference_number')?.invalid && furnitureForm.get('reference_number')?.touched">
             El número de referencia es requerido
           </span>
         </div>
-        
+
         <div class="form-group">
           <label for="name">Nombre del Mueble *</label>
-          <input type="text" id="name" formControlName="name" placeholder="Ej: Silla de oficina" class="form-input"
+          <input type="text" id="name" formControlName="name" placeholder="Ej: Silla de oficina"
+            class="form-input"
             [class.error]="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched" />
-          <span class="error-message" *ngIf="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched">
+          <span class="error-message"
+            *ngIf="furnitureForm.get('name')?.invalid && furnitureForm.get('name')?.touched">
             El nombre es requerido (máximo 50 caracteres)
           </span>
         </div>
@@ -52,9 +54,7 @@
           <select id="category" formControlName="category_id" class="form-select"
             [class.error]="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched">
             <option value="">Selecciona</option>
-            <option *ngFor="let cat of categories" [value]="cat.id">
-              {{ cat.name }}
-            </option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
           </select>
           <span class="error-message"
             *ngIf="furnitureForm.get('category_id')?.invalid && furnitureForm.get('category_id')?.touched">
@@ -63,12 +63,14 @@
         </div>
       </div>
 
+      <!-- ── Columna derecha ── -->
       <div class="form-column">
         <div class="form-group">
           <label>Color *</label>
           <div class="color-selector-compact">
             <label *ngFor="let color of colors" class="color-option-compact"
-              [class.selected]="furnitureForm.get('color_id')?.value === color.id" [attr.title]="color.name">
+              [class.selected]="furnitureForm.get('color_id')?.value === color.id"
+              [attr.title]="color.name">
               <input type="radio" formControlName="color_id" [value]="color.id" />
               <div class="color-circle-compact" [style.background-color]="color.hex"></div>
             </label>
@@ -106,48 +108,75 @@
 
         <div class="form-group">
           <label for="people">Personas Requeridas *</label>
-          <input type="number" id="people" formControlName="required_people" min="1" max="10" class="form-input"
+          <input type="number" id="people" formControlName="required_people" min="1" max="10"
+            class="form-input"
             [class.error]="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched" />
           <span class="error-message"
             *ngIf="furnitureForm.get('required_people')?.invalid && furnitureForm.get('required_people')?.touched">
             Mínimo 1 persona requerida
           </span>
         </div>
-
-        <div class="form-group">
-          <label for="image">URL de Imagen</label>
-          <input type="url" id="image" formControlName="image_url" placeholder="https://..." class="form-input" />
-        </div>
       </div>
     </div>
 
+    <!-- ── Selectores de archivo ── -->
+
+    <!-- Modelo 3D -->
     <div class="form-group">
-      <label for="glb-file">Archivo GLB (Modelo 3D) *</label>
+      <label for="3d-file">Archivo 3D (Modelo) *</label>
       <div class="file-input-wrapper">
-        <input type="file" id="glb-file" accept=".glb" (change)="onGlbFileSelected($event)" class="file-input" />
-        <label for="glb-file" class="file-label">
-          {{ glbFile ? glbFile.name : 'Selecciona archivo .glb' }}
+        <input type="file" id="3d-file" [accept]="ACCEPTED_3D"
+          (change)="on3dFileSelected($event)" class="file-input" />
+        <label for="3d-file" class="file-label" [class.file-label--selected]="glbFile">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
+            <path d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+          </svg>
+          {{ glbFile ? glbFile.name : 'Seleccionar modelo 3D (.glb, .obj, .fbx…)' }}
         </label>
       </div>
-      <span class="helper-text">Archivo 3D en formato GLB</span>
+      <span class="helper-text">Formatos: .glb · .obj · .fbx · .3ds · .stl · .dae · .gltf</span>
     </div>
 
+    <!-- PDF de montaje -->
     <div class="form-group">
-      <label for="pdf-file">Archivo PDF (Manual de Montaje) *</label>
+      <label for="pdf-file">Manual de Montaje (PDF) *</label>
       <div class="file-input-wrapper">
-        <input type="file" id="pdf-file" accept=".pdf" (change)="onPdfFileSelected($event)" class="file-input" />
-        <label for="pdf-file" class="file-label">
-          {{ pdfFile ? pdfFile.name : 'Selecciona archivo .pdf' }}
+        <input type="file" id="pdf-file" [accept]="ACCEPTED_PDF"
+          (change)="onPdfFileSelected($event)" class="file-input" />
+        <label for="pdf-file" class="file-label" [class.file-label--selected]="pdfFile">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
+            <path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/>
+          </svg>
+          {{ pdfFile ? pdfFile.name : 'Seleccionar archivo .pdf' }}
         </label>
       </div>
       <span class="helper-text">Manual de montaje en formato PDF</span>
     </div>
 
+    <!-- Imagen del mueble -->
+    <div class="form-group">
+      <label for="image-file">Foto del Mueble <span class="optional-tag">(opcional)</span></label>
+      <div class="file-input-wrapper">
+        <input type="file" id="image-file" [accept]="ACCEPTED_IMG"
+          (change)="onImageFileSelected($event)" class="file-input" />
+        <label for="image-file" class="file-label" [class.file-label--selected]="imageFile">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
+            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"/>
+          </svg>
+          {{ imageFile ? imageFile.name : 'Seleccionar imagen (.jpg, .png, .webp…)' }}
+        </label>
+      </div>
+      <span class="helper-text">Formatos: .jpg · .jpeg · .png · .webp · .gif · .avif</span>
+    </div>
+
+    <!-- ── Acciones ── -->
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || !glbFile || !pdfFile">
+      <button type="submit" class="btn btn-primary"
+        [disabled]="isSubmitting || !glbFile || !pdfFile">
         {{ isSubmitting ? 'Creando...' : 'Crear Mueble' }}
       </button>
-      <button type="reset" class="btn btn-secondary" [disabled]="isSubmitting">
+      <button type="button" class="btn btn-secondary" [disabled]="isSubmitting"
+        (click)="furnitureForm.reset({required_people:1}); glbFile=null; pdfFile=null; imageFile=null">
         Limpiar Formulario
       </button>
     </div>

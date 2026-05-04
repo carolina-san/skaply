@@ -18,13 +18,25 @@ export class UploadForm implements OnInit {
   categories: any[] = [];
   colors: any[] = [];
   difficulties = Object.values(Difficulty);
+
+  /** Modelo 3D (.glb, .obj, .3ds, …) */
   glbFile: File | null = null;
+  /** PDF de montaje */
   pdfFile: File | null = null;
+  /** Foto del mueble */
+  imageFile: File | null = null;
+
   isSubmitting = false;
   successMessage = '';
   errorMessage = '';
+
   private messageTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private readonly messageDurationMs = 3500;
+
+  // Extensiones aceptadas
+  readonly ACCEPTED_3D   = '.glb,.obj,.fbx,.3ds,.stl,.dae,.gltf,.ply';
+  readonly ACCEPTED_IMG  = '.jpg,.jpeg,.png,.webp,.gif,.avif';
+  readonly ACCEPTED_PDF  = '.pdf';
 
   constructor(
     private fb: FormBuilder,
@@ -37,19 +49,17 @@ export class UploadForm implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.loadColors();
-    console.log('Upload form initialized');
   }
 
   private initializeForm(): void {
     this.furnitureForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(50)]],
-      short_description: ['', [Validators.required]],
-      category_id: ['', Validators.required],
-      color_id: ['', Validators.required],
-      difficulty: ['', Validators.required],
-      required_people: [1, [Validators.required, Validators.min(1)]],
+      name:             ['', [Validators.required, Validators.maxLength(50)]],
+      short_description:['', [Validators.required]],
+      category_id:      ['', Validators.required],
+      color_id:         ['', Validators.required],
+      difficulty:       ['', Validators.required],
+      required_people:  [1, [Validators.required, Validators.min(1)]],
       reference_number: ['', Validators.required],
-      image_url: ['']
     });
   }
 
@@ -58,10 +68,7 @@ export class UploadForm implements OnInit {
       next: (response: any) => {
         this.categories = Array.isArray(response.data) ? response.data : response;
       },
-      error: (err) => {
-        console.error('Error loading categories:', err);
-        this.showErrorMessage('Error al cargar las categorías');
-      }
+      error: () => this.showErrorMessage('Error al cargar las categorías')
     });
   }
 
@@ -69,29 +76,31 @@ export class UploadForm implements OnInit {
     this.apiService.getColors().subscribe({
       next: (response: any) => {
         this.colors = Array.isArray(response.data) ? response.data : response;
-        console.log('Colores cargados:', this.colors);
       },
-      error: (err) => {
-        console.error('Error loading colors:', err);
-        this.showErrorMessage('Error al cargar los colores');
-      }
+      error: () => this.showErrorMessage('Error al cargar los colores')
     });
   }
 
-  onGlbFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.name.endsWith('.glb')) {
+  // ─── Handlers de selección de archivo ────────────────────────────────────
+
+  on3dFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const valid = ['glb','obj','fbx','3ds','stl','dae','gltf','ply'].includes(ext);
+    if (valid) {
       this.glbFile = file;
       this.dismissErrorMessage();
     } else {
-      this.showErrorMessage('Por favor selecciona un archivo .glb válido');
+      this.showErrorMessage('Formato 3D no válido. Usa .glb, .obj, .fbx, .3ds…');
       this.glbFile = null;
     }
   }
 
-  onPdfFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.name.endsWith('.pdf')) {
+  onPdfFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    if (file.name.toLowerCase().endsWith('.pdf')) {
       this.pdfFile = file;
       this.dismissErrorMessage();
     } else {
@@ -100,9 +109,26 @@ export class UploadForm implements OnInit {
     }
   }
 
+  onImageFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const valid = ['jpg','jpeg','png','webp','gif','avif'].includes(ext);
+    if (valid) {
+      this.imageFile = file;
+      this.dismissErrorMessage();
+    } else {
+      this.showErrorMessage('Formato de imagen no válido. Usa .jpg, .png, .webp…');
+      this.imageFile = null;
+    }
+  }
+
+  // ─── Submit ───────────────────────────────────────────────────────────────
+
   async onSubmit(): Promise<void> {
     if (!this.furnitureForm.valid || !this.glbFile || !this.pdfFile) {
-      this.showErrorMessage('Por favor completa todos los campos requeridos y selecciona ambos archivos');
+      this.furnitureForm.markAllAsTouched();
+      this.showErrorMessage('Por favor completa todos los campos requeridos y selecciona los archivos obligatorios');
       return;
     }
 
@@ -110,59 +136,61 @@ export class UploadForm implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    try {
-      const user = this.authService.getCurrentUser();
-      if (!user) {
-        this.showErrorMessage('Usuario no autenticado');
-        this.isSubmitting = false;
-        return;
-      }
-
-      // Aquí deberías cargar los archivos a un servicio de almacenamiento
-      // y obtener las URIs. Por ahora, usando placeholder URIs.
-      const formData = {
-        ...this.furnitureForm.value,
-        file_uri: await this.uploadFile(this.glbFile),
-        assemblyPDF_uri: await this.uploadFile(this.pdfFile),
-        provider_id: user.id,
-        visible: true
-      };
-
-      this.apiService.createFurniture(formData).subscribe({
-        next: (response) => {
-          this.showSuccessMessage('Mueble creado correctamente');
-          this.furnitureForm.reset();
-          this.glbFile = null;
-          this.pdfFile = null;
-          this.isSubmitting = false;
-
-          // Reset file inputs
-          const glbInput = document.getElementById('glb-file') as HTMLInputElement;
-          const pdfInput = document.getElementById('pdf-file') as HTMLInputElement;
-          if (glbInput) glbInput.value = '';
-          if (pdfInput) pdfInput.value = '';
-
-          setTimeout(() => {
-            this.furnitureCreated.emit();
-          }, 1200);
-        },
-        error: (err) => {
-          this.showErrorMessage(err.error?.message || 'Error al crear el mueble');
-          this.isSubmitting = false;
-        }
-      });
-    } catch (error: any) {
-      this.showErrorMessage('Error al procesar los archivos');
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.showErrorMessage('Usuario no autenticado');
       this.isSubmitting = false;
+      return;
     }
+
+    // Construir FormData con campos de texto + archivos
+    const fd = new FormData();
+    const formVal = this.furnitureForm.value;
+
+    fd.append('name',              formVal.name);
+    fd.append('short_description', formVal.short_description);
+    fd.append('category_id',       String(formVal.category_id));
+    fd.append('color_id',          String(formVal.color_id));
+    fd.append('difficulty',        formVal.difficulty);
+    fd.append('required_people',   String(formVal.required_people));
+    fd.append('reference_number',  formVal.reference_number);
+    fd.append('provider_id',       String(user.id));
+    fd.append('visible',           'false');
+
+    // Archivos
+    fd.append('file_3d',      this.glbFile);            // → /storage/modelos_3d/
+    fd.append('assembly_pdf', this.pdfFile);             // → /storage/pdfs/
+    if (this.imageFile) {
+      fd.append('image_uri',  this.imageFile);           // → /storage/fotos/
+    }
+
+    this.apiService.createFurniture(fd).subscribe({
+      next: () => {
+        this.showSuccessMessage('¡Mueble creado correctamente!');
+        this.resetForm();
+        setTimeout(() => this.furnitureCreated.emit(), 1200);
+      },
+      error: (err) => {
+        this.showErrorMessage(err.error?.message || 'Error al crear el mueble');
+        this.isSubmitting = false;
+      }
+    });
   }
 
-  private uploadFile(file: File): Promise<string> {
-    // Placeholder para subida de archivo
-    // Aquí implementar la lógica real de subida a un servicio de almacenamiento
-    // Por ahora retorna una URI temporal
-    return Promise.resolve(`/storage/${file.name}`);
+  private resetForm(): void {
+    this.furnitureForm.reset({ required_people: 1 });
+    this.glbFile   = null;
+    this.pdfFile   = null;
+    this.imageFile = null;
+    this.isSubmitting = false;
+
+    (['3d-file', 'pdf-file', 'image-file'] as const).forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | null;
+      if (el) el.value = '';
+    });
   }
+
+  // ─── Mensajes ─────────────────────────────────────────────────────────────
 
   clearMessages(): void {
     this.clearMessageTimer();
@@ -183,28 +211,18 @@ export class UploadForm implements OnInit {
   }
 
   private dismissErrorMessage(): void {
-    if (!this.errorMessage) {
-      return;
-    }
-
+    if (!this.errorMessage) return;
     this.errorMessage = '';
-    if (!this.successMessage) {
-      this.clearMessageTimer();
-    }
+    if (!this.successMessage) this.clearMessageTimer();
   }
 
   private scheduleMessageClear(): void {
     this.clearMessageTimer();
-    this.messageTimeoutId = setTimeout(() => {
-      this.clearMessages();
-    }, this.messageDurationMs);
+    this.messageTimeoutId = setTimeout(() => this.clearMessages(), this.messageDurationMs);
   }
 
   private clearMessageTimer(): void {
-    if (!this.messageTimeoutId) {
-      return;
-    }
-
+    if (!this.messageTimeoutId) return;
     clearTimeout(this.messageTimeoutId);
     this.messageTimeoutId = null;
   }

@@ -1,4 +1,4 @@
-﻿.form-container {
+.form-container {
   width: 100%;
   padding: 0;
   background-color: transparent;
@@ -240,8 +240,44 @@ label {
   opacity: 0;
 }
 
+
+.file-input-wrapper:hover .file-label {
+  background-color: #e8f0ff;
+  border-color: #226fd8;
+}
+
+.file-input:focus + .file-label {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+
+/* Estado: archivo seleccionado */
+.file-label--selected {
+  border-color: #28a745;
+  background-color: #f0fff4;
+  color: #28a745;
+}
+
+.file-input-wrapper:hover .file-label--selected {
+  background-color: #e6ffed;
+  border-color: #1e8035;
+}
+
+/* Etiqueta "opcional" junto al label */
+.optional-tag {
+  font-weight: 400;
+  font-size: 11px;
+  color: #888;
+  margin-left: 4px;
+}
+
+/* Alinear icono + texto en file-label */
 .file-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 8px 12px;
   border: 2px dashed #4a90e2;
   border-radius: 25px;
@@ -252,16 +288,6 @@ label {
   font-size: 13px;
   transition: all 0.3s ease;
   cursor: pointer;
-}
-
-.file-input-wrapper:hover .file-label {
-  background-color: #e8f0ff;
-  border-color: #226fd8;
-}
-
-.file-input:focus + .file-label {
-  outline: 2px solid #4a90e2;
-  outline-offset: 2px;
 }
 
 .form-actions {
