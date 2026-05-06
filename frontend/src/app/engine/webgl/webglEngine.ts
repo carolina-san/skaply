@@ -471,6 +471,8 @@ export class WebGLEngineAdapter extends EngineFacade {
     private defaultCameraPosition: Vector3 | null = null;
     private defaultCameraTarget: Vector3 | null = null;
     private ready = false;
+    private frameCount = 0;
+    public debugStats = false; // Flag para activar logs de culling
 
     // INIT
 
@@ -654,7 +656,16 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         // shader normal
         this.shader.use();
-        this.rootNode.traverse(this.shader);
+        this.cameraEntity.updateFrustum();
+        const cameraFrustum = this.cameraEntity.getFrustum();
+
+        const stats = { drawn: 0, culled: 0, checked: 0 };
+        this.rootNode.traverse(this.shader, cameraFrustum, stats);
+
+        if (this.debugStats && this.frameCount % 60 === 0) {
+            console.log(`[Frustum Culling] Checked: ${stats.checked}, Drawn: ${stats.drawn}, Culled: ${stats.culled}`);
+        }
+        this.frameCount++;
 
         // outline
         if (this.highlightedNodes.size > 0) {

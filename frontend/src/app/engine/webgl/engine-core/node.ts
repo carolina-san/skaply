@@ -2,6 +2,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
 import { Mesh } from './mesh';
 import { ShaderResource } from '../resource/shader-resource';
+import { Frustum } from './frustum';
 
 export class Node {
 
@@ -173,12 +174,28 @@ export class Node {
 
     // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
   
-    traverse(shader: ShaderResource): void { 
+    traverse(shader: ShaderResource, frustum?: Frustum, stats?: { drawn: number, culled: number, checked: number }): void { 
     
         if (this.visible) {
             
+            // Frustum Culling
+            if (frustum && this.pickBounds) {
+                if (stats) stats.checked++;
+                const worldBounds = this.getWorldBounds();
+                const isInside = frustum.intersectsAABB(worldBounds.min, worldBounds.max);
+
+                if (!isInside) {
+                    if (stats) stats.culled++;
+                    return; // Culled
+                }
+            } else if (frustum && this.entity instanceof Mesh) {
+                // Esto nos dirá si hay objetos dibujándose sin sistema de culling
+                // console.warn(`Objeto ${this.name} se dibuja sin pickBounds`);
+            }
+
             // draw entity 
             if (this.entity) {
+                if (stats) stats.drawn++;
                 const worldMatrix = this.getTransformMatrix();
                 this.lastModelMatrix = worldMatrix;
                 //shader.setFloat("uHighlight", this.isHighlighted ? 1.0 : 0.0);
@@ -187,9 +204,39 @@ export class Node {
 
             // recursive - only traverse visible children
             for (const child of this.children) {
-                child.traverse(shader);
+                child.traverse(shader, frustum, stats);
             }
         }
+    }
+
+    private getWorldBounds(): { min: vec3; max: vec3 } {
+        if (!this.pickBounds) return { min: vec3.create(), max: vec3.create() };
+
+        const matrix = this.getTransformMatrix();
+        const min = this.pickBounds.min;
+        const max = this.pickBounds.max;
+
+        const corners = [
+            vec3.fromValues(min[0], min[1], min[2]),
+            vec3.fromValues(max[0], min[1], min[2]),
+            vec3.fromValues(min[0], max[1], min[2]),
+            vec3.fromValues(max[0], max[1], min[2]),
+            vec3.fromValues(min[0], min[1], max[2]),
+            vec3.fromValues(max[0], min[1], max[2]),
+            vec3.fromValues(min[0], max[1], max[2]),
+            vec3.fromValues(max[0], max[1], max[2]),
+        ];
+
+        const worldMin = vec3.fromValues(Infinity, Infinity, Infinity);
+        const worldMax = vec3.fromValues(-Infinity, -Infinity, -Infinity);
+
+        for (const corner of corners) {
+            vec3.transformMat4(corner, corner, matrix);
+            vec3.min(worldMin, worldMin, corner);
+            vec3.max(worldMax, worldMax, corner);
+        }
+
+        return { min: worldMin, max: worldMax };
     }
 
     // RELATIVE TRANSFORMATIONS 

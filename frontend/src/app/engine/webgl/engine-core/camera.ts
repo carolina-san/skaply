@@ -1,6 +1,7 @@
 import { ShaderResource } from '../resource/shader-resource';
 import { Entity } from './entity';
 import { mat4, vec3 } from 'gl-matrix';
+import { Frustum } from './frustum';
 
 export class Camera extends Entity {
 
@@ -9,6 +10,7 @@ export class Camera extends Entity {
     private viewMatrix: mat4 = mat4.create();       // world coord -> camera coord
     private projectionMatrix: mat4 = mat4.create(); // camera coord -> clip coord
     private target: vec3 = vec3.create();           // point camera is looking at
+    private frustum: Frustum = new Frustum();
 
     // PROJECTION PARAMETERS
 
@@ -28,6 +30,7 @@ export class Camera extends Entity {
     getFar(): number { return this.far; }
     getFov(): number { return this.fov; }
     getAspect(): number { return this.aspect; }
+    getFrustum(): Frustum { return this.frustum; }
 
     // SETTERS
 
@@ -60,12 +63,18 @@ export class Camera extends Entity {
         vec3.copy(this.target, target);
     }
     
+    updateFrustum(): void {
+        const vpMatrix = mat4.create();
+        mat4.multiply(vpMatrix, this.projectionMatrix, this.viewMatrix);
+        this.frustum.update(vpMatrix);
+    }
+
     // DRAW
     
     draw(modelMatrix: mat4, shader: ShaderResource): void {
         
-        //console.log('Camera viewMatrix:', this.viewMatrix);
-        //console.log('Camera projectionMatrix:', this.projectionMatrix);
+        // update frustum (optional here, but good for completeness)
+        this.updateFrustum();
 
         // camera world position    
         const cameraLocalPosition = vec3.fromValues(0, 0, 0);
