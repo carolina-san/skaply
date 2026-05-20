@@ -11,7 +11,6 @@
   </div>
 
   <form [formGroup]="furnitureForm" (ngSubmit)="onSubmit()" class="furniture-form">
-    <h4 class="text-base font-bold mb-2 text-marron-oscuro/60">Crear Nuevo Mueble</h4>
 
     <div class="form-columns">
       <!-- ── Columna izquierda ── -->
@@ -116,6 +115,21 @@
             Mínimo 1 persona requerida
           </span>
         </div>
+
+        <div class="form-group">
+          <label for="image-file">Foto del Mueble <span class="optional-tag">(opcional)</span></label>
+          <div class="file-input-wrapper">
+            <input type="file" id="image-file" [accept]="ACCEPTED_IMG"
+              (change)="onImageFileSelected($event)" class="file-input" />
+            <label for="image-file" class="file-label" [class.file-label--selected]="imageFile">
+              <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
+                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"/>
+              </svg>
+              {{ imageFile ? imageFile.name : 'Seleccionar imagen (.jpg, .png, .webp…)' }}
+            </label>
+          </div>
+          <span class="helper-text">Formatos: .jpg · .jpeg · .png · .webp · .gif · .avif</span>
+        </div>
       </div>
     </div>
 
@@ -151,22 +165,6 @@
         </label>
       </div>
       <span class="helper-text">Manual de montaje en formato PDF</span>
-    </div>
-
-    <!-- Imagen del mueble -->
-    <div class="form-group">
-      <label for="image-file">Foto del Mueble <span class="optional-tag">(opcional)</span></label>
-      <div class="file-input-wrapper">
-        <input type="file" id="image-file" [accept]="ACCEPTED_IMG"
-          (change)="onImageFileSelected($event)" class="file-input" />
-        <label for="image-file" class="file-label" [class.file-label--selected]="imageFile">
-          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="currentColor">
-            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"/>
-          </svg>
-          {{ imageFile ? imageFile.name : 'Seleccionar imagen (.jpg, .png, .webp…)' }}
-        </label>
-      </div>
-      <span class="helper-text">Formatos: .jpg · .jpeg · .png · .webp · .gif · .avif</span>
     </div>
 
     <!-- ── Acciones ── -->
