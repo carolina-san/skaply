@@ -623,7 +623,12 @@
     (5, 3),  -- paso 5: Llave Allen
     (6, 3),  -- paso 6: Llave Allen
     (7, 3),  -- paso 7: Llave Allen
-    (8, 3);  -- paso 8: Llave Allen
+    (8, 3),  -- paso 8: Llave Allen
+    (31, 2), 
+    (33, 2), 
+    (35, 2);  
+
+
 
     -- ============================
     -- ISSUES
