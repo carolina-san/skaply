@@ -1,5 +1,5 @@
 import { ShaderResource } from '../resource/shader-resource';
-import { TextureResource } from '../resource/texture-resource';
+import { MaterialResource } from '../resource/material-resource';
 import { Entity } from './entity';
 import { mat4 } from 'gl-matrix';
 
@@ -8,7 +8,7 @@ export interface MeshResource {
     normals: Float32Array;
     texCoords: Float32Array;
     indices: Uint32Array;
-    texture?: TextureResource;
+    material?: MaterialResource;
     // Bounding boxes
     boundsMin: Float32Array;
     boundsMax: Float32Array;
@@ -44,13 +44,16 @@ export class Mesh extends Entity {
         
         shader.setMat4("uModelMatrix", modelMatrix);
         shader.setFloat("uOpacity", this.opacity);
-     
-        // Bind texture if available
-        if (this.resource.texture) {
-            this.resource.texture.bind(0);
-            shader.setInt("uDiffuseTexture", 0);
+
+        if (this.resource.material) {
+            this.resource.material.bind(shader);
+        } else {
+            shader.setVec3( 'uMaterial.ambient',   [0.2, 0.2, 0.2]);
+            shader.setVec3( 'uMaterial.diffuse',   [0.8, 0.8, 0.8]);
+            shader.setVec3( 'uMaterial.specular',  [0.5, 0.5, 0.5]);
+            shader.setFloat('uMaterial.shininess', 32);
         }
- 
+
         gl.bindVertexArray(this.vao!);
         gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_INT, 0);
         gl.bindVertexArray(null);

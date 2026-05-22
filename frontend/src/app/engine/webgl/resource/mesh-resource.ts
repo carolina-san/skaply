@@ -14,7 +14,7 @@ Definición de MESH y PRIMITIVAS
 */
 
 import { Resource } from './resource';
-import { TextureResource } from './texture-resource';
+import { MaterialResource } from './material-resource';
 import { Mesh } from '../engine-core/mesh';
 import { load } from '@loaders.gl/core';
 import { GLTFLoader, postProcessGLTF } from '@loaders.gl/gltf';
@@ -27,7 +27,7 @@ export type RawMesh = {
     norms:  number[];
     uvs:    number[];
     inds:   number[];
-    tex?:   TextureResource;
+    mat?:   MaterialResource;
 };
 
 export type NamedMesh = { 
@@ -41,7 +41,7 @@ export class MeshResource extends Resource {
     
     meshes: Mesh[] = [];
     private namedMeshes: NamedMesh[] = [];
-    private textures = new Map<any, TextureResource>();
+    private materials = new Map<any, MaterialResource>();
 
     constructor(name: string, private gl: WebGL2RenderingContext) {
         super(name);
@@ -57,7 +57,7 @@ export class MeshResource extends Resource {
     async loadFile(url: string): Promise<void> {
         console.log('Cargando modelo con @loaders.gl/gltf:', url);
         const gltf = await this.fetchAndParseGLTF(url);
-        await this.loadTextures(gltf);
+        await this.loadMaterials(gltf);
         const meshGroups = this.extractRawMeshes(gltf);
         this.buildNamedMeshes(meshGroups);
         //console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
@@ -107,41 +107,44 @@ export class MeshResource extends Resource {
         return postProcessGLTF(rawGltf);
     }
 
-    // PRIVATE METHODS: LOAD TEXTURES
+    // PRIVATE METHODS: LOAD MATERIALS
 
-    private async loadTextures(gltf: any): Promise<void> {
+    private async loadMaterials(gltf: any): Promise<void> {
         if (!gltf.materials) return;
         for (let i = 0; i < gltf.materials.length; i++) {
             const material = gltf.materials[i];
-            const textureResource = this.buildTextureFromMaterial(material, i);
-            this.textures.set(material, textureResource);
+            const matResource = this.buildMaterialFromGltf(material, i);
+            this.materials.set(material, matResource);
         }
     }
 
-    private buildTextureFromMaterial(material: any, index: number): TextureResource {
-        const texture = new TextureResource(`mat_${index}`, this.gl);
+    private buildMaterialFromGltf(material: any, index: number): MaterialResource {
+        const mat = new MaterialResource(`mat_${index}`, this.gl);
         const pbr = material.pbrMetallicRoughness;
         const image = pbr?.baseColorTexture?.texture?.source?.image;
 
         if (image) {
-            texture.loadFromImage(image);
-            return texture;
+            mat.loadDiffuseFromImage(image);
+            return mat;
         }
 
-        // fallback color
         if (pbr?.baseColorFactor) {
             const c = pbr.baseColorFactor;
-            texture.loadFromColor(
+            mat.loadDiffuseFromColor(
                 Math.round(c[0] * 255),
                 Math.round(c[1] * 255),
                 Math.round(c[2] * 255),
                 Math.round((c[3] ?? 1) * 255)
             );
+            mat.setDiffuse(c[0], c[1], c[2]);
+            if (pbr.roughnessFactor !== undefined) {
+                mat.setShininess(Math.max(1, (1 - pbr.roughnessFactor) * 128));
+            }
         } else {
-            texture.loadFromColor(255, 255, 255);
+            mat.loadDiffuseFromColor(255, 255, 255);
         }
 
-        return texture;
+        return mat;
     }
 
     // PRIVATE METHODS: EXTRACT RAW MESHES 
@@ -164,9 +167,9 @@ export class MeshResource extends Resource {
             const uvs   = this.getUVs(attributes);
             const vertexCount = verts.length / 3;
             const inds  = this.getIndices(primitive, 0, vertexCount);
-            const tex   = this.getTexture(primitive);
+            const mat   = this.getMaterial(primitive);
 
-            return { verts, norms, uvs, inds, tex };
+            return { verts, norms, uvs, inds, mat };
         }).filter(Boolean);
     }
 
@@ -176,7 +179,7 @@ export class MeshResource extends Resource {
         this.namedMeshes = [];
         meshGroups.forEach(({ meshName, primitives }) => {
             primitives.forEach((raw, i) => {
-                // Para el bounding Boxes
+
                 const bounds = this.computeBounds(raw.verts);
 
                 const mesh = new Mesh({
@@ -184,8 +187,7 @@ export class MeshResource extends Resource {
                     normals:   new Float32Array(raw.norms),
                     texCoords: new Float32Array(raw.uvs),
                     indices:   new Uint32Array(raw.inds),
-                    texture:   raw.tex,
-                    // Para el bounding Boxes
+                    material:  raw.mat,
                     boundsMin: bounds.min,
                     boundsMax: bounds.max
                 }, this.gl);
@@ -229,15 +231,15 @@ export class MeshResource extends Resource {
         }
     }
 
-    private getTexture(primitive: any): TextureResource  | undefined {
-        return primitive.material 
-            ? this.textures.get(primitive.material) 
+    private getMaterial(primitive: any): MaterialResource | undefined {
+        return primitive.material
+            ? this.materials.get(primitive.material)
             : undefined;
     }
 
     dispose(): void {
-        this.textures.forEach(texture => texture.dispose());
-        this.textures.clear();
+        this.materials.forEach(mat => mat.dispose());
+        this.materials.clear();
         this.meshes.forEach(mesh => mesh.dispose());
         this.meshes = [];
         this.namedMeshes = [];

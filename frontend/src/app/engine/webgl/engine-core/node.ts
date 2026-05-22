@@ -1,6 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
-import { Mesh } from './mesh';
 import { ShaderResource } from '../resource/shader-resource';
 
 export class Node {
@@ -26,9 +25,10 @@ export class Node {
     private visible: boolean = true;  
     private isHighlighted: boolean = false;
 
-    //Bounding Boxes
+    // bounding Boxes
     private pickBounds: { min: vec3; max: vec3 } | null = null;
 
+    
     // CHILDREN MANAGEMENT
 
     addChild(child: Node): void {
@@ -45,13 +45,6 @@ export class Node {
     }
 
     // SETTERS
-
-    private setChildenUpdate() :void {
-        for (const child of this.children) {
-            child.needsUpdate = true;
-            child.setChildenUpdate();
-        }
-    }
 
     setEntity(entity: Entity): void {
         this.entity = entity;
@@ -92,6 +85,13 @@ export class Node {
             min: vec3.clone(min),
             max: vec3.clone(max)
         };
+    }
+
+    private setChildenUpdate() :void {
+        for (const child of this.children) {
+            child.needsUpdate = true;
+            child.setChildenUpdate();
+        }
     }
 
     // GETTERS
@@ -181,7 +181,6 @@ export class Node {
             if (this.entity) {
                 const worldMatrix = this.getTransformMatrix();
                 this.lastModelMatrix = worldMatrix;
-                //shader.setFloat("uHighlight", this.isHighlighted ? 1.0 : 0.0);
                 this.entity.draw(worldMatrix, shader);
             }
 
