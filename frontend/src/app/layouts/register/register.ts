@@ -45,6 +45,7 @@ export class Register {
       email: ['', [Validators.required, Validators.email]],
       telephone: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(12)]],
+      accept_privacy: [false, Validators.requiredTrue]
     })
   }
 

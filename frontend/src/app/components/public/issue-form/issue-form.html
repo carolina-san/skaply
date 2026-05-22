@@ -60,6 +60,17 @@
                 </p>
             </div>
 
+            <!-- Privacidad -->
+            <div class="flex items-center gap-2 px-1 ">
+                <input type="checkbox" name="accept_privacy" ngModel required #acceptPrivacy="ngModel"
+                    id="accept_privacy_issue"
+                    class="w-4 h-4 text-marron-oscuro border-gray-300 rounded focus:ring-marron-oscuro cursor-pointer">
+                <label for="accept_privacy_issue" class="text-sm text-marron-oscuro cursor-pointer">
+                    He leído y acepto la <a href="/privacy" target="_blank" class="font-bold underline">Política
+                        de Privacidad</a>
+                </label>
+            </div>
+
             <!-- Botones -->
             <div class="flex flex-col gap-3 pt-3">
 

@@ -129,6 +129,15 @@
         </div>
     </div>
 
+    <div *ngIf="!success" class="w-full flex items-center gap-2 mb-4 px-1 ">
+        <input type="checkbox" formControlName="accept_privacy" id="accept_privacy"
+            class="w-4 h-4 text-azul-claro border-gray-300 rounded focus:ring-azul-claro cursor-pointer">
+        <label for="accept_privacy" class="text-sm text-white cursor-pointer">
+            He leído y acepto la <a href="/privacy" target="_blank" class="font-bold hover:underline">Política de
+                Privacidad</a>
+        </label>
+    </div>
+
     <button *ngIf="!success" (click)="submit()"
         class="w-full bg-azul-claro text-marron-oscuro font-bold rounded-full mt-3 py-3 transition-all duration-300 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         [disabled]="loading || form.invalid">

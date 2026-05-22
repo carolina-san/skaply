@@ -41,8 +41,8 @@ export class ApiService {
   }
 
 
-  createFurniture(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/private/furniture`, data);
+  createFurniture(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/private/furniture`, formData);
   }
 
   updateFurniture(id: number, data: any): Observable<any> {

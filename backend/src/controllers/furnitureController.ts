@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
 import { ApiError } from '@/utils/ApiError';
 import { FurnitureService } from '../services/furnitureService'
 import { ProviderService } from '../services/ProviderService'
 import { Difficulty } from '@/types/common.types';
 import { UserRole } from '@/types/user.types';
 import { pickFields, validateNotEmptyObject, validateParameterId, parseBooleanQuery } from '@/utils/common.utils';
+import { getStorageSubfolder } from '@/middleware/uploadFurniture';
+import { CategoryService } from '../services/categoryService';
 /*import { UserService } from '../services/UserService';*/
 
 const validDifficulties = ['low', 'medium', 'high'];
@@ -213,10 +217,8 @@ export class FurnitureController {
     try {
       const {
         name,
-        file_uri,
         assemblyPDF_uri,
         difficulty,
-        image_url,
         reference_number,
         category_id,
         provider_id,
@@ -227,8 +229,8 @@ export class FurnitureController {
       } = req.body;
 
       // Validaciones obligatorias
-      if (!name || !file_uri || !assemblyPDF_uri || !difficulty) {
-        return next(new ApiError('BAD_REQUEST', 'Name, file_uri, assemblyPDF_uri and difficulty are required'));
+      if (!name || !difficulty) {
+        return next(new ApiError('BAD_REQUEST', 'Name and difficulty are required'));
       }
 
       if (!validDifficulties.includes(difficulty)) {
@@ -244,11 +246,72 @@ export class FurnitureController {
       // Verificar que los recursos existen
       await this.furnitureService.checkResourcesExist(category_id, provider_id, color_id);
 
-      // Crear mueble
+      // Obtener el company_name del proveedor para componer el nombre de archivo
+      const providerData = await this.providerService.getProviderById(Number(provider_id));
+      const companyName = (providerData?.company_name || `provider_${provider_id}`)
+        .toString()
+        .trim()
+        .replace(/\s+/g, '_');
+
+      // Obtener el category_name para las rutas de los archivos
+      const categoryService = new CategoryService();
+      const categoryData = await categoryService.getCategoryById(Number(category_id));
+      const categoryName = (categoryData?.name || `categoria_${category_id}`)
+        .toString()
+        .trim()
+        .replace(/\s+/g, '_')
+        .toLowerCase();
+
+      const safeRef = (reference_number || 'sin_ref')
+        .toString()
+        .trim()
+        .replace(/\s+/g, '_');
+
+      // Helper: guarda un archivo del buffer de multer y devuelve la ruta relativa
+      const saveFile = (file: Express.Multer.File): string => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        const subfolder = getStorageSubfolder(ext);
+        if (!subfolder) {
+          throw new ApiError('BAD_REQUEST', `Tipo de archivo no permitido: ${ext}`);
+        }
+        const safeName = path.basename(file.originalname).replace(/\s+/g, '_');
+        const fileName = `${safeRef}_${companyName}_${safeName}`;
+        
+        let customSubfolder: string = `${subfolder}/muebles/${categoryName}`;
+
+        const storageRoot = path.join(__dirname, '../../../storage');
+        const destDir = path.join(storageRoot, customSubfolder);
+        fs.mkdirSync(destDir, { recursive: true });
+        fs.writeFileSync(path.join(destDir, fileName), file.buffer);
+        return `/${customSubfolder}/${fileName}`;
+      };
+
+      // Procesar archivos subidos (multer memoryStorage)
+      const uploadedFiles = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+
+      // Modelo 3D → file_uri
+      let file_uri: string = req.body.file_uri || '';
+      if (uploadedFiles?.file_3d?.[0]) {
+        file_uri = saveFile(uploadedFiles.file_3d[0]);
+      }
+
+      // Foto/imagen → image_url  (campo del formulario: image_uri)
+      let image_url: string = req.body.image_url || '';
+      if (uploadedFiles?.image_uri?.[0]) {
+        image_url = saveFile(uploadedFiles.image_uri[0]);
+      }
+
+      // PDF de ensamblaje → assemblyPDF_uri  (campo del formulario: assembly_pdf)
+      let resolvedAssemblyPDF: string = assemblyPDF_uri || '';
+      if (uploadedFiles?.assembly_pdf?.[0]) {
+        resolvedAssemblyPDF = saveFile(uploadedFiles.assembly_pdf[0]);
+      }
+
+      // Crear mueble en BD
       const furniture = await this.furnitureService.createFurniture({
         name,
         file_uri,
-        assemblyPDF_uri,
+        assemblyPDF_uri: resolvedAssemblyPDF,
         difficulty,
         image_url,
         reference_number,
