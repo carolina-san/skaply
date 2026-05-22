@@ -179,23 +179,10 @@ export class Node {
         const worldMatrix = this.getTransformMatrix();
         this.lastModelMatrix = worldMatrix;
 
-        // frustum culling — skip this node and its subtree if outside the view
+        // frustum culling — skip this node and its subtree if AABB is outside the view
         if (frustum && this.pickBounds) {
-            const min = this.pickBounds.min;
-            const max = this.pickBounds.max;
-
-            const center = vec3.create();
-            vec3.lerp(center, min, max, 0.5);
-            vec3.transformMat4(center, center, worldMatrix);
-
-            // local radius scaled by the largest axis scale in the world matrix
-            const localRadius = vec3.distance(min, max) * 0.5;
-            const sx = Math.hypot(worldMatrix[0], worldMatrix[1], worldMatrix[2]);
-            const sy = Math.hypot(worldMatrix[4], worldMatrix[5], worldMatrix[6]);
-            const sz = Math.hypot(worldMatrix[8], worldMatrix[9], worldMatrix[10]);
-            const radius = localRadius * Math.max(sx, sy, sz);
-
-            if (!frustum.containsSphere(center, radius)) return;
+            const worldBounds = this.getWorldBounds(worldMatrix);
+            if (!frustum.intersectsAABB(worldBounds.min, worldBounds.max)) return;
         }
 
         if (this.entity) {
@@ -205,6 +192,34 @@ export class Node {
         for (const child of this.children) {
             child.traverse(shader, frustum);
         }
+    }
+
+    private getWorldBounds(worldMatrix: mat4): { min: vec3; max: vec3 } {
+        const min = this.pickBounds!.min;
+        const max = this.pickBounds!.max;
+
+        // transform all 8 AABB corners to world space and recompute min/max
+        const corners: vec3[] = [
+            vec3.fromValues(min[0], min[1], min[2]),
+            vec3.fromValues(max[0], min[1], min[2]),
+            vec3.fromValues(min[0], max[1], min[2]),
+            vec3.fromValues(max[0], max[1], min[2]),
+            vec3.fromValues(min[0], min[1], max[2]),
+            vec3.fromValues(max[0], min[1], max[2]),
+            vec3.fromValues(min[0], max[1], max[2]),
+            vec3.fromValues(max[0], max[1], max[2]),
+        ];
+
+        const worldMin = vec3.fromValues(Infinity, Infinity, Infinity);
+        const worldMax = vec3.fromValues(-Infinity, -Infinity, -Infinity);
+
+        for (const corner of corners) {
+            vec3.transformMat4(corner, corner, worldMatrix);
+            vec3.min(worldMin, worldMin, corner);
+            vec3.max(worldMax, worldMax, corner);
+        }
+
+        return { min: worldMin, max: worldMax };
     }
 
     // RELATIVE TRANSFORMATIONS

@@ -11,7 +11,6 @@ import { DirectionalLight } from './engine-core/directional-light';
 import { SpotLight } from './engine-core/spot-light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
-import { Frustum } from './engine-core/frustum';
 import { OutlinePass } from './outline-pass';
 import { rotate } from 'three/src/nodes/TSL.js';
 
@@ -470,7 +469,6 @@ export class WebGLEngineAdapter extends EngineFacade {
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
 
     private highlightedNodes: Set<Node> = new Set();
-    private frustum = new Frustum();
 
     // Variales para la rotación entre pasos para hacerlo smooth
     private transitionTargetPosition: Vector3 | null = null;// A donde va la camara
@@ -681,10 +679,8 @@ export class WebGLEngineAdapter extends EngineFacade {
 
         // shader normal
         this.shader.use();
-        const cam = this.cameraEntity;
-        const vp = mat4.multiply(mat4.create(), cam.getProjectionMatrix(), cam.getViewMatrix());
-        this.frustum.fromViewProjection(vp);
-        this.rootNode.traverse(this.shader, this.frustum);
+        this.cameraEntity.updateFrustum();
+        this.rootNode.traverse(this.shader, this.cameraEntity.getFrustum());
 
         // outline
         if (this.highlightedNodes.size > 0) {
