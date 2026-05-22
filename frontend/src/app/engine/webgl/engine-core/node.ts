@@ -1,6 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
 import { ShaderResource } from '../resource/shader-resource';
+import { Frustum } from './frustum';
 
 export class Node {
 
@@ -172,16 +173,37 @@ export class Node {
 
     // TRAVERSAL
 
-    traverse(shader: ShaderResource): void {
-        if (this.visible) {
-            if (this.entity) {
-                const worldMatrix = this.getTransformMatrix();
-                this.lastModelMatrix = worldMatrix;
-                this.entity.draw(worldMatrix, shader);
-            }
-            for (const child of this.children) {
-                child.traverse(shader);
-            }
+    traverse(shader: ShaderResource, frustum?: Frustum): void {
+        if (!this.visible) return;
+
+        const worldMatrix = this.getTransformMatrix();
+        this.lastModelMatrix = worldMatrix;
+
+        // frustum culling — skip this node and its subtree if outside the view
+        if (frustum && this.pickBounds) {
+            const min = this.pickBounds.min;
+            const max = this.pickBounds.max;
+
+            const center = vec3.create();
+            vec3.lerp(center, min, max, 0.5);
+            vec3.transformMat4(center, center, worldMatrix);
+
+            // local radius scaled by the largest axis scale in the world matrix
+            const localRadius = vec3.distance(min, max) * 0.5;
+            const sx = Math.hypot(worldMatrix[0], worldMatrix[1], worldMatrix[2]);
+            const sy = Math.hypot(worldMatrix[4], worldMatrix[5], worldMatrix[6]);
+            const sz = Math.hypot(worldMatrix[8], worldMatrix[9], worldMatrix[10]);
+            const radius = localRadius * Math.max(sx, sy, sz);
+
+            if (!frustum.containsSphere(center, radius)) return;
+        }
+
+        if (this.entity) {
+            this.entity.draw(worldMatrix, shader);
+        }
+
+        for (const child of this.children) {
+            child.traverse(shader, frustum);
         }
     }
 
