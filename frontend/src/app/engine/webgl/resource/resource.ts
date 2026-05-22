@@ -1,12 +1,12 @@
 export abstract class Resource {
 
-    protected name: string; // eliminar en version segura
+    protected name: string; // remove in safe version
 
     constructor(name: string) {
         this.name = name;
     }
 
-    // constructor(protected readonly name: string) {} // version segura
+    // constructor(protected readonly name: string) {} // safe version
 
     // GETTERS
 
@@ -16,11 +16,11 @@ export abstract class Resource {
 
     // SETTERS
 
-    setName(name: string) { // eliminar en version segura
+    setName(name: string) { // remove in safe version
         this.name = name;
     }
 
-    // LOADFILE
+    // LOAD FILE
 
     abstract loadFile(url: string): Promise<void>;
 }

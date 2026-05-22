@@ -24,7 +24,7 @@ export class ShaderResource extends Resource {
 
     buildProgram(): void {
         if (!this.vertexSource || !this.fragmentSource) {
-            throw new Error('Shaders vertex o fragment is not loaded');
+            throw new Error('Vertex or fragment shader is not loaded');
         }
 
         // compile shaders

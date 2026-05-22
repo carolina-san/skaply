@@ -13,7 +13,7 @@ import { MeshResource } from '../../engine/webgl/resource/mesh-resource';
 import { Node } from '../../engine/webgl/engine-core/node';
 import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { Camera } from '../../engine/webgl/engine-core/camera';
-import { Light } from '../../engine/webgl/engine-core/light';
+import { PointLight } from '../../engine/webgl/engine-core/point-light';
 import { flattenJSON } from 'three/src/animation/AnimationUtils.js';
 
 @Component({
@@ -73,7 +73,7 @@ export class WebglSceneComponent implements AfterViewInit {
     root.addChild(cameraNode);
 
     // light 
-    const light = new Light();
+    const light = new PointLight();
     light.setIntensity(vec3.fromValues(1.0, 1.0, 1.0));
     const lightNode = new Node();
     lightNode.setEntity(light);

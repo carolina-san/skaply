@@ -1,13 +1,11 @@
 /*
 
-EXPLICACIÓN TEÓRICA 
+MESH AND PRIMITIVES
 --------------------------------------------------------------------
 
-Definición de MESH y PRIMITIVAS
-
-    MESH -> PRIMITIVAS
-    Cada objeto en blender es un MESH.
-    Si el MESH tiene zonas con distintos materiales, cada zona es una PRIMITIVA.
+    MESH -> PRIMITIVES
+    Each object in Blender is a MESH.
+    If the MESH has zones with different materials, each zone is a PRIMITIVE.
 
 --------------------------------------------------------------------
 
@@ -23,22 +21,22 @@ import { mat4, vec3, quat, mat3 } from 'gl-matrix';
 // TYPES
 
 export type RawMesh = {
-    verts:  number[];
-    norms:  number[];
-    uvs:    number[];
-    inds:   number[];
-    mat?:   MaterialResource;
+    verts: number[];
+    norms: number[];
+    uvs: number[];
+    inds: number[];
+    mat?: MaterialResource;
 };
 
-export type NamedMesh = { 
-    name:   string; 
-    mesh:   Mesh 
+export type NamedMesh = {
+    name: string;
+    mesh: Mesh
 };
 
-// CLASS MESH RESOURCE 
+// CLASS MESH RESOURCE
 
 export class MeshResource extends Resource {
-    
+
     meshes: Mesh[] = [];
     private namedMeshes: NamedMesh[] = [];
     private materials = new Map<any, MaterialResource>();
@@ -55,15 +53,15 @@ export class MeshResource extends Resource {
     // LOAD FILE
 
     async loadFile(url: string): Promise<void> {
-        console.log('Cargando modelo con @loaders.gl/gltf:', url);
+        console.log('Loading model with @loaders.gl/gltf:', url);
         const gltf = await this.fetchAndParseGLTF(url);
         await this.loadMaterials(gltf);
         const meshGroups = this.extractRawMeshes(gltf);
         this.buildNamedMeshes(meshGroups);
-        //console.log(`[MeshResource] loaded meshes: ${this.namedMeshes.map(m => m.name)}`);
     }
 
     // BOUNDING BOXES
+
     private computeBounds(verts: number[]): { min: Float32Array; max: Float32Array } {
         if (verts.length < 3) {
             return {
@@ -94,9 +92,6 @@ export class MeshResource extends Resource {
             max: new Float32Array([maxX, maxY, maxZ])
         };
     }
-
-
-    // ---------------------------------------------
 
     // PRIVATE METHODS: PARSE GLTF
 
@@ -147,7 +142,7 @@ export class MeshResource extends Resource {
         return mat;
     }
 
-    // PRIVATE METHODS: EXTRACT RAW MESHES 
+    // PRIVATE METHODS: EXTRACT RAW MESHES
 
     private extractRawMeshes(gltf: any): { meshName: string, primitives: RawMesh[] }[] {
         return (gltf.meshes ?? []).map((mesh: any) => ({
@@ -164,10 +159,10 @@ export class MeshResource extends Resource {
 
             const verts = this.getVertices(attributes);
             const norms = this.getNormals(attributes);
-            const uvs   = this.getUVs(attributes);
+            const uvs = this.getUVs(attributes);
             const vertexCount = verts.length / 3;
-            const inds  = this.getIndices(primitive, 0, vertexCount);
-            const mat   = this.getMaterial(primitive);
+            const inds = this.getIndices(primitive, 0, vertexCount);
+            const mat = this.getMaterial(primitive);
 
             return { verts, norms, uvs, inds, mat };
         }).filter(Boolean);
@@ -179,15 +174,14 @@ export class MeshResource extends Resource {
         this.namedMeshes = [];
         meshGroups.forEach(({ meshName, primitives }) => {
             primitives.forEach((raw, i) => {
-
                 const bounds = this.computeBounds(raw.verts);
 
                 const mesh = new Mesh({
-                    vertices:  new Float32Array(raw.verts),
-                    normals:   new Float32Array(raw.norms),
+                    vertices: new Float32Array(raw.verts),
+                    normals: new Float32Array(raw.norms),
                     texCoords: new Float32Array(raw.uvs),
-                    indices:   new Uint32Array(raw.inds),
-                    material:  raw.mat,
+                    indices: new Uint32Array(raw.inds),
+                    material: raw.mat,
                     boundsMin: bounds.min,
                     boundsMax: bounds.max
                 }, this.gl);
@@ -200,9 +194,9 @@ export class MeshResource extends Resource {
         });
         this.meshes = this.namedMeshes.map(n => n.mesh);
     }
-    
+
     // PRIVATE METHODS: UTILS AND GETTERS
-    
+
     private hasPosition(attributes: any): boolean {
         return !!attributes['POSITION'];
     }
@@ -210,7 +204,7 @@ export class MeshResource extends Resource {
     private emptyRawPrimitive() {
         return { verts: [], norms: [], uvs: [], inds: [], vertexCount: 0 };
     }
-    
+
     private getVertices(attributes: any): number[] {
         return attributes['POSITION'].value;
     }
@@ -244,5 +238,4 @@ export class MeshResource extends Resource {
         this.meshes = [];
         this.namedMeshes = [];
     }
-
 }

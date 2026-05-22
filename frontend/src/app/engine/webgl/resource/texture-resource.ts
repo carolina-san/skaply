@@ -5,18 +5,18 @@ export class TextureResource extends Resource {
     texture?: WebGLTexture;
     width: number = 0;
     height: number = 0;
-    
+
     constructor(name: string, private gl: WebGL2RenderingContext) { super(name); }
-    
+
     // LOAD FROM URL
-    
+
     async loadFile(url: string): Promise<void> {
         const image = new Image();
         image.src = url;
         await image.decode();
         this.createTextureFromImage(image);
     }
-    
+
     // FROM IMAGE
 
     public loadFromImage(image: HTMLImageElement): void {
@@ -25,11 +25,10 @@ export class TextureResource extends Resource {
 
     private createTextureFromImage(image: HTMLImageElement): void {
         const gl = this.gl;
-        if (this.texture) { gl.deleteTexture(this.texture);}
+        if (this.texture) { gl.deleteTexture(this.texture); }
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        // Evitar problemas de imágenes con tamaño no potencia de 2
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); // O true si las UVs lo requieren
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); // set to true if UVs require it
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.generateMipmap(gl.TEXTURE_2D);
         this.setDefaultParameters();
@@ -51,7 +50,7 @@ export class TextureResource extends Resource {
         const image = new Image();
         let format = formatHint.replace('.', '') || 'png';
         if (format === 'jpg') format = 'jpeg';
-        // handle format raw base64 or complete data URI
+        // handle raw base64 string or complete data URI
         if (!base64Data.startsWith('data:')) {
             image.src = `data:image/${format};base64,${base64Data}`;
         } else {
@@ -62,17 +61,16 @@ export class TextureResource extends Resource {
     }
 
     // LOAD FROM COLOR
-    
+
     loadFromColor(r: number, g: number, b: number, a: number = 255): void {
-        //console.log(`loadFromColor: r=${r} g=${g} b=${b} a=${a}`);
         const gl = this.gl;
-        if (this.texture) {gl.deleteTexture(this.texture);}
+        if (this.texture) { gl.deleteTexture(this.texture); }
         const data = new Uint8Array([r, g, b, a]);
         this.texture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
         gl.generateMipmap(gl.TEXTURE_2D);
-        this.setDefaultParameters(); 
+        this.setDefaultParameters();
         this.width = 1;
         this.height = 1;
     }
@@ -92,5 +90,4 @@ export class TextureResource extends Resource {
             this.texture = undefined;
         }
     }
-
 }

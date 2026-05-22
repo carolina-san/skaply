@@ -6,7 +6,8 @@ import { Node } from '../../engine/webgl/engine-core/node';
 import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
-import { Light } from './engine-core/light';
+import { PointLight } from './engine-core/point-light';
+import { DirectionalLight } from './engine-core/directional-light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
 import { OutlinePass } from './outline-pass';
@@ -455,8 +456,11 @@ export class WebGLEngineAdapter extends EngineFacade {
     private cameraNode = new Node();
     private cameraController!: CameraController;
 
-    private lightEntity = new Light();
+    private lightEntity = new PointLight();
     private lightNode = new Node();
+
+    private dirLightEntity = new DirectionalLight();
+    private dirLightNode = new Node();
 
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
 
@@ -492,11 +496,19 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
 
-        // light 
+        // point light
         this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
         this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
         this.rootNode.addChild(this.lightNode);
+
+        // directional fill light — soft, coming from front-left to fill shadows
+        this.dirLightEntity.setDirection(-0.4, -0.6, -0.5);
+        this.dirLightEntity.setAmbientIntensity(vec3.fromValues(0.15, 0.15, 0.15));
+        this.dirLightEntity.setDiffuseIntensity(vec3.fromValues(0.35, 0.35, 0.35));
+        this.dirLightEntity.setSpecularIntensity(vec3.fromValues(0.1, 0.1, 0.1));
+        this.dirLightNode.setEntity(this.dirLightEntity);
+        this.rootNode.addChild(this.dirLightNode);
 
         this.cameraController = new CameraController(
             this.cameraNode,

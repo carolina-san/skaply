@@ -6,21 +6,21 @@ export class Camera extends Entity {
 
     // MATRICES
 
-    private viewMatrix: mat4 = mat4.create();       // world coord -> camera coord
-    private projectionMatrix: mat4 = mat4.create(); // camera coord -> clip coord
-    private target: vec3 = vec3.create();           // point camera is looking at
+    private viewMatrix: mat4 = mat4.create();       // world space → camera space
+    private projectionMatrix: mat4 = mat4.create(); // camera space → clip space
+    private target: vec3 = vec3.create();           // point the camera looks at
 
     // PROJECTION PARAMETERS
 
-    private isPerspective: boolean = true;      // false for orthographic
+    private isPerspective: boolean = true; // false for orthographic
     private near: number = 0.1;
     private far: number = 100;
     private fov: number = 45;
-    private aspect: number = 1.0;               // aspect ratio (width / height)
-    
+    private aspect: number = 1.0; // width / height
+
     // GETTERS
 
-    getTarget(): vec3 {  return vec3.clone(this.target); }
+    getTarget(): vec3 { return vec3.clone(this.target); }
     getViewMatrix(): mat4 { return this.viewMatrix; }
     getProjectionMatrix(): mat4 { return this.projectionMatrix; }
     getIsPerspective(): boolean { return this.isPerspective; }
@@ -30,11 +30,6 @@ export class Camera extends Entity {
     getAspect(): number { return this.aspect; }
 
     // SETTERS
-
-    // setTarget(modelMatrix: mat4, target: vec3) {
-    //     vec3.copy(this.target, target);
-    //     this.updateViewMatrix(modelMatrix);
-    // }
 
     setPerspective(fov: number, aspect: number, near: number, far: number): void {
         this.isPerspective = true;
@@ -51,7 +46,7 @@ export class Camera extends Entity {
     }
 
     // LOOK AT
-    
+
     lookAt(modelMatrix: mat4, target: vec3): void {
         const cameraLocalPosition = vec3.fromValues(0, 0, 0);
         const cameraWorldPosition = vec3.create();
@@ -59,31 +54,16 @@ export class Camera extends Entity {
         mat4.lookAt(this.viewMatrix, cameraWorldPosition, target, [0, 1, 0]);
         vec3.copy(this.target, target);
     }
-    
-    // DRAW
-    
-    draw(modelMatrix: mat4, shader: ShaderResource): void {
-        
-        //console.log('Camera viewMatrix:', this.viewMatrix);
-        //console.log('Camera projectionMatrix:', this.projectionMatrix);
 
-        // camera world position    
+    // DRAW
+
+    draw(modelMatrix: mat4, shader: ShaderResource): void {
         const cameraLocalPosition = vec3.fromValues(0, 0, 0);
         const cameraWorldPosition = vec3.create();
         vec3.transformMat4(cameraWorldPosition, cameraLocalPosition, modelMatrix);
 
-        // send to shader
         shader.setMat4("uViewMatrix", this.viewMatrix);
         shader.setMat4("uProjectionMatrix", this.projectionMatrix);
         shader.setVec3("uViewPosition", cameraWorldPosition);
     }
-
-    // PRIVATE METHODS
-
-    // private updateViewMatrix(modelMatrix: mat4) {
-    //     const cameraLocalPosition = vec3.fromValues(0, 0, 0);
-    //     const cameraWorldPosition = vec3.create();
-    //     vec3.transformMat4(cameraWorldPosition, cameraLocalPosition, modelMatrix);
-    //     mat4.lookAt(this.viewMatrix, cameraWorldPosition, this.target, [0, 1, 0]);
-    // }
 }

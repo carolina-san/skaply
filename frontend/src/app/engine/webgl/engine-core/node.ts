@@ -6,29 +6,29 @@ export class Node {
 
     private name: string = '';
 
-    // entity and nodes
+    // entity and children
     private entity: Entity | null = null;
     private children: Node[] = [];
     private parent: Node | null = null;
 
     // local transformations
     private translation: vec3 = vec3.create();      // local position
-    private rotation: vec3 = vec3.create();         // local rotation
+    private rotation: vec3 = vec3.create();         // local rotation (euler)
     private scale: vec3 = vec3.fromValues(1, 1, 1); // local scale
 
-    // final transformation (parent x node)
-    private transformMatrix: mat4 = mat4.create(); // world transformation (identity matrix by default)
+    // world transformation (parent × local)
+    private transformMatrix: mat4 = mat4.create();
     private lastModelMatrix: mat4 = mat4.create();
 
-    private needsUpdate: boolean = true; // only if local transformations were made
-    
-    private visible: boolean = true;  
+    private needsUpdate: boolean = true; // dirty flag — set when local transform changes
+
+    private visible: boolean = true;
     private isHighlighted: boolean = false;
 
-    // bounding Boxes
+    // bounding box for picking
     private pickBounds: { min: vec3; max: vec3 } | null = null;
 
-    
+
     // CHILDREN MANAGEMENT
 
     addChild(child: Node): void {
@@ -80,14 +80,14 @@ export class Node {
         this.isHighlighted = value;
     }
 
-    setPickBounds(min: vec3, max: vec3): void { //Coger los límites
+    setPickBounds(min: vec3, max: vec3): void {
         this.pickBounds = {
             min: vec3.clone(min),
             max: vec3.clone(max)
         };
     }
 
-    private setChildenUpdate() :void {
+    private setChildenUpdate(): void {
         for (const child of this.children) {
             child.needsUpdate = true;
             child.setChildenUpdate();
@@ -117,8 +117,8 @@ export class Node {
     }
 
     getTransformMatrix(): mat4 {
-        if (this.needsUpdate) { 
-            this.updateTransforMatrix(); 
+        if (this.needsUpdate) {
+            this.updateTransforMatrix();
             this.needsUpdate = false;
         }
         return this.transformMatrix;
@@ -136,7 +136,7 @@ export class Node {
         return this.pickBounds;
     }
 
-    getChildren(): readonly Node[] { // Necesario para saber a que hacerle la bound y el raycast
+    getChildren(): readonly Node[] {
         return this.children;
     }
 
@@ -148,7 +148,6 @@ export class Node {
         return this.visible;
     }
 
-    
 
     // LOCAL MATRIX (PRIVATE)
 
@@ -165,33 +164,28 @@ export class Node {
     private updateTransforMatrix(): void {
         let parentGlobalMatrix = mat4.create();
         if (this.parent) {
-            parentGlobalMatrix = this.parent.getTransformMatrix()
-        } 
+            parentGlobalMatrix = this.parent.getTransformMatrix();
+        }
         const localMatrix = this.computeLocalMatrix();
-        mat4.multiply(this.transformMatrix, parentGlobalMatrix, localMatrix); 
+        mat4.multiply(this.transformMatrix, parentGlobalMatrix, localMatrix);
     }
 
-    // TRAVERSAL (RECORRER ARBOL Y DIBUJAR)
-  
-    traverse(shader: ShaderResource): void { 
-    
+    // TRAVERSAL
+
+    traverse(shader: ShaderResource): void {
         if (this.visible) {
-            
-            // draw entity 
             if (this.entity) {
                 const worldMatrix = this.getTransformMatrix();
                 this.lastModelMatrix = worldMatrix;
                 this.entity.draw(worldMatrix, shader);
             }
-
-            // recursive - only traverse visible children
             for (const child of this.children) {
                 child.traverse(shader);
             }
         }
     }
 
-    // RELATIVE TRANSFORMATIONS 
+    // RELATIVE TRANSFORMATIONS
 
     traslate(dx: number, dy: number, dz: number): void {
         vec3.add(this.translation, this.translation, vec3.fromValues(dx, dy, dz));

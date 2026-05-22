@@ -7,8 +7,8 @@ export class MaterialResource extends Resource {
 
     // ATTRIBUTES
 
-    private ambient:  vec3 = vec3.fromValues(0.2, 0.2, 0.2); // Ka
-    private diffuse:  vec3 = vec3.fromValues(0.8, 0.8, 0.8); // Kd
+    private ambient: vec3 = vec3.fromValues(0.2, 0.2, 0.2); // Ka
+    private diffuse: vec3 = vec3.fromValues(0.8, 0.8, 0.8); // Kd
     private specular: vec3 = vec3.fromValues(0.5, 0.5, 0.5); // Ks
     private shininess: number = 32;
     private diffuseTexture?: TextureResource;
@@ -19,17 +19,17 @@ export class MaterialResource extends Resource {
 
     // SETTERS
 
-    setAmbient(r: number, g: number, b: number): void  { vec3.set(this.ambient,  r, g, b); }
-    setDiffuse(r: number, g: number, b: number): void  { vec3.set(this.diffuse,  r, g, b); }
+    setAmbient(r: number, g: number, b: number): void { vec3.set(this.ambient, r, g, b); }
+    setDiffuse(r: number, g: number, b: number): void { vec3.set(this.diffuse, r, g, b); }
     setSpecular(r: number, g: number, b: number): void { vec3.set(this.specular, r, g, b); }
     setShininess(value: number): void { this.shininess = value; }
-    setDiffuseTexture(texture: TextureResource): void  { this.diffuseTexture = texture; }
+    setDiffuseTexture(texture: TextureResource): void { this.diffuseTexture = texture; }
 
     // GETTERS
 
-    getAmbient():   vec3 { return this.ambient;  }
-    getDiffuse():   vec3 { return this.diffuse;  }
-    getSpecular():  vec3 { return this.specular; }
+    getAmbient(): vec3 { return this.ambient; }
+    getDiffuse(): vec3 { return this.diffuse; }
+    getSpecular(): vec3 { return this.specular; }
     getShininess(): number { return this.shininess; }
     getDiffuseTexture(): TextureResource | undefined { return this.diffuseTexture; }
 
@@ -51,18 +51,18 @@ export class MaterialResource extends Resource {
 
     async loadFile(url: string): Promise<void> {
         const data = await fetch(url).then(res => res.json());
-        if (data.ambient)               vec3.set(this.ambient,  ...(data.ambient   as [number, number, number]));
-        if (data.diffuse)               vec3.set(this.diffuse,  ...(data.diffuse   as [number, number, number]));
-        if (data.specular)              vec3.set(this.specular, ...(data.specular  as [number, number, number]));
+        if (data.ambient) vec3.set(this.ambient, ...(data.ambient as [number, number, number]));
+        if (data.diffuse) vec3.set(this.diffuse, ...(data.diffuse as [number, number, number]));
+        if (data.specular) vec3.set(this.specular, ...(data.specular as [number, number, number]));
         if (data.shininess !== undefined) this.shininess = data.shininess;
     }
 
     // BIND TO SHADER
 
     bind(shader: ShaderResource): void {
-        shader.setVec3( 'uMaterial.ambient',   this.ambient);
-        shader.setVec3( 'uMaterial.diffuse',   this.diffuse);
-        shader.setVec3( 'uMaterial.specular',  this.specular);
+        shader.setVec3('uMaterial.ambient', this.ambient);
+        shader.setVec3('uMaterial.diffuse', this.diffuse);
+        shader.setVec3('uMaterial.specular', this.specular);
         shader.setFloat('uMaterial.shininess', this.shininess);
         if (this.diffuseTexture) {
             this.diffuseTexture.bind(0);

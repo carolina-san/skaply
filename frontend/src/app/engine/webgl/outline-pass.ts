@@ -1,4 +1,4 @@
-// ⚠️ ESTE ARCHIVO NECESITA REVISIÓN
+// ⚠️ THIS FILE NEEDS REVIEW
 
 import { ShaderResource } from './resource/shader-resource';
 
@@ -29,17 +29,17 @@ export class OutlinePass {
   resize(width: number, height: number): void {
     this.width = width;
     this.height = height;
-    
+
     this.gl.deleteFramebuffer(this.msFbo);
     this.gl.deleteRenderbuffer(this.msColorBuffer);
     this.gl.deleteRenderbuffer(this.msDepthBuffer);
 
     this.gl.deleteFramebuffer(this.fbo);
     this.gl.deleteTexture(this.texture);
-    
-    if (this.quadVao) {this.gl.deleteVertexArray(this.quadVao);}
-    if (this.quadVbo) {this.gl.deleteBuffer(this.quadVbo);}
-    
+
+    if (this.quadVao) { this.gl.deleteVertexArray(this.quadVao); }
+    if (this.quadVbo) { this.gl.deleteBuffer(this.quadVbo); }
+
     this.createFramebuffer(width, height);
     this.createQuad();
   }
@@ -80,7 +80,7 @@ export class OutlinePass {
 
   private createQuad(): void {
     const gl = this.gl;
-    // Quad fullscreen en NDC
+    // fullscreen quad in NDC
     const verts = new Float32Array([
       -1, -1,
        1, -1,
@@ -102,20 +102,20 @@ export class OutlinePass {
   private async createShaders(): Promise<void> {
     const gl = this.gl;
 
-    // Shader para pintar la máscara (silueta sólida de la pieza)
+    // mask shader — renders a solid silhouette of the selected mesh
     this.maskShader = new ShaderResource(gl, 'mask');
     await this.maskShader.loadFile('../../../assets/shaders/mask.vert', 'vertex');
     await this.maskShader.loadFile('../../../assets/shaders/mask.frag', 'fragment');
     this.maskShader.buildProgram();
 
-    // Shader para detectar bordes y dibujarlos
+    // edge shader — detects and draws the outline from the mask texture
     this.edgeShader = new ShaderResource(gl, 'edge');
     await this.edgeShader.loadFile('../../../assets/shaders/edge.vert', 'vertex');
     await this.edgeShader.loadFile('../../../assets/shaders/edge.frag', 'fragment');
     this.edgeShader.buildProgram();
   }
 
-  // Renderiza la silueta de los meshes al FBO
+  // renders the silhouette of the given meshes to the mask FBO
   renderMask(
     meshes: { mesh: any; modelMatrix: any }[],
     viewMatrix: any,
@@ -137,7 +137,7 @@ export class OutlinePass {
       mesh.drawRaw(this.maskShader);
     }
 
-    // Resolve multisampled FBO to texture FBO
+    // resolve multisampled FBO to single-sampled texture FBO
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.msFbo);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.fbo);
     gl.blitFramebuffer(
@@ -146,15 +146,13 @@ export class OutlinePass {
       gl.COLOR_BUFFER_BIT, gl.NEAREST
     );
 
-    // Desvincular FBO — el caller restaurará el viewport
+    // unbind — caller restores the viewport
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
-  // Dibuja los bordes detectados encima de la escena
+  // draws the detected edges on top of the scene
   drawEdges(outlineColor: [number, number, number], thickness: number): void {
     const gl = this.gl;
-    // console.log('drawEdges - texture:', this.texture, 'quadVao:', this.quadVao);
-    // console.log('canvas size:', this.width, this.height);
 
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
@@ -170,34 +168,26 @@ export class OutlinePass {
     this.edgeShader.setFloat('uTexelHeight', 1.0 / this.height);
 
     gl.bindVertexArray(this.quadVao);
-    
-    // Verificar errores GL antes del draw
-    const errBefore = gl.getError();
-    // console.log('GL error before draw:', errBefore);
-    
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); 
-    
-    const errAfter = gl.getError();
-    // console.log('GL error after draw:', errAfter);
-    
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindVertexArray(null);
+
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
   }
 
   public dispose(): void {
     const gl = this.gl;
-    
+
     gl.deleteFramebuffer(this.msFbo);
     gl.deleteRenderbuffer(this.msColorBuffer);
     gl.deleteRenderbuffer(this.msDepthBuffer);
 
     gl.deleteFramebuffer(this.fbo);
     gl.deleteTexture(this.texture);
-    
-    if (this.quadVao) {gl.deleteVertexArray(this.quadVao);}
-    if (this.quadVbo) {gl.deleteBuffer(this.quadVbo);}
-    
+
+    if (this.quadVao) { gl.deleteVertexArray(this.quadVao); }
+    if (this.quadVbo) { gl.deleteBuffer(this.quadVbo); }
+
     this.maskShader?.dispose();
     this.edgeShader?.dispose();
   }
