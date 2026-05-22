@@ -8,6 +8,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
 import { PointLight } from './engine-core/point-light';
 import { DirectionalLight } from './engine-core/directional-light';
+import { SpotLight } from './engine-core/spot-light';
 import { Mesh } from './engine-core/mesh';
 import { Entity } from './engine-core/entity';
 import { OutlinePass } from './outline-pass';
@@ -462,6 +463,9 @@ export class WebGLEngineAdapter extends EngineFacade {
     private dirLightEntity = new DirectionalLight();
     private dirLightNode = new Node();
 
+    private spotLightEntity = new SpotLight();
+    private spotLightNode = new Node();
+
     private wrappers = new Set<WebGlRenderableObject>();  // ⚠️ VER SI HACE FALTA
 
     private highlightedNodes: Set<Node> = new Set();
@@ -509,6 +513,15 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.dirLightEntity.setSpecularIntensity(vec3.fromValues(0.1, 0.1, 0.1));
         this.dirLightNode.setEntity(this.dirLightEntity);
         this.rootNode.addChild(this.dirLightNode);
+
+        // spot light — aimed downward at the scene center from above
+        this.spotLightEntity.setDirection(0, -1, 0);
+        this.spotLightEntity.setAngles(15, 25);
+        this.spotLightEntity.setDiffuseIntensity(vec3.fromValues(0.4, 0.38, 0.32));
+        this.spotLightEntity.setSpecularIntensity(vec3.fromValues(0.15, 0.15, 0.15));
+        this.spotLightNode.setEntity(this.spotLightEntity);
+        this.spotLightNode.setTranslation(0, 8, 0);
+        this.rootNode.addChild(this.spotLightNode);
 
         this.cameraController = new CameraController(
             this.cameraNode,
