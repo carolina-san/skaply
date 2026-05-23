@@ -30,10 +30,9 @@ export class DirectionalLight extends Light {
         vec3.copy(this.specularIntensity, intensity);
     }
 
-    // DRAW
+    // UPLOAD
 
-    // modelMatrix is ignored — directional lights have no position
-    draw(_modelMatrix: mat4, shader: ShaderResource): void {
+    uploadToShader(shader: ShaderResource, worldMatrix: mat4, index: number): void {
         shader.setVec3("uLightDirection", this.direction);
         shader.setVec3("uLightAmbient", this.ambientIntensity);
         shader.setVec3("uLightDiffuse", this.diffuseIntensity);

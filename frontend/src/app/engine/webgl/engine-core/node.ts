@@ -1,5 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { Entity } from './entity';
+import { Light } from './light';
 import { ShaderResource } from '../resource/shader-resource';
 import { Frustum } from './frustum';
 
@@ -185,7 +186,7 @@ export class Node {
             if (!frustum.intersectsAABB(worldBounds.min, worldBounds.max)) return;
         }
 
-        if (this.entity) {
+        if (this.entity && !(this.entity instanceof Light)) {
             this.entity.draw(worldMatrix, shader);
         }
 
@@ -239,6 +240,24 @@ export class Node {
         this.scale[1] *= sy;
         this.scale[2] *= sz;
         this.needsUpdate = true;
+    }
+
+    // LIGHT COLLECTION
+
+    collectLights(): { light: Light; worldMatrix: mat4 }[] {
+        const result: { light: Light; worldMatrix: mat4 }[] = [];
+        this.gatherLights(result);
+        return result;
+    }
+
+    private gatherLights(result: { light: Light; worldMatrix: mat4 }[]): void {
+        if (!this.visible) return;
+        if (this.entity instanceof Light) {
+            result.push({ light: this.entity, worldMatrix: this.getTransformMatrix() });
+        }
+        for (const child of this.children) {
+            child.gatherLights(result);
+        }
     }
 
     // GET NODE BY NAME

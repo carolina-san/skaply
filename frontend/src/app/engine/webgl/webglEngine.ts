@@ -6,6 +6,7 @@ import { Node } from '../../engine/webgl/engine-core/node';
 import { ShaderResource } from '../../engine/webgl/resource/shader-resource';
 import { mat4, vec3 } from 'gl-matrix';
 import { Camera } from './engine-core/camera';
+import { Light } from './engine-core/light';
 import { PointLight } from './engine-core/point-light';
 import { DirectionalLight } from './engine-core/directional-light';
 import { SpotLight } from './engine-core/spot-light';
@@ -460,6 +461,9 @@ export class WebGLEngineAdapter extends EngineFacade {
     private lightEntity = new PointLight();
     private lightNode = new Node();
 
+    private fillLightEntity = new PointLight();
+    private fillLightNode = new Node();
+
     private dirLightEntity = new DirectionalLight();
     private dirLightNode = new Node();
 
@@ -500,16 +504,22 @@ export class WebGLEngineAdapter extends EngineFacade {
         this.cameraNode.setTranslation(0, 5, 10);
         this.rootNode.addChild(this.cameraNode);
 
-        // point light
-        this.lightEntity.setIntensity(vec3.fromValues(1, 1, 1));
+        // point light (main)
+        this.lightEntity.setIntensity(vec3.fromValues(1.2, 1.2, 1.2));
         this.lightNode.setEntity(this.lightEntity);
         this.lightNode.setTranslation(8, 10, 5);
         this.rootNode.addChild(this.lightNode);
 
+        // fill light — opposite side of main, less intense
+        this.fillLightEntity.setIntensity(vec3.fromValues(0.75, 0.75, 0.75));
+        this.fillLightNode.setEntity(this.fillLightEntity);
+        this.fillLightNode.setTranslation(-8, 10, -5);
+        this.rootNode.addChild(this.fillLightNode);
+
         // directional fill light — soft, coming from front-left to fill shadows
         this.dirLightEntity.setDirection(-0.4, -0.6, -0.5);
-        this.dirLightEntity.setAmbientIntensity(vec3.fromValues(0.15, 0.15, 0.15));
-        this.dirLightEntity.setDiffuseIntensity(vec3.fromValues(0.35, 0.35, 0.35));
+        this.dirLightEntity.setAmbientIntensity(vec3.fromValues(0.05, 0.05, 0.05));
+        this.dirLightEntity.setDiffuseIntensity(vec3.fromValues(0.2, 0.2, 0.2));
         this.dirLightEntity.setSpecularIntensity(vec3.fromValues(0.1, 0.1, 0.1));
         this.dirLightNode.setEntity(this.dirLightEntity);
         this.rootNode.addChild(this.dirLightNode);
@@ -517,8 +527,8 @@ export class WebGLEngineAdapter extends EngineFacade {
         // spot light — aimed downward at the scene center from above
         this.spotLightEntity.setDirection(0, -1, 0);
         this.spotLightEntity.setAngles(15, 25);
-        this.spotLightEntity.setDiffuseIntensity(vec3.fromValues(0.4, 0.38, 0.32));
-        this.spotLightEntity.setSpecularIntensity(vec3.fromValues(0.15, 0.15, 0.15));
+        this.spotLightEntity.setDiffuseIntensity(vec3.fromValues(0.2, 0.19, 0.16));
+        this.spotLightEntity.setSpecularIntensity(vec3.fromValues(0.08, 0.08, 0.08));
         this.spotLightNode.setEntity(this.spotLightEntity);
         this.spotLightNode.setTranslation(0, 8, 0);
         this.rootNode.addChild(this.spotLightNode);
@@ -680,6 +690,7 @@ export class WebGLEngineAdapter extends EngineFacade {
         // shader normal
         this.shader.use();
         this.cameraEntity.updateFrustum();
+        this.uploadLights();
         this.rootNode.traverse(this.shader, this.cameraEntity.getFrustum());
 
         // outline
@@ -708,6 +719,21 @@ export class WebGLEngineAdapter extends EngineFacade {
         }
 
         this.updateControls();
+    }
+
+    private uploadLights(): void {
+        const lights = this.rootNode.collectLights();
+        let pointIndex = 0;
+
+        for (const { light, worldMatrix } of lights) {
+            if (light instanceof PointLight) {
+                light.uploadToShader(this.shader, worldMatrix, pointIndex++);
+            } else {
+                light.uploadToShader(this.shader, worldMatrix, 0);
+            }
+        }
+
+        this.shader.setInt('uPointLightCount', pointIndex);
     }
 
     // DISPOSE

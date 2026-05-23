@@ -12,16 +12,14 @@ export class PointLight extends Light {
     private a1: number = 0.014;  // linear falloff
     private a2: number = 0.0007; // quadratic falloff
 
-    // GETTERS
-
-    getIntensity(): vec3 {
-        return this.intensity;
-    }
-
     // SETTERS
 
     setIntensity(intensity: vec3): void {
         vec3.copy(this.intensity, intensity);
+    }
+
+    getIntensity(): vec3 {
+        return this.intensity;
     }
 
     setAttenuation(a0: number, a1: number, a2: number): void {
@@ -30,17 +28,17 @@ export class PointLight extends Light {
         this.a2 = a2;
     }
 
-    // DRAW
+    // UPLOAD
 
-    draw(modelMatrix: mat4, shader: ShaderResource): void {
+    uploadToShader(shader: ShaderResource, worldMatrix: mat4, index: number): void {
+        const pos = vec3.create();
+        vec3.transformMat4(pos, vec3.fromValues(0, 0, 0), worldMatrix);
 
-        const lightWorldPosition = vec3.create();
-        vec3.transformMat4(lightWorldPosition, vec3.fromValues(0, 0, 0), modelMatrix);
-
-        shader.setVec3("uLightPosition", lightWorldPosition);
-        shader.setVec3("uLightColor", this.intensity);
-        shader.setFloat("uAttA0", this.a0);
-        shader.setFloat("uAttA1", this.a1);
-        shader.setFloat("uAttA2", this.a2);
+        const p = `uPointLights[${index}]`;
+        shader.setVec3(`${p}.position`, pos);
+        shader.setVec3(`${p}.color`, this.intensity);
+        shader.setFloat(`${p}.a0`, this.a0);
+        shader.setFloat(`${p}.a1`, this.a1);
+        shader.setFloat(`${p}.a2`, this.a2);
     }
 }

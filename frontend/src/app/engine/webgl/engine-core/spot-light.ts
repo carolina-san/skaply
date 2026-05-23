@@ -51,14 +51,14 @@ export class SpotLight extends Light {
         this.a2 = a2;
     }
 
-    // DRAW
+    // UPLOAD
 
-    draw(modelMatrix: mat4, shader: ShaderResource): void {
-        const worldPosition = vec3.create();
-        vec3.transformMat4(worldPosition, vec3.fromValues(0, 0, 0), modelMatrix);
+    uploadToShader(shader: ShaderResource, worldMatrix: mat4, index: number): void {
+        const pos = vec3.create();
+        vec3.transformMat4(pos, vec3.fromValues(0, 0, 0), worldMatrix);
 
         shader.setInt("uSpotEnabled", 1);
-        shader.setVec3("uSpotPosition", worldPosition);
+        shader.setVec3("uSpotPosition", pos);
         shader.setVec3("uSpotDirection", this.direction);
         shader.setVec3("uSpotAmbient", this.ambientIntensity);
         shader.setVec3("uSpotDiffuse", this.diffuseIntensity);
