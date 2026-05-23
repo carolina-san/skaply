@@ -9,8 +9,8 @@ export class MaterialResource extends Resource {
 
     private ambient: vec3 = vec3.fromValues(0.2, 0.2, 0.2); // Ka
     private diffuse: vec3 = vec3.fromValues(0.8, 0.8, 0.8); // Kd
-    private specular: vec3 = vec3.fromValues(0.5, 0.5, 0.5); // Ks
-    private shininess: number = 32;
+    private specular: vec3 = vec3.fromValues(0.08, 0.08, 0.08); // Ks
+    private shininess: number = 12;
     private diffuseTexture?: TextureResource;
 
     constructor(name: string, private gl: WebGL2RenderingContext) {

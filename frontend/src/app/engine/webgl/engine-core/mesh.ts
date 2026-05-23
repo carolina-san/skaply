@@ -47,8 +47,8 @@ export class Mesh extends Entity {
         } else {
             shader.setVec3('uMaterial.ambient', [0.2, 0.2, 0.2]);
             shader.setVec3('uMaterial.diffuse', [0.8, 0.8, 0.8]);
-            shader.setVec3('uMaterial.specular', [0.5, 0.5, 0.5]);
-            shader.setFloat('uMaterial.shininess', 32);
+            shader.setVec3('uMaterial.specular', [0.08, 0.08, 0.08]);
+            shader.setFloat('uMaterial.shininess', 12);
         }
 
         gl.bindVertexArray(this.vao!);
