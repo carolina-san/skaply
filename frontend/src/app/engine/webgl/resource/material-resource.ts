@@ -35,7 +35,7 @@ export class MaterialResource extends Resource {
 
     // LOAD DIFFUSE TEXTURE FROM IMAGE OR COLOR (called by MeshResource)
 
-    loadDiffuseFromImage(image: HTMLImageElement): void {
+    loadDiffuseFromImage(image: TexImageSource): void {
         const tex = new TextureResource(this.name + '_tex', this.gl);
         tex.loadFromImage(image);
         this.diffuseTexture = tex;

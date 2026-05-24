@@ -45,7 +45,14 @@ export class ShaderResource extends Resource {
         // save program in class variable
         this.program = program;
 
-        // delete shaders 
+        // Warm up the shader: on iOS/Metal, linkProgram returns before the underlying
+        // Metal pipeline is fully compiled. Calling useProgram + getUniformLocation
+        // forces the driver to finish compilation before the first real draw.
+        this.gl.useProgram(program);
+        this.gl.getUniformLocation(program, 'uModelMatrix');
+        this.gl.useProgram(null);
+
+        // delete shaders
         this.gl.deleteShader(vertexShader);
         this.gl.deleteShader(fragmentShader);
     }

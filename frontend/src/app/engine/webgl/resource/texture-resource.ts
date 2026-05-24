@@ -19,11 +19,21 @@ export class TextureResource extends Resource {
 
     // FROM IMAGE
 
-    public loadFromImage(image: HTMLImageElement): void {
-        this.createTextureFromImage(image);
+    public loadFromImage(image: TexImageSource): void {
+        // On iOS < 15, @loaders.gl may provide an HTMLImageElement whose decode is still
+        // in progress when texImage2D is called. Uploading an incomplete image gives a
+        // white/garbage texture that makes the scene appear over-bright on first load.
+        // Guard against this: use a neutral placeholder and re-upload once the image fires
+        // its load event. ImageBitmap (iOS 15+, Android, desktop) is always ready.
+        if (image instanceof HTMLImageElement && (!image.complete || image.naturalWidth === 0)) {
+            this.loadFromColor(128, 128, 128);
+            image.addEventListener('load', () => this.createTextureFromImage(image), { once: true });
+        } else {
+            this.createTextureFromImage(image);
+        }
     }
 
-    private createTextureFromImage(image: HTMLImageElement): void {
+    private createTextureFromImage(image: TexImageSource): void {
         const gl = this.gl;
         if (this.texture) { gl.deleteTexture(this.texture); }
         this.texture = gl.createTexture()!;
@@ -32,8 +42,8 @@ export class TextureResource extends Resource {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.generateMipmap(gl.TEXTURE_2D);
         this.setDefaultParameters();
-        this.width = image.width;
-        this.height = image.height;
+        this.width = (image as HTMLImageElement).width ?? 0;
+        this.height = (image as HTMLImageElement).height ?? 0;
     }
 
     private setDefaultParameters(): void {
